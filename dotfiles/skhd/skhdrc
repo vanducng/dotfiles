@@ -40,8 +40,8 @@ ctrl + shift - k : yabai -m window --focus north
 ctrl + shift - l : yabai -m window --focus east
 
 # space focus and creation
-cmd - tab : yabai -m space --focus next || yabai -m space --focus first
-cmd + shift - tab : yabai -m space --focus prev || yabai -m space --focus last
+# cmd - tab : yabai -m space --focus next || yabai -m space --focus first
+# cmd + shift - tab : yabai -m space --focus prev || yabai -m space --focus last
 cmd - x : yabai -m space --focus recent
 cmd - 1 : yabai -m space --focus 1
 cmd - 2 : yabai -m space --focus 2
