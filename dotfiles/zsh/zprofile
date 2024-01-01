@@ -1,0 +1,21 @@
+export PATH="/usr/local/bin:/usr/local/sbin:~/bin:$PATH"
+eval "$(/opt/homebrew/bin/brew shellenv)"
+
+# pyenv init
+export PYENV_ROOT="$HOME/.pyenv"
+command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
+eval "$(pyenv init -)"
+
+# MacPorts Installer addition on 2022-08-02_at_01:17:23: adding an appropriate PATH variable for use with MacPorts.
+export PATH="/opt/local/bin:/opt/local/sbin:$PATH"
+# Finished adapting your PATH environment variable for use with MacPorts.
+
+# MacPorts Installer addition on 2022-08-02_at_01:17:23: adding an appropriate MANPATH variable for use with MacPorts.
+export MANPATH="/opt/local/share/man:$MANPATH"
+# Finished adapting your MANPATH environment variable for use with MacPorts.
+
+# Created by `pipx` on 2023-04-06 16:20:32
+export PATH="$PATH:/Users/vanducng/.local/bin"
+
+# added by Snowflake SnowSQL installer v1.2
+export PATH=/Applications/SnowSQL.app/Contents/MacOS:$PATH
