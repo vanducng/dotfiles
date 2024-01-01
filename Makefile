@@ -1,5 +1,7 @@
-STOW_FOLDERS=yabai skhd kitty
-TARGET=$(HOME)/.config/
+TARGET=$(HOME)/.config
 
-stow:
-	stow --target $(TARGET) .
+stow-dotfiles:
+	stow -D --target $(TARGET) dotfiles
+	stow --target $(TARGET) dotfiles
+	
+	cp dotfiles/karabiner/karabiner.json $(TARGET)/karabiner/
