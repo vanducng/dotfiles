@@ -17,22 +17,10 @@ hyper - d : open "/Applications/Visual Studio Code.app"
 # -------------------------------------------------------------------------------------------------------
 # RESIZE MODE
 # -------------------------------------------------------------------------------------------------------
-# Set resize border color 
-:: resize @ : yabai -m config active_window_border_color 0xFFFF00FF
-
-# toggle resize mode 
-hyper - r ; default
-default < hyper - r ; resize
-
-# resize commands
-resize < left : yabai -m window --resize left:-50:0; \
-                  yabai -m window --resize right:-50:0
-resize < down : yabai -m window --resize bottom:0:50; \
-                  yabai -m window --resize top:0:50
-resize < up   : yabai -m window --resize top:0:-50; \
-                  yabai -m window --resize bottom:0:-50
-resize < right : yabai -m window --resize right:50:0; \
-                  yabai -m window --resize left:50:0
+hyper - left  : yabai -m window --resize left:-50:0; yabai -m window --resize right:-50:0
+hyper - down  : yabai -m window --resize bottom:0:50; yabai -m window --resize top:0:50
+hyper - up    : yabai -m window --resize top:0:-50; yabai -m window --resize bottom:0:-50
+hyper - right : yabai -m window --resize right:50:0; yabai -m window --resize left:50:0
 
 # -------------------------------------------------------------------------------------------------------
 # SPACES
