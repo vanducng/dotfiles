@@ -4,13 +4,14 @@
 # Finding key codes for a key by using `skhd --observe` in a terminal and type a key.
 # Quickly restart the yabai launch agent
 ctrl + alt + cmd - r : yabai --restart-service
-:: default : yabai -m config active_window_border_color 0xE032CD32
 
-# Open kitty terminal, blazingly fast compared to iTerm/Hyper
+# My frequent apps
 cmd - return : /Applications/kitty.app/Contents/MacOS/kitty --single-instance -d ~
 hyper - q : open "/Applications/kitty.app"
-hyper - w : open "/Applications/Min 2.app"
-# hyper - w : "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser" --profile-directory="$HOME/Library/Application Support/BraveSoftware/Brave-Browser/cormac"
+hyper - w : open "/Applications/Google Chrome.app"
+hyper - e : open "/Applications/Min 2.app"
+hyper - s : open "/Applications/Slack.app"
+hyper - a : open "/Applications/Brave Browser.app"
 
 # -------------------------------------------------------------------------------------------------------
 # RESIZE MODE
