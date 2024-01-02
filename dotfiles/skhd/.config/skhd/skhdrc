@@ -8,7 +8,9 @@ ctrl + alt + cmd - r : yabai --restart-service
 
 # Open kitty terminal, blazingly fast compared to iTerm/Hyper
 cmd - return : /Applications/kitty.app/Contents/MacOS/kitty --single-instance -d ~
-
+hyper - q : open "/Applications/kitty.app"
+hyper - w : open "/Applications/Min 2.app"
+# hyper - w : "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser" --profile-directory="$HOME/Library/Application Support/BraveSoftware/Brave-Browser/cormac"
 
 # -------------------------------------------------------------------------------------------------------
 # RESIZE MODE

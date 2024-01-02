@@ -674,7 +674,7 @@
                         ]
                     },
                     {
-                        "description": "Hyper + SPACE : Toggle Alfred",
+                        "description": "Hyper + q : Toggle Alfred",
                         "manipulators": [
                             {
                                 "from": {
