@@ -152,7 +152,7 @@ export PATH=$GOROOT/bin:$PATH
 export GOPATH=/Users/vanducng/go
 export PATH=$GOPATH/bin:$PATH
 export PATH="$HOME/.local/bin:$PATH"
-bindkey -s ^f "tmux-sessionizer\n"
+bindkey -s ^f "~/.local/bin/tmux-sessionizer\n"
 
 source <(kubectl completion zsh)
 
