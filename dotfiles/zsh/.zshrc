@@ -151,7 +151,9 @@ export GOROOT=/Users/vanducng/.go
 export PATH=$GOROOT/bin:$PATH
 export GOPATH=/Users/vanducng/go
 export PATH=$GOPATH/bin:$PATH
-export PATH="/Users/vanducng/.local/bin:$PATH"
+export PATH="$HOME/.local/bin:$PATH"
+bindkey -s ^f "tmux-sessionizer\n"
+
 source <(kubectl completion zsh)
 
 export PATH="/opt/homebrew/opt/openjdk/bin:$PATH"
