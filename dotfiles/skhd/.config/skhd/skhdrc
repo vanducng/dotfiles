@@ -6,7 +6,7 @@
 ctrl + alt + cmd - r : yabai --restart-service
 
 # My frequent apps
-cmd - return : /Applications/kitty.app/Contents/MacOS/kitty --single-instance -d ~
+# cmd - return : /Applications/kitty.app/Contents/MacOS/kitty --single-instance -d ~
 hyper - q : open "/Applications/kitty.app"
 hyper - w : open "/Applications/Arc.app"
 hyper - s : open "/Applications/Slack.app"
