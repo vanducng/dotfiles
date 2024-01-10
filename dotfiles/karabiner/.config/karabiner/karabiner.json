@@ -232,7 +232,7 @@
             ]
           },
           {
-            "description": "right_option + A -> Activity Monitor",
+            "description": "right_option + A -> Terminal",
             "manipulators": [
               {
                 "from": {
@@ -243,7 +243,7 @@
                 },
                 "to": [
                   {
-                    "shell_command": "open '/System/Applications/Utilities/Activity Monitor.app'"
+                    "shell_command": "open '/Applications/Kitty.app'"
                   }
                 ],
                 "type": "basic"
@@ -281,7 +281,7 @@
                 },
                 "to": [
                   {
-                    "shell_command": "open '/Applications/Safari.app'"
+                    "sell_command": "open '/Applications/Safari.app'"
                   }
                 ],
                 "type": "basic"
@@ -289,7 +289,7 @@
             ]
           },
           {
-            "description": "right_option + W -> Arc",
+            "description": "rigt_option + W -> Arc",
             "manipulators": [
               {
                 "from": {
@@ -555,7 +555,7 @@
             ]
           },
           {
-            "description": "right_option + D -> Discord",
+            "description": "right_option + d -> Kitty",
             "manipulators": [
               {
                 "from": {
@@ -566,7 +566,7 @@
                 },
                 "to": [
                   {
-                    "shell_command": "open '/Applications/Discord.app'"
+                    "shell_command": "open '/Applications/Kitty.app'"
                   }
                 ],
                 "type": "basic"
