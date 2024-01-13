@@ -7,11 +7,15 @@ ctrl + alt + cmd - r : yabai --restart-service
 
 # My frequent apps
 # cmd - return : /Applications/kitty.app/Contents/MacOS/kitty --single-instance -d ~
-hyper - q : open "/Applications/kitty.app"
-hyper - w : open "/Applications/Arc.app"
-hyper - s : open "/Applications/Slack.app"
-hyper - a : open "/Applications/Brave Browser.app"
-hyper - d : open "/Applications/Visual Studio Code.app"
+meh - a : open "/Applications/kitty.app"
+meh - s : open "/Applications/Arc.app"
+meh - d : open "/Applications/Slack.app"
+
+meh - f : open ~
+meh - b : open "/Applications/Brave Browser.app"
+meh - v : open "/Applications/Visual Studio Code.app"
+meh - z : open "/System/Volumes/Data/Applications/Zalo.app"
+
 
 # -------------------------------------------------------------------------------------------------------
 # RESIZE MODE
