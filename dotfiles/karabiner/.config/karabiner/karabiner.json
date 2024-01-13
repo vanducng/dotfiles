@@ -593,26 +593,6 @@
             ]
           },
           {
-            "description": "shift + Esc, Tilde to ~",
-            "manipulators": [
-              {
-                "from": {
-                  "key_code": "escape",
-                  "modifiers": {
-                    "mandatory": ["shift"]
-                  }
-                },
-                "to": [
-                  {
-                    "key_code": "grave_accent_and_tilde",
-                    "modifiers": ["shift"]
-                  }
-                ],
-                "type": "basic"
-              }
-            ]
-          },
-          {
             "description": "command + Esc, Tilde to `",
             "manipulators": [
               {

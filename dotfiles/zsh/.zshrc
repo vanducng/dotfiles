@@ -222,6 +222,8 @@ alias adb='astro dev bash --scheduler'
 alias ado='astro dev object import -s airflow_settings.yaml'
 alias cdeg='cd /Volumes/exs/git'
 alias gcb='git checkout -b'
+alias gc='git checkout'
+alias gp='git pull'
 alias v='nvim'
 
 zstyle ':completion:*' menu select
