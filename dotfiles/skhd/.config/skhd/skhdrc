@@ -14,7 +14,7 @@ meh - d : open "/Applications/Slack.app"
 meh - f : open ~
 meh - b : open "/Applications/Brave Browser.app"
 meh - v : open "/Applications/Visual Studio Code.app"
-meh - z : open "/System/Volumes/Data/Applications/Zalo.app"
+meh - r : open "/System/Volumes/Data/Applications/Zalo.app"
 
 
 # -------------------------------------------------------------------------------------------------------
