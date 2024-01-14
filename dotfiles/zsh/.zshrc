@@ -172,6 +172,14 @@ function kdo() {
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
+fv() {
+  local file
+  file=$(fzf)
+  if [ -n "$file" ]; then
+    nvim "$file"
+  fi
+}
+
 fcd() {
     local start_dir="$1"
     local dir
