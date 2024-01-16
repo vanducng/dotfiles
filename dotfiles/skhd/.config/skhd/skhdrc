@@ -9,8 +9,8 @@ ctrl + alt + cmd - r : yabai --restart-service
 # cmd - return : /Applications/kitty.app/Contents/MacOS/kitty --single-instance -d ~
 meh - a : open "/Applications/kitty.app"
 meh - s : open "/Applications/Arc.app"
-meh - d : open "/Applications/Slack.app"
-meh - q : open "/Applications/Obsidian.app"
+meh - k : open "/Applications/Slack.app"
+meh - o : open "/Applications/Obsidian.app"
 
 meh - f : open ~
 meh - b : open "/Applications/Brave Browser.app"
