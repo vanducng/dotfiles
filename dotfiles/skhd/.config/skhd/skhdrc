@@ -10,6 +10,7 @@ ctrl + alt + cmd - r : yabai --restart-service
 meh - a : open "/Applications/kitty.app"
 meh - s : open "/Applications/Arc.app"
 meh - d : open "/Applications/Slack.app"
+meh - q : open "/Applications/Obsidian.app"
 
 meh - f : open ~
 meh - b : open "/Applications/Brave Browser.app"
