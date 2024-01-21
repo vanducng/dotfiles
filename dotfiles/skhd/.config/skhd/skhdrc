@@ -88,12 +88,12 @@ cmd + ctrl - 4 : yabai -m window --space 4; yabai -m space --focus 4
 hyper - e : yabai -m space --balance
 
 # Enable / Disable gaps in current workspace
-lcmd - i : yabai -m space --toggle padding; \
+hyper - i : yabai -m space --toggle padding; \
 	  yabai -m space --toggle gap; \
 	  yabai -m config external_bar off:0:0; \
 	  sketchybar --bar hidden=true;
 
-lcmd - o : yabai -m space --toggle padding; \
+hyper - o : yabai -m space --toggle padding; \
 	 yabai -m space --toggle gap; \
 	 yabai -m config external_bar all:30:0;\
 	 sketchybar --bar hidden=false;
