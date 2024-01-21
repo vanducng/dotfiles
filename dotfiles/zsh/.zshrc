@@ -203,7 +203,7 @@ fof() {
 
   if [[ -n "$selected_file" ]]; then
     echo "Opening $selected_file"
-    open "$selected_file"
+    nvim "$selected_file"
   else
     echo "No file selected."
   fi
@@ -211,7 +211,7 @@ fof() {
 
 export ATUIN_NOBIND="true"
 eval "$(atuin init zsh)"
-bindkey '^r' _atuin_search_widget
+bindkey ^r _atuin_search_widget
 
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
