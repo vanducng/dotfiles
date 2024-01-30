@@ -95,7 +95,7 @@ hyper - i : yabai -m space --toggle padding; \
 
 hyper - o : yabai -m space --toggle padding; \
 	 yabai -m space --toggle gap; \
-	 yabai -m config external_bar all:30:0;\
+	 yabai -m config external_bar all:0:40;\
 	 sketchybar --bar hidden=false;
 
 # Rotate windows clockwise and anticlockwise
