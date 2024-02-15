@@ -1,4 +1,4 @@
-STOW_FOLDERS=zsh tmux kitty sketchybar skhd starship yabai karabiner bin
+STOW_FOLDERS=zsh tmux kitty sketchybar skhd starship yabai bin vrapperrc
 
 stow-install:
 	@cd dotfiles && for folder in $(STOW_FOLDERS); do \
