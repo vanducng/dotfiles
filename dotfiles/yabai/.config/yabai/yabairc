@@ -41,7 +41,7 @@ yabai -m rule --add app="^Karabiner-EventViewer$" sticky=on layer=above manage=o
 yabai -m rule --add app="^Keka$" sticky=on layer=above manage=off
 yabai -m rule --add app="^Disk Utility$" sticky=on layer=above manage=off
 yabai -m rule --add app="^System Information$" sticky=on layer=above manage=off
-yabai -m rule --add app="^System Settings$" sticky=on layer=above manage=off
+# yabai -m rule --add app="^System Settings$" sticky=on layer=above manage=off
 yabai -m rule --add app="^Activity Monitor$" sticky=on layer=above manage=off
 yabai -m rule --add app="^Path Finder$" manage=off
 yabai -m rule --add app="^TeamViewer$" sticky=off layer=above manage=off
@@ -63,7 +63,7 @@ yabai -m rule --add app="^Microsoft Teams$" manage=off
 yabai -m rule --add app="^Telegram$" manage=off
 # yabai -m rule --add app="^Slack$" manage=off
 yabai -m rule --add app="^Calendar$" manage=off
-yabai -m rule --add app="^Zalo$" manage=off
+# yabai -m rule --add app="^Zalo$" manage=off
 yabai -m rule --add app="^Calculator$" manage=off
 yabai -m rule --add app="^SpaceLauncher$" manage=off
 yabai -m rule --add app="^LastPass$" manage=off
