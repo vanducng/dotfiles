@@ -233,6 +233,8 @@ alias gcb='git checkout -b'
 alias gc='git checkout'
 alias gp='git pull'
 alias v='nvim'
+alias lg='lazygit'
+alias g='git'
 
 zstyle ':completion:*' menu select
 fpath+=~/.zfunc
