@@ -235,6 +235,8 @@ alias gp='git pull'
 alias v='nvim'
 alias lg='lazygit'
 alias g='git'
+alias ad='akio run dbt'
+alias ps='poetry shell'
 
 zstyle ':completion:*' menu select
 fpath+=~/.zfunc
