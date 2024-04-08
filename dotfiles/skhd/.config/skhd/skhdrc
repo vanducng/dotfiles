@@ -12,6 +12,8 @@ meh - s : open "/Applications/Arc.app"
 meh - d : open "/Applications/DBeaver.app"
 meh - k : open "/Applications/Slack.app"
 meh - o : open "/Applications/Obsidian.app"
+meh - e : open "/Applications/LibreOffice.app"
+meh - m : open "/Applications/Firefox Developer Edition.app"
 
 meh - f : open ~
 meh - b : open "/Applications/Brave Browser.app"

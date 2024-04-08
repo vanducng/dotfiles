@@ -117,7 +117,7 @@ source $ZSH/oh-my-zsh.sh
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
-[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+[[ ! -f $HOME/.p10k.zsh ]] || source $HOME/.p10k.zsh
 
 if type brew &>/dev/null; then
     FPATH=$(brew --prefix)/share/zsh-completions:$FPATH
@@ -152,25 +152,18 @@ export PATH=$GOROOT/bin:$PATH
 export GOPATH=/Users/vanducng/go
 export PATH=$GOPATH/bin:$PATH
 export PATH="$HOME/.local/bin:$PATH"
-bindkey -s ^f "~/.local/bin/tmux-sessionizer\n"
 
 source <(kubectl completion zsh)
+complete -o default -F __start_kubectl k
 
-export PATH="/opt/homebrew/opt/openjdk/bin:$PATH"
-
-### MANAGED BY RANCHER DESKTOP START (DO NOT EDIT)
-export PATH="/Users/vanducng/.rd/bin:$PATH"
-### MANAGED BY RANCHER DESKTOP END (DO NOT EDIT)
-
-# Created by `pipx` on 2023-04-06 16:20:32
-export PATH="$PATH:/Users/vanducng/.local/bin"
+export PATH="$HOME/.rd/bin:$HOME/.cargo/bin:/opt/homebrew/opt/openjdk/bin:$PATH"
 
 #macro to kill the docker desktop app and the VM (excluding vmnetd -> it's a service)
 function kdo() {
   ps ax|grep -i docker|egrep -iv 'grep|com.docker.vmnetd'|awk '{print $1}'|xargs kill
 }
 
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+[ -f $HOME/.fzf.zsh ] && source $HOME/.fzf.zsh
 
 fv() {
   local file
@@ -237,9 +230,13 @@ alias lg='lazygit'
 alias g='git'
 alias ad='akio run dbt'
 alias ps='poetry shell'
+alias tm='$HOME/.local/bin/tmux-sessionizer'
+alias lzd='lazydocker'
 
 zstyle ':completion:*' menu select
 fpath+=~/.zfunc
-. $HOMEBREW_PREFIX/etc/profile.d/z.sh
 
 eval "$(starship init zsh)"
+
+# Bindkey
+bindkey -s '^t' "$HOME/.local/bin/tmux-sessionizer\n"
