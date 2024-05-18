@@ -7,21 +7,21 @@ on  = [ "T" ]
 run = "plugin --sync hide-preview"
 
 [[manager.prepend_keymap]]
-on = [ "m" ]
-run = "plugin bookmarks --args=save"
+on = [ "u", "a" ]
+run = "plugin bookmarks-persistence --args=save"
 desc = "Save current position as a bookmark"
 
 [[manager.prepend_keymap]]
-on = [ "'" ]
-run = "plugin bookmarks --args=jump"
+on = [ "u", "g" ]
+run = "plugin bookmarks-persistence --args=jump"
 desc = "Jump to a bookmark"
 
 [[manager.prepend_keymap]]
-on = [ "b", "d" ]
-run = "plugin bookmarks --args=delete"
+on = [ "u", "d" ]
+run = "plugin bookmarks-persistence --args=delete"
 desc = "Delete a bookmark"
 
 [[manager.prepend_keymap]]
-on = [ "b", "D" ]
-run = "plugin bookmarks --args=delete_all"
+on = [ "u", "D" ]
+run = "plugin bookmarks-persistence --args=delete_all"
 desc = "Delete all bookmarks"
