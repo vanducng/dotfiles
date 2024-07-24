@@ -80,5 +80,6 @@ yabai -m rule --add app="^Messages$" manage=off
 yabai -m rule --add app="^FaceTime$" manage=off
 yabai -m rule --add app="^Five9$" manage=off
 yabai -m rule --add app="^CleanShot X$" manage=off
+yabai -m rule --add app="^QuickTime Player$" manage=off
 
 echo "yabai configuration loaded.."
