@@ -19,7 +19,8 @@ meh - f : open ~
 meh - b : open "/Applications/Brave Browser.app"
 meh - v : open "/Applications/Visual Studio Code.app"
 meh - r : open "/System/Volumes/Data/Applications/Zalo.app"
-
+meh - g : open "/System/Volumes/Data/Applications/Discord.app"
+meh - z : open "/Applications/zoom.us.app"
 
 # -------------------------------------------------------------------------------------------------------
 # RESIZE MODE
