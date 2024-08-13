@@ -1,4 +1,4 @@
-STOW_FOLDERS=zsh tmux kitty sketchybar skhd starship yabai bin vrapperrc yazi zathura
+STOW_FOLDERS=zsh tmux kitty sketchybar skhd starship yabai bin vrapperrc yazi zathura lazygit
 
 stow-install:
 	@cd dotfiles && for folder in $(STOW_FOLDERS); do \

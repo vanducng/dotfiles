@@ -54,6 +54,7 @@ export GOPATH=/Users/vanducng/go
 export PATH=$GOPATH/bin:$PATH
 export PATH="$HOME/.local/bin:$PATH"
 export PATH=/usr/local/bin/:$PATH
+export XDG_CONFIG_HOME="$HOME/.config"
 
 source <(kubectl completion zsh)
 complete -o default -F __start_kubectl k
