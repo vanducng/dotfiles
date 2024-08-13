@@ -3,6 +3,9 @@ format = """$directory$character"""
 palette = "catppuccin_mocha"
 right_format = """$all"""
 
+[direnv]
+disabled = false
+rc_path=~/.envrc
 
 [aws]
 format = 'on [$symbol($profile )(\($region\) )]($style)'
