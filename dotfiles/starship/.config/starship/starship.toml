@@ -12,6 +12,13 @@ format = 'on [$symbol($profile )(\($region\) )]($style)'
 style = 'bold blue'
 symbol = "  "
 
+[python]
+symbol = '👾 '
+pyenv_version_name = true
+
+[terraform]
+format = '[🏎💨 $version$workspace]($style) '
+
 [golang]
 format = '[ ](bold cyan)'
 
