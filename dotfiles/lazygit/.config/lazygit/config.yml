@@ -1,13 +1,29 @@
+gui:
+  language: "en"
+  theme:
+    activeBordercolor:
+      - "#34302c"
+      - bold
+    inactiveBordercolor:
+      - "#bd8183"
+    optionsTextColor:
+      - "#89b4f4"
+    selectedLineBgColor:
+      - "#3e8fb0"
+    selectedRangeBgColor:
+      - "#3e8fb0"
+    cherryPickedCommitBgColor:
+      - "#403a46"
+    cherryPickedCommitFgColor:
+      - "#403a46"
+    unstagedChangesColor:
+      - "#e49b5d"
+    defaultFgColor:
+      - "#ece1d7"
 os:
   edit: '[[ -z "$NVIM" ]] && { nvim {{filename}} &>/dev/tty; true; } || { nvim -u NONE --server $NVIM --remote-expr "execute(\"ToggleTerm\")" && nvim -u NONE --server $NVIM --remote {{filename}}; }'
   editAtLine: '[[ -z "$NVIM" ]] && { nvim +{{line}} {{filename}} &>/dev/tty; true; } || { nvim -u NONE --server $NVIM --remote-expr "execute(\"ToggleTerm\")" && nvim -u NONE --server $NVIM --remote {{filename}} && nvim -u NONE --server $NVIM --remote-expr "execute(\"normal {{line}}gg\")"; }'
 customCommands:
-  - key: "C"
-    command: "git cz"
-    description: "commit with commitizen"
-    context: "files"
-    loadingText: "opening commitizen commit tool"
-    subprocess: true
   - key: "<c-r>"
     command: "gh pr create --fill --web"
     context: "global"
