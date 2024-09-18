@@ -54,8 +54,8 @@ export GOPATH=~/go
 export PATH=$GOPATH/bin:$PATH
 export PATH="$HOME/.local/bin:$PATH"
 export PATH=/usr/local/bin/:$PATH
-export XDG_CONFIG_HOME="$HOME/.config"
 
+export XDG_CONFIG_HOME="$HOME/.config"
 source <(kubectl completion zsh)
 complete -o default -F __start_kubectl k
 
@@ -160,6 +160,8 @@ alias gr='go run .'
 alias c="echo -ne '\033c'"
 alias nsql="nvim '+SQLua'"
 alias dw='datawarden'
+alias g3='arc-cli s 1 && arc-cli new-tab https://github.com/acme-corp/acme-ds-astro'
+alias g0='arc-cli s 1 && arc-cli new-tab https://github.com/acme-corp/acme-ds-dbt-order-form'
 
 zstyle ':completion:*' menu select
 fpath+=~/.zfunc
