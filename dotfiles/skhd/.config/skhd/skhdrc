@@ -16,11 +16,14 @@ meh - e : open "/Applications/LibreOffice.app"
 meh - m : open "/Applications/Firefox Developer Edition.app"
 
 meh - f : open ~
-meh - b : open "/Applications/Brave Browser.app"
+meh - b : open "/Applications/Safari.app"
 meh - v : open "/Applications/Visual Studio Code.app"
 meh - r : open "/System/Volumes/Data/Applications/Zalo.app"
 meh - g : open "/System/Volumes/Data/Applications/Discord.app"
 meh - z : open "/Applications/zoom.us.app"
+
+meh - y : arc-cli s 1 ; arc-cli new-tab https://github.com/careernowbrands/cnb-ds-dbt-order-form
+meh - u : arc-cli s 1 ; arc-cli new-tab https://github.com/careernowbrands/cnb-ds-astro
 
 # -------------------------------------------------------------------------------------------------------
 # RESIZE MODE
@@ -78,6 +81,7 @@ hyper - 5 : yabai -m window --space 5
 hyper - 6 : yabai -m window --space 6
 hyper - 7 : yabai -m window --space 7
 hyper - 8 : yabai -m window --space 8
+hyper - 9 : yabai -m window --space 9
 
 # Move focus + window to space
 cmd + ctrl - m : yabai -m window --space last; yabai -m space --focus last
