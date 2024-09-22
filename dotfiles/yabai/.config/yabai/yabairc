@@ -18,7 +18,7 @@ yabai -m config mouse_follows_focus         off
 yabai -m config focus_follows_mouse         off 
 
 yabai -m config window_topmost              off
-yabai -m config window_opacity              on
+yabai -m config window_opacity              off
 yabai -m config window_shadow               float
 
 yabai -m config insert_feedback_color       0x00010101
@@ -36,28 +36,15 @@ yabai -m config external_bar 		            all:10:40
 # RULES
 # -------------------------------------------------------------------------------------------------------
 yabai -m rule --add app="^System Preferences$" sticky=on layer=above manage=off
-yabai -m rule --add app="^Karabiner-Elements$" sticky=on layer=above manage=off
-yabai -m rule --add app="^Karabiner-EventViewer$" sticky=on layer=above manage=off
-yabai -m rule --add app="^Keka$" sticky=on layer=above manage=off
 yabai -m rule --add app="^Disk Utility$" sticky=on layer=above manage=off
 yabai -m rule --add app="^System Information$" sticky=on layer=above manage=off
 # yabai -m rule --add app="^System Settings$" sticky=on layer=above manage=off
 yabai -m rule --add app="^Activity Monitor$" sticky=on layer=above manage=off
 yabai -m rule --add app="^Path Finder$" manage=off
-yabai -m rule --add app="^TeamViewer$" sticky=off layer=above manage=off
-yabai -m rule --add app="Fantastical" manage=off
-yabai -m rule --add app="^Spotify$" manage=off
 yabai -m rule --add app="^Stats$" manage=off
-yabai -m rule --add app="^Flux$" manage=off
 yabai -m rule --add app="^Time Out$" manage=off
-yabai -m rule --add app="^perl_client_app$" manage=off
-yabai -m rule --add app="^console$" manage=off
-yabai -m rule --add app="^JetBrains Toolbox$" manage=off
 yabai -m rule --add app="^Harvest$" manage=off
 yabai -m rule --add app="^Docker Desktop$" manage=off
-yabai -m rule --add app="^CiscoSparkHelper$" manage=off
-yabai -m rule --add app="^Logi Options$" manage=off
-yabai -m rule --add app="^Cisco Webex Start$" manage=off
 yabai -m rule --add app="^Private Internet Access$" manage=off
 yabai -m rule --add app="^Microsoft Teams$" manage=off
 yabai -m rule --add app="^Telegram$" manage=off
@@ -67,13 +54,11 @@ yabai -m rule --add app="^Calendar$" manage=off
 yabai -m rule --add app="^Calculator$" manage=off
 yabai -m rule --add app="^SpaceLauncher$" manage=off
 yabai -m rule --add app="^LastPass$" manage=off
-yabai -m rule --add app="^CameraController$" manage=off
 yabai -m rule --add app="^zoom.us$" manage=off
 yabai -m rule --add app="^Discord$" manage=off
 yabai -m rule --add app="^Todoist$" manage=off
 yabai -m rule --add app="^KeePassXC$" manage=off
 yabai -m rule --add app="^Prismatik$" manage=off
-yabai -m rule --add app="^Logi$" manage=off
 yabai -m rule --add app="^OpenVPN Connect$" manage=off
 yabai -m rule --add app="^Installer$" manage=off
 yabai -m rule --add app="^Messages$" manage=off
@@ -82,12 +67,15 @@ yabai -m rule --add app="^Five9$" manage=off
 yabai -m rule --add app="^CleanShot X$" manage=off
 yabai -m rule --add app="^QuickTime Player$" manage=off
 
-yabai -m rule --add app="^Kitty$" space=^1
-yabai -m rule --add app="^Arc$" space=^2
-yabai -m rule --add app="^VSCode$" space=^3
-yabai -m rule --add app="^DBeaver$" space=^4
-yabai -m rule --add app="^Obsidian$" space=^5
-yabai -m rule --add app="^Slack$" space=^6
-yabai -m rule --add app="^Discord$" space=^7
+# yabai -m rule --add app="^Kitty$" space=^1
+# yabai -m rule --add app="^Arc$" space=^2
+# yabai -m rule --add app="^Code$" space=^3
+# yabai -m rule --add app="^DBeaver*" space=^4
+# yabai -m rule --add app="^Obsidian$" space=^5
+# yabai -m rule --add app="^Slack$" space=^6
+# yabai -m rule --add app="^Discord$" space=^7
+ 
+# Debug mode on
+yabai -m config debug_output on
 
 echo "yabai configuration loaded.."
