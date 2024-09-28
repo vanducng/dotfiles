@@ -67,14 +67,6 @@ yabai -m rule --add app="^Five9$" manage=off
 yabai -m rule --add app="^CleanShot X$" manage=off
 yabai -m rule --add app="^QuickTime Player$" manage=off
 
-# yabai -m rule --add app="^Kitty$" space=^1
-# yabai -m rule --add app="^Arc$" space=^2
-# yabai -m rule --add app="^Code$" space=^3
-# yabai -m rule --add app="^DBeaver*" space=^4
-# yabai -m rule --add app="^Obsidian$" space=^5
-# yabai -m rule --add app="^Slack$" space=^6
-# yabai -m rule --add app="^Discord$" space=^7
- 
 # Debug mode on
 yabai -m config debug_output on
 

@@ -159,7 +159,6 @@ alias lzd='lazydocker'
 alias gr='go run .'
 alias c="echo -ne '\033c'"
 alias nsql="nvim '+SQLua'"
-alias dw='datawarden'
 alias g3='arc-cli s 1 && arc-cli new-tab https://github.com/acme-corp/acme-ds-astro'
 alias g0='arc-cli s 1 && arc-cli new-tab https://github.com/acme-corp/acme-ds-dbt-order-form'
 
