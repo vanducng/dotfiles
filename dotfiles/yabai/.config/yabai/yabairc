@@ -35,6 +35,7 @@ yabai -m config external_bar 		            all:10:40
 # -------------------------------------------------------------------------------------------------------
 # RULES
 # -------------------------------------------------------------------------------------------------------
+yabai -m rule --add app=".*" sub-layer=normal
 yabai -m rule --add app="^System Preferences$" sticky=on layer=above manage=off
 yabai -m rule --add app="^Disk Utility$" sticky=on layer=above manage=off
 yabai -m rule --add app="^System Information$" sticky=on layer=above manage=off
@@ -66,6 +67,7 @@ yabai -m rule --add app="^FaceTime$" manage=off
 yabai -m rule --add app="^Five9$" manage=off
 yabai -m rule --add app="^CleanShot X$" manage=off
 yabai -m rule --add app="^QuickTime Player$" manage=off
+yabai -m rule --add app="^Structured$" sticky=on layer=above manage=off
 
 # Debug mode on
 yabai -m config debug_output on
