@@ -17,15 +17,14 @@ meh - m : open "/Applications/Firefox.app"
 
 meh - f : open ~
 meh - b : open "/Applications/Safari.app"
-meh - v : open "/Applications/Visual Studio Code.app"
+# meh - v : open "/Applications/Visual Studio Code.app"
+meh - v : open "/Applications/Cursor.app"
 meh - r : open "/System/Volumes/Data/Applications/Zalo.app"
 meh - g : open "/System/Volumes/Data/Applications/Discord.app"
 meh - z : open "/Applications/zoom.us.app"
 meh - t : open "/Applications/Microsoft Teams classic.app"
 meh - i : open "/Applications/Structured.app"
-
-meh - y : arc-cli s 1 ; arc-cli new-tab https://github.com/careernowbrands/cnb-ds-dbt-order-form
-meh - u : arc-cli s 1 ; arc-cli new-tab https://github.com/careernowbrands/cnb-ds-astro
+meh - u : open "/Applications/Goodnotes.app"
 
 # -------------------------------------------------------------------------------------------------------
 # RESIZE MODE

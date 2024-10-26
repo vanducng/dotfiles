@@ -1,3 +1,10 @@
+# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
+# Initialization code that may require console input (password prompts, [y/n]
+# confirmations, etc.) must go above this block; everything else may go below.
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+fi
+
 export ZSH="$HOME/.oh-my-zsh"
 ZSH_THEME="powerlevel10k/powerlevel10k" 
 plugins=(
@@ -36,6 +43,7 @@ alias ls='exa'
 alias ll='exa -l'
 alias pip='pip3'
 alias snowsql=/Applications/SnowSQL.app/Contents/MacOS/snowsql
+alias a=/Users/vanducng/.virtualenvs/global/bin/aider
 
 # pyenv init
 export PYENV_ROOT="$HOME/.pyenv"
@@ -161,6 +169,8 @@ alias c="echo -ne '\033c'"
 alias nsql="nvim '+SQLua'"
 alias g3='arc-cli s 1 && arc-cli new-tab https://github.com/careernowbrands/cnb-ds-astro'
 alias g0='arc-cli s 1 && arc-cli new-tab https://github.com/careernowbrands/cnb-ds-dbt-order-form'
+alias d='docker'
+alias dc='docker-compose'
 
 zstyle ':completion:*' menu select
 fpath+=~/.zfunc
@@ -178,3 +188,7 @@ bindkey -s '^g' "$HOME/.local/bin/tmux-sessionizer\n"
 . "$HOME/.cargo/env"
 
 eval "$(gh copilot alias -- zsh)"
+
+# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
+[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+eval "$(~/.local/bin/mise activate zsh)"
