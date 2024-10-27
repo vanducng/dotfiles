@@ -1,8 +1,23 @@
 -- Ref: https://github.com/milanglacier/nvim/blob/vscode/lua/conf/vscode.lua
 --
+local M = {}
+
+local augroup = vim.api.nvim_create_augroup
 local keymap = vim.api.nvim_set_keymap
+local autocmd = vim.api.nvim_create_autocmd
+local bufmap = vim.api.nvim_buf_set_keymap
 local opts = { silent = true }
-local function v_notify(cmd)
+
+M.my_vscode = augroup("MyVSCode", {})
+vim.filetype.add({
+	pattern = {
+		[".*%.ipynb.*"] = "python",
+		-- uses lua pattern matching
+		-- rathen than naive matching
+	},
+})
+
+local function notify(cmd)
 	return string.format("<cmd>call VSCodeNotify('%s')<CR>", cmd)
 end
 
@@ -344,6 +359,18 @@ keymap("v", "J", ":m .+1<CR>==", opts)
 keymap("v", "K", ":m .-2<CR>==", opts)
 keymap("x", "J", ":move '>+1<CR>gv-gv", opts)
 keymap("x", "K", ":move '<-2<CR>gv-gv", opts)
+
+autocmd("FileType", {
+	group = M.my_vscode,
+	pattern = { "python" },
+	desc = "set REPL keymaps for python",
+	callback = function()
+		bufmap(0, "n", "<LocalLeader>ss", notify("jupyter.execSelectionInteractive"), opts)
+		bufmap(0, "v", "<LocalLeader>s", notify("jupyter.execSelectionInteractive"), opts)
+		bufmap(0, "n", "<LocalLeader>sc", notify("jupyter.runcurrentcell"), opts)
+		bufmap(0, "n", "<LocalLeader>sgg", notify("jupyter.runallcellsabove.palette"), opts)
+	end,
+})
 
 -- flash
 local links = {
