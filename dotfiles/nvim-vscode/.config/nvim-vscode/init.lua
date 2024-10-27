@@ -249,7 +249,6 @@ vim.g.mapleader = " "
 
 nv_keymap("H", "^")
 nv_keymap("L", "$")
-nv_keymap("<leader>a", "%")
 
 nx_keymap("j", "gj")
 nx_keymap("k", "gk")
@@ -299,7 +298,6 @@ vim.keymap.set({ "n", "v" }, "<space>c", editor.closeActive)
 vim.keymap.set({ "n", "v" }, "<space>bc", editor.closeActive)
 vim.keymap.set({ "n", "v" }, "<space>bk", editor.closeOther)
 
-vim.keymap.set({ "n", "v" }, "<space>k", bookmark.previous)
 
 -- toggle
 vim.keymap.set({ "n", "v" }, "<leader>z", toggle.toggleZenMode)
@@ -317,8 +315,8 @@ vim.api.nvim_set_keymap("n", "<leader>rv", "V%", { silent = true })
 vim.keymap.set({ "n" }, "<leader>m", bookmark.toggle)
 vim.keymap.set({ "n" }, "<leader>mt", bookmark.toggle)
 vim.keymap.set({ "n" }, "<leader>ml", bookmark.list)
-vim.keymap.set({ "n" }, "<leader>mn", bookmark.next)
-vim.keymap.set({ "n" }, "<leader>mp", bookmark.previous)
+vim.keymap.set({ "n" }, "<space>k", bookmark.previous)
+vim.keymap.set({ "n" }, "<space>K", bookmark.next)
 
 vim.keymap.set({ "n" }, "<leader>sr", search.reference)
 vim.keymap.set({ "n" }, "<leader>sR", search.referenceInSideBar)
@@ -371,14 +369,6 @@ autocmd("FileType", {
 		bufmap(0, "n", "<LocalLeader>sgg", notify("jupyter.runallcellsabove.palette"), opts)
 	end,
 })
-
--- flash
-local links = {
-	FlashBackdrop = "Comment",
-	FlashMatch = "Search",
-	FlashCurrent = "IncSearch",
-	FlashLabel = "Substitute",
-}
 
 -- Flash.nvim
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
