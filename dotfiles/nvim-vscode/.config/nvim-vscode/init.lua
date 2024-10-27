@@ -11,7 +11,7 @@ local opts = { silent = true }
 M.my_vscode = augroup("MyVSCode", {})
 vim.filetype.add({
 	pattern = {
-		[".*%.ipynb.*"] = "python",
+		-- [".*%.ipynb.*"] = "python",
 		-- uses lua pattern matching
 		-- rathen than naive matching
 	},
