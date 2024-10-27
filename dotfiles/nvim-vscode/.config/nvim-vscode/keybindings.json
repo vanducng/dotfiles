@@ -1,3 +1,4 @@
+// Place your key bindings in this file to override the defaultsauto[]
 [
     {
         "key": "tab",
@@ -9,6 +10,7 @@
         "command": "outdent",
         "when": "editorTextFocus && !editorTabMovesFocus",
     },
+    // VSCode terminal commands.
     {
         "key": "cmd+n",
         "command": "workbench.action.terminal.newInActiveWorkspace"
@@ -31,6 +33,7 @@
         "command": "workbench.action.terminal.kill",
         "when": "terminalFocus"
     },
+    // Explorer
     {
         "key": "ctrl+s s",
         "command": "workbench.view.extension.snowflakeResultsContainer"
@@ -214,4 +217,14 @@
         "key": "cmd+2",
         "command": "-workbench.action.focusSecondEditorGroup"
     },
+    {
+        "key": "space e",
+        "command": "workbench.action.toggleSidebarVisibility"
+    },
+    {
+        "key": "cmd+b",
+        "command": "-workbench.action.toggleSidebarVisibility"
+    },
+    // voyer key bindings
+    // https://github.com/gilesknap/zsa-voyager-vscode/blob/main/keybindings.json
 ]
