@@ -4,7 +4,8 @@
 if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
-
+export EDITOR=nvim
+export VISUAL="$EDITOR"
 export ZSH="$HOME/.oh-my-zsh"
 ZSH_THEME="powerlevel10k/powerlevel10k" 
 plugins=(
@@ -171,6 +172,12 @@ alias g3='arc-cli s 1 && arc-cli new-tab https://github.com/careernowbrands/cnb-
 alias g0='arc-cli s 1 && arc-cli new-tab https://github.com/careernowbrands/cnb-ds-dbt-order-form'
 alias d='docker'
 alias dc='docker-compose'
+alias tt='taskwarrior-tui'
+alias ghas='gh auth switch'
+alias esm='/Users/vanducng/.virtualenvs/global/bin/ec2-session'
+alias esh='/Users/vanducng/.virtualenvs/global/bin/ec2-ssh'
+alias etn='/Users/vanducng/.virtualenvs/global/bin/ec2-tunnel'
+alias pca="pre-commit run --all-files"
 
 zstyle ':completion:*' menu select
 fpath+=~/.zfunc
