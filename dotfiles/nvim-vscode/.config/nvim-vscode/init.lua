@@ -1,25 +1,6 @@
 -- Ref: https://github.com/milanglacier/nvim/blob/vscode/lua/conf/vscode.lua
---
-local M = {}
-
-local augroup = vim.api.nvim_create_augroup
 local keymap = vim.api.nvim_set_keymap
-local autocmd = vim.api.nvim_create_autocmd
-local bufmap = vim.api.nvim_buf_set_keymap
 local opts = { silent = true }
-
-M.my_vscode = augroup("MyVSCode", {})
-vim.filetype.add({
-	pattern = {
-		-- [".*%.ipynb.*"] = "python",
-		-- uses lua pattern matching
-		-- rathen than naive matching
-	},
-})
-
-local function notify(cmd)
-	return string.format("<cmd>call VSCodeNotify('%s')<CR>", cmd)
-end
 
 local comment = {
 	selected = function()
@@ -120,6 +101,9 @@ local bookmark = {
 	end,
 	next = function()
 		vim.fn.VSCodeNotify("bookmarks.jumpToNext")
+	end,
+	clear_all = function()
+		vim.fn.VSCodeNotify("bookmarks.clearFromAllFiles")
 	end,
 }
 
@@ -244,7 +228,7 @@ local nx_keymap = function(lhs, rhs)
 	vim.api.nvim_set_keymap("v", lhs, rhs, { silent = true })
 end
 
---#region keymap
+-- region keymap
 vim.g.mapleader = " "
 
 nv_keymap("H", "^")
@@ -258,9 +242,7 @@ vim.keymap.set({ "n" }, "<leader>i", editor.organizeImport)
 
 -- no highlight
 vim.keymap.set({ "n" }, "<leader>n", "<cmd>noh<cr>")
-
 vim.keymap.set({ "n", "v" }, "<leader> ", workbench.showCommands)
-
 vim.keymap.set({ "n", "v" }, "[b", workbench.previousEditor)
 vim.keymap.set({ "n", "v" }, "]b", workbench.nextEditor)
 
@@ -284,20 +266,19 @@ vim.keymap.set({ "n" }, "<leader>pp", project.switch)
 vim.keymap.set({ "n" }, "<leader>pt", project.tree)
 
 -- file
-vim.keymap.set({ "n", "v" }, "<space>w", file.save)
-vim.keymap.set({ "n", "v" }, "<space>wa", file.saveAll)
-vim.keymap.set({ "n", "v" }, "<space>fs", file.save)
-vim.keymap.set({ "n", "v" }, "<space>fS", file.saveAll)
-vim.keymap.set({ "n" }, "<space>lf", file.format)
-vim.keymap.set({ "n" }, "<space>fn", file.new)
-vim.keymap.set({ "n" }, "<space>ft", file.showInExplorer)
-vim.keymap.set({ "n" }, "<space>fr", file.rename)
+vim.keymap.set({ "n", "v" }, "<leader>w", file.save)
+vim.keymap.set({ "n", "v" }, "<leader>wa", file.saveAll)
+vim.keymap.set({ "n", "v" }, "<leader>fs", file.save)
+vim.keymap.set({ "n", "v" }, "<leader>fS", file.saveAll)
+vim.keymap.set({ "n" }, "<leader>lf", file.format)
+vim.keymap.set({ "n" }, "<leader>fn", file.new)
+vim.keymap.set({ "n" }, "<leader>e", file.showInExplorer)
+vim.keymap.set({ "n" }, "<leader>fr", file.rename)
 
 -- buffer/editor
-vim.keymap.set({ "n", "v" }, "<space>c", editor.closeActive)
-vim.keymap.set({ "n", "v" }, "<space>bc", editor.closeActive)
-vim.keymap.set({ "n", "v" }, "<space>bk", editor.closeOther)
-
+vim.keymap.set({ "n", "v" }, "<leader>c", editor.closeActive)
+vim.keymap.set({ "n", "v" }, "<leader>bc", editor.closeActive)
+vim.keymap.set({ "n", "v" }, "<leader>bk", editor.closeOther)
 
 -- toggle
 vim.keymap.set({ "n", "v" }, "<leader>z", toggle.toggleZenMode)
@@ -307,16 +288,16 @@ vim.keymap.set({ "n", "v" }, "<leader>tt", toggle.theme)
 
 -- refactor
 vim.keymap.set({ "v" }, "<leader>r", refactor.showMenu)
-vim.keymap.set({ "n" }, "<leader>rr", symbol.rename)
+vim.keymap.set({ "n" }, "<leader>lr", symbol.rename)
 vim.api.nvim_set_keymap("n", "<leader>rd", "V%d", { silent = true })
 vim.api.nvim_set_keymap("n", "<leader>rv", "V%", { silent = true })
 
 -- bookmark
 vim.keymap.set({ "n" }, "<leader>m", bookmark.toggle)
-vim.keymap.set({ "n" }, "<leader>mt", bookmark.toggle)
+vim.keymap.set({ "n" }, "<leader>mc", bookmark.clear_all)
 vim.keymap.set({ "n" }, "<leader>ml", bookmark.list)
-vim.keymap.set({ "n" }, "<space>k", bookmark.previous)
-vim.keymap.set({ "n" }, "<space>K", bookmark.next)
+vim.keymap.set({ "n" }, "<leader>k", bookmark.previous)
+vim.keymap.set({ "n" }, "<leader>K", bookmark.next)
 
 vim.keymap.set({ "n" }, "<leader>sr", search.reference)
 vim.keymap.set({ "n" }, "<leader>sR", search.referenceInSideBar)
@@ -358,18 +339,6 @@ keymap("v", "K", ":m .-2<CR>==", opts)
 keymap("x", "J", ":move '>+1<CR>gv-gv", opts)
 keymap("x", "K", ":move '<-2<CR>gv-gv", opts)
 
-autocmd("FileType", {
-	group = M.my_vscode,
-	pattern = { "python" },
-	desc = "set REPL keymaps for python",
-	callback = function()
-		bufmap(0, "n", "<LocalLeader>ss", notify("jupyter.execSelectionInteractive"), opts)
-		bufmap(0, "v", "<LocalLeader>s", notify("jupyter.execSelectionInteractive"), opts)
-		bufmap(0, "n", "<LocalLeader>sc", notify("jupyter.runcurrentcell"), opts)
-		bufmap(0, "n", "<LocalLeader>sgg", notify("jupyter.runallcellsabove.palette"), opts)
-	end,
-})
-
 -- Flash.nvim
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then
@@ -395,32 +364,32 @@ require("lazy").setup({
 		event = "VeryLazy",
 		---@type Flash.Config
 		opts = {},
-    -- stylua: ignore
-    keys = {
-      {
-        "s",
-        mode = { "n", "x", "o" },
-        function()
-          require("flash").jump()
-        end,
-        desc = "Flash",
-      },
-      {
-        "S",
-        mode = { "n", "x", "o" },
-        function()
-          require("flash").treesitter()
-        end,
-        desc = "Flash Treesitter",
-      },
-      {
-        "<c-s>",
-        mode = { "c" },
-        function()
-          require("flash").toggle()
-        end,
-        desc = "Toggle Flash Search",
-      },
-    },
+		-- stylua: ignore
+		keys = {
+			{
+				"s",
+				mode = { "n", "x", "o" },
+				function()
+					require("flash").jump()
+				end,
+				desc = "Flash",
+			},
+			{
+				"S",
+				mode = { "n", "x", "o" },
+				function()
+					require("flash").treesitter()
+				end,
+				desc = "Flash Treesitter",
+			},
+			{
+				"<c-s>",
+				mode = { "c" },
+				function()
+					require("flash").toggle()
+				end,
+				desc = "Toggle Flash Search",
+			},
+		},
 	},
 })
