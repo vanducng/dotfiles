@@ -52,7 +52,7 @@ hyper - right : yabai -m window --resize right:50:0; yabai -m window --resize le
 # cmd - 9 : yabai -m space --focus 9
 #
 # # create a space
-# hyper - n : yabai -m space --create; sketchybar --update
+# hyper - n : yabai -m space --create;
 #
 # # destroy current space
 # hyper - d : yabai -m space --destroy
@@ -99,13 +99,11 @@ hyper - e : yabai -m space --balance
 # Enable / Disable gaps in current workspace
 hyper - i : yabai -m space --toggle padding; \
 	  yabai -m space --toggle gap; \
-	  yabai -m config external_bar off:0:0; \
-	  sketchybar --bar hidden=true;
+	  yabai -m config external_bar off:0:0;
 
 hyper - o : yabai -m space --toggle padding; \
 	 yabai -m space --toggle gap; \
-	 yabai -m config external_bar all:0:40;\
-	 sketchybar --bar hidden=false;
+	 yabai -m config external_bar all:0:40;
 
 # Rotate windows clockwise and anticlockwise
 alt - r         : yabai -m space --rotate 270
