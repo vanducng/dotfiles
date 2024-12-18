@@ -1,0 +1,20 @@
+data.location=~/.local/share/taskwarrior
+color=on
+news.version=3.1.0
+
+include dark-green-256.theme
+color.blocked = yellow on black
+color.blocking = yellow on black
+color.tag.epic = bold green
+color.tag.review = bold blue
+color.tag.bug = magenta on black
+
+
+# Taskwarrior tui overrides
+uda.taskwarrior-tui.task-report.jump-on-task-add=true
+context=work
+context.archive.read=+archive
+context.archive.write=+archive
+context.integration.read=+integration
+context.integration.write=+integration
+uda.taskwarrior-tui.selection.reverse=yes
