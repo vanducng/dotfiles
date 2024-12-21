@@ -102,8 +102,7 @@ hyper - i : yabai -m space --toggle padding; \
 	  yabai -m config external_bar off:0:0;
 
 hyper - o : yabai -m space --toggle padding; \
-	 yabai -m space --toggle gap; \
-	 yabai -m config external_bar all:0:40;
+	 yabai -m space --toggle gap;
 
 # Rotate windows clockwise and anticlockwise
 alt - r         : yabai -m space --rotate 270
