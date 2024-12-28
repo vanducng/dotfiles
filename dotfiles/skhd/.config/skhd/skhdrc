@@ -7,7 +7,7 @@ ctrl + alt + cmd - r : yabai --restart-service
 
 # My frequent apps
 # cmd - return : /Applications/kitty.app/Contents/MacOS/kitty --single-instance -d ~
-meh - a : open "/Applications/kitty.app"
+meh - a : open "/Applications/Ghostty.app"
 meh - s : open "/Applications/Arc.app"
 meh - d : open "/Applications/DBeaver.app"
 meh - k : open "/Applications/Slack.app"
