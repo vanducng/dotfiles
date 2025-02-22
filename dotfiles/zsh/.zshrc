@@ -63,6 +63,8 @@ export GOPATH=/Users/vanducng/go
 export PATH=$GOPATH/bin:$PATH
 export PATH="$HOME/.local/bin:$PATH"
 export PATH=/usr/local/bin/:$PATH
+export LDFLAGS="-L/usr/local/opt/zlib/lib"
+export CPPFLAGS="-I/usr/local/opt/zlib/include"
 
 export XDG_CONFIG_HOME="$HOME/.config"
 source <(kubectl completion zsh)
