@@ -13,7 +13,8 @@ meh - d : open "/Applications/DBeaver.app"
 meh - k : open "/Applications/Slack.app"
 meh - o : open "/Applications/Obsidian.app"
 meh - e : open "/Applications/LibreOffice.app"
-meh - m : open "/Applications/Zen Browser.app"
+meh - m : open "/Applications/Firefox.app"
+meh - j : open "/Applications/Zen Browser.app"
 
 meh - f : open ~
 meh - b : open "/Applications/Linear.app"

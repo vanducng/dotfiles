@@ -8,6 +8,7 @@ export EDITOR=nvim
 export VISUAL="$EDITOR"
 export ZSH="$HOME/.oh-my-zsh"
 ZSH_THEME="powerlevel10k/powerlevel10k" 
+ZVM_VI_INSERT_ESCAPE_BINDKEY=jk
 plugins=(
 git
 zsh-autosuggestions
@@ -20,6 +21,12 @@ zsh-history-substring-search
 zsh-vi-mode
 )
 source $ZSH/oh-my-zsh.sh
+
+function zvm_vi_yank() {
+	zvm_yank
+	echo ${CUTBUFFER} | pbcopy
+	zvm_exit_visual_mode
+}
 
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
@@ -148,6 +155,7 @@ if [ -f '/Users/vanducng/Downloads/google-cloud-sdk/completion.zsh.inc' ]; then 
 
 # Ansible vault
 export ANSIBLE_VAULT_ENCRYPT_SALT=ddsa
+alias p='python'
 alias av='ansible-vault'
 alias adb='astro dev bash --scheduler'
 alias ado='astro dev object import -s airflow_settings.yaml'
@@ -201,3 +209,4 @@ eval "$(gh copilot alias -- zsh)"
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 eval "$(~/.local/bin/mise activate zsh)"
+
