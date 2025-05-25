@@ -1,5 +1,5 @@
 return {
-  { -- further customize the options set by the community
+  {
     "catppuccin",
     opts = {
       flavour = "macchiato", -- latte, frappe, macchiato, mocha
