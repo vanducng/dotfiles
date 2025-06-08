@@ -15,6 +15,7 @@ return {
       -- Set a formatter
       -- null_ls.builtins.formatting.stylua,
       -- null_ls.builtins.formatting.prettier,
+      require("null-ls").builtins.formatting.ruff,
     })
   end,
 }

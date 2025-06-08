@@ -9,6 +9,8 @@ return {
       ensure_installed = {
         -- install language servers
         "lua-language-server",
+        "ruff",
+        "basedpyright",
 
         -- install formatters
         "stylua",
