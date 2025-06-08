@@ -43,6 +43,43 @@ return {
     ---@diagnostic disable: missing-fields
     config = {
       -- clangd = { capabilities = { offsetEncoding = "utf-8" } },
+      -- Disable pyright diagnostics in favor of ruff
+      pyright = false, -- Disable pyright completely
+      basedpyright = {
+        settings = {
+          basedpyright = {
+            analysis = {
+              -- Only use basedpyright for type information, not diagnostics
+              typeCheckingMode = "off",
+              diagnosticMode = "openFilesOnly",
+              useLibraryCodeForTypes = true,
+              autoImportCompletions = true,
+              diagnosticSeverityOverrides = {
+                -- Disable all diagnostics
+                reportGeneralTypeIssues = "none",
+                reportOptionalSubscript = "none",
+                reportOptionalMemberAccess = "none",
+                reportOptionalCall = "none",
+                reportOptionalIterable = "none",
+                reportOptionalContextManager = "none",
+                reportOptionalOperand = "none",
+              },
+            },
+          },
+        },
+      },
+      ruff = {
+        cmd = { "ruff", "server", "--preview" },
+        init_options = {
+          settings = {
+            -- Ruff settings
+            args = { "--ignore=E501,E402" }, -- Ignore line length and module import not at top
+            lineLength = 120,
+            fixAll = true,
+            organizeImports = true,
+          },
+        },
+      },
     },
     -- customize how language servers are attached
     handlers = {
