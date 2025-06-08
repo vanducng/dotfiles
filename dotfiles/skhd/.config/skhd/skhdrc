@@ -25,7 +25,7 @@ meh - g : open "/System/Volumes/Data/Applications/Discord.app"
 meh - z : open "/Applications/zoom.us.app"
 meh - t : open "/Applications/Microsoft Teams classic.app"
 meh - i : open "/Applications/Structured.app"
-meh - u : open "/Applications/Goodnotes.app"
+meh - u : open "/Applications/Claude.app"
 meh - l : open "/Applications/Perplexity.app"
 
 # -------------------------------------------------------------------------------------------------------
