@@ -1,0 +1,10 @@
+[tools]
+"aqua:junegunn/fzf" = "latest"
+go = "1.24.3"
+node = "22"
+python = "3"
+usage = "latest"
+"aqua:hashicorp/vault" = "latest"
+
+[settings]
+idiomatic_version_file_enable_tools = ["python"]
