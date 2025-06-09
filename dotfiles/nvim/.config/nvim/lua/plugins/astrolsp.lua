@@ -69,16 +69,26 @@ return {
         },
       },
       ruff = {
-        cmd = { "ruff", "server", "--preview" },
+        capabilities = {
+          hoverProvider = false, -- Disable hover to avoid conflicts with basedpyright
+        },
         init_options = {
           settings = {
-            -- Ruff settings
-            args = { "--ignore=E501,E402" }, -- Ignore line length and module import not at top
+            -- Ruff server settings
+            configuration = vim.fn.expand("~/.config/ruff/pyproject.toml"),
             lineLength = 120,
-            fixAll = true,
-            organizeImports = true,
+            lint = {
+              args = { "--ignore=E501,E402" }, -- Ignore line length and module import not at top
+            },
+            format = {
+              args = {},
+            },
           },
         },
+        on_attach = function(client, bufnr)
+          -- Ensure ruff is used for formatting
+          client.server_capabilities.documentFormattingProvider = true
+        end,
       },
     },
     -- customize how language servers are attached
