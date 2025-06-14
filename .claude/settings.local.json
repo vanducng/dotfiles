@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir:*)",
+      "Bash(rm:*)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(sed:*)",
+      "Bash(rg:*)",
+      "Bash(make:*)",
+      "Bash(ls:*)",
+      "WebFetch(domain:codecompanion.olimorris.dev)",
+      "Bash(nvim:*)",
+      "Bash(mv:*)"
+    ],
+    "deny": []
+  }
+}
