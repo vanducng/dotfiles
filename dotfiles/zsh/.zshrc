@@ -227,3 +227,5 @@ alias dbtf=~/.local/bin/dbt
 
 # Added by Windsurf
 export PATH="~/.codeium/windsurf/bin:$PATH"
+
+. "$HOME/.atuin/bin/env"
