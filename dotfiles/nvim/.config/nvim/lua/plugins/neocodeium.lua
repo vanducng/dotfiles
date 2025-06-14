@@ -58,9 +58,11 @@ return {
         if neocodeium.visible() then
           neocodeium.accept()
         else
-          return "<Tab>"
+          -- Insert actual tab character or trigger completion
+          local keys = vim.api.nvim_replace_termcodes("<Tab>", true, false, true)
+          vim.api.nvim_feedkeys(keys, "n", false)
         end
-      end, { desc = "Accept NeoCodeium suggestion or normal Tab", expr = true })
+      end, { desc = "Accept NeoCodeium suggestion or normal Tab" })
       
       vim.keymap.set("i", "<C-j>", function() neocodeium.accept() end, { desc = "Accept NeoCodeium full suggestion" })
       vim.keymap.set("i", "<C-f>", function() neocodeium.accept_word() end, { desc = "Accept NeoCodeium word" })
