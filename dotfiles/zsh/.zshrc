@@ -31,11 +31,7 @@ function zvm_vi_yank() {
 
 export PATH="/opt/homebrew/opt/mysql-client/bin:$PATH"
 
-alias ls='exa'
-alias ll='exa -l'
-alias pip='pip3'
-alias snowsql=/Applications/SnowSQL.app/Contents/MacOS/snowsql
-alias a=/Users/vanducng/.virtualenvs/global/bin/aider
+# Aliases now managed by atuin dotfiles
 
 # pyenv init
 export PYENV_ROOT="$HOME/.pyenv"
@@ -47,6 +43,7 @@ complete -o nospace -C /opt/homebrew/bin/terraform terraform
 
 LC_CTYPE=en_US.UTF-8
 LC_ALL=en_US.UTF-8
+
 # GoLang
 export GOROOT=/usr/local/go
 export PATH=$GOROOT/bin:$PATH
@@ -58,18 +55,14 @@ export LDFLAGS="-L/usr/local/opt/zlib/lib"
 export CPPFLAGS="-I/usr/local/opt/zlib/include"
 
 export XDG_CONFIG_HOME="$HOME/.config"
-
 export PATH="$HOME/.rd/bin:$HOME/.cargo/bin:/opt/homebrew/opt/openjdk/bin:$PATH"
 
-#macro to kill the docker desktop app and the VM (excluding vmnetd -> it's a service)
-function kdo() {
-  ps ax|grep -i docker|egrep -iv 'grep|com.docker.vmnetd'|awk '{print $1}'|xargs kill
-}
-
 eval "$(fzf --zsh)"
-
 [ -f $HOME/.fzf.zsh ] && source $HOME/.fzf.zsh
 
+# fv: Fuzzy finds a file using fzf and opens it in Neovim.
+# Usage: fv
+# Example: fv (then select a file from the fzf prompt)
 fv() {
   local file
   file=$(fzf)
@@ -78,6 +71,11 @@ fv() {
   fi
 }
 
+# fcd: Fuzzy finds a directory starting from a given path and changes into it.
+# Usage: fcd <start_directory>
+# Arguments:
+#   <start_directory>: The directory to start searching from (e.g., '.').
+# Example: fcd .
 fcd() {
     local start_dir="$1"
     local dir
@@ -88,6 +86,11 @@ fcd() {
     fi
 }
 
+# fof: Fuzzy finds a file within a specified path, shows a preview with bat, and opens the selected file in Neovim.
+# Usage: fof <search_path>
+# Arguments:
+#   <search_path>: The directory to start searching for files (e.g., '.').
+# Example: fof .
 fof() {
   local selected_file
   local search_path="$1"
@@ -173,39 +176,6 @@ if [ -f '/Users/vanducng/Downloads/google-cloud-sdk/completion.zsh.inc' ]; then 
 
 # Ansible vault
 export ANSIBLE_VAULT_ENCRYPT_SALT=ddsa
-alias p='python'
-alias av='ansible-vault'
-alias adb='astro dev bash --scheduler'
-alias ado='astro dev object import -s airflow_settings.yaml'
-alias cdeg='cd /Volumes/exs/git'
-alias gcb='git checkout -b'
-alias gc='git checkout'
-alias gp='git pull'
-alias gP='git push'
-alias v='nvim'
-alias lg='lazygit'
-alias g='git'
-alias t='terraform'
-alias ad='akio run dbt'
-alias ab='akio run dbt build -s'
-alias af='akio run sqlfluff fix'
-alias ps='poetry shell'
-alias pr='poetry run'
-alias tm='$HOME/.local/bin/tmux-sessionizer'
-alias lzd='lazydocker'
-alias gr='go run .'
-alias c="echo -ne '\033c'"
-alias nsql="nvim '+SQLua'"
-alias g3='arc-cli s 1 && arc-cli new-tab https://github.com/careernowbrands/cnb-ds-astro'
-alias g0='arc-cli s 1 && arc-cli new-tab https://github.com/careernowbrands/cnb-ds-dbt-order-form'
-alias d='docker'
-alias dc='docker-compose'
-alias tt='taskwarrior-tui'
-alias ghas='gh auth switch'
-alias esm='/Users/vanducng/.virtualenvs/global/bin/ec2-session'
-alias esh='/Users/vanducng/.virtualenvs/global/bin/ec2-ssh'
-alias etn='/Users/vanducng/.virtualenvs/global/bin/ec2-tunnel'
-alias pca="pre-commit run --all-files"
 
 # Fast completion setup
 autoload -Uz compinit
@@ -273,9 +243,6 @@ export PATH="/Users/vanducng/.npm-global/bin:$PATH"
 
 # Added by dbt installer
 export PATH="$PATH:/Users/vanducng/.local/bin"
-
-# dbt aliases
-alias dbtf=/Users/vanducng/.local/bin/dbt
 
 # Added by Windsurf
 export PATH="/Users/vanducng/.codeium/windsurf/bin:$PATH"
