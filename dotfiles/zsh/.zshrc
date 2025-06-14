@@ -9,6 +9,7 @@ export VISUAL="$EDITOR"
 export ZSH="$HOME/.oh-my-zsh"
 ZSH_THEME="powerlevel10k/powerlevel10k" 
 ZVM_VI_INSERT_ESCAPE_BINDKEY=jk
+ZVM_LINE_INIT_MODE=$ZVM_MODE_INSERT
 plugins=(
 git
 zsh-autosuggestions
@@ -28,25 +29,13 @@ function zvm_vi_yank() {
 	zvm_exit_visual_mode
 }
 
-# Example aliases
-# alias zshconfig="mate ~/.zshrc"
-# alias ohmyzsh="mate ~/.oh-my-zsh"
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f $HOME/.p10k.zsh ]] || source $HOME/.p10k.zsh
 
-if type brew &>/dev/null; then
-    FPATH=$(brew --prefix)/share/zsh-completions:$FPATH
-
-    autoload -Uz compinit
-    compinit
-fi
 
 export PATH="/opt/homebrew/opt/mysql-client/bin:$PATH"
-[[ $commands[kubectl] ]] && source <(kubectl completion zsh)
-plugins+=(kube-aliases)
 
-eval $(thefuck --alias)
 alias ls='exa'
 alias ll='exa -l'
 alias pip='pip3'
@@ -74,8 +63,6 @@ export LDFLAGS="-L/usr/local/opt/zlib/lib"
 export CPPFLAGS="-I/usr/local/opt/zlib/include"
 
 export XDG_CONFIG_HOME="$HOME/.config"
-source <(kubectl completion zsh)
-complete -o default -F __start_kubectl k
 
 export PATH="$HOME/.rd/bin:$HOME/.cargo/bin:/opt/homebrew/opt/openjdk/bin:$PATH"
 
@@ -134,23 +121,47 @@ function yy() {
 	rm -f -- "$tmp"
 }
 
+# Set atuin PATH first
+. "$HOME/.atuin/bin/env"
+
+# Initialize atuin before zsh-vi-mode
+export ATUIN_NOBIND="true"
+eval "$(atuin init zsh)"
+
 # Define a function to set up atuin keybindings after zsh-vi-mode loads
 function zvm_after_init() {
-  # Initialize atuin after zsh-vi-mode
-  export ATUIN_NOBIND="true"
-  eval "$(atuin init zsh)"
-  
-  # Now bind the keys
+  # Rebind the keys after zsh-vi-mode loads
   bindkey '^r' atuin-search
   # bind to the up key, which depends on terminal mode
   bindkey '^[[A' atuin-up-search
   bindkey '^[OA' atuin-up-search
 }
 
+# Also bind keys for viins mode explicitly
+function zvm_after_lazy_keybindings() {
+  bindkey -M viins '^r' atuin-search
+  bindkey -M viins '^[[A' atuin-up-search
+  bindkey -M viins '^[OA' atuin-up-search
+}
 
+
+# Lazy load NVM to speed up shell startup
 export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+# Add nvm to PATH but don't load it yet
+export PATH="$NVM_DIR/versions/node/$(ls -t $NVM_DIR/versions/node 2>/dev/null | head -1)/bin:$PATH"
+
+# Lazy load nvm
+nvm() {
+  unset -f nvm node npm npx
+  [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+  [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+  nvm "$@"
+}
+
+# Create placeholder functions
+node() { nvm "$0" "$@" }
+npm() { nvm "$0" "$@" }
+npx() { nvm "$0" "$@" }
 
 # The next line updates PATH for the Google Cloud SDK.
 if [ -f '/Users/vanducng/Downloads/google-cloud-sdk/path.zsh.inc' ]; then . '/Users/vanducng/Downloads/google-cloud-sdk/path.zsh.inc'; fi
@@ -197,12 +208,13 @@ alias pca="pre-commit run --all-files"
 zstyle ':completion:*' menu select
 fpath+=~/.zfunc
 
-eval "$(starship init zsh)"
 eval "$(zoxide init zsh)"
+
 eval "$(direnv hook zsh)"
 
 clear-terminal() { tput reset; zle redisplay; }
-bindkey '^m' clear
+zle -N clear-terminal
+bindkey '^l' clear-terminal
 
 # Bindkey
 bindkey -s '^g' "$HOME/.local/bin/tmux-sessionizer\n"
@@ -232,5 +244,3 @@ alias dbtf=/Users/vanducng/.local/bin/dbt
 
 # Added by Windsurf
 export PATH="/Users/vanducng/.codeium/windsurf/bin:$PATH"
-
-. "$HOME/.atuin/bin/env"

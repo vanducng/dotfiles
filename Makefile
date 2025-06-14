@@ -1,4 +1,4 @@
-STOW_FOLDERS=zsh tmux kitty skhd starship yabai bin vrapperrc yazi zathura lazygit nvim-vscode task ghostty nvim mise claude atuin
+STOW_FOLDERS=zsh tmux kitty skhd starship yabai bin vrapperrc yazi zathura lazygit nvim-vscode task ghostty nvim mise claude atuin direnv
 
 stow-install:
 	@cd dotfiles && for folder in $(STOW_FOLDERS); do \
