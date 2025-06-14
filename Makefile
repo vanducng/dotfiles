@@ -12,3 +12,15 @@ stow-clean:
 		echo "Unstowing $$package"; \
 		stow -t $(HOME) -D $$folder; \
 	done
+
+# Atuin alias management
+export-aliases:
+	@./scripts/export-atuin-aliases.sh
+
+import-aliases:
+	@./scripts/import-atuin-aliases.sh
+
+# Backup aliases before any major changes
+backup-aliases: export-aliases
+	@git add aliases.txt
+	@git commit -m "backup: export current atuin aliases" || true
