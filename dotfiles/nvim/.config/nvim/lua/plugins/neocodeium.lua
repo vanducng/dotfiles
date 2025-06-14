@@ -4,6 +4,19 @@ return {
     "monkoose/neocodeium",
     event = "VeryLazy",
     config = function()
+      -- Validation: Check if Copilot is enabled
+      local copilot_enabled = false
+      for _, plugin in pairs(require("lazy").plugins()) do
+        if plugin.name == "copilot.vim" and not plugin._.disabled then
+          copilot_enabled = true
+          break
+        end
+      end
+      
+      if copilot_enabled then
+        vim.notify("⚠️  Both NeoCodeium and Copilot are enabled. Please disable one to avoid conflicts.", vim.log.levels.WARN)
+      end
+
       local neocodeium = require "neocodeium"
 
       neocodeium.setup {
@@ -53,7 +66,13 @@ return {
         },
       }
 
-      -- Set up keymaps with smart Tab behavior
+      -- Set up unified keymaps (same as Copilot for consistency)
+      -- <Tab>: Accept suggestion or normal tab
+      -- <C-j>: Accept full suggestion  
+      -- <C-f>: Accept word
+      -- <C-l>: Accept line
+      -- <C-c>: Clear suggestion
+      -- <C-i>: Cycle suggestions
       vim.keymap.set("i", "<Tab>", function()
         if neocodeium.visible() then
           neocodeium.accept()
