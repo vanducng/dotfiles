@@ -81,7 +81,8 @@
       "Bash(__NEW_LINE__ atuin dotfiles alias set etn \"/Users/vanducng/.virtualenvs/global/bin/ec2-tunnel\")",
       "Bash(__NEW_LINE__ echo \"Final batch added\")",
       "Bash(v:*)",
-      "Bash(/Users/vanducng/dotfiles/scripts/export-atuin-aliases.sh:*)"
+      "Bash(/Users/vanducng/dotfiles/scripts/export-atuin-aliases.sh:*)",
+      "Bash(true)"
     ],
     "deny": []
   }
