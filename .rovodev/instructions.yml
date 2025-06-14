@@ -1,0 +1,4 @@
+instructions:
+- name: dotfiles-central-management
+  description: Guide for using dotfiles as the central management system for your development workflow
+  content_file: dotfiles-central-management.md
