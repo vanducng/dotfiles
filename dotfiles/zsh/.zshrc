@@ -13,12 +13,7 @@ ZVM_LINE_INIT_MODE=$ZVM_MODE_INSERT
 plugins=(
 git
 zsh-autosuggestions
-aws
-kube-aliases
-docker
 zsh-syntax-highlighting
-web-search
-zsh-history-substring-search
 zsh-vi-mode
 )
 source $ZSH/oh-my-zsh.sh
@@ -212,6 +207,15 @@ alias esh='/Users/vanducng/.virtualenvs/global/bin/ec2-ssh'
 alias etn='/Users/vanducng/.virtualenvs/global/bin/ec2-tunnel'
 alias pca="pre-commit run --all-files"
 
+# Fast completion setup
+autoload -Uz compinit
+# Check if we need to regenerate dump
+if [[ -n ~/.zcompdump(#qN.mh+24) ]]; then
+  compinit -d ~/.zcompdump
+else
+  compinit -C -d ~/.zcompdump
+fi
+
 zstyle ':completion:*' menu select
 fpath+=~/.zfunc
 
@@ -251,13 +255,18 @@ eval "$(gh copilot alias -- zsh)"
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
-eval "$(~/.local/bin/mise activate zsh)"
+# Lazy load mise to improve startup time
+mise() {
+  unset -f mise
+  eval "$(command ~/.local/bin/mise activate zsh)"
+  mise "$@"
+}
 
 
 # opencode
 export PATH=/Users/vanducng/.opencode/bin:$PATH
 
-fpath+=~/.zfunc; autoload -Uz compinit; compinit
+# Completion system already initialized above
 
 # npm global path
 export PATH="/Users/vanducng/.npm-global/bin:$PATH"
