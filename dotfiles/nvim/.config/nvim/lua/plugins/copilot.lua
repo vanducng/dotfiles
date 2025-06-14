@@ -2,7 +2,7 @@
 return {
   {
     "github/copilot.vim",
-    enabled = false, -- Disabled in favor of NeoCodeium (use :ToggleAICompletion copilot to enable)
+    enabled = true, -- Enabled (use :ToggleAICompletion neocodeium to switch)
     event = "InsertEnter",
     config = function()
       -- Validation: Check if NeoCodeium is enabled

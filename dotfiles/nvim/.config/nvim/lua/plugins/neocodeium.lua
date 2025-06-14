@@ -2,6 +2,7 @@
 return {
   {
     "monkoose/neocodeium",
+    enabled = false, -- Disabled in favor of Copilot (use :ToggleAICompletion neocodeium to enable)
     event = "VeryLazy",
     config = function()
       -- Validation: Check if Copilot is enabled
