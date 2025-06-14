@@ -176,4 +176,93 @@ vim.api.nvim_create_user_command(
   { desc = "Create example DBEE connections file" }
 )
 
+vim.api.nvim_create_user_command(
+  "DbeeLoadConnections",
+  function() 
+    if _G.setup_dbee then
+      _G.setup_dbee()
+      vim.notify("Dbee setup completed with connections loaded", vim.log.levels.INFO)
+    else
+      vim.notify("Dbee setup not available", vim.log.levels.ERROR)
+    end
+  end,
+  { desc = "Manually setup DBEE with connections" }
+)
+
+-- Workaround for Snowflake MFA connections
+-- Remove Snowflake connections from persistence file on startup to prevent auto-connect
+function M.disable_snowflake_autoconnect()
+  local connections_file = vim.fn.stdpath("cache") .. "/dbee/persistence.json"
+  if vim.fn.filereadable(connections_file) == 1 then
+    local file = io.open(connections_file, "r")
+    if file then
+      local content = file:read("*all")
+      file:close()
+      
+      local ok, connections = pcall(vim.json.decode, content)
+      if ok and type(connections) == "table" then
+        -- Create a backup of original connections
+        local backup_file = connections_file .. ".backup"
+        local backup = io.open(backup_file, "w")
+        if backup then
+          backup:write(content)
+          backup:close()
+        end
+        
+        -- Filter out Snowflake connections
+        local filtered = {}
+        for _, conn in ipairs(connections) do
+          if conn.type ~= "snowflake" then
+            table.insert(filtered, conn)
+          end
+        end
+        
+        -- Write back filtered connections
+        if #filtered < #connections then
+          local new_file = io.open(connections_file, "w")
+          if new_file then
+            new_file:write(vim.json.encode(filtered))
+            new_file:close()
+            vim.notify("Temporarily removed Snowflake connections to prevent auto-connect. Backup saved to " .. backup_file, vim.log.levels.INFO)
+          end
+        end
+      end
+    end
+  end
+end
+
+-- Function to restore Snowflake connections when needed
+function M.restore_snowflake_connections()
+  local connections_file = vim.fn.stdpath("cache") .. "/dbee/persistence.json"
+  local backup_file = connections_file .. ".backup"
+  
+  if vim.fn.filereadable(backup_file) == 1 then
+    local backup = io.open(backup_file, "r")
+    if backup then
+      local content = backup:read("*all")
+      backup:close()
+      
+      local file = io.open(connections_file, "w")
+      if file then
+        file:write(content)
+        file:close()
+        vim.notify("Snowflake connections restored from backup", vim.log.levels.INFO)
+      end
+    end
+  else
+    vim.notify("No backup file found", vim.log.levels.WARN)
+  end
+end
+
+-- User command to restore Snowflake connections
+vim.api.nvim_create_user_command(
+  "DbeeRestoreSnowflake",
+  function() M.restore_snowflake_connections() end,
+  { desc = "Restore Snowflake connections from backup" }
+)
+
+-- Optional: Call this on startup to prevent auto-connect
+-- Uncomment the line below if you want to automatically disable Snowflake connections on startup
+-- M.disable_snowflake_autoconnect()
+
 return M
