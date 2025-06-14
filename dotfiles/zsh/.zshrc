@@ -121,6 +121,13 @@ function yy() {
 	rm -f -- "$tmp"
 }
 
+# Fix VSCode virtual environment persistence issue
+# Unset VIRTUAL_ENV if it's being set globally by VSCode
+if [[ -n "$VSCODE_ENV_REPLACE" && -n "$VIRTUAL_ENV" ]]; then
+  unset VIRTUAL_ENV
+  unset VIRTUAL_ENV_PROMPT
+fi
+
 # Set atuin PATH first
 . "$HOME/.atuin/bin/env"
 
@@ -211,6 +218,25 @@ fpath+=~/.zfunc
 eval "$(zoxide init zsh)"
 
 eval "$(direnv hook zsh)"
+
+# Local virtual environment activation
+# Function to activate local .venv when entering directories
+auto_activate_venv() {
+  if [[ -d ".venv" && -z "$VIRTUAL_ENV" ]]; then
+    source .venv/bin/activate
+    echo "Activated local virtual environment: $(basename $PWD)"
+  elif [[ -n "$VIRTUAL_ENV" && ! -d ".venv" ]]; then
+    # Check if we're no longer in the directory that has the active venv
+    local venv_dir=$(dirname "$VIRTUAL_ENV")
+    if [[ "$PWD" != "$venv_dir"* ]]; then
+      deactivate 2>/dev/null || unset VIRTUAL_ENV VIRTUAL_ENV_PROMPT
+      echo "Deactivated virtual environment"
+    fi
+  fi
+}
+
+# Hook to run on directory change
+chpwd_functions+=(auto_activate_venv)
 
 clear-terminal() { tput reset; zle redisplay; }
 zle -N clear-terminal
