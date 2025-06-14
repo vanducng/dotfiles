@@ -1,6 +1,7 @@
 ---@type LazySpec
 return {
   "vanducng/nvim-dbee",
+  branch = "main",
   dependencies = {
     "MunifTanjim/nui.nvim",
   },
@@ -8,21 +9,36 @@ return {
     require("dbee").install("go")
   end,
   config = function()
-    require("dbee").setup({
-      sources = {
-        -- Load connections from environment variable (optional)
-        require("dbee.sources").EnvSource:new("DBEE_CONNECTIONS"),
-        -- Load connections from persistent file (primary method)
-        require("dbee.sources").FileSource:new(vim.fn.stdpath("cache") .. "/dbee/persistence.json"),
-      },
-      editor = {
-        mappings = {
-          -- Default DBEE mappings
-          { key = "BB", mode = "v", action = "run_selection" },
-          { key = "BB", mode = "n", action = "run_file" },
+    -- Defer the setup to prevent auto-connection on startup
+    _G.dbee_setup_done = false
+    
+    _G.setup_dbee = function()
+      if _G.dbee_setup_done then
+        return
+      end
+      
+      require("dbee").setup({
+        -- Don't set a default connection
+        default_connection = nil,
+        
+        sources = {
+          -- Load connections from environment variable (optional)
+          require("dbee.sources").EnvSource:new("DBEE_CONNECTIONS"),
+          -- Load connections from persistent file (primary method)
+          require("dbee.sources").FileSource:new(vim.fn.stdpath("cache") .. "/dbee/persistence.json"),
         },
-      },
-    })
+        
+        editor = {
+          mappings = {
+            -- Default DBEE mappings
+            { key = "BB", mode = "v", action = "run_selection" },
+            { key = "BB", mode = "n", action = "run_file" },
+          },
+        },
+      })
+      
+      _G.dbee_setup_done = true
+    end
     
     -- Load database helpers (lazy-loaded, no hardcoded credentials)
     require("config.dbee-helpers")
@@ -32,6 +48,28 @@ return {
     "DbeeToggle", 
     "DbeeExecuteQuery",
   },
+  init = function()
+    -- Wrap the original commands to ensure setup is called first
+    local function wrap_dbee_command(cmd_name)
+      local original_cmd = vim.fn.exists(':' .. cmd_name) == 2
+      if not original_cmd then
+        vim.api.nvim_create_user_command(cmd_name, function(opts)
+          _G.setup_dbee()
+          vim.cmd(cmd_name .. ' ' .. opts.args)
+        end, { nargs = '*' })
+      end
+    end
+    
+    -- Wrap the commands
+    vim.api.nvim_create_autocmd("CmdlineEnter", {
+      once = true,
+      callback = function()
+        wrap_dbee_command("Dbee")
+        wrap_dbee_command("DbeeToggle")
+        wrap_dbee_command("DbeeExecuteQuery")
+      end,
+    })
+  end,
   keys = {
     {
       "<leader>D",
@@ -39,12 +77,19 @@ return {
     },
     {
       "<leader>Dd",
-      "<cmd>Dbee<cr>",
+      function()
+        -- Setup dbee if not already done
+        _G.setup_dbee()
+        -- Open Dbee
+        require("dbee").open()
+      end,
       desc = "Open Database Explorer",
     },
     {
       "<leader>Dt",
       function()
+        -- Setup dbee if not already done
+        _G.setup_dbee()
         require("dbee").toggle()
       end,
       desc = "Toggle Database Explorer",
