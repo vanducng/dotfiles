@@ -37,7 +37,13 @@ return {
         gemini = function()
           return require("codecompanion.adapters").extend("gemini", {
             env = {
-              api_key = "GEMINI_API_KEY", -- Will use the key from ~/.envrc
+              api_key = function()
+                local key = os.getenv("GEMINI_API_KEY")
+                if not key or key == "" then
+                  vim.notify("GEMINI_API_KEY environment variable not set", vim.log.levels.ERROR)
+                end
+                return key
+              end,
             },
             schema = {
               model = {
@@ -176,15 +182,25 @@ return {
               role = "user",
               content = function()
                 -- Get git diff for staged changes
-                local handle = io.popen("git diff --cached")
-                local staged_diff = handle:read("*a")
-                handle:close()
+                local handle = io.popen("git diff --cached 2>/dev/null")
+                if not handle then
+                  return "Error: Unable to execute git command. Make sure you're in a git repository."
+                end
+                local staged_diff = handle:read("*a") or ""
+                local success = handle:close()
                 
                 -- If no staged changes, get working directory changes
                 if staged_diff == "" then
-                  handle = io.popen("git diff")
-                  staged_diff = handle:read("*a")
+                  handle = io.popen("git diff 2>/dev/null")
+                  if not handle then
+                    return "Error: Unable to execute git command."
+                  end
+                  staged_diff = handle:read("*a") or ""
                   handle:close()
+                end
+                
+                if not success then
+                  return "Error: Git command failed. Make sure you're in a git repository."
                 end
                 
                 if staged_diff == "" then

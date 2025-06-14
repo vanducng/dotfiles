@@ -14,8 +14,8 @@ return {
       })
       
       vim.keymap.set("i", "<C-l>", '<Plug>(copilot-accept-line)', { desc = "Accept Copilot line" })
-      vim.keymap.set("i", "<C-n>", '<Plug>(copilot-next)', { desc = "Next Copilot suggestion" })
-      vim.keymap.set("i", "<C-u>", '<Plug>(copilot-previous)', { desc = "Previous Copilot suggestion" })
+      vim.keymap.set("i", "<C-]>", '<Plug>(copilot-next)', { desc = "Next Copilot suggestion" })
+      vim.keymap.set("i", "<C-p>", '<Plug>(copilot-previous)', { desc = "Previous Copilot suggestion" })
       vim.keymap.set("i", "<C-x>", '<Plug>(copilot-dismiss)', { desc = "Dismiss Copilot suggestion" })
       
       vim.keymap.set("i", "<C-y>", 'copilot#Accept("\\<CR>")', { 
