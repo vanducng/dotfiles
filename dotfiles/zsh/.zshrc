@@ -136,11 +136,14 @@ function yy() {
 
 export ATUIN_NOBIND="true"
 eval "$(atuin init zsh)"
-bindkey '^r' atuin-search
 
-# bind to the up key, which depends on terminal mode
-bindkey '^[[A' atuin-up-search
-bindkey '^[OA' atuin-up-search
+# Define a function to set up atuin keybindings after zsh-vi-mode loads
+function zvm_after_init() {
+  bindkey '^r' _atuin_search_widget
+  # bind to the up key, which depends on terminal mode
+  bindkey '^[[A' _atuin_up_search_widget
+  bindkey '^[OA' _atuin_up_search_widget
+}
 
 
 export NVM_DIR="$HOME/.nvm"
