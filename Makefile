@@ -1,10 +1,10 @@
-STOW_FOLDERS=zsh tmux kitty skhd starship yabai bin vrapperrc yazi zathura lazygit nvim-vscode task ghostty nvim mise claude
+STOW_FOLDERS=zsh tmux kitty skhd starship yabai bin vrapperrc yazi zathura lazygit nvim-vscode task ghostty nvim mise claude atuin
 
 stow-install:
 	@cd dotfiles && for folder in $(STOW_FOLDERS); do \
 		echo "Stowing $$folder"; \
-		stow -D -t $(HOME) $$folder; \
-		stow -t $(HOME) $$folder; \
+		stow --no-folding -D -t $(HOME) $$folder 2>/dev/null || true; \
+		stow --no-folding -t $(HOME) $$folder; \
 	done
 	
 stow-clean:
