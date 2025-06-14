@@ -1,7 +1,7 @@
 #!/bin/bash
 # Export atuin aliases to a file for backup/version control
 
-ALIASES_FILE="$HOME/dotfiles/aliases.txt"
+ALIASES_FILE="$HOME/dotfiles/dotfiles/atuin/.config/atuin/aliases.txt"
 
 echo "# Atuin Aliases - Generated on $(date)" > "$ALIASES_FILE"
 echo "# Use 'atuin dotfiles alias set <name> <command>' to restore" >> "$ALIASES_FILE"
