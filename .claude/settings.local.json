@@ -82,7 +82,12 @@
       "Bash(__NEW_LINE__ echo \"Final batch added\")",
       "Bash(v:*)",
       "Bash(/Users/vanducng/dotfiles/scripts/export-atuin-aliases.sh:*)",
-      "Bash(true)"
+      "Bash(true)",
+      "Bash(cat:*)",
+      "Bash(timeout 10s nvim:*)",
+      "Bash(git clone:*)",
+      "Bash(git checkout:*)",
+      "Bash(cp:*)"
     ],
     "deny": []
   }
