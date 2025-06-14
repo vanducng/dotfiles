@@ -14,21 +14,21 @@ Comprehensive guide to using AI tools effectively in your development workflow.
 
 ## 🎯 Overview
 
-This development environment includes multiple AI tools, each optimized for different use cases:
+This development environment includes streamlined AI tools, each optimized for different use cases:
 
 - **CodeCompanion**: Conversational AI for complex problems
-- **GitHub Copilot**: Real-time code completion
-- **NeoCodeium**: Free alternative completion
+- **GitHub Copilot**: Primary real-time code completion with ergonomic keybindings
 - **Database AI**: SQL-specific assistance
 
 ## 🔄 AI Tool Comparison
 
-| Feature | CodeCompanion | GitHub Copilot | NeoCodeium | Database AI |
-|---------|---------------|----------------|------------|-------------|
-| **Type** | Chat + Inline | Completion | Completion | SQL-specific |
-| **Cost** | Paid (OpenAI) | Paid | Free | Included |
-| **Strength** | Complex problems | Real-time coding | General completion | SQL queries |
-| **Best For** | Architecture, debugging | Day-to-day coding | Budget-conscious | Database work |
+| Feature | CodeCompanion | GitHub Copilot | Database AI |
+|---------|---------------|----------------|-------------|
+| **Type** | Chat + Inline | Completion | SQL-specific |
+| **Cost** | Paid (OpenAI) | Paid | Included |
+| **Strength** | Complex problems | Real-time coding | SQL queries |
+| **Best For** | Architecture, debugging | Day-to-day coding | Database work |
+| **Keybindings** | Leader-based | Ergonomic Ctrl+ | Context-aware |
 
 ## 🚀 Daily Workflows
 
@@ -91,9 +91,12 @@ What's the best approach considering security and UX?"
 
 #### 2. Implementation Phase
 ```javascript
-// Use Copilot for real-time completion
+// Use Copilot for real-time completion with ergonomic keybindings
 function authenticateUser(credentials) {
   // Copilot suggests implementation as you type
+  // Tab: Accept suggestion or normal tab
+  // Ctrl+;: Accept full suggestion
+  // Ctrl+': Accept word, Ctrl+]: Accept line
   return fetch('/api/auth', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
