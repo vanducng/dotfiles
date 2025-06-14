@@ -1,4 +1,4 @@
-# Atuin Aliases - Generated on Sat Jun 14 13:11:10 +07 2025
+# Atuin Aliases - Generated on Sat Jun 14 13:15:03 +07 2025
 # Use 'atuin dotfiles alias set <name> <command>' to restore
 
 atuin dotfiles alias set 'ab' 'akio run dbt build -s'
