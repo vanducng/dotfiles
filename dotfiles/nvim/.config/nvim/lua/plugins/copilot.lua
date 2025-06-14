@@ -28,20 +28,17 @@ return {
         desc = "Accept Copilot suggestion" 
       })
       
-      -- Ctrl + ' (quote) - Accept word (next to semicolon)
-      vim.keymap.set("i", "<C-'>", '<Plug>(copilot-accept-word)', { desc = "Accept Copilot word" })
+      -- Ctrl + l - Accept line (revised keymap)
+      vim.keymap.set("i", "<C-l>", '<Plug>(copilot-accept-line)', { desc = "Accept Copilot line" })
       
-      -- Ctrl + ] - Accept line (easy right hand reach)
-      vim.keymap.set("i", "<C-]>", '<Plug>(copilot-accept-line)', { desc = "Accept Copilot line" })
+      -- Ctrl + i - Next suggestion (as requested)
+      vim.keymap.set("i", "<C-i>", '<Plug>(copilot-next)', { desc = "Next Copilot suggestion" })
       
-      -- Ctrl + [ - Previous suggestion (left bracket, easy reach)
-      vim.keymap.set("i", "<C-[>", '<Plug>(copilot-previous)', { desc = "Previous Copilot suggestion" })
+      -- Ctrl + u - Previous suggestion (avoids conflicts)
+      vim.keymap.set("i", "<C-u>", '<Plug>(copilot-previous)', { desc = "Previous Copilot suggestion" })
       
-      -- Ctrl + \ - Next suggestion (between brackets, easy reach)
-      vim.keymap.set("i", "<C-\\>", '<Plug>(copilot-next)', { desc = "Next Copilot suggestion" })
-      
-      -- Ctrl + Backspace - Dismiss suggestion (natural dismiss motion)
-      vim.keymap.set("i", "<C-BS>", '<Plug>(copilot-dismiss)', { desc = "Dismiss Copilot suggestion" })
+      -- Ctrl + x - Dismiss suggestion (easy reach, commonly used for dismiss)
+      vim.keymap.set("i", "<C-x>", '<Plug>(copilot-dismiss)', { desc = "Dismiss Copilot suggestion" })
       
       -- Alternative keymaps for terminals that don't support all combinations
       vim.keymap.set("i", "<C-y>", 'copilot#Accept("\\<CR>")', { 

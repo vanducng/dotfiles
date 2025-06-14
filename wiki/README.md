@@ -14,13 +14,13 @@ Welcome to the comprehensive wiki for this modern macOS development environment.
 - [Neovim](neovim/README.md) - Editor configuration and plugins
 - [Tmux](tmux.md) - Terminal multiplexer setup and workflows
 - [Zsh](zsh.md) - Shell configuration and customization
+- [Atuin](atuin.md) - Intelligent shell history and sync
 - [Yabai](yabai.md) - Window manager setup and rules
 - [SKHD](skhd.md) - Hotkey daemon configuration
 
 ### 🤖 AI Tools
 - [CodeCompanion](ai/codecompanion.md) - AI chat and inline assistance
-- [GitHub Copilot](ai/copilot.md) - AI code completion setup
-- [NeoCodeium](ai/neocodeium.md) - Alternative AI completion
+- [GitHub Copilot](ai/copilot.md) - Primary AI code completion with ergonomic keybindings
 - [AI Workflows](ai/workflows.md) - Best practices and tips
 
 ### 🗄️ Database Development

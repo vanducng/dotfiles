@@ -44,6 +44,13 @@ tmux kill-server && tmux new-session
 | `<leader>Dd` | Database Explorer | `<leader>ff` | Find Files |
 | `<leader>gg` | Lazygit | `gd` | Go to Definition |
 
+### AI Completion (Copilot)
+| Key | Action | Key | Action |
+|-----|--------|-----|--------|
+| `<Tab>` | Accept/Tab | `<C-;>` | Accept Full |
+| `<C-'>` | Accept Word | `<C-]>` | Accept Line |
+| `<C-[>` | Previous | `<C-\>` | Next |
+
 ## 🔧 Common Commands
 
 ### Service Management
@@ -81,10 +88,13 @@ tmux attach-session -t project
 <leader>aa  # Actions menu
 <leader>ar  # Code review
 
-# Copilot
+# Copilot (ergonomic keybindings)
 :Copilot status
 :Copilot enable
-C-J  # Accept suggestion (insert mode)
+Tab     # Accept suggestion or normal tab
+C-;     # Accept full suggestion
+C-'     # Accept word
+C-]     # Accept line
 
 # Database AI
 <leader>Dd  # Open dbee
@@ -98,6 +108,7 @@ BB  # Execute query (visual/normal mode)
 ~/.config/nvim/          # Neovim config
 ~/.config/yabai/         # Yabai config
 ~/.config/skhd/          # SKHD config
+~/.config/atuin/         # Atuin config
 ~/.tmux.conf             # Tmux config
 ~/.zshrc                 # Zsh config
 
@@ -108,9 +119,10 @@ BB  # Execute query (visual/normal mode)
 /usr/local/var/log/yabai/
 /usr/local/var/log/skhd/
 
-# Cache
+# Cache & Data
 ~/.cache/nvim/
 ~/.local/share/nvim/
+~/.local/share/atuin/    # Atuin history database
 ```
 
 ## 🔍 Diagnostic Commands

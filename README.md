@@ -11,9 +11,9 @@ A comprehensive, AI-enhanced development environment for macOS featuring tiling 
 
 ### 🤖 AI-Enhanced Development
 - **CodeCompanion** - AI chat and inline assistance
-- **GitHub Copilot** - AI code completion
-- **NeoCodeium** - Alternative AI completion engine
+- **GitHub Copilot** - Primary AI code completion with ergonomic keybindings
 - **Database AI** - AI-powered SQL assistance
+- **Unified AI System** - Streamlined AI completion with conflict prevention
 
 ### 🪟 Window Management
 - **Yabai** - Tiling window manager with BSP layout
@@ -30,6 +30,8 @@ A comprehensive, AI-enhanced development environment for macOS featuring tiling 
 - **Neovim** - AstroNvim v5 with LSP, treesitter, and AI
 - **Database Tools** - Advanced SQL development with Snowflake support
 - **Version Management** - Mise for runtime versions
+- **Shell History** - Atuin for intelligent command history and sync
+- **Environment Management** - Direnv for automatic environment loading
 - **File Management** - Yazi with custom plugins
 
 ## 🚀 Quick Start
@@ -72,8 +74,10 @@ p10k configure
 
 ```
 dotfiles/
+├── atuin/         # Intelligent shell history and sync
 ├── bin/           # Custom scripts and utilities
 ├── claude/        # Claude AI configuration
+├── direnv/        # Environment variable management
 ├── ghostty/       # Ghostty terminal config
 ├── hammerspoon/   # macOS automation
 ├── karabiner/     # Keyboard customization
@@ -135,6 +139,17 @@ dotfiles/
 | `<C-f>` | Project Sessionizer |
 | `-` | File Manager (Oil) |
 
+### AI Completion (GitHub Copilot)
+| Shortcut | Action |
+|----------|--------|
+| `<Tab>` | Accept suggestion or normal tab |
+| `<C-;>` | Accept full suggestion |
+| `<C-'>` | Accept word |
+| `<C-]>` | Accept line |
+| `<C-[>` | Previous suggestion |
+| `<C-\>` | Next suggestion |
+| `<C-BS>` | Dismiss suggestion |
+
 ## 🔧 Configuration Highlights
 
 ### Neovim Features
@@ -185,6 +200,11 @@ make stow-clean      # Remove all symlinks
 # System maintenance
 ./scripts/macos-deps.sh      # Install dependencies
 ./scripts/yabai-upgrade.sh   # Upgrade window manager
+
+# Alias management (Atuin)
+make export-aliases  # Export current aliases to file
+make import-aliases  # Import aliases from file
+make backup-aliases  # Export and commit aliases to git
 
 # Tmux utilities
 ~/.local/bin/tmux-sessionizer    # Project switcher

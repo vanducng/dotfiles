@@ -33,9 +33,9 @@ This Neovim configuration is built on **AstroNvim v5**, providing a modern, feat
 
 ### 🤖 AI-Powered Development
 - **CodeCompanion**: AI chat and inline assistance
-- **GitHub Copilot**: AI code completion
-- **NeoCodeium**: Alternative AI completion engine
+- **GitHub Copilot**: Primary AI code completion with ergonomic keybindings
 - **Database AI**: AI-powered SQL assistance
+- **Streamlined AI System**: Simplified, conflict-free AI completion
 
 ### 🗄️ Database Development
 - **nvim-dbee**: Advanced database explorer
@@ -121,6 +121,18 @@ ln -sf ~/.dotfiles/dotfiles/nvim/.config/nvim ~/.config/nvim
 | `<leader>af` | Fix Code | AI code fixes |
 | `<leader>ao` | Optimize Code | AI optimization suggestions |
 
+### AI Completion (GitHub Copilot)
+| Shortcut | Action | Description |
+|----------|--------|-------------|
+| `<Tab>` | Accept/Tab | Accept suggestion or normal tab |
+| `<C-;>` | Accept Full | Accept complete suggestion |
+| `<C-y>` | Accept Alt | Accept suggestion (alternative) |
+| `<C-'>` | Accept Word | Accept next word |
+| `<C-]>` | Accept Line | Accept current line |
+| `<C-[>` | Previous | Previous suggestion |
+| `<C-\>` | Next | Next suggestion |
+| `<C-BS>` | Dismiss | Dismiss current suggestion |
+
 ### Database Tools
 | Shortcut | Action | Description |
 |----------|--------|-------------|
@@ -176,30 +188,29 @@ ln -sf ~/.dotfiles/dotfiles/nvim/.config/nvim ~/.config/nvim
 - **Multiple Models**: Support for different AI models
 
 ### GitHub Copilot
-**AI code completion from GitHub**
+**Primary AI code completion with ergonomic keybindings**
 
 #### Setup
 1. **Install**: Already configured in dotfiles
 2. **Authenticate**: `:Copilot auth`
 3. **Enable**: `:Copilot enable`
 
-#### Usage
-- **Accept Suggestion**: `<C-J>` in insert mode
-- **Next Suggestion**: `<C-]>` in insert mode
-- **Previous Suggestion**: `<C-[>` in insert mode
+#### Ergonomic Keybindings
+The keybindings are designed for comfortable typing flow:
+- **Left hand**: Holds `Ctrl` key
+- **Right hand**: Reaches for target keys
+- **Tab**: Smart accept or normal tab behavior
+
+#### Key Features
+- **Smart Tab**: Accepts suggestions when available, normal tab otherwise
+- **Multiple Accept Options**: Full suggestion, word, or line
+- **Easy Navigation**: Previous/next suggestions with bracket keys
+- **Quick Dismiss**: Ctrl+Backspace for natural dismiss motion
+
+#### Usage Commands
 - **Panel**: `<leader>cp` to open Copilot panel
-
-### NeoCodeium
-**Alternative AI completion engine**
-
-#### Setup
-1. **API Key**: Get free API key from Codeium
-2. **Configuration**: See `dotfiles/nvim/.config/nvim/docs/NEOCODEIUM_SETUP.md`
-
-#### Features
-- **Free Alternative**: No cost AI completion
-- **Fast Suggestions**: Quick AI-powered completions
-- **Multiple Languages**: Support for many programming languages
+- **Status**: `<leader>cs` to check status
+- **Enable/Disable**: `<leader>ce` / `<leader>cd`
 
 ## 🗄️ Database Development
 
