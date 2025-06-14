@@ -210,3 +210,20 @@ eval "$(gh copilot alias -- zsh)"
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 eval "$(~/.local/bin/mise activate zsh)"
 
+
+# opencode
+export PATH=/Users/vanducng/.opencode/bin:$PATH
+
+fpath+=~/.zfunc; autoload -Uz compinit; compinit
+
+# npm global path
+export PATH="/Users/vanducng/.npm-global/bin:$PATH"
+
+# Added by dbt installer
+export PATH="$PATH:/Users/vanducng/.local/bin"
+
+# dbt aliases
+alias dbtf=/Users/vanducng/.local/bin/dbt
+
+# Added by Windsurf
+export PATH="/Users/vanducng/.codeium/windsurf/bin:$PATH"
