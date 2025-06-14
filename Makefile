@@ -22,5 +22,5 @@ import-aliases:
 
 # Backup aliases before any major changes
 backup-aliases: export-aliases
-	@git add dotfiles/atuin/.config/atuin/aliases.txt
+	@git add dotfiles/atuin/.config/atuin/aliases.sh
 	@git commit -m "backup: export current atuin aliases" || true

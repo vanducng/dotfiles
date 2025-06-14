@@ -1,7 +1,7 @@
 #!/bin/bash
-# Import atuin aliases from the aliases.txt file
+# Import atuin aliases from the aliases.sh file
 
-ALIASES_FILE="$HOME/dotfiles/dotfiles/atuin/.config/atuin/aliases.txt"
+ALIASES_FILE="$HOME/dotfiles/dotfiles/atuin/.config/atuin/aliases.sh"
 
 if [[ ! -f "$ALIASES_FILE" ]]; then
     echo "Error: $ALIASES_FILE not found"

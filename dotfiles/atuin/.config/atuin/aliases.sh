@@ -1,5 +1,7 @@
-# Atuin Aliases - Generated on Sat Jun 14 13:17:12 +07 2025
+#!/bin/bash
+# Atuin Aliases - Generated on Sat Jun 14 13:25:07 +07 2025
 # Use 'atuin dotfiles alias set <name> <command>' to restore
+# You can also execute this file directly: ./aliases.sh
 
 atuin dotfiles alias set 'ab' 'akio run dbt build -s'
 atuin dotfiles alias set 'ad' 'akio run dbt'
