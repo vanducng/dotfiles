@@ -14,7 +14,9 @@ return {
     opts.sources = require("astrocore").list_insert_unique(opts.sources, {
       -- Set a formatter
       -- null_ls.builtins.formatting.stylua,
-      -- null_ls.builtins.formatting.prettier,
+      null_ls.builtins.formatting.prettier.with({
+        filetypes = { "markdown", "yaml", "json", "html", "css", "javascript", "typescript" },
+      }),
       -- Note: Ruff formatting is now handled by the ruff LSP server
       -- If you still want to use ruff via null-ls, use:
       -- null_ls.builtins.formatting.ruff_format,

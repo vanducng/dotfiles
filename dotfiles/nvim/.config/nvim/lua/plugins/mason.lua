@@ -14,6 +14,7 @@ return {
 
         -- install formatters
         "stylua",
+        "prettier", -- markdown, yaml, json, html, css formatter
 
         -- install debuggers
         "debugpy",
