@@ -18,7 +18,19 @@
       "Bash(atuin dotfiles alias:*)",
       "Bash(atuin:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(brew uninstall:*)",
+      "Bash(git push:*)",
+      "Bash(~/.atuin/bin/atuin --version)",
+      "Bash(source:*)",
+      "Bash(~/.atuin/bin/atuin alias --help)",
+      "Bash(~/.atuin/bin/atuin --help)",
+      "Bash(~/.atuin/bin/atuin dotfiles --help)",
+      "Bash(~/.atuin/bin/atuin dotfiles alias --help)",
+      "Bash(gs:*)",
+      "Bash(ATUIN_NOBIND=\"true\" atuin init zsh)",
+      "Bash(zsh:*)",
+      "Bash(git add:*)"
     ],
     "deny": []
   }
