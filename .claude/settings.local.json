@@ -87,7 +87,9 @@
       "Bash(timeout 10s nvim:*)",
       "Bash(git clone:*)",
       "Bash(git checkout:*)",
-      "Bash(cp:*)"
+      "Bash(cp:*)",
+      "Bash(git fetch:*)",
+      "Bash(realpath:*)"
     ],
     "deny": []
   }
