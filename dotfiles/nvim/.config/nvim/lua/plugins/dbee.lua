@@ -108,18 +108,8 @@ return {
             -- Note: Schema case-sensitivity check removed for less noise
           end
           
-          -- Execute with error handling
-          local ok, err = pcall(function() 
-            api.ui.editor_do_action "run_statement" 
-          end)
-
-          -- Only show errors, no success notifications
-          if not ok then
-            -- Small delay to let any backend errors show first, then clear prompts
-            vim.defer_fn(function()
-              vim.cmd("echo ''")  -- Clear any "Press ENTER" prompts
-            end, 100)
-          end
+          -- Execute SQL statement
+          api.ui.editor_do_action "run_statement"
         else
           vim.notify("Not in a SQL buffer", vim.log.levels.WARN)
         end
