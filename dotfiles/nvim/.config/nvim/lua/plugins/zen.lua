@@ -64,11 +64,54 @@ return {
       },
     },
     keys = {
-      -- add <leader>cz to enter zen mode
+      -- add <leader>z to enter zen mode
       {
         "<leader>z",
         "<cmd>ZenMode<cr>",
         desc = "Distraction Free Mode",
+      },
+      -- add <leader>Z to enter zen mode with max width, no padding
+      {
+        "<leader>Z",
+        function()
+          require("zen-mode").toggle {
+            window = {
+              width = 1.0, -- max width (100%)
+              height = 1.0, -- max height (100%)
+              options = {
+                number = false,
+                relativenumber = false,
+                foldcolumn = "0",
+                list = false,
+                showbreak = "NONE",
+                signcolumn = "no",
+              },
+            },
+          }
+        end,
+        desc = "Zen Mode Full Screen",
+      },
+      -- add <leader>zx to exit zen mode across all windows in tmux session
+      {
+        "<leader>zx",
+        function()
+          -- Exit zen mode in current neovim instance
+          require("zen-mode").close()
+
+          -- Send lua command to close zen mode to all tmux panes
+          local tmux_session = vim.fn.system("tmux display-message -p '#S'"):gsub("\n", "")
+          if tmux_session and tmux_session ~= "" then
+            -- Send to all panes in the session
+            vim.fn.system(
+              string.format(
+                "tmux list-panes -a -s -F '#{session_name}:#{window_index}.#{pane_index}' | grep '^%s:' | xargs -I {} tmux send-keys -t {} 'C-c' Escape ':lua require(\"zen-mode\").close()' Enter 2>/dev/null || true",
+                tmux_session
+              )
+            )
+            vim.notify("Zen mode exit command sent to all tmux panes", vim.log.levels.INFO)
+          end
+        end,
+        desc = "Exit Zen Mode (All Tmux Panes)",
       },
     },
   },
