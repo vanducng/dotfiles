@@ -161,48 +161,43 @@ return {
     {
       "<leader>Dx",
       function()
-        -- Use dbee's open function
-        local dbee = require("dbee")
-        local core = require("dbee.api.core")
-        
-        -- Get current connection
-        local current_conn = core.get_current_connection()
-        if not current_conn then
-          vim.notify("❌ No database connection selected", vim.log.levels.WARN)
-          return
-        end
-        
-        -- Open drawer and show instructions
-        dbee.open()
-        vim.notify("Press 'x' on " .. current_conn.name .. " to toggle connection", vim.log.levels.INFO)
-      end,
-      desc = "Open drawer to disconnect database",
-    },
-    {
-      "<leader>Dz",
-      function()
-        -- Simple connection toggle - no notifications, just check the icon
-        local core = require("dbee.api.core")
-        local current_conn = core.get_current_connection()
-        if not current_conn then return end
-        
+        -- Disconnect all currently connected database connections
         local state = require("dbee.api.state")
         local handler = state.handler()
         
-        local ok, is_connected = pcall(handler.connection_is_connected, handler, current_conn.id)
-        if not ok then return end
+        local connections = {}
+        local disconnected_count = 0
         
-        if is_connected then
-          pcall(handler.connection_disconnect, handler, current_conn.id)
-        else
-          pcall(handler.connection_connect, handler, current_conn.id)
+        -- Get all sources and their connections
+        for _, source in ipairs(handler:get_sources()) do
+          local source_connections = handler:source_get_connections(source:name())
+          for _, conn in ipairs(source_connections) do
+            table.insert(connections, conn)
+          end
         end
         
-        -- Refresh drawer to update icon
+        -- Disconnect all connected databases
+        for _, conn in ipairs(connections) do
+          local ok, is_connected = pcall(handler.connection_is_connected, handler, conn.id)
+          if ok and is_connected then
+            local disconnect_ok = pcall(handler.connection_disconnect, handler, conn.id)
+            if disconnect_ok then
+              disconnected_count = disconnected_count + 1
+            end
+          end
+        end
+        
+        -- Refresh drawer to update icons
         local api = require("dbee.api")
         pcall(api.ui.drawer_refresh)
+        
+        if disconnected_count > 0 then
+          vim.notify("Disconnected " .. disconnected_count .. " database connection(s)", vim.log.levels.INFO)
+        else
+          vim.notify("No active database connections to disconnect", vim.log.levels.INFO)
+        end
       end,
-      desc = "Toggle database connection",
+      desc = "Disconnect all database connections",
     },
   },
 }
