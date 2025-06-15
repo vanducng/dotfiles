@@ -43,36 +43,41 @@ return {
   {
     "saghen/blink.cmp",
     opts = function(_, opts)
-      -- Check if cmp-dbee with blink.cmp support is available
-      local cmp_dbee_available = pcall(require, "cmp-dbee")
-      
       -- Ensure sources table exists
       opts.sources = opts.sources or {}
       opts.sources.default = opts.sources.default or { "lsp", "path", "snippets", "buffer" }
       opts.sources.per_filetype = opts.sources.per_filetype or {}
       opts.sources.providers = opts.sources.providers or {}
       
-      if cmp_dbee_available then
-        vim.notify("cmp-dbee with blink.cmp support loaded successfully", vim.log.levels.INFO)
-        
-        -- Add dbee to SQL filetype sources
-        opts.sources.per_filetype.sql = { "lsp", "path", "snippets", "buffer", "dbee" }
-        
-        -- Configure dbee provider for blink.cmp
-        opts.sources.providers.dbee = {
-          name = "dbee",
-          module = "cmp-dbee",
-          enabled = true,
-          async = true,
-          timeout_ms = 1000,
-        }
-      else
-        vim.notify("cmp-dbee not available, using default SQL completion", vim.log.levels.WARN)
-        -- Fallback: just use default sources for SQL
-        opts.sources.per_filetype.sql = { "lsp", "path", "snippets", "buffer" }
-      end
+      -- Always configure dbee provider (will be available when needed)
+      opts.sources.per_filetype.sql = { "lsp", "path", "snippets", "buffer", "dbee" }
+      
+      -- Configure dbee provider for blink.cmp
+      opts.sources.providers.dbee = {
+        name = "dbee",
+        module = "cmp-dbee",
+        enabled = true,
+        async = true,
+        timeout_ms = 1000,
+      }
       
       return opts
+    end,
+    config = function(_, opts)
+      -- Apply the configuration and verify it worked
+      require("blink.cmp").setup(opts)
+      
+      -- Defer verification to ensure setup is complete
+      vim.defer_fn(function()
+        local blink_ok, blink = pcall(require, "blink.cmp")
+        if blink_ok and blink.config then
+          if blink.config.sources and blink.config.sources.providers and blink.config.sources.providers.dbee then
+            vim.notify("✅ cmp-dbee provider configured in blink.cmp", vim.log.levels.INFO)
+          else
+            vim.notify("❌ cmp-dbee provider not found in blink.cmp config", vim.log.levels.WARN)
+          end
+        end
+      end, 100)
     end,
   },
 }
