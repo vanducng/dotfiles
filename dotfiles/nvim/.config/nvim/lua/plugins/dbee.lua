@@ -19,6 +19,23 @@ return {
         require("dbee.sources").FileSource:new(vim.fn.expand "~/.dbee/persistent.json"),
       },
 
+      drawer = {
+        disable_help = false,
+        mappings = {
+          -- Connection actions
+          { key = "<CR>", mode = "n", action = "action_1" },  -- activate connection
+          { key = "cw", mode = "n", action = "action_2" },    -- edit connection
+          { key = "dd", mode = "n", action = "action_3" },    -- delete connection
+          { key = "x", mode = "n", action = "action_4" },     -- connect/disconnect toggle
+          -- Navigation
+          { key = "o", mode = "n", action = "toggle" },       -- toggle expand/collapse
+          { key = "r", mode = "n", action = "refresh" },      -- refresh drawer
+          -- Menu actions
+          { key = "<Esc>", mode = "n", action = "menu_close" },
+          { key = "q", mode = "n", action = "menu_close" },
+        },
+      },
+
       editor = {
         mappings = {
           -- Default DBEE mappings
@@ -42,6 +59,8 @@ return {
     if not helpers_ok then
       -- Helpers file doesn't exist, that's okay
     end
+
+    -- Drawer mapping now works with the correct API calls
   end,
   cmd = {
     "Dbee",
@@ -138,6 +157,52 @@ return {
         end
       end,
       desc = "Select SQL statement (semicolon-delimited)",
+    },
+    {
+      "<leader>Dx",
+      function()
+        -- Use dbee's open function
+        local dbee = require("dbee")
+        local core = require("dbee.api.core")
+        
+        -- Get current connection
+        local current_conn = core.get_current_connection()
+        if not current_conn then
+          vim.notify("❌ No database connection selected", vim.log.levels.WARN)
+          return
+        end
+        
+        -- Open drawer and show instructions
+        dbee.open()
+        vim.notify("Press 'x' on " .. current_conn.name .. " to toggle connection", vim.log.levels.INFO)
+      end,
+      desc = "Open drawer to disconnect database",
+    },
+    {
+      "<leader>Dz",
+      function()
+        -- Simple connection toggle - no notifications, just check the icon
+        local core = require("dbee.api.core")
+        local current_conn = core.get_current_connection()
+        if not current_conn then return end
+        
+        local state = require("dbee.api.state")
+        local handler = state.handler()
+        
+        local ok, is_connected = pcall(handler.connection_is_connected, handler, current_conn.id)
+        if not ok then return end
+        
+        if is_connected then
+          pcall(handler.connection_disconnect, handler, current_conn.id)
+        else
+          pcall(handler.connection_connect, handler, current_conn.id)
+        end
+        
+        -- Refresh drawer to update icon
+        local api = require("dbee.api")
+        pcall(api.ui.drawer_refresh)
+      end,
+      desc = "Toggle database connection",
     },
   },
 }
