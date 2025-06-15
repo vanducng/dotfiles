@@ -57,6 +57,19 @@ nvim
 <leader>ao  # AI optimization
 ```
 
+### Focus & Deep Work
+```bash
+# 1. Enter zen mode for focused coding
+<leader>z   # Standard zen mode (70% width)
+<leader>Z   # Full screen zen mode
+
+# 2. Use twilight for code focus
+<leader>tt  # Dim inactive code sections
+
+# 3. Exit zen mode when done
+<leader>zx  # Exit zen mode across all tmux panes
+```
+
 ### Problem-Solving Workflow
 ```bash
 # 1. Describe problem to AI

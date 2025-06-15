@@ -98,7 +98,15 @@ C-]     # Accept line
 
 # Database AI
 <leader>Dd  # Open dbee
+<leader>Dx  # Disconnect all databases
+x           # Toggle connection (in dbee drawer)
 BB  # Execute query (visual/normal mode)
+
+# Focus & Zen Mode
+<leader>z   # Zen mode (70% width)
+<leader>Z   # Full screen zen mode
+<leader>zx  # Exit zen mode (all tmux panes)
+<leader>tt  # Toggle twilight
 ```
 
 ## 📁 Important Paths

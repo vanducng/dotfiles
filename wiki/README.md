@@ -12,6 +12,7 @@ Welcome to the comprehensive wiki for this modern macOS development environment.
 
 ### 🛠️ Core Tools
 - [Neovim](neovim/README.md) - Editor configuration and plugins
+- [Zen Mode](zen-mode.md) - Distraction-free coding environment
 - [Tmux](tmux.md) - Terminal multiplexer setup and workflows
 - [Zsh](zsh.md) - Shell configuration and customization
 - [Atuin](atuin.md) - Intelligent shell history and sync

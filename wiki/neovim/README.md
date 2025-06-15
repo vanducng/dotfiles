@@ -133,10 +133,20 @@ ln -sf ~/.dotfiles/dotfiles/nvim/.config/nvim ~/.config/nvim
 | `<C-\>` | Next | Next suggestion |
 | `<C-BS>` | Dismiss | Dismiss current suggestion |
 
+### Zen Mode & Focus
+| Shortcut | Action | Description |
+|----------|--------|-------------|
+| `<leader>z` | Zen Mode | Enter distraction-free mode (70% width) |
+| `<leader>Z` | Full Screen Zen | Enter full-screen zen mode (100% width) |
+| `<leader>zx` | Exit All Zen | Exit zen mode across all tmux panes |
+| `<leader>tt` | Twilight | Toggle twilight (dim inactive code) |
+
 ### Database Tools
 | Shortcut | Action | Description |
 |----------|--------|-------------|
 | `<leader>Dd` | Database Explorer | Open dbee database explorer |
+| `<leader>Dx` | Disconnect All | Disconnect all active database connections |
+| `x` | Toggle Connection | Toggle connection in dbee drawer |
 | `<leader>Dt` | Toggle Database | Toggle database window |
 | `<leader>De` | Execute Query | Run SQL query |
 | `<leader>Ds` | Save Connection | Save database connection |
