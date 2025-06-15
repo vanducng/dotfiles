@@ -1,4 +1,4 @@
-# 🏠 Dotfiles - Modern macOS Development Environment
+# 🏠 Duc's Digital Workspace
 
 A comprehensive, AI-enhanced development environment for macOS featuring tiling window management, advanced terminal workflows, and integrated AI coding assistance.
 
