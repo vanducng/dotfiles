@@ -66,7 +66,7 @@ return {
       -- Configure dbee provider for blink.cmp
       opts.sources.providers.dbee = {
         name = "dbee",
-        module = "cmp-dbee",
+        module = "cmp-dbee.blink-wrapper", -- Use wrapper that can disable itself
         enabled = true,
         async = true,
         timeout_ms = 1000,
