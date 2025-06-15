@@ -1,6 +1,7 @@
 return {
   {
-    "vanducng/cmp-dbee", -- Use remote repository with fixes
+    dir = "/Users/vanducng/dotfiles/dev/cmp-dbee", -- Use local dev version with fixes
+    name = "cmp-dbee",
     dependencies = { 
       "vanducng/nvim-dbee",
       "saghen/blink.cmp",
