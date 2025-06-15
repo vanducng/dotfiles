@@ -34,7 +34,7 @@ return {
       }
 
       -- Setup cmp-dbee for auto completion (if available)
-      local cmp_dbee_ok, cmp_dbee = pcall(require, "cmp_dbee")
+      local cmp_dbee_ok, cmp_dbee = pcall(require, "cmp-dbee")
       if cmp_dbee_ok then
         cmp_dbee.setup()
       end
