@@ -1,14 +1,13 @@
 return {
   {
-    dir = "/Users/vanducng/dotfiles/cmp-dbee", -- Use local development version with fixes
-    name = "cmp-dbee",
+    "vanducng/cmp-dbee", -- Use remote repository with fixes
     dependencies = { 
       "vanducng/nvim-dbee",
       "saghen/blink.cmp",
     },
     event = { "BufRead *.sql", "BufNewFile *.sql" }, -- Load on SQL files
     ft = "sql",
-    enabled = false, -- Disabled temporarily due to loading issues
+    enabled = true, -- Re-enabled with compatibility fixes
     config = function()
       -- Setup cmp-dbee with performance optimizations and optional debug logging
       local ok, cmp_dbee = pcall(require, "cmp-dbee")
