@@ -45,7 +45,7 @@ return {
             log_cache_hits = false,  -- Set to true to debug caching
           },
         })
-        vim.notify("cmp-dbee configured successfully with performance optimizations", vim.log.levels.INFO)
+        -- Notification disabled per user request
       else
         vim.notify("cmp-dbee module not found - plugin may not be installed correctly", vim.log.levels.WARN)
       end
@@ -83,7 +83,7 @@ return {
         local blink_ok, blink = pcall(require, "blink.cmp")
         if blink_ok and blink.config then
           if blink.config.sources and blink.config.sources.providers and blink.config.sources.providers.dbee then
-            vim.notify("✅ cmp-dbee provider configured in blink.cmp", vim.log.levels.INFO)
+            -- Success notification disabled per user request
           else
             vim.notify("❌ cmp-dbee provider not found in blink.cmp config", vim.log.levels.WARN)
           end
