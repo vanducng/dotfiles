@@ -1,9 +1,9 @@
--- Calculate min width of thewindow should be 70% of the editor width or 90 columns
--- whichever is smaller
+-- Calculate zen mode width: 70% of editor width, minimum 150 columns
 local function zen_mode_width()
-  local width = vim.api.nvim_win_get_width(0.7)
-  local min_width = math.max(width * 0.60, 100)
-  return math.min(width, min_width)
+  local editor_width = vim.o.columns
+  local target_width = math.floor(editor_width * 0.7)
+  -- Ensure width is at least 150 columns
+  return math.max(150, target_width)
 end
 
 return {
@@ -31,7 +31,20 @@ return {
     cmd = { "ZenMode" },
     opts = {
       window = {
-        width = zen_mode_width(),
+        width = function()
+          return zen_mode_width()
+        end,
+        height = 1.0, -- full height
+        backdrop = 0.95, -- darken background
+        options = {
+          signcolumn = "no", -- disable signcolumn
+          number = false, -- disable number column
+          relativenumber = false, -- disable relative numbers
+          cursorline = false, -- disable cursorline
+          cursorcolumn = false, -- disable cursor column
+          foldcolumn = "0", -- disable fold column
+          list = false, -- disable whitespace characters
+        },
       },
       plugins = {
         options = {
@@ -67,7 +80,14 @@ return {
       -- add <leader>z to enter zen mode
       {
         "<leader>z",
-        "<cmd>ZenMode<cr>",
+        function()
+          require("zen-mode").toggle({
+            window = {
+              width = zen_mode_width(),
+              height = 1.0,
+            },
+          })
+        end,
         desc = "Distraction Free Mode",
       },
       -- add <leader>Z to enter zen mode with max width, no padding
