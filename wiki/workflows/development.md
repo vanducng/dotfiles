@@ -215,6 +215,11 @@ C-x + t  # Project sessionizer (from tmux)
 
 # 2. Connect to database
 # Use UI to select/create connection
+# Press Enter or 'o' to connect
+# Press 'x' to toggle connection
+
+# 3. Manage connections
+<leader>Dx  # Disconnect all active connections
 # For Snowflake: manual connection to handle MFA
 
 # 3. Write queries

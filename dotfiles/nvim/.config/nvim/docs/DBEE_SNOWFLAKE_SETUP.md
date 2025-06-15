@@ -130,6 +130,7 @@ username:password@tcp(host:port)/database
 | `<leader>D` | Normal | Database menu (WhichKey) |
 | `<leader>Dd` | Normal | Open Database Explorer (DBEE) |
 | `<leader>Dt` | Normal | Toggle Database Explorer |
+| `<leader>Dx` | Normal | Disconnect all active database connections |
 | `<leader>j` | Normal | Execute SQL statement (semicolon-delimited) ⭐ **NEW** |
 | `<leader>J` | Normal | Select SQL statement (semicolon-delimited) ⭐ **NEW** |
 
@@ -144,6 +145,7 @@ username:password@tcp(host:port)/database
   - `is` and `as` (text objects for inner/around SQL statement) ⭐ **NEW**
 - **Navigation**: `<Tab>` to switch between panels
 - **Connection**: `<Enter>` or `o` to connect to selected database
+- **Disconnect**: `x` to toggle connection for selected database
 - **New editor**: `e` to create new SQL editor
 - **Close**: `q` to quit windows
 - **Refresh**: `r` to refresh connections/structure

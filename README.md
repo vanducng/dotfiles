@@ -28,6 +28,7 @@ A comprehensive, AI-enhanced development environment for macOS featuring tiling 
 
 ### 🛠️ Development Tools
 - **Neovim** - AstroNvim v5 with LSP, treesitter, and AI
+- **Zen Mode** - Distraction-free coding with tmux integration
 - **Database Tools** - Advanced SQL development with Snowflake support
 - **Version Management** - Mise for runtime versions
 - **Shell History** - Atuin for intelligent command history and sync
@@ -73,10 +74,11 @@ p10k configure
 ## 📁 Repository Structure
 
 ```
+.claude/           # Claude AI project configuration
 dotfiles/
 ├── atuin/         # Intelligent shell history and sync
 ├── bin/           # Custom scripts and utilities
-├── claude/        # Claude AI configuration
+├── claude/        # Claude AI user configuration
 ├── direnv/        # Environment variable management
 ├── ghostty/       # Ghostty terminal config
 ├── hammerspoon/   # macOS automation
