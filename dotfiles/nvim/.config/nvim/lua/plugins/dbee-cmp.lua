@@ -24,6 +24,8 @@ return {
             debounce_delay_ms = 150,  -- Debounce completion requests
             max_items = 100,
           },
+          -- Disable completion for specific database types
+          disabled_databases = { "snowflake" },
           -- Enable debug logging for troubleshooting (set to false for production)
           debug = {
             enabled = false,  -- Set to true to enable debug logging

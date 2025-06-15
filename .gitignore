@@ -42,3 +42,6 @@ luac.out
 
 dotfiles/lazygit/.config/lazygit/state.yml
 dev
+archive/
+tests/
+Untitled
