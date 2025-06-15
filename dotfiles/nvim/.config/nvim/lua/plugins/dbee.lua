@@ -100,48 +100,26 @@ return {
             return
           end
           
-          -- Pre-validate common issues for Snowflake
+          -- Pre-validate common issues for Snowflake (silent)
           if current_conn.type == "snowflake" then
             -- Check for potential schema issues
             local schema_table_pattern = "([%w_]+)%.([%w_]+)"
             local schema, table = query:match(schema_table_pattern)
-            if schema and not schema:match("^[A-Z_][A-Z0-9_]*$") then
-              vim.notify("💡 Snowflake tip: Schema names are case-sensitive. Try uppercase: " .. schema:upper(), vim.log.levels.INFO)
-            end
+            -- Note: Schema case-sensitivity check removed for less noise
           end
-          
-          -- Show execution info
-          vim.notify("🔗 Executing on " .. current_conn.name .. " (" .. current_conn.type .. ")", vim.log.levels.INFO)
           
           -- Execute with error handling
           local ok, err = pcall(function() 
             api.ui.editor_do_action "run_statement" 
           end)
 
-          -- Small delay to let any backend errors show first
-          vim.defer_fn(function()
-            if not ok then 
-              local error_msg = tostring(err)
-              
-              -- Clear any "Press ENTER" prompts
-              vim.cmd("echo ''")
-              
-              -- Provide helpful error messages
-              if current_conn.type == "snowflake" then
-                vim.notify("❌ Snowflake query failed. Common issues:", vim.log.levels.ERROR)
-                vim.notify("💡 1. Schema/table names are case-sensitive (try UPPERCASE)", vim.log.levels.INFO)
-                vim.notify("💡 2. Check schema access: SHOW SCHEMAS;", vim.log.levels.INFO)
-                vim.notify("💡 3. Check table exists: SHOW TABLES IN SCHEMA schema_name;", vim.log.levels.INFO)
-              elseif current_conn.type == "postgres" or current_conn.type == "postgresql" then
-                vim.notify("❌ PostgreSQL query failed. Try:", vim.log.levels.ERROR)
-                vim.notify("💡 \\dt - list tables, \\dn - list schemas", vim.log.levels.INFO)
-              else
-                vim.notify("❌ Query execution failed: " .. error_msg, vim.log.levels.ERROR)
-              end
-            else
-              vim.notify("✅ Query executed successfully", vim.log.levels.INFO)
-            end
-          end, 100)
+          -- Only show errors, no success notifications
+          if not ok then
+            -- Small delay to let any backend errors show first, then clear prompts
+            vim.defer_fn(function()
+              vim.cmd("echo ''")  -- Clear any "Press ENTER" prompts
+            end, 100)
+          end
         else
           vim.notify("Not in a SQL buffer", vim.log.levels.WARN)
         end
@@ -163,9 +141,8 @@ return {
 
           if not ok then 
             vim.notify("❌ Failed to select SQL statement: " .. tostring(err), vim.log.levels.ERROR)
-          else
-            vim.notify("✅ SQL statement selected", vim.log.levels.INFO)
           end
+          -- No success notification for selection
         else
           vim.notify("Not in a SQL buffer", vim.log.levels.WARN)
         end
