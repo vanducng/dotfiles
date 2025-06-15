@@ -1,4 +1,4 @@
-# Data Engineering Development Guidelines
+# Duc's Data Kitchen 🍳
 
 ## Environment Setup
 - **Python Management**: mise + uv for Python version and dependency management
