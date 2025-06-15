@@ -45,3 +45,5 @@ dev
 archive/
 tests/
 Untitled.claude/settings.local.json
+.rovodev
+.opencode
