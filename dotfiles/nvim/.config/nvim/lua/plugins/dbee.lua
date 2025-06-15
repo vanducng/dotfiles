@@ -7,71 +7,50 @@ return {
   },
   build = function() require("dbee").install "go" end,
   config = function()
-    -- Defer the setup to prevent auto-connection on startup
-    _G.dbee_setup_done = false
+    -- Setup dbee immediately to avoid command issues
+    require("dbee").setup {
+      -- Don't set a default connection
+      default_connection = nil,
 
-    _G.setup_dbee = function()
-      if _G.dbee_setup_done then return end
+      sources = {
+        -- Load connections from environment variable (optional)
+        require("dbee.sources").EnvSource:new "DBEE_CONNECTIONS",
+        -- Load connections from persistent file (primary method)
+        require("dbee.sources").FileSource:new(vim.fn.expand "~/.dbee/persistent.json"),
+      },
 
-      require("dbee").setup {
-        -- Don't set a default connection
-        default_connection = nil,
-
-        sources = {
-          -- Load connections from environment variable (optional)
-          require("dbee.sources").EnvSource:new "DBEE_CONNECTIONS",
-          -- Load connections from persistent file (primary method)
-          require("dbee.sources").FileSource:new(vim.fn.expand "~/.dbee/persistent.json"),
+      editor = {
+        mappings = {
+          -- Default DBEE mappings
+          { key = "BB", mode = "v", action = "run_selection" },
+          { key = "BB", mode = "n", action = "run_file" },
         },
+      },
+    }
 
-        editor = {
-          mappings = {
-            -- Default DBEE mappings
-            { key = "BB", mode = "v", action = "run_selection" },
-            { key = "BB", mode = "n", action = "run_file" },
-          },
-        },
-      }
-
-      -- Setup cmp-dbee for auto completion (if available)
-      local cmp_dbee_ok, cmp_dbee = pcall(require, "cmp-dbee")
-      if cmp_dbee_ok then
-        cmp_dbee.setup()
-      end
-
-      _G.dbee_setup_done = true
+    -- Setup cmp-dbee for auto completion (if available)
+    local cmp_dbee_ok, cmp_dbee = pcall(require, "cmp-dbee")
+    if cmp_dbee_ok then
+      cmp_dbee.setup()
     end
 
+    -- For backward compatibility, set the global function
+    _G.setup_dbee = function()
+      -- Already set up, do nothing
+    end
+    _G.dbee_setup_done = true
+
     -- Load database helpers (lazy-loaded, no hardcoded credentials)
-    require "config.dbee-helpers"
+    local helpers_ok, _ = pcall(require, "config.dbee-helpers")
+    if not helpers_ok then
+      -- Helpers file doesn't exist, that's okay
+    end
   end,
   cmd = {
     "Dbee",
     "DbeeToggle",
     "DbeeExecuteQuery",
   },
-  init = function()
-    -- Wrap the original commands to ensure setup is called first
-    local function wrap_dbee_command(cmd_name)
-      local original_cmd = vim.fn.exists(":" .. cmd_name) == 2
-      if not original_cmd then
-        vim.api.nvim_create_user_command(cmd_name, function(opts)
-          _G.setup_dbee()
-          vim.cmd(cmd_name .. " " .. opts.args)
-        end, { nargs = "*" })
-      end
-    end
-
-    -- Wrap the commands
-    vim.api.nvim_create_autocmd("CmdlineEnter", {
-      once = true,
-      callback = function()
-        wrap_dbee_command "Dbee"
-        wrap_dbee_command "DbeeToggle"
-        wrap_dbee_command "DbeeExecuteQuery"
-      end,
-    })
-  end,
   keys = {
     {
       "<leader>D",
@@ -80,9 +59,7 @@ return {
     {
       "<leader>Dd",
       function()
-        -- Setup dbee if not already done
-        _G.setup_dbee()
-        -- Open Dbee
+        -- Open Dbee (setup is done automatically)
         require("dbee").open()
       end,
       desc = "Open Database Explorer",
@@ -90,8 +67,6 @@ return {
     {
       "<leader>Dt",
       function()
-        -- Setup dbee if not already done
-        _G.setup_dbee()
         require("dbee").toggle()
       end,
       desc = "Toggle Database Explorer",
