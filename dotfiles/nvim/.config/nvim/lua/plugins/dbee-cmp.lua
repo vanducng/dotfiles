@@ -26,9 +26,18 @@ return {
           },
           -- Disable completion for specific database types
           disabled_databases = { "snowflake" },
+          -- Database-specific overrides (optional, for fine-grained control)
+          database_overrides = {
+            -- Example: Allow execution but disable completion for specific databases
+            -- bigquery = {
+            --   completion_enabled = false,
+            --   execution_enabled = true,
+            -- },
+          },
           -- Enable debug logging for troubleshooting (set to false for production)
           debug = {
             enabled = false,  -- Set to true to enable debug logging
+            log_disabled_connections = true,  -- Log when completion is disabled
             performance_monitoring = false,  -- Set to true to monitor performance
             log_slow_queries = true,  -- Log operations > 100ms
             slow_query_threshold_ms = 100,
