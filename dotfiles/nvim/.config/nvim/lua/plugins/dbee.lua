@@ -33,14 +33,18 @@ return {
           -- Menu actions
           { key = "<Esc>", mode = "n", action = "menu_close" },
           { key = "q", mode = "n", action = "menu_close" },
+          -- Fix for deletion confirmation
+          { key = "<CR>", mode = "n", action = "menu_confirm" },
+          { key = "y", mode = "n", action = "menu_confirm" },
+          { key = "n", mode = "n", action = "menu_close" },
         },
       },
 
       editor = {
         mappings = {
-          -- Default DBEE mappings
-          { key = "BB", mode = "v", action = "run_selection" },
-          { key = "BB", mode = "n", action = "run_file" },
+          -- Updated DBEE mappings (EE instead of BB)
+          { key = "EE", mode = "v", action = "run_selection" },
+          { key = "EE", mode = "n", action = "run_file" },
         },
       },
     }
