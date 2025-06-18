@@ -18,6 +18,7 @@ local excluded_filetypes = {
 
 local excluded_filenames = {
   "do-not-autosave-me.lua",
+  "persistent.json",
 }
 
 local function save_condition(buf)

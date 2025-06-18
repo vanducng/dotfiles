@@ -77,6 +77,11 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/):
 - `dbt docs generate && dbt docs serve` - Generate and serve documentation
 - `dbt run --select model_name+` - Run specific model and downstream dependencies
 
+### Database Access (via Makefile)
+- `make melody-dbshell` - Open PostgreSQL shell for direct database queries
+- `make psql` - Alternative PostgreSQL connection
+- `make melody-shell` - Django shell with database access via ORM
+
 ### Docker
 - `docker-compose up -d` - Start services in background
 - `docker-compose logs -f service_name` - Follow logs for specific service

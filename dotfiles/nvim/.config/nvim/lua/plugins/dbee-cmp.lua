@@ -18,10 +18,10 @@ return {
           cache = {
             structure_expiry_s = 60,  -- Cache DB structure for 1 minute
             column_expiry_s = 300,    -- Cache columns for 5 minutes
-            preload_common_tables = true,
+            preload_common_tables = false,  -- Disabled to improve initial connection performance
           },
           completion = {
-            debounce_delay_ms = 150,  -- Debounce completion requests
+            debounce_delay_ms = 300,  -- Increased debounce delay for better performance
             max_items = 100,
           },
           -- Disable completion for specific database types
@@ -36,13 +36,13 @@ return {
           },
           -- Enable debug logging for troubleshooting (set to false for production)
           debug = {
-            enabled = false,  -- Set to true to enable debug logging
+            enabled = true,  -- Set to true to enable debug logging
             log_disabled_connections = true,  -- Log when completion is disabled
-            performance_monitoring = false,  -- Set to true to monitor performance
+            performance_monitoring = true,  -- Set to true to monitor performance
             log_slow_queries = true,  -- Log operations > 100ms
             slow_query_threshold_ms = 100,
-            log_context_detection = false,  -- Set to true to debug context detection
-            log_cache_hits = false,  -- Set to true to debug caching
+            log_context_detection = true,  -- Set to true to debug context detection
+            log_cache_hits = true,  -- Set to true to debug caching
           },
         })
         -- Notification disabled per user request
