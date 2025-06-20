@@ -90,6 +90,13 @@ return {
           end,
           desc = "Find files",
         },
+        ["<Leader>fF"] = {
+          function()
+            vim.g.zen_telescope_was_active = vim.g.zen_mode_active == true
+            require("telescope.builtin").find_files({ hidden = true, no_ignore = true })
+          end,
+          desc = "Find files (including hidden)",
+        },
         ["<Leader>fw"] = {
           function()
             vim.g.zen_telescope_was_active = vim.g.zen_mode_active == true

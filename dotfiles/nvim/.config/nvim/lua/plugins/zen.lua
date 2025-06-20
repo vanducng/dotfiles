@@ -102,7 +102,8 @@ return {
       -- Telescope integration: restore zen mode after telescope file selection
       vim.api.nvim_create_autocmd("BufEnter", {
         callback = function()
-          vim.defer_fn(function()
+          -- Use vim.schedule for immediate execution on next tick
+          vim.schedule(function()
             local buftype = vim.bo.buftype
             local filetype = vim.bo.filetype
             local bufname = vim.api.nvim_buf_get_name(0)
@@ -124,7 +125,7 @@ return {
               }
               vim.g.zen_telescope_was_active = false
             end
-          end, 50)
+          end)
         end,
       })
     end,
