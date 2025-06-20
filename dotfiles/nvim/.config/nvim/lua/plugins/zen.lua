@@ -6,6 +6,9 @@ local function zen_mode_width()
   return math.max(150, target_width)
 end
 
+-- Store zen mode state
+local zen_mode_active = false
+
 return {
   -- Not performant so only enable when needed
   {
@@ -29,64 +32,135 @@ return {
   {
     "folke/zen-mode.nvim",
     cmd = { "ZenMode" },
-    opts = {
-      window = {
-        width = function()
-          return zen_mode_width()
+    config = function()
+      local zen_mode = require "zen-mode"
+
+      -- Setup zen mode with options
+      zen_mode.setup {
+        window = {
+          width = function() return zen_mode_width() end,
+          height = 1.0, -- full height
+          backdrop = 0.95, -- darken background
+          options = {
+            signcolumn = "no", -- disable signcolumn
+            number = false, -- disable number column
+            relativenumber = false, -- disable relative numbers
+            cursorline = false, -- disable cursorline
+            cursorcolumn = false, -- disable cursor column
+            foldcolumn = "0", -- disable fold column
+            list = false, -- disable whitespace characters
+          },
+        },
+        plugins = {
+          options = {
+            enabled = true,
+            ruler = false, -- disables the ruler text in the cmd line area
+            showcmd = false, -- disables the command in the last line of the screen
+            laststatus = 0, -- turn off the statusline in zen mode
+          },
+          twilight = { enabled = false }, -- disables to start Twilight when zen mode opens
+          -- NOTE: Those options are disables by default, change to enabled = true to enable
+          gitsigns = { enabled = false }, -- disables git signs
+          tmux = { enabled = true }, -- disables the tmux statusline
+          -- NOTE: Need to add to wezterm config https://github.com/folke/zen-mode.nvim#wezterm
+          wezterm = {
+            enabled = false,
+            font = "+1", -- +1 font size or fixed size, e.g. 21
+          },
+          alacritty = {
+            enabled = true,
+            font = "19.5", -- set font size to 19.5
+          },
+          kitty = {
+            enabled = true,
+            font = "+1", -- increase font size by 1
+          },
+          neovide = {
+            enabled = true,
+            scale = 1.1, -- Increase scale by 10%
+          },
+        },
+      }
+
+      -- Track zen mode state
+      vim.api.nvim_create_autocmd("User", {
+        pattern = "ZenModeEnter",
+        callback = function()
+          zen_mode_active = true
+          vim.g.zen_mode_active = true -- Global state for keymaps
         end,
-        height = 1.0, -- full height
-        backdrop = 0.95, -- darken background
-        options = {
-          signcolumn = "no", -- disable signcolumn
-          number = false, -- disable number column
-          relativenumber = false, -- disable relative numbers
-          cursorline = false, -- disable cursorline
-          cursorcolumn = false, -- disable cursor column
-          foldcolumn = "0", -- disable fold column
-          list = false, -- disable whitespace characters
-        },
-      },
-      plugins = {
-        options = {
-          enabled = true,
-          ruler = false, -- disables the ruler text in the cmd line area
-          showcmd = false, -- disables the command in the last line of the screen
-          laststatus = 0, -- turn off the statusline in zen mode
-        },
-        twilight = { enabled = false }, -- disables to start Twilight when zen mode opens
-        -- NOTE: Those options are disables by default, change to enabled = true to enable
-        gitsigns = { enabled = false }, -- disables git signs
-        tmux = { enabled = true }, -- disables the tmux statusline
-        -- NOTE: Need to add to wezterm config https://github.com/folke/zen-mode.nvim#wezterm
-        wezterm = {
-          enabled = false,
-          font = "+1", -- +1 font size or fixed size, e.g. 21
-        },
-        alacritty = {
-          enabled = true,
-          font = "19.5", -- set font size to 19.5
-        },
-        kitty = {
-          enabled = true,
-          font = "+1", -- increase font size by 1
-        },
-        neovide = {
-          enabled = true,
-          scale = 1.1, -- Increase scale by 10%
-        },
-      },
-    },
+      })
+
+      vim.api.nvim_create_autocmd("User", {
+        pattern = "ZenModeLeave",
+        callback = function()
+          zen_mode_active = false
+          vim.g.zen_mode_active = false -- Global state for keymaps
+        end,
+      })
+
+      -- Simple and reliable telescope integration
+      local function set_telescope_zen_state(was_active) vim.g.zen_telescope_was_active = was_active end
+
+      local function get_telescope_zen_state() return vim.g.zen_telescope_was_active or false end
+
+      -- Restore zen mode when entering a normal buffer after telescope
+      vim.api.nvim_create_autocmd("BufEnter", {
+        callback = function()
+          -- Small delay to let the buffer settle
+          vim.defer_fn(function()
+            local buftype = vim.bo.buftype
+            local filetype = vim.bo.filetype
+            local bufname = vim.api.nvim_buf_get_name(0)
+
+            -- Check if this is a normal file buffer (not telescope or special)
+            local is_normal_buffer = buftype == ""
+              and filetype ~= "TelescopePrompt"
+              and filetype ~= "TelescopeResults"
+              and not bufname:match "^term://"
+              and bufname ~= ""
+
+            -- Restore zen mode if it was active before telescope
+            if get_telescope_zen_state() and is_normal_buffer and not zen_mode_active then
+              zen_mode.toggle {
+                window = {
+                  width = zen_mode_width(),
+                  height = 1.0,
+                },
+              }
+              -- Clear the flag
+              vim.g.zen_telescope_was_active = false
+            end
+          end, 50) -- Very short delay
+        end,
+      })
+
+      -- Expose functions for keymap overrides
+      _G.zen_telescope_integration = {
+        set_state = set_telescope_zen_state,
+        get_state = get_telescope_zen_state,
+      }
+
+      -- Debug function
+      vim.api.nvim_create_user_command("ZenDebug", function()
+        print("Zen mode active:", zen_mode_active)
+        print("Telescope was active:", get_telescope_zen_state())
+        print("Buffer type:", vim.bo.buftype)
+        print("File type:", vim.bo.filetype)
+        print("Buffer name:", vim.api.nvim_buf_get_name(0))
+      end, {})
+    end,
     keys = {
       -- add <leader>z to enter zen mode
       {
         "<leader>z",
         function()
-          require("zen-mode").toggle({
+          require("zen-mode").toggle {
             window = {
               width = zen_mode_width(),
               height = 1.0,
             },
-          })
+          }
         end,
         desc = "Distraction Free Mode",
       },
