@@ -82,6 +82,58 @@ return {
         -- ["<Leader>b"] = { desc = "Buffers" },
         ["<Leader>D"] = { desc = "󰆼 Database" },
 
+        -- Telescope keymaps with zen mode preservation
+        ["<Leader>ff"] = {
+          function()
+            -- Store zen mode state using window check (simple and reliable)
+            vim.g.zen_telescope_was_active = vim.g.zen_mode_active == true
+            require("telescope.builtin").find_files()
+          end,
+          desc = "Find files",
+        },
+        ["<Leader>fw"] = {
+          function()
+            vim.g.zen_telescope_was_active = vim.g.zen_mode_active == true
+            require("telescope.builtin").live_grep()
+          end,
+          desc = "Find words",
+        },
+        ["<Leader>fb"] = {
+          function()
+            vim.g.zen_telescope_was_active = vim.g.zen_mode_active == true
+            require("telescope.builtin").buffers()
+          end,
+          desc = "Find buffers",
+        },
+        ["<Leader>fh"] = {
+          function()
+            vim.g.zen_telescope_was_active = vim.g.zen_mode_active == true
+            require("telescope.builtin").help_tags()
+          end,
+          desc = "Find help",
+        },
+        ["<Leader>fo"] = {
+          function()
+            vim.g.zen_telescope_was_active = vim.g.zen_mode_active == true
+            require("telescope.builtin").oldfiles()
+          end,
+          desc = "Find history",
+        },
+        ["<Leader>gc"] = {
+          function()
+            vim.g.zen_telescope_was_active = vim.g.zen_mode_active == true
+            require("telescope.builtin").git_commits()
+          end,
+          desc = "Git commits",
+        },
+        ["<Leader>gt"] = {
+          function()
+            vim.g.zen_telescope_was_active = vim.g.zen_mode_active == true
+            require("telescope.builtin").git_status()
+          end,
+          desc = "Git status",
+        },
+
         -- setting a mapping to false will disable it
         -- ["<C-S>"] = false,
       },
