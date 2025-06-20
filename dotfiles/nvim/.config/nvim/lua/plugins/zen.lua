@@ -99,15 +99,9 @@ return {
         end,
       })
 
-      -- Simple and reliable telescope integration
-      local function set_telescope_zen_state(was_active) vim.g.zen_telescope_was_active = was_active end
-
-      local function get_telescope_zen_state() return vim.g.zen_telescope_was_active or false end
-
-      -- Restore zen mode when entering a normal buffer after telescope
+      -- Telescope integration: restore zen mode after telescope file selection
       vim.api.nvim_create_autocmd("BufEnter", {
         callback = function()
-          -- Small delay to let the buffer settle
           vim.defer_fn(function()
             local buftype = vim.bo.buftype
             local filetype = vim.bo.filetype
@@ -121,34 +115,18 @@ return {
               and bufname ~= ""
 
             -- Restore zen mode if it was active before telescope
-            if get_telescope_zen_state() and is_normal_buffer and not zen_mode_active then
+            if vim.g.zen_telescope_was_active and is_normal_buffer and not zen_mode_active then
               zen_mode.toggle {
                 window = {
                   width = zen_mode_width(),
                   height = 1.0,
                 },
               }
-              -- Clear the flag
               vim.g.zen_telescope_was_active = false
             end
-          end, 50) -- Very short delay
+          end, 50)
         end,
       })
-
-      -- Expose functions for keymap overrides
-      _G.zen_telescope_integration = {
-        set_state = set_telescope_zen_state,
-        get_state = get_telescope_zen_state,
-      }
-
-      -- Debug function
-      vim.api.nvim_create_user_command("ZenDebug", function()
-        print("Zen mode active:", zen_mode_active)
-        print("Telescope was active:", get_telescope_zen_state())
-        print("Buffer type:", vim.bo.buftype)
-        print("File type:", vim.bo.filetype)
-        print("Buffer name:", vim.api.nvim_buf_get_name(0))
-      end, {})
     end,
     keys = {
       -- add <leader>z to enter zen mode
