@@ -85,7 +85,6 @@ return {
         -- Telescope keymaps with zen mode preservation
         ["<Leader>ff"] = {
           function()
-            -- Store zen mode state using window check (simple and reliable)
             vim.g.zen_telescope_was_active = vim.g.zen_mode_active == true
             require("telescope.builtin").find_files()
           end,
