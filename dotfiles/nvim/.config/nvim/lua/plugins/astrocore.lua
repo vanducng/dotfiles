@@ -63,23 +63,8 @@ return {
         ["<C-d>"] = { "<C-d>zz", desc = "Jump down and center" },
         ["<C-u>"] = { "<C-u>zz", desc = "Jump down and center" },
 
-        -- navigate buffer tabs
-        ["]b"] = { function() require("astrocore.buffer").nav(vim.v.count1) end, desc = "Next buffer" },
-        ["[b"] = { function() require("astrocore.buffer").nav(-vim.v.count1) end, desc = "Previous buffer" },
-
-        -- mappings seen under group name "Buffer"
-        ["<Leader>bd"] = {
-          function()
-            require("astroui.status.heirline").buffer_picker(
-              function(bufnr) require("astrocore.buffer").close(bufnr) end
-            )
-          end,
-          desc = "Close buffer from tabline",
-        },
-
         -- tables with just a `desc` key will be registered with which-key if it's installed
         -- this is useful for naming menus
-        -- ["<Leader>b"] = { desc = "Buffers" },
         ["<Leader>D"] = { desc = "󰆼 Database" },
 
         -- Telescope keymaps with zen mode preservation
@@ -93,7 +78,7 @@ return {
         ["<Leader>fF"] = {
           function()
             vim.g.zen_telescope_was_active = vim.g.zen_mode_active == true
-            require("telescope.builtin").find_files({ hidden = true, no_ignore = true })
+            require("telescope.builtin").find_files { hidden = true, no_ignore = true }
           end,
           desc = "Find files (including hidden)",
         },
@@ -138,6 +123,13 @@ return {
             require("telescope.builtin").git_status()
           end,
           desc = "Git status",
+        },
+        ["<Leader>gC"] = {
+          function()
+            vim.g.zen_telescope_was_active = vim.g.zen_mode_active == true
+            require("telescope.builtin").git_bcommits()
+          end,
+          desc = "Git commits (current file)",
         },
 
         -- setting a mapping to false will disable it

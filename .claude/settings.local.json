@@ -93,7 +93,12 @@
       "Bash(touch:*)",
       "Bash(go build:*)",
       "Bash(go mod list:*)",
-      "WebFetch(domain:www.anthropic.com)"
+      "WebFetch(domain:www.anthropic.com)",
+      "WebFetch(domain:api.github.com)",
+      "Bash(nvim:*)",
+      "WebFetch(domain:docs.astronvim.com)",
+      "Bash(git config:*)",
+      "Bash(tmux list-keys:*)"
     ],
     "deny": []
   }
