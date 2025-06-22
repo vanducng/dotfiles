@@ -1,28 +1,24 @@
-function Manager:render(area)
-  local chunks = self:layout(area)
+-- Yazi init.lua configuration
+-- This file runs synchronously when yazi starts
 
-  local bar = function(c, x, y)
-    x, y = math.max(0, x), math.max(0, y)
-    return ui.Bar(ui.Rect({ x = x, y = y, w = ya.clamp(0, area.w - x, 1), h = math.min(1, area.h) }), ui.Bar.TOP)
-        :symbol(c)
-  end
+-- Custom keybindings can be defined here
+-- Example: require("relative-motions"):setup({ show_numbers = "relative" })
 
-  return ya.flat({
-    -- Borders
-    ui.Border(area, ui.Border.ALL):type(ui.Border.ROUNDED),
-    ui.Bar(chunks[1], ui.Bar.RIGHT),
-    ui.Bar(chunks[3], ui.Bar.LEFT),
+-- Enable borders
+require("full-border"):setup()
 
-    bar("┬", chunks[1].right - 1, chunks[1].y),
-    bar("┴", chunks[1].right - 1, chunks[1].bottom - 1),
-    bar("┬", chunks[2].right, chunks[2].y),
-    bar("┴", chunks[2].right, chunks[1].bottom - 1),
+-- Custom linemode for showing size and modification time
+function Linemode:size_and_mtime()
+    local time = math.floor(self._file.cha.mtime or 0)
+    if time == 0 then
+        time = ""
+    elseif os.date("%Y", time) == os.date("%Y") then
+        time = os.date("%b %d %H:%M", time)
+    else
+        time = os.date("%b %d %Y", time)
+    end
 
-    -- Parent
-    Parent:render(chunks[1]:padding(ui.Padding.xy(1))),
-    -- Current
-    Current:render(chunks[2]:padding(ui.Padding.y(1))),
-    -- Preview
-    Preview:render(chunks[3]:padding(ui.Padding.xy(1))),
-  })
+    local size = self._file:size()
+    return string.format("%s %s", size and ya.readable_size(size) or "-", time)
 end
+

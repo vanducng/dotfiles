@@ -19,3 +19,6 @@ export PATH="$PATH:/Users/vanducng/.local/bin"
 
 # added by Snowflake SnowSQL installer v1.2
 export PATH=/Applications/SnowSQL.app/Contents/MacOS:$PATH
+
+# Yazi PDF preview quality
+export YAZI_PDF_OPTS="-r 300"

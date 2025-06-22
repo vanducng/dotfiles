@@ -1,27 +1,47 @@
-[[manager.prepend_keymap]]
+[[mgr.prepend_keymap]]
+on   = [ "g", "e" ]
+run  = "cd ~/git/personal"
+desc = "personal"
+
+[[mgr.prepend_keymap]]
+on   = [ "g", "x" ]
+run  = "cd ~/git/work/cnb"
+desc = "cnb"
+
+[[mgr.prepend_keymap]]
+on   = [ "g", "s" ]
+run  = "cd ~/git/work/bhcoe"
+desc = "jade"
+
+[[mgr.prepend_keymap]]
+on   = [ "g", "g" ]
+run  = "cd ~/git/work/crashchat"
+desc = "crashchat"
+
+[[mgr.prepend_keymap]]
 on  = [ "T" ]
 run = "plugin --sync max-preview"
 
-[[manager.prepend_keymap]]
+[[mgr.prepend_keymap]]
 on  = [ "T" ]
 run = "plugin --sync hide-preview"
 
-[[manager.prepend_keymap]]
+[[mgr.prepend_keymap]]
 on = [ "u", "a" ]
 run = "plugin bookmarks-persistence --args=save"
 desc = "Save current position as a bookmark"
 
-[[manager.prepend_keymap]]
+[[mgr.prepend_keymap]]
 on = [ "u", "g" ]
 run = "plugin bookmarks-persistence --args=jump"
 desc = "Jump to a bookmark"
 
-[[manager.prepend_keymap]]
+[[mgr.prepend_keymap]]
 on = [ "u", "d" ]
 run = "plugin bookmarks-persistence --args=delete"
 desc = "Delete a bookmark"
 
-[[manager.prepend_keymap]]
+[[mgr.prepend_keymap]]
 on = [ "u", "D" ]
 run = "plugin bookmarks-persistence --args=delete_all"
 desc = "Delete all bookmarks"
