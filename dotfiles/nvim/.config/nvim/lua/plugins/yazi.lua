@@ -6,7 +6,7 @@ return {
   event = "VeryLazy",
   keys = {
     {
-      "<leader>Yz",
+      "<leader>yf",
       function()
         -- Set environment variables for better image support
         vim.env.TERM_PROGRAM = "ghostty"
@@ -18,7 +18,7 @@ return {
       desc = "Open yazi at current file",
     },
     {
-      "<leader>Yw",
+      "<leader>yw",
       function()
         -- Set environment variables for better image support
         vim.env.TERM_PROGRAM = "ghostty"
@@ -34,9 +34,9 @@ return {
   opts = {
     -- Open yazi instead of netrw for directories
     open_for_directories = false, -- Keep oil as default
-    
+
     -- Set environment for image support in tmux
-    yazi_config_home = vim.fn.expand("~/.config/yazi"),
+    yazi_config_home = vim.fn.expand "~/.config/yazi",
     open_file_function = function(chosen_file, config, state) end,
 
     -- Size of the floating window
