@@ -98,7 +98,11 @@
       "Bash(nvim:*)",
       "WebFetch(domain:docs.astronvim.com)",
       "Bash(git config:*)",
-      "Bash(tmux list-keys:*)"
+      "Bash(tmux list-keys:*)",
+      "Bash(yazi:*)",
+      "WebFetch(domain:yazi-rs.github.io)",
+      "Bash(brew install:*)",
+      "Bash(pdftoppm:*)"
     ],
     "deny": []
   }
