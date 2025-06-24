@@ -9,12 +9,12 @@ run  = "cd ~/git/work/acme"
 desc = "acme"
 
 [[mgr.prepend_keymap]]
-on   = [ "g", "s" ]
+on   = [ "g", "j" ]
 run  = "cd ~/git/work/umbrella"
 desc = "umbrella"
 
 [[mgr.prepend_keymap]]
-on   = [ "g", "g" ]
+on   = [ "g", "c" ]
 run  = "cd ~/git/work/initech"
 desc = "initech"
 

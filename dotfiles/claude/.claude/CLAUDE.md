@@ -1,132 +1,84 @@
-# Duc's Data Kitchen 🍳
+# CLAUDE.md - SuperClaude Cfg
 
-## Environment Setup
-- **Python Management**: mise + uv for Python version and dependency management
-- **Package Management**: Use `uv` for fast, reliable dependency resolution
-- **Environment Activation**: `mise use python@3.11` (or latest stable version)
+## Legend  
+| Symbol | Meaning | | Abbrev | Meaning |
+|--------|---------|---|--------|---------|
+| → | leads to | | cfg | configuration |
+| & | and/with | | docs | documentation |
+| > | greater than | | ops | operations |
 
-## Code Style & Standards
+@RULES.md 
+@MCP.md 
+@PERSONAS.md
 
-### Python
-- **Formatter**: ruff (default settings with modifications below)
-- **Line Length**: 120 characters
-- **Quotes**: Double quotes by default
-- **Spacing**: No extra spaces around operators/brackets
-- **Type Hints**: Use modern type hints (Python 3.10+ style)
-  - Use `dict` instead of `Dict`, `list` instead of `List`
-  - Use `Optional[T]` or `T | None` for nullable types
-  - Type hint all function parameters and return values where practical
+## Core Cfg
 
-### Documentation
-- **Comments**: Avoid obvious comments; focus on "why" not "what"
-- **Docstrings**: Required for:
-  - Complex methods with business logic
-  - Core functions used across multiple modules
-  - Public API functions
-  - Data transformation functions
+```yaml
+Philosophy: Code>docs | Simple→complex | Security first
+Communication: Concise format | Symbols: →|&:» | Bullets>prose
+Workflow: TodoRead()→TodoWrite(3+)→Execute | Update immediate
+Stack: React|TS|Vite + Node|Express|PostgreSQL + Git|ESLint|Jest
+Commands: /user:<command> [flags] | Ex: /user:build --init
+```
 
-### SQL
-- **Style**: Use uppercase for SQL keywords, lowercase for table/column names
-- **Indentation**: 2 spaces for nested queries
-- **Line Breaks**: Break long queries into readable chunks
+## Thinking Modes
 
-## Technology Stack
+```yaml
+Activation: Natural language OR command flags
+Flags: --think | --think-hard | --ultrathink
+none: Single file|Basic | think: Multi-file|Standard  
+think hard: Architecture|Complex | ultrathink: Redesign|Critical
+Examples: /user:analyze --code --think | /user:design --api --ultrathink
+```
 
-### Core Tools
-- **Orchestration**: Apache Airflow
-- **Data Transformation**: dbt (data build tool)
-- **Database**: Snowflake
-- **Containerization**: Docker
-- **Web Framework**: Django (for web projects)
+## Token Economy
 
-### Development Workflow
-- **Linting**: `ruff check .` (run before commits)
-- **Formatting**: `ruff format .` (run before commits)
-- **Type Checking**: `mypy .` (if configured in project)
-- **Testing**: `pytest` (run relevant tests, not entire suite unless specified)
+```yaml
+Targets: Minimal commands | Responses<4 lines | Concise docs
+Symbols: →(leads to) |(separator) &(combine) :(define) »(sequence)
+Remove: the|a|very|really|that|which | "in order to"→to | and→&
+```
 
-## Git Workflow
+## UltraCompressed Mode
 
-### Commit Convention
-Follow [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/):
-- `feat:` new features
-- `fix:` bug fixes
-- `docs:` documentation changes
-- `style:` formatting, missing semicolons, etc.
-- `refactor:` code restructuring without functional changes
-- `test:` adding or updating tests
-- `chore:` maintenance tasks
+```yaml
+Purpose: ~70% token reduction | Telegram-style docs | Symbols & abbrevs
+Activation: --uc flag | Natural language | Auto when context>70%
+Rules: shared/ultracompressed.yml | Remove filler | Use symbols
+Output: Direct info only | No intros/outros | Lists>prose
+Legend: Auto-generate | Used symbols/abbrevs only | Start of docs
+```
 
-### Git Best Practices
-- **Staging**: Always stage specific files individually - never use `git add .` or `git add -A`
-- **Review Changes**: Use `git diff` before committing
-- **Atomic Commits**: One logical change per commit
-- **Descriptive Messages**: Clear, concise commit messages explaining the "why"
+## Code Economy
 
-## Project-Specific Commands
+```yaml
+Generation: No comments | Short names | No boilerplate
+Documentation: Only on request | Bullets>prose | Essential facts only
+Patterns: Destructure | Chain | Ternary | Arrow functions
+Output: Code only | No explanation unless asked
+```
 
-### Python/Django Projects
-- `uv run manage.py runserver` - Start Django development server
-- `uv run manage.py migrate` - Apply database migrations
-- `uv run manage.py test` - Run Django tests
-- `uv run python -m pytest` - Run pytest tests
+## Cost Optimization
 
-### dbt Projects
-- `dbt run` - Execute models
-- `dbt test` - Run data tests
-- `dbt docs generate && dbt docs serve` - Generate and serve documentation
-- `dbt run --select model_name+` - Run specific model and downstream dependencies
+```yaml
+Models: Simple→sonnet | Complex→sonnet-4 | Critical→opus-4
+MCP: C7 progressive loading | Seq adaptive thinking | Batch similar
+Efficiency: Min tokens | Cache results | Batch ops
+```
 
-### Database Access (via Makefile)
-- `make melody-dbshell` - Open PostgreSQL shell for direct database queries
-- `make psql` - Alternative PostgreSQL connection
-- `make melody-shell` - Django shell with database access via ORM
+## Auto-Activation
 
-### Docker
-- `docker-compose up -d` - Start services in background
-- `docker-compose logs -f service_name` - Follow logs for specific service
-- `docker-compose exec service_name bash` - Execute bash in running container
+```yaml
+Files: *.tsx→frontend | *.sql→data | Docker→devops | *.test→qa
+Keywords: bug|error→debugger | optimize→performance | secure→security
+Context: TypeError→trace | Module error→deps | Permission→security
+```
 
-### Airflow
-- `airflow dags test dag_id execution_date` - Test DAG
-- `airflow tasks test dag_id task_id execution_date` - Test specific task
-- `airflow db upgrade` - Upgrade Airflow database
+## Performance
 
-## Code Patterns
+```yaml
+Ops: Parallel>sequential | Batch similar | One in-progress
+```
 
-### Error Handling
-- Use specific exception types
-- Log errors with context information
-- Fail fast for configuration errors
-- Graceful degradation for external service failures
-
-### Data Processing
-- Validate data early in pipelines
-- Use batch processing for large datasets
-- Implement proper logging for data quality issues
-- Document data lineage and transformations
-
-### Configuration
-- Use environment variables for configuration
-- Separate config by environment (dev/staging/prod)
-- Never commit secrets or credentials
-- Use connection pooling for database connections
-
-## Testing Guidelines
-- **Unit Tests**: Test individual functions/methods
-- **Integration Tests**: Test data pipelines end-to-end
-- **Data Tests**: Validate data quality and business rules
-- **Mock External Services**: Use mocks for APIs, databases in unit tests
-
-## Security Considerations
-- Never log sensitive data (PII, credentials, API keys)
-- Use parameterized queries to prevent SQL injection
-- Implement proper authentication/authorization
-- Regularly update dependencies for security patches
-
-## Performance Guidelines
-- Profile code before optimizing
-- Use connection pooling for database operations
-- Implement proper indexing strategies
-- Monitor query performance in Snowflake
-- Use efficient data structures and algorithms
+---
+*SuperClaude v4.0.0 | Critical load order | Internal Claude cfg*
