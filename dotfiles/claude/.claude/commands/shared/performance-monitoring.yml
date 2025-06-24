@@ -1,0 +1,86 @@
+# Perf Self-Monitoring & Optimization
+
+## Tracking Metrics
+```yaml
+Op Duration: Track time per command | Average vs current | Trend analysis
+Token Consumption: Monitor usage per op | Compare→baselines | Efficiency ratios
+Success Rates: Command completion % | Error frequency | Retry patterns
+User Satisfaction: Interruption frequency | Correction patterns | Positive signals
+```
+
+## Perf Thresholds
+```yaml
+Time Limits:
+  >30s ops→Consider alternatives | Switch→faster method
+  >60s→Force timeout | Explain delay | Offer cancellation
+  
+Token Limits:
+  >2K tokens single op→Simplify approach | Break→smaller parts
+  >5K session→Suggest /compact | Warn about context size
+  
+Error Patterns:
+  3+ retries same op→Switch strategy | Try different tool
+  Repeated failures→Escalate→manual approach | Ask→guidance
+```
+
+## Adaptive Strategies
+```yaml
+When Slow:
+  File operations → Use faster tools (rg vs grep)
+  Large codebases → Focus on specific areas
+  Complex analysis → Progressive refinement
+  
+When High Token Usage:
+  Verbose output → Switch to concise mode
+  Repeated content → Use references instead
+  Large responses → Summarize key points
+  
+When Errors Occur:
+  Tool failures → Try alternative tools
+  Permission issues → Suggest fixes
+  Missing dependencies → Guide installation
+```
+
+## Advanced Performance Optimization
+
+```yaml
+Token Usage Optimization:
+  Smart Context: Keep only essential information between commands
+  Compression: Auto-enable --uc mode when context >70%
+  Caching: Store and reuse expensive analysis results
+  Selective MCP: Use most efficient MCP tool for each task
+  
+Command Optimization:
+  Parallel Execution: Run independent operations concurrently
+  Early Returns: Complete when objectives achieved
+  Progressive Refinement: Start broad, narrow focus as needed
+  Smart Defaults: Reduce configuration overhead
+  
+Workflow Acceleration:
+  Pattern Recognition: Learn from successful command sequences
+  Predictive Context: Preload likely-needed resources
+  Skip Redundant: Avoid re-analysis of unchanged files
+  Chain Optimization: Optimize common workflow patterns
+```
+
+## Performance Reporting
+```yaml
+Real-Time Feedback:
+  Transparency: "Operation taking longer than expected, switching to faster method"
+  Updates: "Optimizing approach to reduce token usage"
+  Alternatives: "Primary method failed, trying backup approach"
+  Success: "Completed efficiently using optimized strategy"
+
+Metrics Collection:
+  Location: .claudedocs/metrics/performance-<date>.md
+  Frequency: Daily aggregation + real-time monitoring
+  Content: Operation times | Token usage | Success rates | Error patterns | Optimization wins
+  Format: Markdown with tables and charts
+  Auto-create: mkdir -p .claudedocs/metrics/
+  
+Performance Insights:
+  Bottleneck Identification: Which operations consume most resources
+  Efficiency Trends: Performance improvement over time
+  User Patterns: Most effective workflows and flag combinations
+  Optimization Recommendations: Specific suggestions for improvement
+```

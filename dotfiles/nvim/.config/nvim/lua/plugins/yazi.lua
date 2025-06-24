@@ -37,7 +37,6 @@ return {
 
     -- Set environment for image support in tmux
     yazi_config_home = vim.fn.expand "~/.config/yazi",
-    open_file_function = function(chosen_file, config, state) end,
 
     -- Size of the floating window
     floating_window_scaling_factor = 0.9,
@@ -64,7 +63,6 @@ return {
 
     -- Events to enable/disable certain features
     enable_mouse_support = true,
-    open_file_function = nil,
 
     -- Log level
     log_level = vim.log.levels.OFF,

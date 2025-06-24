@@ -62,6 +62,21 @@ return {
         ["<Leader>K"] = { ":tabn<cr>", desc = "Go to previous tab" },
         ["<C-d>"] = { "<C-d>zz", desc = "Jump down and center" },
         ["<C-u>"] = { "<C-u>zz", desc = "Jump down and center" },
+        ["<Leader>rf"] = {
+          function()
+            local current_file = vim.fn.expand("%:p")
+            if current_file == "" then
+              vim.notify("No file in current buffer", vim.log.levels.WARN)
+              return
+            end
+            if vim.bo.filetype ~= "python" then
+              vim.notify("Ruff can only be used on Python files", vim.log.levels.WARN)
+              return
+            end
+            vim.cmd("!" .. "ruff check " .. vim.fn.shellescape(current_file) .. " --fix")
+          end,
+          desc = "Ruff check & fix current file",
+        },
 
         -- tables with just a `desc` key will be registered with which-key if it's installed
         -- this is useful for naming menus
