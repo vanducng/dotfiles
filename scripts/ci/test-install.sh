@@ -7,7 +7,7 @@ ERRORS=0
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
+# YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
@@ -49,7 +49,7 @@ test_stow_installation() {
     
     cd "$PROJECT_ROOT"
     
-    if HOME="$TEST_HOME" make stow-$tool 2>/dev/null; then
+    if HOME="$TEST_HOME" make "stow-$tool" 2>/dev/null; then
         log_success "Successfully installed $tool"
         
         local config_dir="$PROJECT_ROOT/dotfiles/$tool/.config"
@@ -62,7 +62,7 @@ test_stow_installation() {
             fi
         fi
         
-        HOME="$TEST_HOME" make unstow-$tool 2>/dev/null || true
+        HOME="$TEST_HOME" make "unstow-$tool" 2>/dev/null || true
     else
         log_error "Failed to install $tool"
     fi

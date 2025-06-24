@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+# PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -121,6 +121,7 @@ get_os_info() {
     echo -e "${BLUE}System Information:${NC}"
     echo "  OS: $OSTYPE"
     if [[ -f /etc/os-release ]]; then
+        # shellcheck source=/dev/null
         source /etc/os-release
         echo "  Distribution: ${NAME:-Unknown} ${VERSION:-}"
     elif [[ "$OSTYPE" == "darwin"* ]]; then

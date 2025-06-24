@@ -27,6 +27,7 @@ detect_platform() {
         darwin*) echo "macos" ;;
         linux*)
             if [[ -f /etc/os-release ]]; then
+                # shellcheck source=/dev/null
                 source /etc/os-release
                 case "$ID" in
                     ubuntu|debian) echo "ubuntu" ;;
@@ -43,14 +44,15 @@ detect_platform() {
 
 get_platform_tools() {
     local platform="$1"
-    local all_tools=($(cd "$PROJECT_ROOT/dotfiles" && find . -maxdepth 1 -type d -not -name "." | cut -d'/' -f2))
+    local all_tools=()
+    mapfile -t all_tools < <(cd "$PROJECT_ROOT/dotfiles" && find . -maxdepth 1 -type d -not -name "." | cut -d'/' -f2)
     local excluded_tools=()
     
     # Get excluded tools for platform
     if [[ -f "$PLATFORM_CONFIG" ]]; then
         case "$platform" in
             ubuntu|arch)
-                excluded_tools=($(jq -r '.platforms.ubuntu.excluded_tools[]' "$PLATFORM_CONFIG" 2>/dev/null || true))
+                mapfile -t excluded_tools < <(jq -r '.platforms.ubuntu.excluded_tools[]' "$PLATFORM_CONFIG" 2>/dev/null || true)
                 ;;
         esac
     fi
@@ -82,7 +84,8 @@ test_tool_compatibility() {
     fi
     
     # Check platform compatibility
-    local compatible_platforms=$(jq -r ".tool_compatibility.\"$tool\".platforms[]" "$PLATFORM_CONFIG" 2>/dev/null || echo "all")
+    local compatible_platforms
+    compatible_platforms=$(jq -r ".tool_compatibility.\"$tool\".platforms[]" "$PLATFORM_CONFIG" 2>/dev/null || echo "all")
     
     if [[ "$compatible_platforms" == "all" ]]; then
         return 0

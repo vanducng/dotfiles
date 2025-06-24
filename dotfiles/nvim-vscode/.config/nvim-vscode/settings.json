@@ -722,5 +722,5 @@
     "zenMode.showTabs": "none",
     "notebook.globalToolbar": false,
     "notebook.globalToolbarShowLabel": "never",
-    "jupyter.showOutlineButtonInNotebookToolbar": false,
+    "jupyter.showOutlineButtonInNotebookToolbar": false
 }
