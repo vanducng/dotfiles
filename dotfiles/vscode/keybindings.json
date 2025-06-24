@@ -1,8 +1,4 @@
-// Place your key bindings in this file to override the defaultsauto[]
 [
-    {
-        "editor.hover.enabled": false
-    },
     {
         "key": "shift+tab",
         "command": "outdent",
@@ -318,7 +314,6 @@
         "command": "git.viewChanges",
         "when": "!operationInProgress"
     },
-    // Some shortcuts for file tree
     {
         "key": "a",
         "command": "explorer.newFile",
