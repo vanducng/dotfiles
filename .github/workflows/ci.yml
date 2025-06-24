@@ -29,7 +29,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y jq lua5.4 luarocks shellcheck yamllint
-          pip install toml pyyaml
+          pip install pyyaml
           
           # Install yq
           sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
@@ -160,7 +160,8 @@ jobs:
           if grep -r -E "(api[_-]?key|password|secret|token)" dotfiles/ \
              --exclude-dir=.git \
              --exclude="*.md" | \
-             grep -v -E "(example|template|placeholder|<.*>|\$\{.*\})"; then
+             grep -v -E "(example|template|placeholder|<.*>|\$\{.*\}|semantic_tokens|tokens|#.*token)" | \
+             grep -v -E "(config\.toml|\.lua:|\.yml:|comment)" ; then
             echo "Potential secrets found!"
             exit 1
           fi

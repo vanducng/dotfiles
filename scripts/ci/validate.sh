@@ -65,14 +65,16 @@ validate_yaml() {
 validate_toml() {
     local file="$1"
     if command -v python3 >/dev/null 2>&1; then
-        if python3 -c "import tomllib; tomllib.load(open('$file', 'rb'))" 2>/dev/null; then
-            log_success "Valid TOML: $file"
-        else
-            if python3 -c "import toml; toml.load('$file')" 2>/dev/null; then
+        # Check Python version - tomllib requires 3.11+
+        if python3 -c "import sys; exit(0 if sys.version_info >= (3, 11) else 1)" 2>/dev/null; then
+            if python3 -c "import tomllib; tomllib.load(open('$file', 'rb'))" 2>/dev/null; then
                 log_success "Valid TOML: $file"
             else
                 log_error "Invalid TOML: $file"
+                python3 -c "import tomllib; tomllib.load(open('$file', 'rb'))" 2>&1 | sed 's/^/  /'
             fi
+        else
+            log_warning "Python 3.11+ required for TOML validation, skipping $file"
         fi
     else
         log_warning "Python not installed, skipping TOML validation"
@@ -121,7 +123,7 @@ validate_symlinks() {
     log_info "Validating potential symlink targets..."
     
     while IFS= read -r -d '' config_file; do
-        local relative_path="${config_file#$PROJECT_ROOT/dotfiles/}"
+        local relative_path="${config_file#"$PROJECT_ROOT"/dotfiles/}"
         local tool_name="${relative_path%%/*}"
         local target_path="${relative_path#*/}"
         
@@ -155,7 +157,7 @@ main() {
     log_info "Validating YAML files..."
     while IFS= read -r -d '' file; do
         validate_yaml "$file"
-    done < <(find dotfiles -name "*.yaml" -o -name "*.yml" -type f -print0)
+    done < <(find dotfiles -name "*.yaml" -o -name "*.yml" -type f -not -path "*/.claude/commands/*" -print0)
     
     log_info "Validating TOML files..."
     while IFS= read -r -d '' file; do

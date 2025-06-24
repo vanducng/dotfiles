@@ -103,7 +103,12 @@
       "WebFetch(domain:yazi-rs.github.io)",
       "Bash(brew install:*)",
       "Bash(pdftoppm:*)",
-      "Bash(./install.sh)"
+      "Bash(./install.sh)",
+      "Bash(gh pr list:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh run view:*)",
+      "Bash(shellcheck:*)",
+      "Bash(./scripts/ci/validate.sh:*)"
     ],
     "deny": []
   }
