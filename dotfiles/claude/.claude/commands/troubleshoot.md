@@ -1,111 +1,61 @@
-## Legend
-| Symbol | Meaning | | Abbrev | Meaning |
-|--------|---------|---|--------|---------|
-| → | leads to | | prod | production |
-| & | and/with | | impl | implementation |
-| w/ | with | | info | information |
+**Purpose**: Professional debugging and issue resolution
 
-Execute immediately. Add --plan flag if user wants to see plan first.
+---
 
-Troubleshoot & resolve issues in code or system in $ARGUMENTS.
+@include shared/universal-constants.yml#Universal_Legend
 
-Thinking flags (optional):
-- --think→multi-component debugging w/ context
-- --think-hard→complex system issues & race conditions
-- --ultrathink→critical prod issues or elusive bugs
+## Command Execution
+Execute: immediate. --plan→show plan first
+Legend: Generated based on symbols used in command
+Purpose: "[Action][Subject] in $ARGUMENTS"
+
+Systematically debug and resolve issues in $ARGUMENTS using root cause analysis and evidence-based solutions.
+
+@include shared/flag-inheritance.yml#Universal_Always
 
 Examples:
-- `/user:troubleshoot --investigate --think` - Debug w/ full context
-- `/user:troubleshoot --five-whys --think-hard` - Deep root cause analysis
-- `/user:troubleshoot --prod --ultrathink` - Critical prod debugging
+- `/troubleshoot "app crashes on startup"` - Debug crash
+- `/troubleshoot --performance "slow API"` - Performance issues
+- `/troubleshoot --interactive "login fails"` - Guided debugging
 
-Mode selection:
+## Command-Specific Flags
+--performance: "Focus on performance bottlenecks"
+--memory: "Memory leak detection and analysis"
+--network: "Network-related debugging"
+--interactive: "Step-by-step guided troubleshooting"
+--trace: "Enable detailed execution tracing"
+--bisect: "Git bisect to find breaking commit"
 
---investigate flag:
-- Focus→understanding & analyzing issue | Use debugging tools & techniques→gather info
-- Document findings w/o necessarily impl fixes | Useful→complex problems requiring deep analysis
+## Troubleshooting Approach
 
---fix flag:
-- Complete full bug-fixing workflow | Create tests, impl solution & verify resolution
-- Document the fix and prevention measures
-- Default mode if no flag specified
+**1. Reproduce:** Isolate minimal reproduction | Document steps | Verify consistency | Capture full context
 
-When --five-whys flag is present:
-- Apply root cause analysis methodology
-- Ask "why" iteratively to uncover underlying causes
-- Document each level of analysis
-- Propose systemic improvements to prevent recurrence
+**2. Gather Evidence:** Error messages & stack traces | Logs & metrics | System state | Recent changes | Environment differences
 
-When --prod flag is present:
-- Focus on production-specific issues
-- Analyze logs, monitoring data, and metrics
-- Consider performance and scaling factors
-- Ensure minimal disruption to live services
-- Implement safe rollout strategies
+**3. Form Hypotheses:** Most likely causes | Alternative explanations | Test predictions | Rule out possibilities
 
-Comprehensive troubleshooting workflow:
+**4. Test & Verify:** Targeted experiments | Change one variable | Document results | Confirm root cause
 
-1. **Reproduce & Understand**
-   - Create minimal reproduction steps
-   - Document expected vs actual behavior
-   - Identify affected components and users
-   - Determine severity and business impact
+**5. Fix & Prevent:** Implement solution | Add tests | Document fix | Prevent recurrence
 
-2. **Investigate & Isolate**
-   - Use debugging tools and strategic logging
-   - Apply binary search to narrow problem scope
-   - Check recent changes (git blame/history)
-   - Analyze logs, stack traces, and monitoring data
-   - Rule out environmental factors
+## Common Issue Categories
 
-3. **Root Cause Analysis**
-   - Identify the underlying cause, not just symptoms
-   - Use five-whys technique if needed
-   - Consider systemic issues
-   - Document contributing factors
+**Performance:** Slow queries | Memory leaks | CPU bottlenecks | Network latency | Inefficient algorithms
 
-4. **Solution Development** (if --fix flag)
-   - Create failing test that reproduces the issue
-   - Implement minimal fix addressing root cause
-   - Ensure backward compatibility
-   - Consider edge cases and side effects
+**Crashes/Errors:** Null references | Type mismatches | Race conditions | Memory corruption | Stack overflow
 
-5. **Verification & Prevention**
-   - Verify fix resolves the issue completely
-   - Run full test suite for regressions
-   - Test in realistic conditions
-   - Add monitoring for early detection
-   - Document lessons learned
+**Integration:** API failures | Authentication issues | Version conflicts | Configuration problems | Network timeouts
 
-Investigation techniques:
-- Strategic logging and breakpoints
-- Performance profiling for bottlenecks
-- Memory analysis for leaks
-- Network inspection for API issues
-- Database query analysis
+**Data Issues:** Corruption | Inconsistency | Migration failures | Encoding problems | Concurrency conflicts
 
-For production issues:
-- Correlate with deployment timeline
-- Check for traffic patterns
-- Review configuration changes
-- Analyze resource utilization
-- Consider rollback if critical
+@include shared/quality-patterns.yml#Root_Cause_Analysis
 
-Research before fixing:
-- Search for known issues → WebSearch "[error message] [library version]"
-- Check library bug trackers → C7 documentation for known problems
-- Verify error patterns → Official troubleshooting guides required
-- Framework-specific issues → Must check official documentation first
-- Never assume root cause without researching similar cases
-- Document all research sources in fix explanation
+## Deliverables
 
-Report Output:
-- Root cause analysis: `.claudedocs/incidents/rca-<timestamp>.md`
-- Incident documentation: `.claudedocs/incidents/incident-<timestamp>.md`
-- Investigation findings: `.claudedocs/reports/investigation-<timestamp>.md`
-- Ensure directory exists: `mkdir -p .claudedocs/incidents/ .claudedocs/reports/`
-- Include report location in output: "📄 Report saved to: [path]"
+**Root Cause Report:** Issue description | Evidence collected | Analysis process | Root cause identified | Fix implemented
 
-Deliverables: 
-- For investigation: Root cause analysis, detailed findings report, recommended solutions
-- For fix: Implemented solution with tests, prevention measures, incident documentation
+**Fix Documentation:** What was broken | Why it broke | How it was fixed | Prevention measures | Test cases added
+
+**Knowledge Base:** Problem→Solution mapping | Troubleshooting guides | Common patterns | Prevention checklist
+
+@include shared/universal-constants.yml#Standard_Messages_Templates

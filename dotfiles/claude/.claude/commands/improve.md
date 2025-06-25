@@ -1,183 +1,61 @@
-## Legend
-| Symbol | Meaning | | Abbrev | Meaning |
-|--------|---------|---|--------|---------|
-| → | leads to | | perf | performance |
-| & | and/with | | ops | operations |
-| w/ | with | | impl | implementation |
+**Purpose**: Evidence-based enhancement and optimization
 
-Execute immediately. Add --plan flag if user wants to see plan first.
+---
 
-Improve code, perf, or quality of system specified in $ARGUMENTS.
+@include shared/universal-constants.yml#Universal_Legend
 
-Improvement focus w/ flags:
+## Command Execution
+Execute: immediate. --plan→show plan first
+Legend: Generated based on symbols used in command
+Purpose: "[Action][Subject] in $ARGUMENTS"
 
---quality flag:
-- Improve code structure & maintainability
-- w/ --solid: Apply SOLID principles systematically | w/ --refactor: Clean code refactoring
-- w/ --metrics: Generate quality metrics report
+Systematically improve code quality, performance, and architecture in $ARGUMENTS using best practices and optimization techniques.
 
---perf flag:
-- Optimize system perf | Analyze bottlenecks & resource usage
-- Impl caching & async ops | Improve algorithm complexity
+@include shared/flag-inheritance.yml#Universal_Always
 
---iterate flag:
-- Iteratively improve until threshold reached | w/ --threshold: Set target % (default 85%)
-- Measure progress after each iteration | Stop at diminishing returns
+Examples:
+- `/improve --quality` - Code quality improvements
+- `/improve --perf --iterate` - Performance optimization
+- `/improve --arch --think-hard` - Architecture refactoring
 
---watch flag:
-- Continuous improvement monitoring | Auto-apply safe optimizations
-- Real-time perf tracking | Automated quality maintenance
+## Command-Specific Flags
+--quality: "Code quality improvements (readability, maintainability, DRY)"
+--perf: "Performance optimizations (algorithms, caching, queries)"
+--arch: "Architecture improvements (patterns, coupling, scalability)"
+--refactor: "Safe refactoring preserving behavior"
+--iterate: "Iterative improvement until threshold met"
+--threshold: "Quality threshold (low|medium|high|perfect)"
+--metrics: "Show before/after metrics"
+--safe: "Conservative mode - only safe changes"
 
-When --interactive flag is present:
-- Guided improvement process
-- User choice on optimization strategies
-- Step-by-step quality enhancement
-- Interactive threshold adjustment
+## Improvement Categories
 
-## Code Quality Mode (--quality)
+**Code Quality:** Naming clarity | Function extraction | Duplication removal | Complexity reduction | Error handling | Type safety
 
-SOLID Principles application:
-- **Single Responsibility**: One class, one purpose
-- **Open/Closed**: Extensible but not modifiable
-- **Liskov Substitution**: Subtypes must be substitutable
-- **Interface Segregation**: Specific over general interfaces
-- **Dependency Inversion**: Depend on abstractions
+**Performance:** Algorithm optimization | Query optimization | Caching strategies | Lazy loading | Memory efficiency | Parallel processing
 
-Refactoring techniques:
-- Extract method/class for complex logic
-- Inline unnecessary abstractions
-- Rename for clarity and consistency
-- Move code to appropriate modules
-- Remove duplication (DRY principle)
-- Simplify conditionals and loops
-- Reduce coupling, increase cohesion
+**Architecture:** Design patterns | Dependency injection | Layer separation | Module boundaries | API design | Scalability patterns
 
-Quality metrics to track:
-- Cyclomatic complexity (target < 5)
-- Method length (target < 20 lines)
-- Class cohesion and coupling
-- Code duplication percentage
-- Test coverage (target > 80%)
-- Documentation completeness
+**Maintainability:** Documentation | Test coverage | Configuration extraction | Magic number removal | Dead code elimination
 
-Clean code principles:
-- Meaningful, self-documenting names
-- Functions do one thing well
-- Consistent coding style
-- Proper error handling
-- No magic numbers/strings
-- Comments explain why, not what
+## Improvement Process
 
-## Performance Mode (--performance)
+**1. Analysis:** Current state assessment | Identify improvement areas | Prioritize by impact | Set measurable goals
 
-Performance optimization areas:
+**2. Planning:** Safe refactoring path | Preserve functionality | Incremental changes | Rollback strategy
 
-**Code optimization**:
-- Algorithm complexity reduction (O(n²) → O(n log n))
-- Efficient data structures
-- Caching frequently accessed data
-- Lazy loading and pagination
-- Async/parallel processing
-- Memory usage optimization
+**3. Implementation:** Small atomic changes | Continuous testing | Performance monitoring | Code review ready
 
-**Database optimization**:
-- Query optimization and indexing
-- N+1 query elimination
-- Connection pooling
-- Batch operations
-- Denormalization where appropriate
-- Query result caching
+**4. Validation:** Behavior preservation | Performance gains | Quality metrics | Regression testing
 
-**Frontend optimization**:
-- Bundle size reduction
-- Code splitting and lazy loading
-- Image and asset optimization
-- Render performance improvements
-- Service worker caching
-- Reducing re-renders
+@include shared/quality-patterns.yml#Code_Quality_Metrics
 
-**System optimization**:
-- Load balancing strategies
-- CDN implementation
-- Compression (gzip/brotli)
-- HTTP/2 and caching headers
-- Resource pooling
-- Microservice optimization
+## Deliverables
 
-## Iterative Mode (--iterate)
+**Improved Code:** Refactored files | Preserved functionality | Enhanced quality | Better performance
 
-Iteration process:
-1. **Baseline Measurement**
-   - Current performance metrics
-   - Quality scores
-   - Coverage percentage
-   - User satisfaction
+**Improvement Report:** Before/after metrics | Changes summary | Performance gains | Quality improvements
 
-2. **Targeted Improvements**
-   - Focus on highest impact areas
-   - Apply 80/20 rule
-   - Make incremental changes
-   - Maintain working state
+**Documentation:** Refactoring decisions | Architecture changes | Performance optimizations | Future recommendations
 
-3. **Progress Tracking**
-   - Measure after each change
-   - Document improvements
-   - Calculate ROI of changes
-   - Adjust strategy as needed
-
-4. **Completion Criteria**
-   - Reach target threshold
-   - Diminishing returns detected
-   - Time/budget constraints
-   - "Good enough" achieved
-
-Focus areas by iteration type:
-- **Quality**: Complexity, duplication, coverage
-- **Performance**: Response time, throughput, resources
-- **User Experience**: Load time, responsiveness, errors
-- **Maintainability**: Documentation, tests, structure
-
-## Best Practices
-
-General improvement approach:
-1. Measure before changing
-2. Focus on bottlenecks first
-3. Make one change at a time
-4. Verify improvements
-5. Document changes made
-6. Consider trade-offs
-
-Avoid common pitfalls:
-- Premature optimization
-- Over-engineering
-- Breaking changes
-- Ignoring tests
-- Gold-plating
-
-Balance considerations:
-- Performance vs readability
-- Flexibility vs simplicity
-- Speed vs correctness
-- Present vs future needs
-
-## Research Requirements
-
-All optimization patterns must be verified:
-- Performance optimizations → Research benchmarks and best practices via WebSearch
-- Framework-specific improvements → C7 documentation lookup required
-- Algorithm changes → Verify complexity analysis with authoritative sources
-- Caching strategies → Check official recommendations for the platform
-- Never apply "common" optimizations without documentation backing
-- All improvements must cite sources: // Source: [optimization guide reference]
-
-Report Output:
-- Quality metrics: `.claudedocs/metrics/quality-<timestamp>.md`
-- Performance benchmarks: `.claudedocs/metrics/performance-<timestamp>.md`
-- Iteration logs: `.claudedocs/summaries/iteration-log-<timestamp>.md`
-- Ensure directory exists: `mkdir -p .claudedocs/metrics/ .claudedocs/summaries/`
-- Include report location in output: "📄 Report saved to: [path]"
-
-Deliverables:
-- For quality: Refactored code, quality metrics report, improvement documentation
-- For performance: Optimized system, performance benchmarks, bottleneck analysis
-- For iterate: Final metrics, iteration log, recommendations for future improvements
+@include shared/universal-constants.yml#Standard_Messages_Templates

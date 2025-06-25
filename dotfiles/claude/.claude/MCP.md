@@ -1,11 +1,12 @@
 # MCP.md - Model Context Protocol Ops
 
 ## Legend
-| Symbol | Meaning | | Abbrev | Meaning |
-|--------|---------|---|--------|---------|
-| → | leads to | | ops | operations |
-| & | and/with | | UI | user interface |
-| w/ | with | | impl | implementation |
+
+| Symbol | Meaning  |     | Abbrev | Meaning        |
+| ------ | -------- | --- | ------ | -------------- |
+| →      | leads to |     | ops    | operations     |
+| &      | and/with |     | UI     | user interface |
+| w/     | with     |     | impl   | implementation |
 
 ## Decision Matrix
 
@@ -20,10 +21,10 @@ User Triggers (no flags):
   "need button/form/component" → Magic(builder) → integrate
   "why slow/broken" → Sequential(analysis) → impl fix
   "design architecture" → Sequential(system design) → C7(patterns)
-  
+
 Context Triggers (flags override):
   Import errors → C7(resolve-library-id) → verify docs
-  Complex debugging → Sequential(root cause) → native impl  
+  Complex debugging → Sequential(root cause) → native impl
   UI requests → Magic(builder/refiner) → Puppeteer(test)
   Perf issues → Sequential(analysis) → optimize impl
 
@@ -33,7 +34,7 @@ Research-First (shared/research-first.yml):
   API integration → WebSearch REQUIRED for official docs
   Unknown pattern → Sequential thinking + research REQUIRED
   Confidence < 90% → Impl BLOCKED until research complete
-  
+
 Task Complexity:
   Simple queries → Native tools only (unless flagged)
   Lib questions → C7 progressive loading (or --c7)
@@ -69,7 +70,7 @@ UltraCompressed: --uc flag|High context|Token budget | ~70% reduction | Clarity�
 
 ```yaml
 C7: ✓Relevant docs→Proceed | ⚠Partial→Try different terms | ✗No match→Sequential alternatives
-Sequential: ✓Clear analysis+steps→Impl | ⚠Partial→Continue thoughts | ✗Unclear/timeout→Native+user questions  
+Sequential: ✓Clear analysis+steps→Impl | ⚠Partial→Continue thoughts | ✗Unclear/timeout→Native+user questions
 Magic: ✓Component matches→Integrate | ⚠Close needs changes→Refiner | ✗Poor→Try different terms
 Multi-MCP: Results enhance each other | Conflict→Most authoritative | Redundant→Stop calls
 ```
@@ -114,4 +115,5 @@ OPTIMIZE: Batch similar calls | Reuse session results | Start least expensive | 
 ```
 
 ---
-*SuperClaude v4.0.0 | Ops MCP instructions for Claude Code intelligence*
+
+_SuperClaude v4.0.0 | Ops MCP instructions for Claude Code intelligence_

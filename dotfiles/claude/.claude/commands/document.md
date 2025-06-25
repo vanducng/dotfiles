@@ -1,104 +1,40 @@
-## Legend
-| Symbol | Meaning | | Abbrev | Meaning |
-|--------|---------|---|--------|---------|
-| → | leads to | | API | application programming interface |
-| & | and/with | | UX | user experience |
-| w/ | with | | FAQ | frequently asked questions |
+**Purpose**: Professional documentation creation
 
-Execute immediately. Add --plan flag if user wants to see plan first.
+---
 
-Create comprehensive docs for code, API, or system specified in $ARGUMENTS.
+@include shared/universal-constants.yml#Universal_Legend
 
-Flags:
-- --api: Generate API docs | --user: Generate user-friendly guides
-- --ultracompressed, --uc: Generate docs w/ ~70% fewer tokens using telegram-style
+## Command Execution
+Execute: immediate. --plan→show plan first
+Legend: Generated based on symbols used in command
+Purpose: "[Action][Subject] in $ARGUMENTS"
 
---api flag:
-- Document all endpoints w/ examples | Include request/response formats
-- Specify auth requirements | Document error codes & meanings | Add rate limiting info | Provide code samples→multiple languages
+Generate comprehensive documentation for code, APIs, or systems specified in $ARGUMENTS.
 
---user flag:
-- Create user-friendly guides | Include step-by-step tutorials | Add screenshots or diagrams
-- Write FAQ section | Include troubleshooting guide | Provide real-world examples
+@include shared/flag-inheritance.yml#Universal_Always
 
-Documentation types:
+Examples:
+- `/document --type api --format openapi` - Generate API documentation
+- `/document --type readme --style detailed` - Create comprehensive README
+- `/document --type user --style tutorial` - User guide w/ tutorials
 
-README Documentation:
-- Project overview and purpose
-- Installation instructions
-- Quick start guide
-- Configuration options
-- Basic usage examples
-- Contributing guidelines
+Documentation modes:
 
-Architecture Documentation:
-- System design overview
-- Component relationships
-- Data flow diagrams
-- Technology choices rationale
-- Scalability considerations
-- Security architecture
+**--type:** Documentation type
+- api: API documentation (OpenAPI/Swagger) | code: Code documentation (JSDoc/docstrings)
+- readme: Project README files | architecture: System architecture docs
+- user: End-user documentation | dev: Developer guides
 
-API Documentation:
-- Endpoint descriptions
-- HTTP methods and status codes
-- Request/response schemas
-- Authentication methods
-- Example requests with curl/code
-- Webhook documentation
-- WebSocket events (if applicable)
+**--format:** Output format  
+- markdown: Markdown format (default) | html: HTML documentation
+- pdf: PDF output | docusaurus: Docusaurus compatible | mkdocs: MkDocs compatible
 
-User Guides:
-- Getting started tutorial
-- Feature walkthroughs
-- Best practices guide
-- Common use cases
-- Integration guides
-- Migration guides
+**--style:** Documentation style
+- concise: Brief, essential information only | detailed: Comprehensive with examples
+- tutorial: Step-by-step guide format | reference: API reference style
 
-Developer Documentation:
-- Code structure overview
-- Development setup
-- Testing guidelines
-- Deployment process
-- Debugging tips
-- Performance optimization
+@include shared/docs-patterns.yml#Project_Documentation
 
-Documentation standards:
-- Use clear, concise language
-- Include practical examples
-- Add visual aids where helpful
-- Keep information current
-- Make it searchable
-- Version-specific when needed
-- Test all code examples
+@include shared/docs-patterns.yml#Standard_Notifications
 
-When --ultracompressed flag is present:
-- Apply shared/ultracompressed.yml rules
-- Generate legend at doc start
-- Remove articles, conjunctions, fillers
-- Use symbols: →&@+- w/ w/o
-- Use abbreviations: cfg fn impl req resp
-- Headings <20 chars, sentences <50 chars
-- Format: YAML>JSON>prose, tables>lists>paragraphs
-- Target ~70% token reduction
-
-Structure guidelines:
-- Logical organization
-- Progressive disclosure
-- Cross-references
-- Glossary for terms
-- Index for quick lookup
-- Change log maintenance
-
-Documentation Output:
-- API documentation: `/docs/api/`
-- User guides: `/docs/guides/`
-- Architecture docs: `/docs/architecture/`
-- Developer docs: `/docs/development/`
-- README files: `/docs/README.md` (main), subdirectory READMEs as needed
-- Ensure directory exists: `mkdir -p /docs/[category]/`
-- Include location in output: "📚 Documentation created: [path]"
-- Update `/docs/index.md` with new documentation links
-
-Deliverables: Complete documentation matching the specified type, working code examples, visual aids or diagrams as needed, and quick reference guide.
+@include shared/universal-constants.yml#Standard_Messages_Templates
