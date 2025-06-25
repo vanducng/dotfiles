@@ -1,49 +1,115 @@
-## Legend
-| Symbol | Meaning | | Abbrev | Meaning |
-|--------|---------|---|--------|---------|
-| → | leads to | | CI/CD | continuous integration/deployment |
-| & | and/with | | cfg | configuration |
-| w/ | with | | env | environment |
+**Purpose**: Professional development environment setup
 
-Execute immediately. Add --plan flag if user wants to see plan first.
+---
 
-Setup comprehensive dev env or CI/CD pipeline based on $ARGUMENTS.
+@include shared/universal-constants.yml#Universal_Legend
 
-Thinking flags (optional):
-- --think→multi-tool env coordination
-- --think-hard→complex CI/CD pipeline architecture  
-- --ultrathink→enterprise dev infrastructure design
+## Command Execution
+Execute: immediate. --plan→show plan first
+Legend: Generated based on symbols used in command
+Purpose: "[Action][Subject] in $ARGUMENTS"
+
+Configure comprehensive development environments and CI/CD pipelines for $ARGUMENTS.
+
+@include shared/flag-inheritance.yml#Universal_Always
 
 Examples:
-- `/user:dev-setup --install --think` - Tool installation w/ dependency analysis
-- `/user:dev-setup --ci --think-hard` - CI/CD pipeline w/ comprehensive workflow design
-- `/user:dev-setup --monitor --ultrathink` - Complete observability infrastructure
+- `/dev-setup --type node --ci github --tools` - Node.js project with GitHub Actions
+- `/dev-setup --type python --tools --think` - Python project with comprehensive tooling
+- `/dev-setup --type monorepo --ci gitlab --think-hard` - Full-stack monorepo with GitLab CI
+- `/dev-setup --type react --tools --ci github` - React project with quality tools
 
---install flag:
-- Install & cfg dev tools (Node.js, Git, Docker, DBs) | Setup IDE cfgs→consistent dev experience
-- Create npm scripts→common tasks | Cfg pre-commit hooks→code quality | Setup linting & testing frameworks
+## Setup Types
+
+--type flag:
+- node: Node.js/TypeScript project setup
+- python: Python virtual environment & tooling
+- react: React + Vite/Next.js configuration
+- fullstack: Complete full-stack environment
+- monorepo: Multi-package monorepo setup
 
 --ci flag:
-- Cfg CI/CD pipelines (GitHub Actions, GitLab CI, other platforms) | Setup build, test & deployment stages
-- Cfg envs: dev, staging & prod | Add security scanning & dep checking | Setup deployment automation
+- github: GitHub Actions workflows
+- gitlab: GitLab CI/CD pipelines
+- jenkins: Jenkins pipeline configuration
+- circleci: CircleCI configuration
+- custom: Custom CI/CD solution
 
---monitor flag:
-- Cfg observability tools | Setup logging & monitoring | Add perf tracking
-- Cfg error reporting | Setup alerts→critical issues
+--tools flag:
+- Include dev tools: linters, formatters, pre-commit hooks
+- Configure VS Code settings & extensions
+- Setup debugging configurations
+- Install recommended tooling
 
-## Best Practices & Security
+## Setup Components
 
-Ensure all cfgs follow security practices & include comprehensive docs.
+Environment Configuration:
+- Package manager setup (npm/yarn/pnpm)
+- Version management (.nvmrc, .python-version)
+- Environment variables & .env structure
+- Docker configuration if needed
 
-Research requirements:
-- Dev tools→C7 docs for installation & cfg patterns | CI/CD platforms→WebSearch platform-specific practices & guides
-- Security tools→research OWASP & security scanning docs | Monitoring→check official observability platform docs
-- Never cfg w/o docs - verify setup patterns | All cfgs cite sources: // Source: [setup guide ref]
+Code Quality:
+- ESLint/Prettier configuration
+- Pre-commit hooks (husky, lint-staged)
+- Test framework setup (Jest, Pytest, etc)
+- Code coverage configuration
 
-Report Output:
-- Setup logs: `.claudedocs/reports/dev-setup-<timestamp>.md`
-- Cfg summaries: `.claudedocs/summaries/environment-config-<timestamp>.md`
-- Ensure dirs: `mkdir -p .claudedocs/reports/ .claudedocs/summaries/`
-- Include location: "📄 Setup report saved to: [path]"
+CI/CD Pipeline:
+- Build & test workflows
+- Deployment configurations
+- Security scanning (SAST/DAST)
+- Dependency vulnerability checks
+- Release automation
 
-Deliverables: Cfg scripts, CI/CD pipeline files, setup docs, env-specific cfgs & security validation report.
+Development Tools:
+- VS Code workspace settings
+- Debug configurations
+- Task runners & scripts
+- Documentation generation
+
+## Best Practices
+
+Security:
+- Never commit secrets or credentials
+- Use environment variables for sensitive data
+- Configure security scanning in CI
+- Implement dependency vulnerability checks
+
+Performance:
+- Cache dependencies in CI
+- Parallelize test execution
+- Optimize build processes
+- Use appropriate resource limits
+
+Maintainability:
+- Consistent tooling across team
+- Clear documentation
+- Automated quality checks
+- Reproducible environments
+
+## Examples
+
+```bash
+# Node.js project with GitHub Actions
+/dev-setup --type node --ci github --tools
+
+# Python project with comprehensive tooling
+/dev-setup --type python --tools --think
+
+# Full-stack monorepo with GitLab CI
+/dev-setup --type monorepo --ci gitlab --think-hard
+
+# React project with all quality tools
+/dev-setup --type react --tools --ci github
+```
+
+## Deliverables
+
+- Complete environment configuration files
+- CI/CD pipeline definitions
+- Development tool configurations
+- Setup documentation & README updates
+- Scripts for common development tasks
+
+@include shared/universal-constants.yml#Standard_Messages_Templates

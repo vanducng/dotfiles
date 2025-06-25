@@ -1,81 +1,154 @@
-## Legend
-| Symbol | Meaning | | Abbrev | Meaning |
-|--------|---------|---|--------|---------|
-| → | leads to | | DB | database |
-| & | and/with | | perf | performance |
-| w/ | with | | arch | architecture |
+**Purpose**: Database and code migration management
 
-Execute immediately. Add --plan flag if user wants to see plan first.
+---
 
-Execute comprehensive DB or code migration based on specs in $ARGUMENTS.
+@include shared/universal-constants.yml#Universal_Legend
 
-Thinking flags (optional):
-- --think→multi-system migration coordination
-- --think-hard→complex data transformation & rollback planning
-- --ultrathink→enterprise-scale migration w/ zero-downtime requirements
+## Command Execution
+Execute: immediate. --plan→show plan first
+Legend: Generated based on symbols used in command
+Purpose: "[Action][Subject] in $ARGUMENTS"
 
-Examples:
-- `/user:migrate --dry-run --think` - Migration preview w/ impact analysis
-- `/user:migrate --think-hard` - Complex migration w/ comprehensive safety planning
-- `/user:migrate --rollback --ultrathink` - Critical rollback w/ full system analysis
+Execute database and code migrations for $ARGUMENTS.
 
-Migration types:
+## Purpose
+Execute comprehensive database or code migrations based on specifications in $ARGUMENTS with safety checks and rollback capabilities.
 
-Schema migrations:
-- Create, alter, or drop tables | Add or modify indexes→perf
-- Update constraints & relationships | Manage DB versioning
+## Syntax
+`/migrate [flags] [migration-spec]`
 
-Data migrations:
-- Transform existing data→new format | Backfill missing or derived data
-- Clean up obsolete or orphaned records | Ensure data integrity throughout
+@include shared/flag-inheritance.yml#Universal_Always
 
-Code migrations:
-- Refactor→new patterns or arch
-- Update to new framework versions
-- Migrate between different technologies
-- Modernize legacy code
+## Core Flags
 
-Follow the safe migration workflow:
-1. Plan - Design migration strategy and rollback plan
-2. Backup - Create full backup of affected data/code
-3. Test - Run migration in test environment first
-4. Execute - Apply migration with transaction support
-5. Verify - Validate migration success and data integrity
+--type flag:
+- database: SQL schema migrations
+- code: Codebase refactoring
+- api: API version migration
+- data: Data transformation
+- full: Complete system migration
 
-When --dry-run flag is present:
-- Preview all changes without executing
-- Show affected records/files count
-- Estimate migration duration
-- Identify potential issues
+--direction flag:
+- up: Apply migrations forward
+- down: Rollback migrations
+- status: Check migration state
+- validate: Test without applying
 
-When --rollback flag is present:
-- Revert to pre-migration state
-- Use transaction rollback when possible
-- Restore from backup if needed
-- Verify system stability
+--target flag:
+- latest: All pending migrations
+- version: Specific version
+- step: Number of migrations
+- timestamp: Up to date/time
 
-## Safety Measures & Best Practices
+## Migration Types
 
-Safety measures:
-- Use database transactions for atomicity
-- Calculate checksums for data validation
-- Implement idempotent migrations
-- Test rollback procedure before execution
-- Monitor system during migration
+Database Migrations:
+- Schema changes (add/drop tables)
+- Column modifications
+- Index optimization
+- Constraint updates
+- Data transformations
 
-Research requirements for migration:
-- Database patterns → C7 documentation for database-specific migration patterns
-- Framework migrations → Must verify with official migration guides and best practices
-- Data transformation → Research ETL patterns and data integrity verification methods
-- Zero-downtime patterns → WebSearch for platform-specific blue-green migration strategies
-- Never migrate without tested rollback - always verify migration patterns
-- All migration scripts must cite sources: // Source: [migration guide reference]
+Code Migrations:
+- API version updates
+- Framework upgrades
+- Dependency updates
+- Structure refactoring
+- Pattern modernization
 
-Report Output:
-- Migration logs: `.claudedocs/reports/migration-<timestamp>.md`
-- Data integrity reports: `.claudedocs/metrics/data-validation-<timestamp>.md`
-- Rollback procedures: `.claudedocs/summaries/rollback-plan-<timestamp>.md`
-- Ensure directory exists: `mkdir -p .claudedocs/reports/ .claudedocs/metrics/ .claudedocs/summaries/`
-- Include report location in output: "📄 Migration report saved to: [path]"
+Data Migrations:
+- Format conversions
+- Bulk transformations
+- ETL operations
+- Cleanup operations
+- Normalization
 
-Deliverables: Migration script with rollback capability, execution report with statistics, backup confirmation, data integrity verification, and rollback procedure documentation.
+## Safety Features
+
+Pre-Migration:
+- Backup current state
+- Validate migration files
+- Check dependencies
+- Test in transaction
+- Estimate impact
+
+During Migration:
+- Transaction wrapping
+- Progress tracking
+- Error handling
+- Partial rollback
+- Health checks
+
+Post-Migration:
+- Verify integrity
+- Update documentation
+- Clear caches
+- Run tests
+- Monitor performance
+
+## Migration Workflow
+
+1. Analysis Phase:
+   - Scan current state
+   - Identify changes needed
+   - Generate migration plan
+   - Estimate risks
+
+2. Preparation Phase:
+   - Create backups
+   - Prepare rollback plan
+   - Set up monitoring
+   - Notify stakeholders
+
+3. Execution Phase:
+   - Run migrations
+   - Track progress
+   - Handle errors
+   - Apply fixes
+
+4. Validation Phase:
+   - Verify success
+   - Run test suite
+   - Check performance
+   - Update docs
+
+## Best Practices
+
+Safety:
+- Always backup first
+- Test in staging
+- Use transactions
+- Plan rollbacks
+- Monitor closely
+
+Performance:
+- Batch operations
+- Off-peak execution
+- Index management
+- Query optimization
+- Resource limits
+
+## Examples
+
+```bash
+# Database migration to latest
+/migrate --type database --direction up
+
+# Rollback last 2 migrations
+/migrate --type database --direction down --step 2
+
+# Code migration with validation
+/migrate --type code --validate --think
+
+# Full system migration plan
+/migrate --type full --plan --ultrathink
+```
+
+## Deliverables
+
+- Migration scripts
+- Rollback procedures
+- Execution logs
+- Validation reports
+- Updated documentation
+- Performance metrics

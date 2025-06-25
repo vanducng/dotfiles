@@ -108,7 +108,8 @@
       "Bash(gh pr view:*)",
       "Bash(gh run view:*)",
       "Bash(shellcheck:*)",
-      "Bash(./scripts/ci/validate.sh:*)"
+      "Bash(./scripts/ci/validate.sh:*)",
+      "Bash(tree:*)"
     ],
     "deny": []
   }
