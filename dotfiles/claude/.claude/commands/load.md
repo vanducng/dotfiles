@@ -1,70 +1,152 @@
-## Legend
-| Symbol | Meaning | | Abbrev | Meaning |
-|--------|---------|---|--------|---------|
-| → | leads to | | cfg | configuration |
-| & | and/with | | deps | dependencies |
-| w/ | with | | CI/CD | continuous integration/deployment |
+**Purpose**: Project context loading and analysis
 
-Execute immediately. Add --plan flag if user wants to see plan first.
+---
 
-Load & analyze project context in $ARGUMENTS→build comprehensive understanding.
+@include shared/universal-constants.yml#Universal_Legend
 
---depth flag:
-- shallow: Quick overview→project structure & purpose
-- normal: Standard analysis→main files & architecture
-- deep: Comprehensive analysis→entire codebase
+## Command Execution
+Execute: immediate. --plan→show plan first
+Legend: Generated based on symbols used in command
+Purpose: "[Action][Subject] in $ARGUMENTS"
 
-Loading process:
-1. Scan project structure & directory layout 2. Read key cfg & docs files
-3. Analyze code architecture & patterns 4. Build mental model→project org 5. ID techs & deps
+Load and analyze project context in $ARGUMENTS.
 
-Files→analyze:
+## Purpose
+Load and analyze project context in $ARGUMENTS to build comprehensive understanding of codebase structure, architecture, and patterns.
 
-Essential:
-- README.md→project overview | package.json/requirements.txt/go.mod→deps
-- Cfg files (.env.example, cfg/*) | Build cfg (webpack, vite, etc.) | CI/CD cfg files
+## Syntax
+`/load [flags] [path]`
 
-Source structure:
-- Main entry points | Directory org | Module boundaries | Shared components/utilities
-- Test structure
+@include shared/flag-inheritance.yml#Universal_Always
 
-Version control:
-- Current git status
-- Recent commit history
-- Branch structure
-- Uncommitted changes
+## Core Flags
 
-Depth-specific analysis:
+--scope flag:
+- minimal: Core files only
+- standard: Main source & config
+- comprehensive: All relevant files
+- full: Complete project analysis
 
-Shallow depth:
-- Project purpose and goals
-- Main technologies used
-- High-level architecture
-- Key dependencies
-- Quick start information
+--focus flag:
+- architecture: System design
+- api: API endpoints & contracts
+- database: Schema & queries
+- frontend: UI components
+- testing: Test coverage
 
-Normal depth:
-- Detailed file structure
-- Main components and modules
-- API endpoints or routes
+--format flag:
+- summary: High-level overview
+- detailed: Comprehensive analysis
+- visual: Include diagrams
+- structured: YAML/JSON output
+
+## Loading Strategy
+
+Progressive Loading:
+1. Core files (package.json, config)
+2. Entry points (main, index)
+3. Key modules & components
+4. Tests & documentation
+5. Supporting files
+
+Smart Selection:
+- Prioritize by importance
+- Skip generated files
+- Focus on active code
+- Include critical configs
+- Respect .gitignore
+
+## Analysis Components
+
+Structure Analysis:
+- Directory organization
+- Module dependencies
+- Component hierarchy
+- API surface area
 - Database schema
-- Testing approach
-- Development workflow
 
-Deep depth:
-- Complete code analysis
-- All file relationships
-- Detailed dependency graph
-- Performance bottlenecks
-- Security considerations
-- Technical debt areas
-- Optimization opportunities
+Pattern Detection:
+- Design patterns used
+- Coding conventions
+- Architecture style
+- Technology stack
+- Best practices
 
-Build mental model including:
-- How components interact
-- Data flow through system
-- External integrations
-- Deployment architecture
-- Development patterns used
+Quality Metrics:
+- Code complexity
+- Test coverage
+- Documentation level
+- Technical debt
+- Security concerns
 
-Deliverables: Comprehensive project understanding summary, identified next steps or recommendations, key areas requiring attention, and quick reference guide for project navigation.
+## Output Format
+
+Standard Report:
+```yaml
+Project: [Name]
+Type: [Web App/API/Library]
+Stack:
+  Frontend: [Technologies]
+  Backend: [Technologies]
+  Database: [Type]
+Architecture:
+  Style: [Monolith/Microservices]
+  Patterns: [List]
+Key_Components:
+  - [Component]: [Purpose]
+Quality:
+  Test_Coverage: X%
+  Documentation: [Level]
+  Complexity: [Score]
+```
+
+## Best Practices
+
+Efficiency:
+- Load incrementally
+- Cache analysis results
+- Focus on changes
+- Skip redundant files
+- Optimize memory usage
+
+Accuracy:
+- Verify assumptions
+- Cross-reference files
+- Check documentation
+- Validate patterns
+- Update regularly
+
+## Examples
+
+```bash
+# Quick project overview
+/load --scope minimal
+
+# Full architecture analysis
+/load --scope comprehensive --focus architecture
+
+# API documentation generation
+/load --focus api --format detailed
+
+# Complete project understanding
+/load --scope full --think-hard
+```
+
+## Integration
+
+@include shared/loading-config.yml#Loading_Strategies
+
+Works with:
+- /analyze for deep inspection
+- /document for documentation
+- /improve for enhancements
+- /estimate for planning
+
+## Deliverables
+
+- Project structure map
+- Architecture diagram
+- Component inventory
+- Dependency graph
+- Quality metrics report
+- Pattern analysis

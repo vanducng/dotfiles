@@ -1,174 +1,60 @@
-## Legend
-| Symbol | Meaning | | Abbrev | Meaning |
-|--------|---------|---|--------|---------|
-| → | leads to | | cfg | configuration |
-| & | and/with | | deps | dependencies |
-| w/ | with | | vuln | vulnerability |
+**Purpose**: Security audits and validation
 
-Execute immediately. Add --plan flag if user wants to see plan first.
+---
 
-Scan code, ops, or systems→security vulns & safety issues in $ARGUMENTS.
+@include shared/universal-constants.yml#Universal_Legend
 
-Scan type w/ flags:
+## Command Execution
+Execute: immediate. --plan→show plan first
+Legend: Generated based on symbols used in command
+Purpose: "[Action][Subject] in $ARGUMENTS"
 
---validate flag:
-- Pre-execution safety validation | Op risk assessment
-- Permission & access checks | Quick safety verification before running commands
+Perform comprehensive security, quality, and dependency scanning on code specified in $ARGUMENTS.
 
---security flag:
-- Comprehensive security analysis
-- w/ --owasp: Focus→OWASP Top 10 | w/ --deps: Deps vuln scan
-- Deep security audit→code & cfg
+@include shared/flag-inheritance.yml#Universal_Always
 
-## Validation Mode (--validate)
+Examples:
+- `/scan --security` - Security vulnerability scan
+- `/scan --deps` - Dependency audit
+- `/scan --validate` - Full validation scan
+- `/scan --quick` - Quick scan for critical issues
 
-Pre-execution safety checks:
+## Command-Specific Flags
+--security: "Deep security vulnerability scanning (OWASP, CVEs, secrets)"
+--deps: "Dependency vulnerability audit w/ fix recommendations"
+--validate: "Comprehensive validation (syntax, types, logic, security)"
+--quick: "Fast scan focusing on critical issues only"
+--fix: "Auto-fix safe issues"
+--strict: "Zero-tolerance mode (fail on any issue)"
+--report: "Generate detailed report"
+--ci: "CI-friendly output format"
 
-**Security validation**:
-- Path traversal prevention | No execution outside project boundaries
-- Secrets and credentials detection
-- Permission verification
-- Input sanitization checks
+## Scan Types
 
-**Code validation**:
-- Syntax correctness
-- Import and dependency verification
-- Breaking change detection
-- Configuration validity
-- Type safety checks
+**Security Scan:** OWASP Top 10 | Injection vulnerabilities | Auth flaws | Sensitive data exposure | Hardcoded secrets | CVE database check
 
-**Operation validation**:
-- Git state verification
-- Branch protection compliance
-- Resource availability
-- Rollback capability
-- Blast radius assessment
+**Dependency Scan:** Known vulnerabilities | Outdated packages | License compliance | Supply chain risks | Transitive dependencies
 
-**Risk assessment**:
-- Calculate risk score (1-10)
-- Impact analysis (data loss, downtime)
-- Reversibility evaluation
-- Required permissions check
-- Compliance verification
+**Code Quality:** Complexity metrics | Duplication | Dead code | Type safety | Best practices | Performance antipatterns
 
-Validation workflow:
-1. Parse intended operation
-2. Run all applicable checks
-3. Generate risk score
-4. Report with clear indicators:
-   - ✅ Pass - Safe to proceed
-   - ⚠️ Warning - Caution advised
-   - ❌ Block - Do not proceed
+**Configuration:** Misconfigured services | Insecure defaults | Missing security headers | Exposed endpoints | Weak crypto
 
-Integration behavior:
-- Auto-trigger for risky operations
-- Chain with execution: scan --validate && execute
-- Block CRITICAL [10] severity issues
-- Require confirmation for HIGH [7-9] risks
+## Validation Levels
 
-## Security Mode (--security)
+**Quick (--quick):** Critical security only | Known CVEs | Hardcoded secrets | SQL injection | XSS vulnerabilities
 
-Comprehensive security analysis:
+**Standard (default):** All security checks | Major quality issues | Dependency vulnerabilities | Configuration problems
 
-**OWASP Top 10 checks**:
-- Injection flaws (SQL, NoSQL, OS command, LDAP)
-- Broken authentication and session management
-- Sensitive data exposure
-- XML external entities (XXE)
-- Broken access control
-- Security misconfiguration
-- Cross-site scripting (XSS)
-- Insecure deserialization
-- Using components with known vulnerabilities
-- Insufficient logging and monitoring
+**Strict (--strict):** Everything + minor issues | Style violations | Documentation gaps | Test coverage | Performance warnings
 
-**Code security analysis**:
-- Input validation gaps
-- Output encoding issues
-- Authentication weaknesses
-- Authorization flaws
-- Cryptographic problems
-- Error handling leaks
-- Session management
-- File operation safety
+@include shared/security-patterns.yml#OWASP_Top_10
 
-**Dependency scanning**:
-- Known CVE detection
-- Outdated package identification
-- License compliance check
-- Transitive dependency analysis
-- Security patch availability
-- Typosquatting detection
+## Deliverables
 
-**Configuration security**:
-- Hardcoded secrets scan
-- Environment variable safety
-- Permission configurations
-- Network exposure
-- TLS/SSL settings
-- CORS policies
-- Security headers
+**Reports:** `.claudedocs/scans/security-{timestamp}.md` | Severity classification | Fix recommendations | Risk assessment
 
-**Infrastructure security**:
-- Open ports and services
-- Firewall rules
-- Access control lists
-- Encryption in transit/rest
-- Backup security
-- Logging configuration
+**Fix Scripts:** Auto-generated patches | Safe automated fixes | Manual fix instructions | Rollback procedures
 
-## Quick Scan Options
+**CI Integration:** Exit codes | JSON output | SARIF format | GitHub/GitLab integration
 
-With --quick flag:
-- Fast validation for common issues
-- Skip deep analysis
-- Focus on critical problems
-- Rapid feedback loop
-
-With --strict flag:
-- Zero-tolerance mode
-- Flag all potential issues
-- Enforce best practices
-- Require explicit overrides
-
-## Scan Output
-
-Results include:
-- Executive summary with risk level
-- Detailed findings by category
-- Severity ratings (CRITICAL/HIGH/MEDIUM/LOW)
-- Specific remediation steps
-- Code examples for fixes
-- References to security resources
-- Compliance mapping (if applicable)
-
-Severity classification:
-- **CRITICAL [10]**: Immediate action required
-- **HIGH [7-9]**: Fix before deployment
-- **MEDIUM [4-6]**: Address in next sprint
-- **LOW [1-3]**: Best practice improvements
-
-## Integration
-
-Works with other commands:
-- Run before deploy: `/project:scan --validate && /project:deploy`
-- Security gate: `/project:scan --security --strict`
-- CI/CD integration: Fail build on HIGH+ findings
-- Pre-commit hooks: Quick validation
-
-Best practices:
-- Run validation before any risky operation
-- Schedule regular security scans
-- Track and trend findings over time
-- Automate where possible
-- Document exceptions with justification
-
-Report Output:
-- Safety reports: `.claudedocs/reports/safety-scan-<timestamp>.md`
-- Security reports: `.claudedocs/reports/security-scan-<timestamp>.md`
-- Ensure directory exists: `mkdir -p .claudedocs/reports/`
-- Include report location in output: "📄 Scan report saved to: [path]"
-
-Deliverables:
-- For validate: Safety report, risk score, proceed/block recommendation
-- For security: Vulnerability report, remediation guide, risk assessment, compliance status
+@include shared/universal-constants.yml#Standard_Messages_Templates

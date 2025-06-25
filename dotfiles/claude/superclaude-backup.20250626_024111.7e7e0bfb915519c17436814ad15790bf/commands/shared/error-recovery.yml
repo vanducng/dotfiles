@@ -1,0 +1,173 @@
+# Error Recovery & Resilience Patterns
+
+## Error Classification & Response
+
+```yaml
+Error Severity Levels:
+  CRITICAL [10]: Data loss, security breach, prod down
+    Response: Immediate stop, alert, rollback, incident response
+    Recovery: Manual intervention required, full investigation
+    
+  HIGH [7-9]: Build failure, test failure, deployment issues
+    Response: Stop workflow, notify user, suggest fixes
+    Recovery: Automated retry w/ backoff, alternative paths
+    
+  MEDIUM [4-6]: Warning conditions, perf degradation
+    Response: Continue w/ warning, log for later review
+    Recovery: Attempt optimization, monitor for escalation
+    
+  LOW [1-3]: Info messages, style violations, minor optimizations
+    Response: Note in output, continue execution
+    Recovery: Background fixes, cleanup on completion
+
+Error Categories:
+  Transient: Network timeouts, temp resource unavailability
+    Strategy: Exponential backoff retry, circuit breaker pattern
+    
+  Config: Missing env vars, incorrect settings, permissions
+    Strategy: Validation, helpful error msgs, setup guidance
+    
+  Logic: Code bugs, algorithm errors, edge cases
+    Strategy: Fallback implementations, graceful degradation
+    
+  Resource: Out of memory, disk space, API rate limits
+    Strategy: Resource monitoring, cleanup, queue management
+```
+
+## Recovery Strategies
+
+```yaml
+Automatic Recovery:
+  Retry Mechanisms:
+    Simple: Up to 3 attempts with 1s delay
+    Exponential: 1s, 2s, 4s, 8s delays with jitter
+    Circuit Breaker: Stop retries after threshold failures
+    
+  Fallback Patterns:
+    Alternative Commands: Use native tools if MCP fails
+    Degraded Functionality: Skip non-essential features
+    Cached Results: Use previous successful outputs
+    
+  State Management:
+    Checkpoints: Save state before risky operations
+    Rollback: Automatic revert to last known good state
+    Cleanup: Remove partial results on failure
+
+Manual Recovery:
+  User Guidance:
+    Clear Error Messages: What failed, why, how to fix
+    Action Items: Specific steps user can take
+    Documentation Links: Relevant help resources
+    
+  Intervention Points:
+    Confirmation: Ask before destructive operations
+    Override: Allow user to skip validation warnings
+    Custom: Accept user-provided alternative approaches
+    
+  Recovery Tools:
+    Diagnostic: Commands to investigate failures
+    Repair: Automated fixes for common issues
+    Reset: Return to clean state for fresh start
+```
+
+## Command-Specific Recovery
+
+```yaml
+Build Failures:
+  Clean & Retry: Remove artifacts, clear cache, rebuild
+  Dependency Issues: Update lockfiles, reinstall packages
+  Compilation Errors: Suggest fixes, alternative approaches
+  
+Test Failures:
+  Flaky Tests: Retry failed tests, identify unstable tests
+  Environment Issues: Reset test state, check prerequisites
+  Coverage Gaps: Generate missing tests, update thresholds
+  
+Deploy Failures:
+  Health Check Failures: Rollback, investigate logs
+  Resource Constraints: Scale up, optimize deployment
+  Configuration Issues: Validate settings, check secrets
+  
+Analysis Failures:
+  Tool Unavailable: Fallback to alternative analysis tools
+  Large Codebase: Reduce scope, batch processing
+  Permission Issues: Guide user through access setup
+
+MCP Server Failures:
+  Connection Issues: Retry with exponential backoff
+  Timeout: Reduce request complexity, use native tools
+  Rate Limiting: Queue requests, implement backoff
+  Service Unavailable: Fallback to cached results or native tools
+```
+
+## Error Monitoring & Learning
+
+```yaml
+Error Tracking:
+  Frequency: Count occurrence of specific error types
+  Patterns: Identify common failure sequences
+  Trends: Monitor error rates over time
+  Context: Track environmental factors during failures
+  
+Failure Analysis:
+  Root Cause: Automated analysis of failure chains
+  Prevention: Suggest preventive measures
+  Optimization: Identify improvement opportunities
+  Documentation: Update guides based on common issues
+  
+Learning System:
+  Success Patterns: Learn from successful recovery strategies
+  User Preferences: Remember user's preferred recovery methods
+  Environment Adaptation: Adjust strategies based on project context
+  Continuous Improvement: Update recovery logic based on outcomes
+```
+
+## Integration with Commands
+
+```yaml
+Pre-Execution Validation:
+  Prerequisites: Check required tools, permissions, resources
+  Environment: Validate configuration, network connectivity
+  State: Ensure clean starting state, no conflicts
+  
+During Execution:
+  Monitoring: Track progress, resource usage, early warnings
+  Checkpointing: Save state at critical milestones
+  Health Checks: Validate system state during long operations
+  
+Post-Execution:
+  Verification: Confirm expected outcomes achieved
+  Cleanup: Remove temporary files, release resources
+  Reporting: Document successes, failures, lessons learned
+  
+Error Reporting Format:
+  Structured: Consistent error message format across commands
+  Actionable: Include specific steps for resolution
+  Contextual: Provide relevant system and environment information
+  Traceable: Include operation ID for troubleshooting
+```
+
+## Configuration & Customization
+
+```yaml
+User Preferences:
+  Recovery Style: Conservative (safe) vs Aggressive (fast)
+  Retry Limits: Maximum attempts for different error types
+  Notification: How and when to alert user of issues
+  Automation Level: How much recovery to attempt automatically
+  
+Project Settings:
+  Critical Operations: Commands that require extra safety
+  Acceptable Risk: Tolerance for failures in development vs production
+  Resource Limits: Maximum time, memory, network usage
+  Dependencies: Critical external services that must be available
+  
+Environment Adaptation:
+  Development: More aggressive retries, helpful error messages
+  Staging: Balanced approach, thorough logging
+  Production: Conservative recovery, immediate alerting
+  CI/CD: Fast failure, detailed diagnostic information
+```
+
+---
+*Error recovery: Resilient command execution with intelligent failure handling*

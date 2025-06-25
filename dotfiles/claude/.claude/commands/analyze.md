@@ -1,21 +1,22 @@
-## Legend
-| Symbol | Meaning | | Abbrev | Meaning |
-|--------|---------|---|--------|---------|
-| → | leads to | | anlz | analyze |
-| & | and/with | | perf | performance |
-| w/ | with | | arch | architecture |
+**Purpose**: Multi-dimensional code and system analysis
 
-@include shared/command-templates.yml#Command_Header
+---
+
+@include shared/universal-constants.yml#Universal_Legend
+
+## Command Execution
+Execute: immediate. --plan→show plan first
+Legend: Generated based on symbols used in command
+Purpose: "[Action][Subject] in $ARGUMENTS"
 
 Multi-dimensional analysis on code, arch, or problem in $ARGUMENTS.
 
-@see shared/thinking-modes.yml ∀ thinking flags
-@see shared/mcp-flags.yml ∀ MCP controls
+@include shared/flag-inheritance.yml#Universal_Always
 
 Examples:
-- `/user:analyze --code --think` - Code review w/ context
-- `/user:analyze --arch --think-hard` - Deep arch analysis  
-- `/user:analyze --security --ultrathink` - Comprehensive security audit
+- `/analyze --code --think` - Code review w/ context
+- `/analyze --arch --think-hard` - Deep arch analysis  
+- `/analyze --security --ultrathink` - Comprehensive security audit
 
 Analysis modes:
 
@@ -33,8 +34,8 @@ Analysis modes:
 
 **--interactive:** Guided exploration | Step-by-step fixes | Live improvement
 
-@see shared/research-first.yml ∀ research requirements
+@include shared/research-patterns.yml#Mandatory_Research_Flows
 
-Report: `.claudedocs/reports/analysis-<type>-<timestamp>.md` | Create dir: `mkdir -p .claudedocs/reports/` | Ref: "📄 Analysis report→[path]"
+@include shared/docs-patterns.yml#Standard_Notifications
 
-Deliverables: Analysis report, root causes, prioritized action plan w/ recommendations.
+@include shared/universal-constants.yml#Standard_Messages_Templates
