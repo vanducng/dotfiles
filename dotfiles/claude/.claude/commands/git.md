@@ -1,47 +1,35 @@
-## Legend
-| Symbol | Meaning | | Abbrev | Meaning |
-|--------|---------|---|--------|---------|
-| → | leads to | | repo | repository |
-| & | and/with | | sync | synchronize |
-| w/ | with | | chkpt | checkpoint |
+**Purpose**: Git workflow with checkpoint management
 
-@include shared/command-templates.yml#Command_Header
+---
 
-Manage git workflows for repo in $ARGUMENTS.
+@include shared/universal-constants.yml#Universal_Legend
 
-@see shared/thinking-modes.yml ∀ thinking flags
+## Command Execution
+Execute: immediate. --plan→show plan first
+Legend: Generated based on symbols used in command
+Purpose: "[Action][Subject] in $ARGUMENTS"
+
+Manage comprehensive git workflows for repositories specified in $ARGUMENTS.
+
+@include shared/flag-inheritance.yml#Universal_Always
 
 Examples:
-- `/user:git --status` - Comprehensive repo status
-- `/user:git --commit "Add feature"` - Create commit
-- `/user:git --branch feature/ui` - Create & switch→branch  
-- `/user:git --sync` - Fetch, pull & push
-- `/user:git --merge develop --think` - Merge w/ conflict analysis
+- `/git --commit "Add user profile API endpoint"` - Standard commit w/ message
+- `/git --pr --reviewers alice,bob --labels api,feature` - Create PR w/ reviewers
+- `/git --flow feature "payment-integration" --think` - Full feature workflow
 
 Git operations:
 
-**--status:** Working tree status | Current branch & upstream | Stashed changes | Recent commits (5) | Unpushed commits | Remote status
+**--commit:** Stage appropriate files | Generate meaningful commit message | Include co-author attribution | Follow conventional commits
 
-**--commit:** Stage files (-a→all) | Generate message if missing | Follow conventions | Verify tests pass | Create chkpt | GPG sign if configured
+**--pr:** Create pull request | Generate PR description | Set reviewers & labels | Link related issues
 
-**--branch:** Create from HEAD/base | Switch to existing | --delete→remove merged | --list→show all w/ descriptions | Auto-track remote | Protect current/main
+**--flow:** Git workflow patterns
+- feature: Feature branch workflow | hotfix: Emergency fix workflow
+- release: Release branch workflow | gitflow: Full GitFlow model
 
-**--sync:** Fetch all remotes | Pull w/ rebase | Push to tracked remote | Handle auth | Resolve conflicts | Update submodules
+@include shared/execution-patterns.yml#Git_Integration_Patterns
 
-**--merge:** Fetch target branch | Check conflicts | Create chkpt | Use merge strategy | Handle conflicts interactively | Verify results
+@include shared/docs-patterns.yml#Standard_Notifications
 
-**--stash:** Save w/ message | List w/ timestamps | Apply/pop specific | Drop old/unnecessary | Handle conflicts
-
-**--history:** Commit log w/ formats | Filter by author/date/path | Branch topology | Search messages | File change stats
-
-**--checkpoint:** Tagged state snapshot | Descriptive message | Store in manifest | Enable rollback
-
-**--rollback:** List available chkpts | Verify safety | Pre-rollback chkpt | Execute rollback | Verify state
-
-@see shared/git-workflow.yml ∀ best practices
-@see shared/checkpoint.yml ∀ checkpoint system
-@see shared/error-recovery-enhanced.yml ∀ safety checks
-
-Workflow: Check status→Create chkpt→Execute→Verify→Sync
-
-Deliverables: Updated repo state, commit history, branch mgmt, remote sync.
+@include shared/universal-constants.yml#Standard_Messages_Templates

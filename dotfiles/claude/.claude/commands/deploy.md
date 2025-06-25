@@ -1,35 +1,35 @@
-## Legend
-| Symbol | Meaning | | Abbrev | Meaning |
-|--------|---------|---|--------|---------|
-| → | leads to | | env | environment |
-| & | and/with | | prod | production |
-| w/ | with | | perf | performance |
+**Purpose**: Safe application deployment with rollback
 
-Execute immediately. Add --plan flag if user wants to see plan first.
+---
+
+@include shared/universal-constants.yml#Universal_Legend
+
+## Command Execution
+Execute: immediate. --plan→show plan first
+Legend: Generated based on symbols used in command
+Purpose: "[Action][Subject] in $ARGUMENTS"
 
 Deploy application to env specified in $ARGUMENTS.
 
-Thinking flags (optional):
-- --think→multi-service deployment coordination
-- --think-hard→complex infrastructure & rollback planning
-- --ultrathink→complete deployment architecture & disaster recovery
+@include shared/flag-inheritance.yml#Universal_Always
 
 Examples:
-- `/user:deploy --env staging --think` - Staging w/ coordination analysis
-- `/user:deploy --env prod --think-hard` - Prod w/ comprehensive planning
-- `/user:deploy --rollback --ultrathink` - Critical rollback w/ full impact analysis
+- `/deploy --env staging --think` - Staging w/ coordination analysis
+- `/deploy --env prod --think-hard` - Prod w/ comprehensive planning
+- `/deploy --rollback --ultrathink` - Critical rollback w/ full impact analysis
+
+Deployment modes:
+
+**--env:** Specify target environment
+- dev: Deploy→dev env for testing
+- staging: Deploy→staging for pre-prod validation  
+- prod: Deploy→prod w/ all safety checks
+
+**--rollback:** Revert→previous stable deployment | Maintain deployment history→audit trail | Verify rollback success w/ health checks
 
 Pre-deploy cleanup:
 - Clean previous artifacts | Remove dev-only files (.env.local, debug cfgs)
 - Validate prod cfg (no debug flags, correct URLs) | Clean old versions→free space
-
---env flag:
-- dev: Deploy→dev env for testing | staging: Deploy→staging for pre-prod validation
-- prod: Deploy→prod w/ all safety checks
-
---rollback flag:
-- Revert→previous stable deployment | Maintain deployment history→audit trail
-- Verify rollback success w/ health checks
 
 Deployment workflow:
 1. Validate→Check prerequisites & cfg 2. Build→Create artifacts 3. Test→Run smoke tests
@@ -53,16 +53,8 @@ Safety:
 - Always have rollback plan | Backups before deployment
 - Monitor key metrics during deployment | Gradual rollout→major changes
 
-Research requirements:
-- Infrastructure patterns→WebSearch cloud provider practices & docs
-- CI/CD patterns→verify w/ platform-specific guides | Monitoring→research observability patterns
-- Security hardening→check security guides & compliance | Never deploy on assumptions
-- All cfg cite sources: // Source: [deployment guide ref]
+@include shared/research-patterns.yml#Mandatory_Research_Flows
 
-Report Output:
-- Deployment logs: `.claudedocs/reports/deployment-<env>-<timestamp>.md`
-- Health checks: `.claudedocs/metrics/health-check-<timestamp>.md`
-- Ensure dirs: `mkdir -p .claudedocs/reports/ .claudedocs/metrics/`
-- Include location: "📄 Deployment report saved to: [path]"
+@include shared/docs-patterns.yml#Standard_Notifications
 
-Deliverables: Deployment log w/ timestamps, health check results, perf metrics comparison, rollback instructions & verification report.
+@include shared/universal-constants.yml#Standard_Messages_Templates

@@ -1,20 +1,22 @@
-## Legend  
-| Symbol | Meaning | | Abbrev | Meaning |
-|--------|---------|---|--------|---------|
-| → | leads to | | bld | build |
-| & | and/with | | impl | implementation |
-| w/ | with | | TDD | test-driven development |
+**Purpose**: Universal project builder with stack templates
 
-@include shared/command-templates.yml#Command_Header
+---
+
+@include shared/universal-constants.yml#Universal_Legend
+
+## Command Execution
+Execute: immediate. --plan→show plan first
+Legend: Generated based on symbols used in command
+Purpose: "[Action][Subject] in $ARGUMENTS"
 
 Build project/feature based on req in $ARGUMENTS.
 
-@see shared/mcp-flags.yml ∀ MCP controls
+@include shared/flag-inheritance.yml#Universal_Always
 
 Examples:
-- `/user:build --react --magic` - React app w/ UI gen
-- `/user:build --api --c7` - API w/ docs
-- `/user:build --react --magic --pup` - Build & test UI
+- `/build --react --magic` - React app w/ UI gen
+- `/build --api --c7` - API w/ docs
+- `/build --react --magic --pup` - Build & test UI
 
 Pre-build: Remove artifacts (dist/, build/, .next/) | Clean temp files & cache | Validate deps | Remove debug
 
@@ -33,8 +35,8 @@ Templates:
 **--watch:** Continuous build | Real-time feedback | Incremental | Live reload
 **--interactive:** Step-by-step cfg | Interactive deps | Build customization
 
-@see shared/research-first.yml ∀ research req
+@include shared/research-patterns.yml#Mandatory_Research_Flows
 
-Workflow: Research→Setup→Impl→Test→Integrate
+@include shared/execution-patterns.yml#Git_Integration_Patterns
 
-Deliverables: Working code, tests, docs, integration instructions.
+@include shared/universal-constants.yml#Standard_Messages_Templates

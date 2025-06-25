@@ -1,111 +1,140 @@
-## Legend
-| Symbol | Meaning | | Abbrev | Meaning |
-|--------|---------|---|--------|---------|
-| → | leads to | | UI/UX | user interface/experience |
-| & | and/with | | auth | authentication |
-| w/ | with | | impl | implementation |
+**Purpose**: Parallel specialized agents
 
-Execute immediately. Add --plan flag if user wants to see plan first.
+---
 
-Spawn specialized sub-agent→handle specific task in $ARGUMENTS.
+@include shared/universal-constants.yml#Universal_Legend
 
-Thinking flags (optional):
-- --think→multi-agent coordination planning
-- --think-hard→complex agent workflow design
-- --ultrathink→enterprise-scale agent orchestration
+## Command Execution
+Execute: immediate. --plan→show plan first
+Legend: Generated based on symbols used in command
+Purpose: "[Action][Subject] in $ARGUMENTS"
+
+Spawn specialized sub-agents for focused tasks with parallel execution capabilities.
+
+@include shared/flag-inheritance.yml#Universal_Always
 
 Examples:
-- `/user:spawn --task "optimize database queries" --think` - Spawn data agent w/ coordination analysis
-- `/user:spawn --task "implement auth system" --think-hard` - Complex security impl w/ planning
-- `/user:spawn --task "migrate to microservices" --ultrathink` - Enterprise arch w/ full orchestration
+- `/spawn --agent researcher "OAuth 2.0 best practices"` - Research then implement
+- `/spawn --mode parallel --agent builder "User auth, Profile API"` - Parallel development
+- `/spawn --mode sequential "Research → Build → Review payment"` - Full cycle workflow
+- `/spawn --mode collaborative --ultrathink "Design microservices"` - Collaborative design
 
---task flag:
-- Define clear, focused assignment | Provide necessary context & constraints
-- Set specific success criteria | Establish integration points
+## Agent Types
 
-Agent specializations:
+Researcher Agent:
+- Deep dive into topics
+- Compare solutions
+- Analyze trade-offs
+- Find best practices
+- Document findings
 
-Frontend Agent:
-- UI/UX impl | Component dev
-- State management
-- Performance optimization
-- Accessibility compliance
+Builder Agent:
+- Generate code
+- Implement features
+- Create tests
+- Build prototypes
+- Integrate systems
 
-Backend Agent:
-- API development
-- Database operations
-- Business logic implementation
-- Integration services
-- Performance tuning
+Reviewer Agent:
+- Code quality checks
+- Security analysis
+- Performance review
+- Best practice validation
+- Suggest improvements
 
-DevOps Agent:
-- CI/CD pipeline setup
-- Infrastructure automation
-- Deployment strategies
-- Monitoring configuration
-- Security hardening
+Optimizer Agent:
+- Performance profiling
+- Resource optimization
+- Algorithm improvements
+- Database tuning
+- Cache strategies
 
-Data Agent:
-- Data analysis and transformation
-- Database optimization
-- ETL pipeline development
-- Data quality assurance
-- Reporting solutions
+Documenter Agent:
+- API documentation
+- User guides
+- Code comments
+- Architecture docs
+- README files
 
-Best practices for spawning agents:
+## Execution Modes
 
-1. Define Clear Scope
-   - Specific deliverables
-   - Clear boundaries
-   - Time constraints
-   - Quality expectations
+Sequential Mode:
+```yaml
+Flow: Agent1 → Agent2 → Agent3
+Use: When tasks depend on each other
+Example: Research → Build → Review
+```
 
-2. Provide Context
-   - Relevant code sections
-   - Documentation links
-   - Previous decisions
-   - Technical constraints
+Parallel Mode:
+```yaml
+Flow: Agent1 | Agent2 | Agent3
+Use: For independent tasks
+Example: Multiple feature builds
+```
 
-3. Set Success Criteria
-   - Measurable outcomes
-   - Quality standards
-   - Integration requirements
-   - Testing expectations
+Collaborative Mode:
+```yaml
+Flow: Agents work together
+Use: Complex problems
+Example: System design session
+```
 
-4. Coordinate Work
-   - Avoid conflicts with main work
-   - Plan integration points
-   - Handle dependencies
-   - Manage communication
+## Best Practices
 
-Integration workflow:
-1. Spawn agent with clear task definition
-2. Agent works independently on task
-3. Agent provides progress updates
-4. Results reviewed and integrated
-5. Knowledge transferred to main context
+Task Definition:
+- Clear objectives
+- Specific deliverables
+- Success criteria
+- Resource limits
+- Time constraints
 
-## Benefits & Integration
+Agent Selection:
+- Match expertise to task
+- Consider dependencies
+- Plan coordination
+- Set boundaries
+- Define handoffs
 
-Benefits:
-- Parallel task execution
-- Specialized expertise
-- Focused context
-- Reduced cognitive load
-- Faster completion
+Coordination:
+- Clear communication
+- Shared context
+- Progress tracking
+- Result integration
+- Quality control
 
-Research requirements for agent spawning:
-- Task specialization → Research domain-specific best practices and patterns
-- Agent coordination → WebSearch for multi-agent workflow patterns
-- Integration strategies → C7 documentation for framework-specific integration methods
-- Quality assurance → Must verify agent output validation patterns
-- Never spawn without clear scope - always research coordination patterns
-- All agent instructions must cite sources: // Source: [coordination guide reference]
+## Examples
 
-Report Output:
-- Agent coordination logs: `.claudedocs/reports/agent-spawn-<timestamp>.md`
-- Task completion summaries: `.claudedocs/summaries/agent-results-<timestamp>.md`
-- Ensure directory exists: `mkdir -p .claudedocs/reports/ .claudedocs/summaries/`
-- Include report location in output: "📄 Agent report saved to: [path]"
+```bash
+# Research then implement
+/spawn --agent researcher "OAuth 2.0 best practices"
+/spawn --agent builder "Implement OAuth based on research"
 
-Deliverables: Completed task results from spawned agent, integration plan for merging work, knowledge transfer documentation, coordination summary, and quality validation report.
+# Parallel feature development
+/spawn --mode parallel --agent builder "User auth, Profile API, Settings UI"
+
+# Full cycle with review
+/spawn --mode sequential "Research → Build → Review payment integration"
+
+# Collaborative system design
+/spawn --mode collaborative --ultrathink "Design microservices architecture"
+```
+
+## Integration
+
+Works with:
+- All command flags pass through
+- Inherits persona preferences
+- Shares project context
+- Accumulates findings
+- Coordinates outputs
+
+## Deliverables
+
+- Agent execution logs
+- Task completion reports
+- Integrated results
+- Performance metrics
+- Lessons learned
+- Handoff documentation
+
+@include shared/universal-constants.yml#Standard_Messages_Templates

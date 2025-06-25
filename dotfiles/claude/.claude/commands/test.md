@@ -1,82 +1,82 @@
-## Legend
-| Symbol | Meaning | | Abbrev | Meaning |
-|--------|---------|---|--------|---------|
-| → | leads to | | E2E | end-to-end |
-| & | and/with | | MCP | model context protocol |
-| w/ | with | | DB | database |
+**Purpose**: Comprehensive testing framework
 
-Execute immediately. Add --plan flag if user wants to see plan first.
+---
 
-Create or run comprehensive tests for code in $ARGUMENTS.
+@include shared/universal-constants.yml#Universal_Legend
 
-Thinking flags (optional):
-- --think→multi-component test planning
-- --think-hard→complex test arch & strategy
-- --ultrathink→comprehensive test system design
+## Command Execution
+Execute: immediate. --plan→show plan first
+Legend: Generated based on symbols used in command
+Purpose: "[Action][Subject] in $ARGUMENTS"
 
-MCP flags (optional):
-- --pup→browser-based E2E testing w/ Puppeteer | --c7→testing framework docs
-- --seq→complex test scenario planning | --no-mcp→native test runners only
+Create or run comprehensive test suites for code specified in $ARGUMENTS using modern testing frameworks and methodologies.
+
+@include shared/flag-inheritance.yml#Universal_Always
 
 Examples:
-- `/user:test --e2e --pup --think` - E2E tests w/ Puppeteer & context analysis
-- `/user:test --coverage --c7` - Test w/ framework docs support
-- `/user:test --integration --seq --think-hard` - Complex test scenarios w/ deep planning
+- `/test --tdd` - Test-driven development workflow
+- `/test --coverage` - Generate coverage report
+- `/test --watch` - Continuous test mode
+- `/test --integration` - Run integration tests
+- `/test --e2e` - Run end-to-end tests
 
-Pre-test cleanup:
-- Clean test output dirs (coverage/, test-results/) | Remove test artifacts from previous runs
-- Reset test DB/state→clean baseline | Clear test cache & temp files
+## Command-Specific Flags
+--tdd: "Test-driven development workflow (write failing test→implement→pass)"
+--coverage: "Generate detailed coverage reports w/ uncovered lines"
+--integration: "Run integration tests across components/services"
+--e2e: "Run end-to-end tests w/ real browser/environment"
+--unit: "Focus on unit tests only (default)"
+--mutation: "Run mutation testing to verify test quality"
+--snapshot: "Update/verify snapshot tests"
+--watch: "Run tests continuously on file changes"
+--bail: "Stop on first test failure"
+--parallel: "Run tests in parallel workers"
+--update-snapshots: "Update all snapshot tests"
 
-When --coverage flag is present:
-- Generate comprehensive coverage reports
-- Identify untested code paths
-- Aim for >80% code coverage
-- Focus on critical business logic
+## Testing Approaches
 
-When --watch flag is present:
-- Set up automatic test execution on file changes
-- Provide fast feedback during development
-- Only run affected tests for efficiency
-- Continuous integration during development
+**Unit Testing:** Isolated component/function tests | Mock all dependencies | Fast execution | High coverage target
 
-When --interactive flag is present:
-- Interactive test runner with real-time feedback
-- Allow test selection and filtering
-- Step-through debugging for failing tests
-- Live code coverage visualization
+**Integration Testing:** Component interaction tests | Real service calls | Database transactions | API endpoint tests
 
-When --e2e flag is present:
-- Create end-to-end tests for user flows
-- Test critical paths through the application
-- Include both happy paths and error scenarios
-- Use appropriate E2E testing frameworks
+**E2E Testing:** Full user workflows | Browser automation | Real environment | Critical path coverage
 
-Test types to implement:
-- Unit tests: Test individual functions, logic, and utilities in isolation
-- Integration tests: Test APIs, services, and database interactions
-- E2E tests: Test complete user workflows and critical paths
+**TDD Workflow:** Red→Green→Refactor cycle | Write minimal code | Comprehensive coverage | Design emergence
 
-## Testing Best Practices
+## Testing Patterns
 
-Follow testing standards:
-- Use descriptive test names that explain what is being tested
-- Follow AAA pattern: Arrange, Act, Assert
-- Use appropriate mocking for external dependencies
-- Create fixtures for consistent test data
-- Ensure tests are independent and can run in any order
+**Test Structure:** Arrange-Act-Assert (AAA) | Given-When-Then (BDD) | Setup→Execute→Verify→Teardown
 
-Research requirements for testing:
-- Testing frameworks → C7 documentation lookup for framework-specific patterns
-- Test patterns → Must verify with official testing guides and best practices
-- E2E testing → WebSearch for accessibility and user experience standards
-- Performance testing → Research benchmarking patterns for the specific stack
-- Never implement test patterns without documentation backing
-- All test implementations must cite sources: // Source: [testing guide reference]
+**Coverage Targets:** Statements: 80%+ | Branches: 75%+ | Functions: 90%+ | Lines: 80%+
 
-Report Output:
-- Coverage reports: `.claudedocs/metrics/coverage-<timestamp>.html`
-- Test summaries: `.claudedocs/summaries/test-results-<timestamp>.md`
-- Ensure directory exists: `mkdir -p .claudedocs/metrics/ .claudedocs/summaries/`
-- Include report location in output: "📄 Coverage report saved to: [path]"
+**Test Organization:** 
+- `__tests__/` or `test/` directories
+- `*.test.{js,ts}` or `*.spec.{js,ts}` naming
+- Mirror source structure in test directories
+- Group by feature or component
 
-Deliverables: Comprehensive test suite, coverage reports, testing documentation, and test strategy guide.
+@include shared/quality-patterns.yml#Test_Quality_Standards
+
+## Framework Support
+
+**JavaScript/TypeScript:** Jest (default) | Mocha + Chai | Vitest | Testing Library
+
+**Python:** pytest (default) | unittest | nose2 | doctest
+
+**Go:** Built-in testing | Testify | Ginkgo/Gomega
+
+**Java:** JUnit 5 | TestNG | Mockito | Spring Test
+
+**Other:** Framework-specific best practices | Native test runners
+
+## Deliverables
+
+**Test Files:** Created in appropriate test directories | Following naming conventions | Comprehensive test cases
+
+**Coverage Reports:** HTML report in `coverage/` | Console summary | Uncovered line identification
+
+**CI Configuration:** GitHub Actions | CircleCI | Jenkins | GitLab CI
+
+**Documentation:** Test plan | Test cases | Coverage goals | CI/CD integration
+
+@include shared/universal-constants.yml#Standard_Messages_Templates
