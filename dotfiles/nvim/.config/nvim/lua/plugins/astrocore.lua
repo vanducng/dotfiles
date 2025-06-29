@@ -64,7 +64,7 @@ return {
         ["<C-u>"] = { "<C-u>zz", desc = "Jump down and center" },
         ["<Leader>rf"] = {
           function()
-            local current_file = vim.fn.expand("%:p")
+            local current_file = vim.fn.expand "%:p"
             if current_file == "" then
               vim.notify("No file in current buffer", vim.log.levels.WARN)
               return
@@ -73,7 +73,7 @@ return {
               vim.notify("Ruff can only be used on Python files", vim.log.levels.WARN)
               return
             end
-            vim.cmd("!" .. "ruff check " .. vim.fn.shellescape(current_file) .. " --fix")
+            vim.cmd("!" .. "ruff check --select I " .. vim.fn.shellescape(current_file) .. " --fix")
           end,
           desc = "Ruff check & fix current file",
         },
