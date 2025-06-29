@@ -75,13 +75,16 @@ return {
         init_options = {
           settings = {
             -- Ruff server settings
-            configuration = vim.fn.expand("~/.config/ruff/pyproject.toml"),
+            configuration = vim.fn.expand "~/.config/ruff/pyproject.toml",
             lineLength = 120,
             lint = {
-              args = { "--ignore=E501,E402" }, -- Ignore line length and module import not at top
+              args = { "--ignore=E501,E402 --select I" }, -- Ignore line length and module import not at top
             },
             format = {
               args = {},
+            },
+            check = {
+              args = { "--ignore=E501,E402 --select I" }, -- Ignore line length and module import not at top
             },
           },
         },
