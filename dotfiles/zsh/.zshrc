@@ -15,7 +15,6 @@ git
 zsh-autosuggestions
 zsh-syntax-highlighting
 zsh-vi-mode
-smart-suggestion
 )
 source $ZSH/oh-my-zsh.sh
 
@@ -141,6 +140,8 @@ function zvm_after_init() {
   # bind to the up key, which depends on terminal mode
   bindkey '^[[A' atuin-up-search
   bindkey '^[OA' atuin-up-search
+  # Rebind smart-suggestion key
+  bindkey '^o' _do_smart_suggestion
 }
 
 # Also bind keys for viins mode explicitly
@@ -148,6 +149,8 @@ function zvm_after_lazy_keybindings() {
   bindkey -M viins '^r' atuin-search
   bindkey -M viins '^[[A' atuin-up-search
   bindkey -M viins '^[OA' atuin-up-search
+  # Rebind smart-suggestion key in vi insert mode
+  bindkey -M viins '^o' _do_smart_suggestion
 }
 
 
@@ -247,3 +250,8 @@ export PATH="$PATH:/Users/vanducng/.local/bin"
 
 # Added by Windsurf
 export PATH="/Users/vanducng/.codeium/windsurf/bin:$PATH"
+
+
+# Smart Suggestion # smart-suggestion
+source /Users/vanducng/.config/smart-suggestion/smart-suggestion.plugin.zsh # smart-suggestion
+export SMART_SUGGESTION_PROXY_MODE=false
