@@ -1,8 +1,8 @@
-font-size = 15
+font-size = 13
 font-thicken = true
 minimum-contrast = 1.1
 cursor-style = block
-cursor-style-blink = true
+cursor-style-blink = false
 window-padding-x = 10
 window-padding-y = 10
 window-padding-balance = true
@@ -12,7 +12,7 @@ confirm-close-surface = false
 shell-integration-features = no-cursor,no-sudo,title
 window-decoration = false
 macos-window-shadow = false
-background-blur-radius = 20
+background-blur-radius = 0
 mouse-hide-while-typing = true
-
 theme = duskfox
+keybind = cmd+d=ignore
