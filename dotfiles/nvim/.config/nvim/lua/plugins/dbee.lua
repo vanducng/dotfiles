@@ -23,13 +23,13 @@ return {
         disable_help = false,
         mappings = {
           -- Connection actions
-          { key = "<CR>", mode = "n", action = "action_1" },  -- activate connection
-          { key = "cw", mode = "n", action = "action_2" },    -- edit connection
-          { key = "dd", mode = "n", action = "action_3" },    -- delete connection
-          { key = "x", mode = "n", action = "action_4" },     -- connect/disconnect toggle
+          { key = "<CR>", mode = "n", action = "action_1" }, -- activate connection
+          { key = "cw", mode = "n", action = "action_2" }, -- edit connection
+          { key = "dd", mode = "n", action = "action_3" }, -- delete connection
+          { key = "x", mode = "n", action = "action_4" }, -- connect/disconnect toggle
           -- Navigation
-          { key = "o", mode = "n", action = "toggle" },       -- toggle expand/collapse
-          { key = "r", mode = "n", action = "refresh" },      -- refresh drawer
+          { key = "o", mode = "n", action = "toggle" }, -- toggle expand/collapse
+          { key = "r", mode = "n", action = "refresh" }, -- refresh drawer
           -- Menu actions
           { key = "<Esc>", mode = "n", action = "menu_close" },
           { key = "q", mode = "n", action = "menu_close" },
@@ -86,9 +86,7 @@ return {
     },
     {
       "<leader>Dt",
-      function()
-        require("dbee").toggle()
-      end,
+      function() require("dbee").toggle() end,
       desc = "Toggle Database Explorer",
     },
     {
@@ -104,25 +102,25 @@ return {
           local api = require "dbee.api"
           local core = require "dbee.api.core"
           local utils = require "dbee.utils"
-          
+
           -- Check connection first
           local current_conn = core.get_current_connection()
           if not current_conn then
             vim.notify("❌ No database connection selected", vim.log.levels.ERROR)
             return
           end
-          
+
           -- Get the SQL statement to validate before execution
           local bufnr = vim.api.nvim_get_current_buf()
           local cursor_pos = vim.api.nvim_win_get_cursor(0)
           local row = cursor_pos[1] - 1
-          
+
           local query = utils.get_sql_statement_at_cursor(bufnr, row)
           if not query or query == "" then
             vim.notify("❌ No SQL statement found at cursor", vim.log.levels.WARN)
             return
           end
-          
+
           -- Pre-validate common issues for Snowflake (silent)
           if current_conn.type == "snowflake" then
             -- Check for potential schema issues
@@ -130,7 +128,7 @@ return {
             local schema, table = query:match(schema_table_pattern)
             -- Note: Schema case-sensitivity check removed for less noise
           end
-          
+
           -- Execute SQL statement
           api.ui.editor_do_action "run_statement"
         else
@@ -152,9 +150,7 @@ return {
           local api = require "dbee.api"
           local ok, err = pcall(function() api.ui.editor_do_action "select_statement" end)
 
-          if not ok then 
-            vim.notify("❌ Failed to select SQL statement: " .. tostring(err), vim.log.levels.ERROR)
-          end
+          if not ok then vim.notify("❌ Failed to select SQL statement: " .. tostring(err), vim.log.levels.ERROR) end
           -- No success notification for selection
         else
           vim.notify("Not in a SQL buffer", vim.log.levels.WARN)
@@ -166,12 +162,12 @@ return {
       "<leader>Dx",
       function()
         -- Disconnect all currently connected database connections
-        local state = require("dbee.api.state")
+        local state = require "dbee.api.state"
         local handler = state.handler()
-        
+
         local connections = {}
         local disconnected_count = 0
-        
+
         -- Get all sources and their connections
         for _, source in ipairs(handler:get_sources()) do
           local source_connections = handler:source_get_connections(source:name())
@@ -179,22 +175,20 @@ return {
             table.insert(connections, conn)
           end
         end
-        
+
         -- Disconnect all connected databases
         for _, conn in ipairs(connections) do
           local ok, is_connected = pcall(handler.connection_is_connected, handler, conn.id)
           if ok and is_connected then
             local disconnect_ok = pcall(handler.connection_disconnect, handler, conn.id)
-            if disconnect_ok then
-              disconnected_count = disconnected_count + 1
-            end
+            if disconnect_ok then disconnected_count = disconnected_count + 1 end
           end
         end
-        
+
         -- Refresh drawer to update icons
-        local api = require("dbee.api")
+        local api = require "dbee.api"
         pcall(api.ui.drawer_refresh)
-        
+
         if disconnected_count > 0 then
           vim.notify("Disconnected " .. disconnected_count .. " database connection(s)", vim.log.levels.INFO)
         else

@@ -6,10 +6,7 @@ else
     search_paths=(
         ~/personal
         ~/projects
-        ~/work/cnb
-        ~/work/cormac
-        ~/work/mountain
-        ~/work/timo
+        ~/git/work
     )
     selected=$(find ${search_paths[@]} -mindepth 1 -maxdepth 1 -type d | fzf)
 fi

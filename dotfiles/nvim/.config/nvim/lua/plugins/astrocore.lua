@@ -17,6 +17,7 @@ return {
       highlighturl = true, -- highlight URLs at start
       notifications = true, -- enable notifications at start
     },
+
     -- Diagnostics configuration (for vim.diagnostics.config({...})) when diagnostics are on
     diagnostics = {
       virtual_text = true,
@@ -73,9 +74,18 @@ return {
               vim.notify("Ruff can only be used on Python files", vim.log.levels.WARN)
               return
             end
-            vim.cmd("!" .. "ruff check --select I " .. vim.fn.shellescape(current_file) .. " --fix")
+
+            -- Run ruff with comprehensive rules:
+            -- --fix: Automatically fix issues that can be auto-corrected
+            -- --select I,W291,W292,W293,Q000: Select specific rules:
+            --   I: Import sorting (isort rules)
+            --   W291: Trailing whitespace
+            --   W292: No newline at end of file
+            --   W293: Blank line contains whitespace
+            --   Q000: Double quote preference
+            vim.cmd("!" .. "ruff check --fix --select I,W291,W292,W293,Q000 " .. vim.fn.shellescape(current_file))
           end,
-          desc = "Ruff check & fix current file",
+          desc = "Ruff fix: imports, trailing spaces, EOF newlines",
         },
 
         -- tables with just a `desc` key will be registered with which-key if it's installed
