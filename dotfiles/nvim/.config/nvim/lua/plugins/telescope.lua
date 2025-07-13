@@ -1,44 +1,32 @@
 return {
   "nvim-telescope/telescope.nvim",
-  -- Ensure telescope loads early if needed
   priority = 100,
-  -- Dependencies to ensure they load first
   dependencies = {
     "nvim-lua/plenary.nvim",
   },
   opts = function(_, opts)
     local actions = require "telescope.actions"
+    local action_state = require "telescope.actions.state"
 
-    -- Initialize opts if it's nil
+    -- Custom buffer delete function
+    local delete_buffer_action = function(prompt_bufnr)
+      local selection = action_state.get_selected_entry()
+      if selection and selection.bufnr then
+        vim.api.nvim_buf_delete(selection.bufnr, { force = false })
+        actions.close(prompt_bufnr)
+      end
+    end
+
     opts = opts or {}
-    opts.defaults = opts.defaults or {}
     opts.pickers = opts.pickers or {}
+    opts.pickers.buffers = opts.pickers.buffers or {}
 
-    -- Merge defaults mappings
-    opts.defaults.mappings = vim.tbl_deep_extend("force", opts.defaults.mappings or {}, {
-      n = {
-        ["dd"] = actions.delete_buffer,
-        ["<C-d>"] = actions.delete_buffer,
-      },
-      i = {
-        ["<C-d>"] = actions.delete_buffer,
-      },
-    })
-
-    -- Configure buffer-specific picker settings
-    opts.pickers.buffers = vim.tbl_deep_extend("force", opts.pickers.buffers or {}, {
-      mappings = {
-        n = {
-          ["dd"] = actions.delete_buffer,
-          ["<C-d>"] = actions.delete_buffer,
-        },
-        i = {
-          ["<C-d>"] = actions.delete_buffer,
-        },
-      },
-    })
+    -- Use attach_mappings for more reliable buffer-specific mappings
+    opts.pickers.buffers.attach_mappings = function(prompt_bufnr, map)
+      map("n", "dd", delete_buffer_action)
+      return true
+    end
 
     return opts
   end,
-  -- Remove the config function - lazy.nvim will handle setup automatically
 }
