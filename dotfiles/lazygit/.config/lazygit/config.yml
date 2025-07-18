@@ -27,3 +27,6 @@ customCommands:
   - key: "<c-r>"
     command: "gh pr create --fill --web"
     context: "global"
+  - key: "<c-f>"
+    command: "ruff check --fix --select I,W291,W292,W293,Q000 $(git diff --cached --name-only|tr '\n' ' ') --unsafe-fixes && ruff format $(git diff --cached --name-only|tr '\n' ' ')"
+    context: "global"
