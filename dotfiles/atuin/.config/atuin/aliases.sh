@@ -1,5 +1,5 @@
 #!/bin/bash
-# Atuin Aliases - Generated on Sat Jun 14 13:25:07 +07 2025
+# Atuin Aliases - Generated on Mon Jul 21 09:24:10 +07 2025
 # Use 'atuin dotfiles alias set <name> <command>' to restore
 # You can also execute this file directly: ./aliases.sh
 
@@ -9,7 +9,8 @@ atuin dotfiles alias set 'adb' 'astro dev bash --scheduler'
 atuin dotfiles alias set 'ado' 'astro dev object import -s airflow_settings.yaml'
 atuin dotfiles alias set 'af' 'akio run sqlfluff fix'
 atuin dotfiles alias set 'av' 'ansible-vault'
-atuin dotfiles alias set 'c' 'echo -ne '\033c''
+atuin dotfiles alias set 'c' 'echo -ne 033c'
+atuin dotfiles alias set 'cc' 'claudecode'
 atuin dotfiles alias set 'cdeg' 'cd /Volumes/exs/git'
 atuin dotfiles alias set 'd' 'docker'
 atuin dotfiles alias set 'dc' 'docker-compose'
@@ -31,7 +32,7 @@ atuin dotfiles alias set 'lg' 'lazygit'
 atuin dotfiles alias set 'll' 'exa -l'
 atuin dotfiles alias set 'ls' 'exa'
 atuin dotfiles alias set 'lzd' 'lazydocker'
-atuin dotfiles alias set 'nsql' 'nvim '+SQLua''
+atuin dotfiles alias set 'nsql' 'nvim +SQLua'
 atuin dotfiles alias set 'p' 'python'
 atuin dotfiles alias set 'pca' 'pre-commit run --all-files'
 atuin dotfiles alias set 'pr' 'poetry run'
