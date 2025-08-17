@@ -26,6 +26,7 @@ meh - t : open "/Applications/Microsoft Teams classic.app"
 meh - i : open "/Applications/Structured.app"
 # meh - u : open "/Applications/Claude.app"
 meh - l : open "/Applications/Perplexity.app"
+meh - 0x32 : open "/Applications/Telegram.app"
 
 # -------------------------------------------------------------------------------------------------------
 # RESIZE MODE

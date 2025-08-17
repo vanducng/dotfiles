@@ -13,4 +13,6 @@ return {
   { import = "astrocommunity.recipes.disable-tabline" },
   { import = "astrocommunity.bars-and-lines.lualine-nvim" },
   { import = "astrocommunity.programming-language-support.nvim-jqx" },
+  { import = "astrocommunity.pack.typescript" },
+  { import = "astrocommunity.pack.html-css" },
 }
