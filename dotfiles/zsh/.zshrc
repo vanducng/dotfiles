@@ -4,6 +4,12 @@
 if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
+
+# Force ARM64 architecture
+if [[ "$(uname -m)" == "arm64" ]]; then
+  exec arch -arm64 zsh
+fi
+
 export EDITOR=nvim
 export VISUAL="$EDITOR"
 export ZSH="$HOME/.oh-my-zsh"
