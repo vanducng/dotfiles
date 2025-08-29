@@ -103,6 +103,9 @@ return {
       -- rust_analyzer = false, -- setting a handler to false will disable the set up of that language server
       -- pyright = function(_, opts) require("lspconfig").pyright.setup(opts) end -- or a custom handler function can be passed
       htmlls = false, -- disable HTML language server
+      -- Disable tsserver if typescript-tools is being used
+      -- tsserver = false, -- disable tsserver to avoid conflicts with typescript-tools
+      ts_ls = false, -- disable ts_ls (new name for tsserver) to avoid conflicts
     },
     -- Configure buffer local auto commands to add when attaching a language server
     autocmds = {
