@@ -56,7 +56,7 @@ export PATH=$GOROOT/bin:$PATH
 export GOPATH=/Users/vanducng/go
 export PATH=$GOPATH/bin:$PATH
 export PATH="$HOME/.local/bin:$PATH"
-export PATH=/usr/local/bin/:$PATH
+export PATH="$PATH:/usr/local/bin"
 export LDFLAGS="-L/usr/local/opt/zlib/lib"
 export CPPFLAGS="-I/usr/local/opt/zlib/include"
 
@@ -160,29 +160,35 @@ function zvm_after_lazy_keybindings() {
 }
 
 
-# Lazy load NVM to speed up shell startup
+# NVM setup
 export NVM_DIR="$HOME/.nvm"
-# Add nvm to PATH but don't load it yet
-export PATH="$NVM_DIR/versions/node/$(ls -t $NVM_DIR/versions/node 2>/dev/null | head -1)/bin:$PATH"
 
-# Lazy load nvm
-nvm() {
-  unset -f nvm node npm npx
+# Add default node version to PATH for immediate npm/node/npx access
+if [ -d "$NVM_DIR/versions/node" ]; then
+  # Use nvm's default alias if it exists
+  if [ -f "$NVM_DIR/alias/default" ]; then
+    DEFAULT_NODE_VERSION=$(cat "$NVM_DIR/alias/default" | tr -d '\n')
+  else
+    DEFAULT_NODE_VERSION=$(ls -t "$NVM_DIR/versions/node" 2>/dev/null | head -1)
+  fi
+  if [ -n "$DEFAULT_NODE_VERSION" ]; then
+    # Prepend nvm's node to PATH to take precedence over system node
+    export PATH="$NVM_DIR/versions/node/$DEFAULT_NODE_VERSION/bin:$PATH"
+  fi
+fi
+
+# Lazy load nvm only when needed
+nvm_lazy_load() {
+  unset -f nvm
   [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
   [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
-  nvm "$@"
 }
 
-# Create placeholder functions
-node() { nvm "$0" "$@" }
-npm() { nvm "$0" "$@" }
-npx() { nvm "$0" "$@" }
-
-# The next line updates PATH for the Google Cloud SDK.
-if [ -f '/Users/vanducng/Downloads/google-cloud-sdk/path.zsh.inc' ]; then . '/Users/vanducng/Downloads/google-cloud-sdk/path.zsh.inc'; fi
-
-# The next line enables shell command completion for gcloud.
-if [ -f '/Users/vanducng/Downloads/google-cloud-sdk/completion.zsh.inc' ]; then . '/Users/vanducng/Downloads/google-cloud-sdk/completion.zsh.inc'; fi
+# Create nvm function that loads on first use
+nvm() {
+  nvm_lazy_load
+  nvm "$@"
+}
 
 # Ansible vault
 export ANSIBLE_VAULT_ENCRYPT_SALT=ddsa
