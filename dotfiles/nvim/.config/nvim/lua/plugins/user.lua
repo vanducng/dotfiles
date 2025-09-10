@@ -33,6 +33,10 @@ return {
           }, "\n"),
         },
       },
+      -- Disable image feature to avoid the error
+      image = {
+        enabled = false,
+      },
     },
   },
 
