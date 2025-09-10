@@ -274,3 +274,5 @@ export PATH="/Users/vanducng/.codeium/windsurf/bin:$PATH"
 # bun
 export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
+alias claude="/Users/vanducng/.claude/local/claude"
+export PATH="/Users/vanducng/.claude/local:$PATH"
