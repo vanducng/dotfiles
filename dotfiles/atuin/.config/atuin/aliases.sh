@@ -1,5 +1,5 @@
 #!/bin/bash
-# Atuin Aliases - Generated on Mon Jul 21 09:25:02 +07 2025
+# Atuin Aliases - Generated on Sun Sep 14 10:56:34 +07 2025
 # Use 'atuin dotfiles alias set <name> <command>' to restore
 # You can also execute this file directly: ./aliases.sh
 
@@ -29,6 +29,19 @@ atuin dotfiles alias set 'gp' 'git pull'
 atuin dotfiles alias set 'gr' 'go run .'
 atuin dotfiles alias set 'gs' 'git status'
 atuin dotfiles alias set 'gwm' 'git-worktree-manager'
+atuin dotfiles alias set 'k' 'kubectl'
+atuin dotfiles alias set 'kap' 'kubectl apply -f'
+atuin dotfiles alias set 'kdd' 'kubectl describe deployment'
+atuin dotfiles alias set 'kdel' 'kubectl delete'
+atuin dotfiles alias set 'kdp' 'kubectl describe pod'
+atuin dotfiles alias set 'kds' 'kubectl describe service'
+atuin dotfiles alias set 'kex' 'kubectl exec -it'
+atuin dotfiles alias set 'kga' 'kubectl get all'
+atuin dotfiles alias set 'kgd' 'kubectl get deployments'
+atuin dotfiles alias set 'kgn' 'kubectl get nodes'
+atuin dotfiles alias set 'kgp' 'kubectl get pods'
+atuin dotfiles alias set 'kgs' 'kubectl get services'
+atuin dotfiles alias set 'klf' 'kubectl logs -f'
 atuin dotfiles alias set 'lg' 'lazygit'
 atuin dotfiles alias set 'll' 'exa -l'
 atuin dotfiles alias set 'ls' 'exa'
@@ -37,7 +50,6 @@ atuin dotfiles alias set 'nsql' 'nvim +SQLua'
 atuin dotfiles alias set 'p' 'python'
 atuin dotfiles alias set 'pca' 'pre-commit run --all-files'
 atuin dotfiles alias set 'pr' 'poetry run'
-atuin dotfiles alias set 'ps' 'poetry shell'
 atuin dotfiles alias set 'snowsql' '/Applications/SnowSQL.app/Contents/MacOS/snowsql'
 atuin dotfiles alias set 't' 'terraform'
 atuin dotfiles alias set 'tm' '$HOME/.local/bin/tmux-sessionizer'

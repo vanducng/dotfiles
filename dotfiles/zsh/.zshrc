@@ -37,6 +37,9 @@ function zvm_vi_yank() {
 
 export PATH="/opt/homebrew/opt/mysql-client/bin:$PATH"
 
+# Disable brew auto-update
+export HOMEBREW_NO_AUTO_UPDATE=1
+
 # Aliases now managed by atuin dotfiles
 
 # pyenv init
@@ -276,3 +279,4 @@ export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
 alias claude="/Users/vanducng/.claude/local/claude"
 export PATH="/Users/vanducng/.claude/local:$PATH"
+export PATH="$HOME/.local/bin:$PATH"
