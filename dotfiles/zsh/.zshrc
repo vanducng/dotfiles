@@ -267,10 +267,6 @@ export PATH="$PATH:/Users/vanducng/.local/bin"
 export PATH="/Users/vanducng/.codeium/windsurf/bin:$PATH"
 
 
-# Smart Suggestion # smart-suggestion - TEMPORARILY DISABLED FOR TESTING
-# source /Users/vanducng/.config/smart-suggestion/smart-suggestion.plugin.zsh # smart-suggestion
-# export SMART_SUGGESTION_PROXY_MODE=false
-
 # bun completions
 [ -s "/Users/vanducng/.bun/_bun" ] && source "/Users/vanducng/.bun/_bun"
 
