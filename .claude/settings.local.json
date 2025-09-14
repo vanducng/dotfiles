@@ -112,7 +112,8 @@
       "Bash(tree:*)",
       "Bash(gh pr create:*)",
       "Bash(tmux show-options:*)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(brew list:*)"
     ],
     "deny": []
   }
