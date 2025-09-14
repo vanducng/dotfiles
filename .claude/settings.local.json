@@ -111,7 +111,8 @@
       "Bash(./scripts/ci/validate.sh:*)",
       "Bash(tree:*)",
       "Bash(gh pr create:*)",
-      "Bash(tmux show-options:*)"
+      "Bash(tmux show-options:*)",
+      "WebSearch"
     ],
     "deny": []
   }
