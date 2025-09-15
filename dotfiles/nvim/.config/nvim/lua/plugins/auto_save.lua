@@ -36,7 +36,28 @@ return {
     "okuuva/auto-save.nvim",
     cmd = "ASToggle",
     event = { "InsertLeave", "TextChanged" },
-    condition = save_condition,
-    opts = { enable = true, debounce_delay = 1000 },
+    opts = {
+      enabled = true,
+      -- Updated configuration based on latest plugin version
+      trigger_events = {
+        immediate_save = { "BufLeave", "FocusLost" },
+        defer_save = { "InsertLeave", "TextChanged" },
+        cancel_deferred_save = { "InsertEnter" },
+      },
+      condition = save_condition,
+      write_all_buffers = false,
+      noautocmd = false,
+      lockmarks = false,
+      debounce_delay = 1000,
+      debug = false,
+    },
+    config = function(_, opts)
+      -- Disable confirm for overwriting files
+      vim.o.confirm = false
+      -- Set write behavior to not prompt
+      vim.o.writeany = true
+
+      require("auto-save").setup(opts)
+    end,
   },
 }
