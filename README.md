@@ -5,6 +5,7 @@ A comprehensive, AI-enhanced development environment for macOS featuring tiling 
 ![macOS](https://img.shields.io/badge/macOS-000000?style=for-the-badge&logo=apple&logoColor=white)
 ![Neovim](https://img.shields.io/badge/NeoVim-%2357A143.svg?&style=for-the-badge&logo=neovim&logoColor=white)
 ![Tmux](https://img.shields.io/badge/tmux-1BB91F?style=for-the-badge&logo=tmux&logoColor=white)
+![Nushell](https://img.shields.io/badge/Nushell-4E9A06?style=for-the-badge&logo=gnu-bash&logoColor=white)
 ![Zsh](https://img.shields.io/badge/Zsh-F15A24?style=for-the-badge&logo=gnu-bash&logoColor=white)
 
 ## ✨ Features
@@ -21,10 +22,11 @@ A comprehensive, AI-enhanced development environment for macOS featuring tiling 
 - **Sketchybar** - Custom status bar with system info
 
 ### 💻 Terminal & Shell
-- **Zsh** with Oh My Zsh and Powerlevel10k
+- **Nushell** - Modern shell with structured data processing (primary)
+- **Zsh** with Oh My Zsh and Powerlevel10k (maintained)
 - **Tmux** with custom keybindings and session management
-- **Ghostty/Kitty** - Modern terminal emulators
-- **Starship** - Cross-shell prompt
+- **Ghostty** - Modern terminal emulator with Nushell integration
+- **Starship** - Cross-shell prompt with P10K-inspired lean theme
 
 ### 🛠️ Development Tools
 - **Neovim** - AstroNvim v5 with LSP, treesitter, and AI
@@ -86,6 +88,7 @@ dotfiles/
 ├── kitty/         # Kitty terminal config
 ├── lazygit/       # Git TUI configuration
 ├── mise/          # Runtime version manager
+├── nushell/       # Nushell configuration with Starship theme
 ├── nvim/          # Neovim configuration (AstroNvim)
 ├── nvim-vscode/   # VSCode Neovim integration
 ├── sketchybar/    # Status bar configuration
@@ -141,6 +144,20 @@ dotfiles/
 | `<C-f>` | Project Sessionizer |
 | `-` | File Manager (Oil) |
 
+### Nushell (Primary Shell)
+| Command | Action |
+|---------|--------|
+| `yy [args]` | Yazi file manager with directory change |
+| `nvim-select` or `nv` | Select file to edit with Neovim |
+| `nvim-config [type]` or `nc` | Quick edit config files |
+| `edit-config` | Edit Nushell configuration |
+| `edit-env` | Edit Nushell environment |
+| `starship-lean` or `st-lean` | Switch to lean P10K-style theme |
+| `starship-full` or `st-full` | Switch to full Starship theme |
+| `starship-info` or `st-info` | Show current theme info |
+| `ghcs <cmd>` | GitHub Copilot suggest command |
+| `ghce <cmd>` | GitHub Copilot explain command |
+
 ### AI Completion (GitHub Copilot)
 | Shortcut | Action |
 |----------|--------|
@@ -160,6 +177,13 @@ dotfiles/
 - **Database Tools** - Advanced SQL development with MFA support
 - **LSP Support** - Language servers for multiple languages
 - **Custom Dashboard** - Branded startup screen
+
+### Nushell Shell
+- **Structured Data** - Built-in JSON, CSV, SQL processing
+- **Modern Features** - Fuzzy completion, vi-mode editing
+- **Starship Integration** - P10K-inspired lean theme with Catppuccin colors
+- **Tool Integration** - Atuin history, Zoxide navigation, Direnv support
+- **Theme Switching** - Easy toggle between lean and full prompt themes
 
 ### Tmux Workflow
 - **Project Sessionizer** - Quick project switching with FZF
@@ -184,6 +208,10 @@ dotfiles/
 - **Global shortcuts**: Edit `dotfiles/skhd/.config/skhd/skhdrc`
 - **Window management**: Edit `dotfiles/yabai/.config/yabai/yabairc`
 - **Tmux bindings**: Edit `dotfiles/tmux/.tmux.conf`
+
+### Shell & Terminal Configuration
+- **Nushell Setup**: See `docs/NUSHELL_SETUP.md` - Modern shell configuration
+- **Zsh Fallback**: Original zsh config maintained for compatibility
 
 ### AI Configuration
 See documentation in `dotfiles/nvim/.config/nvim/docs/`:
@@ -211,6 +239,12 @@ make backup-aliases  # Export and commit aliases to git
 # Tmux utilities
 ~/.local/bin/tmux-sessionizer    # Project switcher
 ~/.local/bin/tmux-windowizer     # Window manager
+
+# Nushell utilities
+starship-lean                    # Switch to lean P10K-style theme
+starship-full                    # Switch to full Starship theme
+nvim-select                      # Interactive file selection for editing
+yy                               # Yazi file manager with directory change
 ```
 
 ## 🔍 Troubleshooting

@@ -113,7 +113,17 @@
       "Bash(gh pr create:*)",
       "Bash(tmux show-options:*)",
       "WebSearch",
-      "Bash(brew list:*)"
+      "Bash(brew list:*)",
+      "Bash(brew reinstall:*)",
+      "Bash(gcloud components:*)",
+      "Bash(arch:*)",
+      "Bash(gcloud:*)",
+      "Read(//Users/vanducng/.local/share/nvim/lazy/blink.cmp/**)",
+      "Bash(stow:*)",
+      "Read(//Users/vanducng/.config/nushell/**)",
+      "Bash(ln:*)",
+      "Bash(nu:*)",
+      "Bash(starship:*)"
     ],
     "deny": []
   }

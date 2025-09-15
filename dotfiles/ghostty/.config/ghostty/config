@@ -1,7 +1,7 @@
 font-size = 13
 font-thicken = true
 minimum-contrast = 1.1
-cursor-style = block
+cursor-style = bar
 cursor-style-blink = false
 window-padding-x = 10
 window-padding-y = 10
@@ -16,3 +16,7 @@ background-blur-radius = 0
 mouse-hide-while-typing = true
 theme = duskfox
 keybind = cmd+d=ignore
+
+# Nushell as default shell
+command = /opt/homebrew/bin/nu
+shell-integration = none
