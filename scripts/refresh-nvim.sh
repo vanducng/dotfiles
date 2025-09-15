@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+echo -e "${YELLOW}🔄 Refreshing Neovim configuration...${NC}"
+
+# Step 1: Clean nvim directories
+echo -e "${GREEN}→ Cleaning nvim cache and data directories...${NC}"
+rm -rf ~/.local/share/nvim ~/.local/state/nvim ~/.cache/nvim
+
+# Step 2: Remove plugin lock file
+echo -e "${GREEN}→ Removing lazy plugin lock file...${NC}"
+rm -rf ~/.config/nvim/lazy-lock.json
+
+# Step 3: Reinstall plugins with ARM64 architecture
+echo -e "${GREEN}→ Reinstalling plugins for ARM64...${NC}"
+arch -arm64 nvim --headless "+Lazy! sync" +qa
+
+# Step 4: Rebuild TreeSitter parsers
+echo -e "${GREEN}→ Rebuilding TreeSitter parsers for ARM64...${NC}"
+cd ~/.local/share/nvim/lazy/nvim-treesitter 2>/dev/null && \
+    arch -arm64 nvim --headless "+TSUpdateSync" +qa
+
+# Step 5: Rebuild blink.cmp if it exists
+if [ -d ~/.local/share/nvim/lazy/blink.cmp ]; then
+    echo -e "${GREEN}→ Rebuilding blink.cmp for ARM64...${NC}"
+    cd ~/.local/share/nvim/lazy/blink.cmp && cargo build --release
+fi
+
+# Step 6: Rebuild markdown-preview if it exists
+if [ -d ~/.local/share/nvim/lazy/markdown-preview.nvim ]; then
+    echo -e "${GREEN}→ Rebuilding markdown-preview...${NC}"
+    cd ~/.local/share/nvim/lazy/markdown-preview.nvim/app && npm install
+fi
+
+echo -e "${GREEN}✅ Neovim refresh complete!${NC}"
+echo -e "${YELLOW}You can now open nvim. First launch may take a moment to finish setup.${NC}"
