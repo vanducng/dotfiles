@@ -20,10 +20,16 @@ rm -rf ~/.config/nvim/lazy-lock.json
 echo -e "${GREEN}→ Reinstalling plugins for ARM64...${NC}"
 arch -arm64 nvim --headless "+Lazy! sync" +qa
 
-# Step 4: Rebuild TreeSitter parsers
+# Step 4: Clean up temp directories and old parsers
+echo -e "${GREEN}→ Cleaning up TreeSitter temp directories...${NC}"
+rm -rf ~/.local/share/nvim/tree-sitter-*-tmp ~/.local/share/nvim/*-tmp 2>/dev/null
+
+echo -e "${GREEN}→ Removing old TreeSitter parsers...${NC}"
+rm -f ~/.local/share/nvim/lazy/nvim-treesitter/parser/*.so
+
 echo -e "${GREEN}→ Rebuilding TreeSitter parsers for ARM64...${NC}"
 cd ~/.local/share/nvim/lazy/nvim-treesitter 2>/dev/null && \
-    arch -arm64 nvim --headless "+TSUpdateSync" +qa
+    arch -arm64 nvim --headless -c "TSInstallSync yaml bash python json javascript typescript lua markdown html css vim vimdoc" -c "q"
 
 # Step 5: Rebuild blink.cmp if it exists
 if [ -d ~/.local/share/nvim/lazy/blink.cmp ]; then
