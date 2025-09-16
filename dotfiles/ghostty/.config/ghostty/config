@@ -17,6 +17,6 @@ mouse-hide-while-typing = true
 theme = duskfox
 keybind = cmd+d=ignore
 
-# Nushell as default shell
-command = /opt/homebrew/bin/nu
+# Native ARM64 zsh as default shell
+command = /usr/bin/arch -arm64 /bin/zsh
 shell-integration = none

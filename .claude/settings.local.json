@@ -123,7 +123,8 @@
       "Read(//Users/vanducng/.config/nushell/**)",
       "Bash(ln:*)",
       "Bash(nu:*)",
-      "Bash(starship:*)"
+      "Bash(starship:*)",
+      "Bash(sysctl:*)"
     ],
     "deny": []
   }
