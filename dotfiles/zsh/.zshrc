@@ -271,3 +271,13 @@ export PATH="$BUN_INSTALL/bin:$PATH"
 alias claude="/Users/vanducng/.claude/local/claude"
 export PATH="/Users/vanducng/.claude/local:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
+
+# The next line updates PATH for the Google Cloud SDK.
+if [ -f '/Users/vanducng/google-cloud-sdk/path.zsh.inc' ]; then . '/Users/vanducng/google-cloud-sdk/path.zsh.inc'; fi
+
+# The next line enables shell command completion for gcloud.
+if [ -f '/Users/vanducng/google-cloud-sdk/completion.zsh.inc' ]; then . '/Users/vanducng/google-cloud-sdk/completion.zsh.inc'; fi
+
+# Task completions
+fpath=(~/.zsh/completions $fpath)
+autoload -U compinit && compinit
