@@ -25,7 +25,7 @@ echo -e "${GREEN}→ Cleaning up TreeSitter temp directories...${NC}"
 rm -rf ~/.local/share/nvim/tree-sitter-*-tmp ~/.local/share/nvim/*-tmp 2>/dev/null
 
 echo -e "${GREEN}→ Removing old TreeSitter parsers...${NC}"
-rm -f ~/.local/share/nvim/lazy/nvim-treesitter/parser/*.so
+rm -f ~/.local/share/nvim/lazy/nvim-treesitter/parser/*.so ~/.local/share/nvim/lazy/nvim-treesitter/parser/*.dylib
 
 echo -e "${GREEN}→ Rebuilding TreeSitter parsers for ARM64...${NC}"
 cd ~/.local/share/nvim/lazy/nvim-treesitter 2>/dev/null && \
@@ -33,8 +33,14 @@ cd ~/.local/share/nvim/lazy/nvim-treesitter 2>/dev/null && \
 
 # Step 5: Rebuild blink.cmp if it exists
 if [ -d ~/.local/share/nvim/lazy/blink.cmp ]; then
-    echo -e "${GREEN}→ Rebuilding blink.cmp for ARM64...${NC}"
+    CURRENT_ARCH=$(arch)
+    echo -e "${GREEN}→ Rebuilding blink.cmp for ${CURRENT_ARCH}...${NC}"
     cd ~/.local/share/nvim/lazy/blink.cmp && cargo build --release
+    if [ $? -eq 0 ]; then
+        echo -e "${GREEN}✓ blink.cmp built successfully${NC}"
+    else
+        echo -e "${RED}✗ blink.cmp build failed${NC}"
+    fi
 fi
 
 # Step 6: Rebuild markdown-preview if it exists
