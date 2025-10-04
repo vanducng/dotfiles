@@ -68,6 +68,7 @@ yabai -m rule --add app="^CleanShot X$" manage=off
 yabai -m rule --add app="^QuickTime Player$" manage=off
 yabai -m rule --add app="^Structured$" sticky=on layer=above manage=off
 yabai -m rule --add app="^Raycast$" manage=off
+yabai -m rule --add app="^Structured$" manage=off
 
 # yabai -m rule --add app="^Zalo$" space=^7
 

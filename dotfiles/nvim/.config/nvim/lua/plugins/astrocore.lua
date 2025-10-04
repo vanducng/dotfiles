@@ -46,6 +46,9 @@ return {
         wrap = false, -- sets vim.opt.wrap
         ignorecase = true, -- case insensitive search
         smartcase = true, -- case sensitive if uppercase letter in search
+        -- hlsearch = true, -- highlight search results
+        -- incsearch = true, -- incremental search
+        -- shortmess = vim.opt.shortmess - "S", -- show search count (e.g., [1/100])
       },
       g = { -- vim.g.<key>
         -- configure global vim variables (vim.g)
