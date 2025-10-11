@@ -29,7 +29,7 @@ rm -f ~/.local/share/nvim/lazy/nvim-treesitter/parser/*.so ~/.local/share/nvim/l
 
 echo -e "${GREEN}→ Rebuilding TreeSitter parsers for ARM64...${NC}"
 cd ~/.local/share/nvim/lazy/nvim-treesitter 2>/dev/null && \
-    arch -arm64 nvim --headless -c "TSInstallSync sql csv go hcl terraform yaml bash python json jsonc javascript typescript tsx jsx lua markdown html css vim vimdoc dockerfile" -c "q"
+    arch -arm64 nvim --headless -c "TSInstallSync make sql csv go hcl terraform yaml bash python json jsonc javascript typescript tsx jsx lua markdown html css vim vimdoc dockerfile" -c "q"
 
 # Step 5: Rebuild blink.cmp if it exists
 if [ -d ~/.local/share/nvim/lazy/blink.cmp ]; then

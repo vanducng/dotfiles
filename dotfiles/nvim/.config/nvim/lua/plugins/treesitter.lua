@@ -1,12 +1,23 @@
 ---@type LazySpec
 return {
   "nvim-treesitter/nvim-treesitter",
+  build = function()
+    -- Force ARM64 architecture for treesitter compilation
+    vim.fn.system("arch -arm64 " .. vim.fn.stdpath("data") .. "/lazy/nvim-treesitter/scripts/install.sh")
+  end,
   opts = {
     ensure_installed = {
       "lua",
       "vim",
-      -- add more arguments for adding more treesitter parsers
+      "python",
+      "yaml",
+      "json",
+      "markdown",
+      "markdown_inline",
+      "bash",
+      "sql",
     },
+    auto_install = true,
     highlight = {
       enable = true,
       disable = function(lang, buf)
