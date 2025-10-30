@@ -40,7 +40,9 @@ export HOMEBREW_NO_AUTO_UPDATE=1
 # pyenv init
 export PYENV_ROOT="$HOME/.pyenv"
 command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
-eval "$(pyenv init -)"
+if command -v pyenv >/dev/null; then
+  eval "$(pyenv init -)"
+fi
 
 autoload -U +X bashcompinit && bashcompinit
 complete -o nospace -C /opt/homebrew/bin/terraform terraform
@@ -57,6 +59,13 @@ export PATH="$HOME/.local/bin:$PATH"
 export PATH="$PATH:/usr/local/bin"
 export LDFLAGS="-L/usr/local/opt/zlib/lib"
 export CPPFLAGS="-I/usr/local/opt/zlib/include"
+
+# Force ARM64 architecture for compilation (prevents x86_64/Rosetta issues)
+# Only set ARCHFLAGS - don't modify CC/CXX as it breaks process spawning
+export ARCHFLAGS="-arch arm64"
+export CFLAGS="-arch arm64"
+export CXXFLAGS="-arch arm64"
+export LDFLAGS="${LDFLAGS} -arch arm64"
 
 export XDG_CONFIG_HOME="$HOME/.config"
 export PATH="$HOME/.rd/bin:$HOME/.cargo/bin:/opt/homebrew/opt/openjdk/bin:$PATH"
@@ -235,7 +244,9 @@ bindkey -s '^g' "$HOME/.local/bin/tmux-sessionizer\n"
 
 . "$HOME/.cargo/env"
 
-eval "$(gh copilot alias -- zsh)"
+if command -v gh >/dev/null; then
+  eval "$(gh copilot alias -- zsh)"
+fi
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
