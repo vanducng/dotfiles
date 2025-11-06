@@ -20,6 +20,8 @@ return {
   end,
   keys = {
     { "<C-b>", function() require("oil").select { vertical = true } end, desc = "Open buffer in vertical view" },
+    { "<leader>e", "<cmd>Oil<cr>", desc = "Open file explorer (Oil)" }, -- Replaces neo-tree <leader>e
+    { "-", "<cmd>Oil<cr>", desc = "Open parent directory (Oil)" }, -- Quick access
   },
   opts = {
     default_file_explorer = true,
