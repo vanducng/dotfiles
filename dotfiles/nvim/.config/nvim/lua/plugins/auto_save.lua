@@ -5,7 +5,7 @@ local excluded_filetypes = {
   -- by default, but it doesn't hurt to be extra safe.
   "NvimTree",
   "Outline",
-  "TelescopePrompt",
+  "fzf",
   "alpha",
   "dashboard",
   "lazygit",

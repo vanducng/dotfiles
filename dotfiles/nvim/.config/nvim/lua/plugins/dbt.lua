@@ -11,13 +11,9 @@ return {
         extended_path_search = true,
         protect_compiled_files = true,
       }
-
-      -- Optional: Add telescope integration
-      require("telescope").load_extension "dbtpal"
     end,
     dependencies = {
       "nvim-lua/plenary.nvim",
-      "nvim-telescope/telescope.nvim",
     },
   },
 }

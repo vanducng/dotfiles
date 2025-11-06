@@ -22,6 +22,24 @@ return {
     diagnostics = {
       virtual_text = true,
       underline = true,
+      update_in_insert = false, -- Don't update diagnostics while typing
+    },
+
+    -- Auto commands can be configured here
+    autocmds = {
+      -- Disable diagnostics in insert mode for better performance
+      disable_diagnostics_in_insert = {
+        {
+          event = "InsertEnter",
+          desc = "Disable diagnostics in insert mode",
+          callback = function() vim.diagnostic.disable(0) end,
+        },
+        {
+          event = "InsertLeave",
+          desc = "Enable diagnostics when leaving insert mode",
+          callback = function() vim.diagnostic.enable(0) end,
+        },
+      },
     },
     -- passed to `vim.filetype.add`
     filetypes = {
@@ -97,67 +115,108 @@ return {
         -- this is useful for naming menus
         ["<Leader>D"] = { desc = "󰆼 Database" },
 
-        -- Telescope keymaps with zen mode preservation
+        -- Open project root in Oil
+        ["<Leader>e"] = {
+          function()
+            -- Find project root by looking for .git directory
+            local function find_git_root()
+              local current_file = vim.api.nvim_buf_get_name(0)
+              local current_dir
+              if current_file == "" then
+                current_dir = vim.fn.getcwd()
+              else
+                current_dir = vim.fn.fnamemodify(current_file, ":h")
+              end
+
+              while current_dir ~= "/" do
+                if vim.fn.isdirectory(current_dir .. "/.git") == 1 then
+                  return current_dir
+                end
+                current_dir = vim.fn.fnamemodify(current_dir, ":h")
+              end
+              return vim.fn.getcwd() -- fallback to current working directory
+            end
+
+            local root = find_git_root()
+            require("oil").open(root)
+          end,
+          desc = "Open project root in Oil",
+        },
+
+        -- Open current directory in Oil
+        ["<Leader>."] = {
+          function()
+            local current_file = vim.api.nvim_buf_get_name(0)
+            if current_file == "" then
+              require("oil").open(vim.fn.getcwd())
+            else
+              require("oil").open(vim.fn.fnamemodify(current_file, ":h"))
+            end
+          end,
+          desc = "Open current directory in Oil",
+        },
+
+        -- fzf-lua keymaps with zen mode preservation
         ["<Leader>ff"] = {
           function()
-            vim.g.zen_telescope_was_active = vim.g.zen_mode_active == true
-            require("telescope.builtin").find_files()
+            vim.g.zen_fzf_was_active = vim.g.zen_mode_active == true
+            require("fzf-lua").files()
           end,
           desc = "Find files",
         },
         ["<Leader>fF"] = {
           function()
-            vim.g.zen_telescope_was_active = vim.g.zen_mode_active == true
-            require("telescope.builtin").find_files { hidden = true, no_ignore = true }
+            vim.g.zen_fzf_was_active = vim.g.zen_mode_active == true
+            require("fzf-lua").files { cmd = "fd --hidden --no-ignore" }
           end,
           desc = "Find files (including hidden)",
         },
         ["<Leader>fw"] = {
           function()
-            vim.g.zen_telescope_was_active = vim.g.zen_mode_active == true
-            require("telescope.builtin").live_grep()
+            vim.g.zen_fzf_was_active = vim.g.zen_mode_active == true
+            require("fzf-lua").live_grep()
           end,
           desc = "Find words",
         },
         ["<Leader>fb"] = {
           function()
-            vim.g.zen_telescope_was_active = vim.g.zen_mode_active == true
-            require("telescope.builtin").buffers()
+            vim.g.zen_fzf_was_active = vim.g.zen_mode_active == true
+            require("fzf-lua").buffers()
           end,
           desc = "Find buffers",
         },
         ["<Leader>fh"] = {
           function()
-            vim.g.zen_telescope_was_active = vim.g.zen_mode_active == true
-            require("telescope.builtin").help_tags()
+            vim.g.zen_fzf_was_active = vim.g.zen_mode_active == true
+            require("fzf-lua").helptags()
           end,
           desc = "Find help",
         },
         ["<Leader>fo"] = {
           function()
-            vim.g.zen_telescope_was_active = vim.g.zen_mode_active == true
-            require("telescope.builtin").oldfiles()
+            vim.g.zen_fzf_was_active = vim.g.zen_mode_active == true
+            require("fzf-lua").oldfiles()
           end,
           desc = "Find history",
         },
         ["<Leader>gc"] = {
           function()
-            vim.g.zen_telescope_was_active = vim.g.zen_mode_active == true
-            require("telescope.builtin").git_commits()
+            vim.g.zen_fzf_was_active = vim.g.zen_mode_active == true
+            require("fzf-lua").git_commits()
           end,
           desc = "Git commits",
         },
         ["<Leader>gt"] = {
           function()
-            vim.g.zen_telescope_was_active = vim.g.zen_mode_active == true
-            require("telescope.builtin").git_status()
+            vim.g.zen_fzf_was_active = vim.g.zen_mode_active == true
+            require("fzf-lua").git_status()
           end,
           desc = "Git status",
         },
         ["<Leader>gC"] = {
           function()
-            vim.g.zen_telescope_was_active = vim.g.zen_mode_active == true
-            require("telescope.builtin").git_bcommits()
+            vim.g.zen_fzf_was_active = vim.g.zen_mode_active == true
+            require("fzf-lua").git_bcommits()
           end,
           desc = "Git commits (current file)",
         },

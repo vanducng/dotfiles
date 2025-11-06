@@ -1,47 +1,21 @@
-[[mgr.prepend_keymap]]
-on   = [ "g", "e" ]
-run  = "cd ~/git/personal"
-desc = "personal"
+# Yazi keymaps for better hierarchy navigation
 
-[[mgr.prepend_keymap]]
-on   = [ "g", "x" ]
-run  = "cd ~/git/work/cnb"
-desc = "cnb"
-
-[[mgr.prepend_keymap]]
-on   = [ "g", "j" ]
-run  = "cd ~/git/work/bhcoe"
-desc = "jade"
-
-[[mgr.prepend_keymap]]
-on   = [ "g", "c" ]
-run  = "cd ~/git/work/crashchat"
-desc = "crashchat"
-
-[[mgr.prepend_keymap]]
-on  = [ "T" ]
-run = "plugin --sync max-preview"
-
-[[mgr.prepend_keymap]]
-on  = [ "T" ]
-run = "plugin --sync hide-preview"
-
-[[mgr.prepend_keymap]]
-on = [ "u", "a" ]
-run = "plugin bookmarks-persistence --args=save"
-desc = "Save current position as a bookmark"
-
-[[mgr.prepend_keymap]]
-on = [ "u", "g" ]
-run = "plugin bookmarks-persistence --args=jump"
-desc = "Jump to a bookmark"
-
-[[mgr.prepend_keymap]]
-on = [ "u", "d" ]
-run = "plugin bookmarks-persistence --args=delete"
-desc = "Delete a bookmark"
-
-[[mgr.prepend_keymap]]
-on = [ "u", "D" ]
-run = "plugin bookmarks-persistence --args=delete_all"
-desc = "Delete all bookmarks"
+[mgr]
+keymap = [
+  # Better hierarchy navigation
+  { on = "gh", run = "cd ~", desc = "Go to home directory" },
+  { on = "g/", run = "cd /", desc = "Go to root" },
+  { on = "gd", run = "cd ~/Downloads", desc = "Go to downloads" },
+  { on = "gc", run = "cd ~/.config", desc = "Go to config" },
+  
+  # Tree-like navigation
+  { on = "H", run = "parent", desc = "Go to parent directory" },
+  { on = "L", run = "enter", desc = "Enter directory" },
+  
+  # Toggle hidden files to see full hierarchy
+  { on = ".", run = "hidden toggle", desc = "Toggle hidden files" },
+  
+  # Expand/collapse view
+  { on = "+", run = "zoom +1", desc = "Zoom in" },
+  { on = "-", run = "zoom -1", desc = "Zoom out" },
+]

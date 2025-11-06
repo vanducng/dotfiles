@@ -18,7 +18,7 @@ return {
     formatting = {
       -- control auto formatting on save
       format_on_save = {
-        enabled = true, -- enable or disable format on save globally
+        enabled = false, -- disable format on save globally
         allow_filetypes = { -- enable format on save for specified filetypes only
           -- "go",
         },
@@ -106,6 +106,8 @@ return {
       -- Disable tsserver if typescript-tools is being used
       -- tsserver = false, -- disable tsserver to avoid conflicts with typescript-tools
       ts_ls = false, -- disable ts_ls (new name for tsserver) to avoid conflicts
+      marksman = false, -- disable markdown language server
+      markdown_oxide = false, -- disable alternative markdown language server
     },
     -- Configure buffer local auto commands to add when attaching a language server
     autocmds = {
