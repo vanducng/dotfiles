@@ -99,7 +99,7 @@ return {
         end,
       })
 
-      -- Telescope integration: restore zen mode after telescope file selection
+      -- fzf-lua integration: restore zen mode after fzf-lua file selection
       vim.api.nvim_create_autocmd("BufEnter", {
         callback = function()
           -- Use vim.schedule for immediate execution on next tick
@@ -108,22 +108,21 @@ return {
             local filetype = vim.bo.filetype
             local bufname = vim.api.nvim_buf_get_name(0)
 
-            -- Check if this is a normal file buffer (not telescope or special)
+            -- Check if this is a normal file buffer (not fzf or special)
             local is_normal_buffer = buftype == ""
-              and filetype ~= "TelescopePrompt"
-              and filetype ~= "TelescopeResults"
+              and filetype ~= "fzf"
               and not bufname:match "^term://"
               and bufname ~= ""
 
-            -- Restore zen mode if it was active before telescope
-            if vim.g.zen_telescope_was_active and is_normal_buffer and not zen_mode_active then
+            -- Restore zen mode if it was active before fzf-lua
+            if vim.g.zen_fzf_was_active and is_normal_buffer and not zen_mode_active then
               zen_mode.toggle {
                 window = {
                   width = zen_mode_width(),
                   height = 1.0,
                 },
               }
-              vim.g.zen_telescope_was_active = false
+              vim.g.zen_fzf_was_active = false
             end
           end)
         end,

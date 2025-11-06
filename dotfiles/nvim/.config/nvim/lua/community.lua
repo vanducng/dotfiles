@@ -15,4 +15,5 @@ return {
   { import = "astrocommunity.programming-language-support.nvim-jqx" },
   { import = "astrocommunity.pack.typescript" },
   { import = "astrocommunity.pack.html-css" },
+  { import = "astrocommunity.fuzzy-finder.fzf-lua" },
 }

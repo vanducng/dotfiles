@@ -108,7 +108,7 @@ return {
           width = 95,
           height = 10,
           prompt = "Select an action: ",
-          provider = "default", -- Options: "default", "telescope"
+          provider = "fzf_lua", -- Options: "default", "telescope", "fzf_lua"
         },
         chat = {
           window = {

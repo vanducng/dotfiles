@@ -17,7 +17,7 @@ meh - m : open "/Applications/Firefox.app"
 meh - j : open "/Applications/Claude.app"
 
 meh - b : open "/Applications/Linear.app"
-meh - x : open "/Applications/Visual Studio Code.app"
+meh - x : open "/Applications/kitty.app"
 meh - v : open "/Applications/Cursor.app"
 meh - r : open "/System/Volumes/Data/Applications/Zalo.app"
 meh - g : open "/System/Volumes/Data/Applications/Discord.app"
