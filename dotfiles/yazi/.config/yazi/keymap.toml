@@ -1,7 +1,7 @@
 # Yazi keymaps for better hierarchy navigation
 
-[mgr]
-keymap = [
+[manager]
+prepend_keymap = [
   # Better hierarchy navigation
   { on = "gh", run = "cd ~", desc = "Go to home directory" },
   { on = "g/", run = "cd /", desc = "Go to root" },
@@ -9,7 +9,7 @@ keymap = [
   { on = "gc", run = "cd ~/.config", desc = "Go to config" },
   
   # Tree-like navigation
-  { on = "H", run = "parent", desc = "Go to parent directory" },
+  { on = "H", run = "leave", desc = "Go to parent directory" },
   { on = "L", run = "enter", desc = "Enter directory" },
   
   # Toggle hidden files to see full hierarchy
