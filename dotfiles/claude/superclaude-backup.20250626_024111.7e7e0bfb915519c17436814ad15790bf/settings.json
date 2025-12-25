@@ -1,7 +1,0 @@
-{
-  "includeCoAuthoredBy": false,
-  "cleanupPeriodDays": 30,
-  "env": {
-    "BASH_DEFAULT_TIMEOUT_MS": "600000"
-  }
-}

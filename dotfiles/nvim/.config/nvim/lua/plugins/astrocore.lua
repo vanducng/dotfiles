@@ -220,6 +220,87 @@ return {
           end,
           desc = "Git commits (current file)",
         },
+        ["<Leader>gb"] = {
+          function()
+            vim.g.zen_fzf_was_active = vim.g.zen_mode_active == true
+            require("fzf-lua").git_branches()
+          end,
+          desc = "Git branches",
+        },
+
+        -- LSP pickers
+        ["<Leader>ls"] = {
+          function()
+            vim.g.zen_fzf_was_active = vim.g.zen_mode_active == true
+            require("fzf-lua").lsp_document_symbols()
+          end,
+          desc = "LSP document symbols",
+        },
+        ["<Leader>lS"] = {
+          function()
+            vim.g.zen_fzf_was_active = vim.g.zen_mode_active == true
+            require("fzf-lua").lsp_workspace_symbols()
+          end,
+          desc = "LSP workspace symbols",
+        },
+        ["<Leader>ld"] = {
+          function()
+            vim.g.zen_fzf_was_active = vim.g.zen_mode_active == true
+            require("fzf-lua").lsp_document_diagnostics()
+          end,
+          desc = "LSP document diagnostics",
+        },
+        ["<Leader>lD"] = {
+          function()
+            vim.g.zen_fzf_was_active = vim.g.zen_mode_active == true
+            require("fzf-lua").lsp_workspace_diagnostics()
+          end,
+          desc = "LSP workspace diagnostics",
+        },
+        ["<Leader>la"] = {
+          function()
+            vim.g.zen_fzf_was_active = vim.g.zen_mode_active == true
+            require("fzf-lua").lsp_code_actions()
+          end,
+          desc = "LSP code actions",
+        },
+
+        -- Additional useful pickers
+        ["<Leader>fr"] = {
+          function()
+            vim.g.zen_fzf_was_active = vim.g.zen_mode_active == true
+            require("fzf-lua").resume()
+          end,
+          desc = "Resume last search",
+        },
+        ["<Leader>fc"] = {
+          function()
+            vim.g.zen_fzf_was_active = vim.g.zen_mode_active == true
+            require("fzf-lua").commands()
+          end,
+          desc = "Find commands",
+        },
+        ["<Leader>fk"] = {
+          function()
+            vim.g.zen_fzf_was_active = vim.g.zen_mode_active == true
+            require("fzf-lua").keymaps()
+          end,
+          desc = "Find keymaps",
+        },
+        ["<Leader>fq"] = {
+          function()
+            vim.g.zen_fzf_was_active = vim.g.zen_mode_active == true
+            require("fzf-lua").quickfix()
+          end,
+          desc = "Quickfix list",
+        },
+        ["<Leader>fW"] = {
+          function()
+            vim.g.zen_fzf_was_active = vim.g.zen_mode_active == true
+            require("fzf-lua").grep_cword()
+          end,
+          desc = "Find word under cursor",
+        },
 
         -- setting a mapping to false will disable it
         -- ["<C-S>"] = false,
