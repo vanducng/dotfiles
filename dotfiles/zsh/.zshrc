@@ -18,6 +18,7 @@ zsh-syntax-highlighting
 zsh-vi-mode
 )
 source $ZSH/oh-my-zsh.sh
+source <(gopass completion zsh)
 
 function zvm_vi_yank() {
 	zvm_yank
@@ -59,13 +60,6 @@ export PATH="$HOME/.local/bin:$PATH"
 export PATH="$PATH:/usr/local/bin"
 export LDFLAGS="-L/usr/local/opt/zlib/lib"
 export CPPFLAGS="-I/usr/local/opt/zlib/include"
-
-# Force ARM64 architecture for compilation (prevents x86_64/Rosetta issues)
-# Only set ARCHFLAGS - don't modify CC/CXX as it breaks process spawning
-export ARCHFLAGS="-arch arm64"
-export CFLAGS="-arch arm64"
-export CXXFLAGS="-arch arm64"
-export LDFLAGS="${LDFLAGS} -arch arm64"
 
 export XDG_CONFIG_HOME="$HOME/.config"
 export PATH="$HOME/.rd/bin:$HOME/.cargo/bin:/opt/homebrew/opt/openjdk/bin:$PATH"
@@ -289,6 +283,6 @@ if [ -f '/Users/vanducng/google-cloud-sdk/path.zsh.inc' ]; then . '/Users/vanduc
 # The next line enables shell command completion for gcloud.
 if [ -f '/Users/vanducng/google-cloud-sdk/completion.zsh.inc' ]; then . '/Users/vanducng/google-cloud-sdk/completion.zsh.inc'; fi
 
-# Task completions
-fpath=(~/.zsh/completions $fpath)
-autoload -U compinit && compinit
+
+# Added by Antigravity
+export PATH="/Users/vanducng/.antigravity/antigravity/bin:$PATH"
