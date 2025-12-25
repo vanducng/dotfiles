@@ -25,7 +25,7 @@ return {
     yazi_floating_window_border = "rounded",
 
     -- Integration settings
-    open_for_directories = false, -- Let Oil handle directory opening
+    open_for_directories = true, -- Use yazi for directory navigation
     clipboard_register = "*", -- Use system clipboard
     highlight_hovered_buffers_in_same_directory = true, -- Visual feedback
 
