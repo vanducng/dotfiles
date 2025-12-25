@@ -20,3 +20,7 @@ keybind = cmd+d=ignore
 # Native ARM64 zsh as default shell
 command = /usr/bin/arch -arm64 /bin/zsh
 shell-integration = none
+keybind = shift+enter=text:\x1b\r
+
+# For claude code
+macos-option-as-alt = true
