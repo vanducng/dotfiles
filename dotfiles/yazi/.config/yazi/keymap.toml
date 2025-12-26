@@ -1,6 +1,6 @@
 # Yazi keymaps for better hierarchy navigation
 
-[manager]
+[mgr]
 prepend_keymap = [
   # Better hierarchy navigation
   { on = "gh", run = "cd ~", desc = "Go to home directory" },
