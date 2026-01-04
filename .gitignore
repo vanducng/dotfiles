@@ -55,3 +55,6 @@ Untitled.claude/settings.local.json
 
 # Shell history directory (user's home)
 .shell-history/
+
+.claude
+plans
