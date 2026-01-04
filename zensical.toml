@@ -16,10 +16,19 @@ features = [
   "navigation.expand"
 ]
 
-[project.theme.palette]
+[[project.theme.palette]]
 scheme = "slate"
 primary = "indigo"
 accent = "indigo"
+toggle.icon = "lucide/sun"
+toggle.name = "Switch to light mode"
+
+[[project.theme.palette]]
+scheme = "default"
+primary = "indigo"
+accent = "indigo"
+toggle.icon = "lucide/moon"
+toggle.name = "Switch to dark mode"
 
 [[project.nav]]
 Home = "index.md"
