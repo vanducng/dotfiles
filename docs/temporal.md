@@ -1,11 +1,13 @@
-## Self host
-- Cluster management
-https://medium.com/@mailman966/my-journey-hosting-a-temporal-cluster-237fec22a5ec
+# Temporal Workflow Orchestration
 
-- A replacement for Airflow
-https://h4s.one/blog/2024/temporal/
+This document is a placeholder for future workflow orchestration documentation.
 
-https://community.five9.com/s/article/API-Configuration-Web-Services-API-methods-and-their-limits?language=en_US
+## Status
 
+Currently not integrated into the dotfiles. This section is reserved for documenting workflow orchestration patterns if Temporal or similar tools are adopted.
 
+## Related
 
+- For current task automation, see [Task Runner](../dotfiles/task/.taskrc)
+- For tmux workflow patterns, see [Tmux Documentation](tmux.md)
+- For shell scripting, see [Scripts Directory](../scripts/)
