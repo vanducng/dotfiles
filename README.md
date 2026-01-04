@@ -2,7 +2,7 @@
 
 A comprehensive, AI-enhanced development environment for macOS featuring tiling window management, advanced terminal workflows, and integrated AI coding assistance.
 
-[![Docs](https://img.shields.io/badge/docs-zensical-blue?style=for-the-badge)](https://vanducng.github.io/dotfiles/)
+[![Docs](https://img.shields.io/badge/docs-zensical-blue?style=for-the-badge)](https://dotfiles.vanducng.dev/)
 ![macOS](https://img.shields.io/badge/macOS-000000?style=for-the-badge&logo=apple&logoColor=white)
 ![Neovim](https://img.shields.io/badge/NeoVim-%2357A143.svg?&style=for-the-badge&logo=neovim&logoColor=white)
 ![Tmux](https://img.shields.io/badge/tmux-1BB91F?style=for-the-badge&logo=tmux&logoColor=white)
