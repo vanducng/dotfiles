@@ -1,6 +1,6 @@
 [project]
 site_name = "Duc's Digital Workspace"
-site_url = "https://dotfiles.vanducng.dev/"
+site_url = "https://vanducng.github.io/dotfiles/"
 site_description = "AI-enhanced development environment for macOS featuring tiling window management, advanced terminal workflows, and integrated AI coding assistance."
 site_author = "vanducng"
 copyright = "© 2024-2026 vanducng. MIT License."
