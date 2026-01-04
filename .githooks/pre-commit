@@ -8,7 +8,7 @@ if ! command -v gitleaks &> /dev/null; then
 fi
 
 # Run gitleaks on staged changes
-gitleaks git --staged --verbose
+gitleaks protect --staged --verbose
 
 if [ $? -ne 0 ]; then
     echo ""
