@@ -286,3 +286,7 @@ if [ -f '~/google-cloud-sdk/completion.zsh.inc' ]; then . '~/google-cloud-sdk/co
 
 # Added by Antigravity
 export PATH="~/.antigravity/antigravity/bin:$PATH"
+
+
+# Load Angular CLI autocompletion.
+source <(ng completion script)
