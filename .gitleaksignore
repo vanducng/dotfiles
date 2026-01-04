@@ -1,0 +1,3 @@
+# Gitleaks ignore file
+# Add fingerprints of false positives here
+# Format: one fingerprint per line (from gitleaks output)

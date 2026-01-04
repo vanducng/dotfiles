@@ -1,0 +1,19 @@
+#!/bin/bash
+# Pre-commit hook to detect secrets using gitleaks
+
+# Check if gitleaks is installed
+if ! command -v gitleaks &> /dev/null; then
+    echo "Warning: gitleaks not installed. Install with: brew install gitleaks"
+    exit 0
+fi
+
+# Run gitleaks on staged changes
+gitleaks git --staged --verbose
+
+if [ $? -ne 0 ]; then
+    echo ""
+    echo "❌ Secret detected! Commit blocked."
+    echo "   Review the findings above and remove secrets before committing."
+    echo "   To bypass (use with caution): git commit --no-verify"
+    exit 1
+fi
