@@ -1,0 +1,49 @@
+[project]
+site_name = "Duc's Digital Workspace"
+site_url = "https://vanducng.github.io/dotfiles/"
+site_description = "AI-enhanced development environment for macOS featuring tiling window management, advanced terminal workflows, and integrated AI coding assistance."
+site_author = "vanducng"
+copyright = "© 2024-2026 vanducng. MIT License."
+docs_dir = "docs"
+site_dir = "site"
+
+[project.theme]
+variant = "modern"
+features = [
+  "navigation.instant",
+  "navigation.tabs",
+  "navigation.sections",
+  "navigation.expand"
+]
+
+[[project.nav]]
+Home = "index.md"
+
+[[project.nav]]
+"Getting Started" = [
+  "installation.md",
+  "quick-reference.md"
+]
+
+[[project.nav]]
+"Core Tools" = [
+  { Neovim = "neovim/README.md" },
+  { Tmux = "tmux.md" },
+  { Atuin = "atuin.md" },
+  { SKHD = "skhd.md" },
+  { "Zen Mode" = "zen-mode.md" }
+]
+
+[[project.nav]]
+"AI Tools" = [
+  "ai/workflows.md"
+]
+
+[[project.nav]]
+Workflows = [
+  "workflows/development.md",
+  "temporal.md"
+]
+
+[[project.nav]]
+Troubleshooting = "troubleshooting.md"
