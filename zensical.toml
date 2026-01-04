@@ -9,6 +9,7 @@ site_dir = "site"
 
 [project.theme]
 variant = "modern"
+color_scheme = "dark"
 features = [
   "navigation.instant",
   "navigation.tabs",
@@ -36,14 +37,26 @@ Home = "index.md"
 
 [[project.nav]]
 "AI Tools" = [
-  "ai/workflows.md"
+  { Overview = "ai/index.md" },
+  { Workflows = "ai/workflows.md" },
+  { "Best Practices" = "ai/best-practices.md" }
 ]
 
 [[project.nav]]
 Workflows = [
-  "workflows/development.md",
-  "temporal.md"
+  { Overview = "workflows/index.md" },
+  { Coding = "workflows/coding.md" },
+  { Database = "workflows/database.md" },
+  { "Review & Debug" = "workflows/review.md" },
+  { Temporal = "temporal.md" }
 ]
 
 [[project.nav]]
-Troubleshooting = "troubleshooting.md"
+Troubleshooting = [
+  { Overview = "troubleshooting/index.md" },
+  { "Window Management" = "troubleshooting/window-management.md" },
+  { Terminal = "troubleshooting/terminal.md" },
+  { Neovim = "troubleshooting/neovim.md" },
+  { "AI Tools" = "troubleshooting/ai-tools.md" },
+  { Performance = "troubleshooting/performance.md" }
+]
