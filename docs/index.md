@@ -1,42 +1,42 @@
 ---
 title: Home
-description: Comprehensive AI-enhanced development environment for macOS
+description: AI-enhanced macOS development environment documentation
 ---
 
 # Duc's Digital Workspace
 
-Welcome to the comprehensive documentation for this modern macOS development environment. This wiki contains detailed guides, troubleshooting tips, and configuration options for all components.
+Welcome to the comprehensive documentation for this modern macOS development environment. Quick setup, configuration guides, and troubleshooting for all tools.
 
 ## Getting Started
 
-- [Installation Guide](installation.md) - Complete setup instructions
+- [Installation Guide](installation.md) - Complete setup from scratch
 - [Quick Reference](quick-reference.md) - Essential commands and shortcuts
+- [Troubleshooting](troubleshooting.md) - Common issues and solutions
 
-## Core Tools
+## Core Tools Documentation
 
-- [Neovim](neovim/README.md) - Editor configuration and plugins
-- [Zen Mode](zen-mode.md) - Distraction-free coding environment
-- [Tmux](tmux.md) - Terminal multiplexer setup and workflows
-- [Atuin](atuin.md) - Intelligent shell history and sync
-- [SKHD](skhd.md) - Hotkey daemon configuration
+**Terminal & Multiplexing:**
+- [Tmux Setup](tmux.md) - Terminal multiplexer configuration
+- [Atuin](atuin.md) - Shell history and sync
 
-## AI Tools
+**Window Management:**
+- [SKHD Configuration](skhd.md) - Hotkey daemon setup
 
-- [AI Workflows](ai/workflows.md) - Best practices and tips for AI-assisted development
+**Editors & IDE:**
+- [Neovim Configuration](neovim/README.md) - AstroNvim v5 setup
 
-## Workflows
-
-- [Development Workflows](workflows/development.md) - Daily development patterns
-- [Temporal](temporal.md) - Workflow orchestration
+**Development Workflows:**
+- [Zen Mode](zen-mode.md) - Distraction-free coding with Tmux
+- [AI Workflows](ai/workflows.md) - Best practices for AI-assisted coding
 
 ## Quick Help
 
 ### Common Commands
 
 ```bash
-# Restart window manager
-skhd --restart-service
-yabai --restart-service
+# Restart services
+brew services restart yabai
+brew services restart skhd
 
 # Reload configurations
 tmux source-file ~/.tmux.conf
@@ -53,14 +53,21 @@ prefix + I  # In Tmux
 # If window manager breaks
 killall yabai skhd
 brew services restart yabai
-brew services restart skhd
 
-# If terminal is broken
+# If terminal breaks
 /Applications/Ghostty.app/Contents/MacOS/ghostty
 ```
 
-### Getting Help
+## Documentation Structure
 
-- Check the [Troubleshooting Guide](troubleshooting.md)
-- Review configuration files in `dotfiles/`
-- Check the main README for basic setup
+1. **Installation** - Setup procedures and requirements
+2. **Quick Reference** - Shortcuts and common commands
+3. **Tool-Specific Guides** - Detailed configuration docs
+4. **Troubleshooting** - Debug and fix common issues
+5. **Workflows** - AI integration and daily patterns
+
+## File & Links
+
+- [Codebase Summary](../docs/codebase-summary.md) - Project structure overview
+- [Main README](../README.md) - Feature highlights and badges
+- [Neovim Docs](../dotfiles/nvim/.config/nvim/docs/) - AI tools and plugins

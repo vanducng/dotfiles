@@ -6,28 +6,26 @@ A comprehensive, AI-enhanced development environment for macOS featuring tiling 
 ![macOS](https://img.shields.io/badge/macOS-000000?style=for-the-badge&logo=apple&logoColor=white)
 ![Neovim](https://img.shields.io/badge/NeoVim-%2357A143.svg?&style=for-the-badge&logo=neovim&logoColor=white)
 ![Tmux](https://img.shields.io/badge/tmux-1BB91F?style=for-the-badge&logo=tmux&logoColor=white)
-![Nushell](https://img.shields.io/badge/Nushell-4E9A06?style=for-the-badge&logo=gnu-bash&logoColor=white)
 ![Zsh](https://img.shields.io/badge/Zsh-F15A24?style=for-the-badge&logo=gnu-bash&logoColor=white)
 
 ## ✨ Features
 
 ### 🤖 AI-Enhanced Development
 - **CodeCompanion** - AI chat and inline assistance
-- **GitHub Copilot** - Primary AI code completion with ergonomic keybindings
+- **GitHub Copilot** - Code completion with ergonomic keybindings
 - **Database AI** - AI-powered SQL assistance
 - **Unified AI System** - Streamlined AI completion with conflict prevention
 
 ### 🪟 Window Management
 - **Yabai** - Tiling window manager with BSP layout
 - **SKHD** - Hotkey daemon for seamless app switching
-- **Sketchybar** - Custom status bar with system info
+- **Karabiner** - Advanced keyboard customization
 
 ### 💻 Terminal & Shell
-- **Nushell** - Modern shell with structured data processing (primary)
-- **Zsh** with Oh My Zsh and Powerlevel10k (maintained)
+- **Zsh** with Oh My Zsh and Powerlevel10k
 - **Tmux** with custom keybindings and session management
-- **Ghostty** - Modern terminal emulator with Nushell integration
-- **Starship** - Cross-shell prompt with P10K-inspired lean theme
+- **Ghostty** - Modern terminal emulator (primary)
+- **Starship** - Cross-shell prompt with modern styling
 
 ### 🛠️ Development Tools
 - **Neovim** - AstroNvim v5 with LSP, treesitter, and AI
@@ -89,10 +87,8 @@ dotfiles/
 ├── kitty/         # Kitty terminal config
 ├── lazygit/       # Git TUI configuration
 ├── mise/          # Runtime version manager
-├── nushell/       # Nushell configuration with Starship theme
 ├── nvim/          # Neovim configuration (AstroNvim)
 ├── nvim-vscode/   # VSCode Neovim integration
-├── sketchybar/    # Status bar configuration
 ├── skhd/          # Hotkey daemon config
 ├── starship/      # Shell prompt config
 ├── task/          # Task runner config
@@ -145,19 +141,14 @@ dotfiles/
 | `<C-f>` | Project Sessionizer |
 | `-` | File Manager (Oil) |
 
-### Nushell (Primary Shell)
+### Zsh Utilities
 | Command | Action |
 |---------|--------|
 | `yy [args]` | Yazi file manager with directory change |
 | `nvim-select` or `nv` | Select file to edit with Neovim |
-| `nvim-config [type]` or `nc` | Quick edit config files |
-| `edit-config` | Edit Nushell configuration |
-| `edit-env` | Edit Nushell environment |
-| `starship-lean` or `st-lean` | Switch to lean P10K-style theme |
-| `starship-full` or `st-full` | Switch to full Starship theme |
-| `starship-info` or `st-info` | Show current theme info |
-| `ghcs <cmd>` | GitHub Copilot suggest command |
-| `ghce <cmd>` | GitHub Copilot explain command |
+| `p10k configure` | Configure Powerlevel10k theme |
+| `tmux-sessionizer` | Quick project switcher in Tmux |
+| `source ~/.zshrc` | Reload shell configuration |
 
 ### AI Completion (GitHub Copilot)
 | Shortcut | Action |
@@ -174,17 +165,17 @@ dotfiles/
 
 ### Neovim Features
 - **AstroNvim v5** - Modern Neovim distribution
-- **AI Integration** - Multiple AI assistants for coding
-- **Database Tools** - Advanced SQL development with MFA support
+- **AI Integration** - Multiple AI assistants (Copilot, CodeCompanion)
+- **Database Tools** - Advanced SQL development with Snowflake support
 - **LSP Support** - Language servers for multiple languages
 - **Custom Dashboard** - Branded startup screen
 
-### Nushell Shell
-- **Structured Data** - Built-in JSON, CSV, SQL processing
-- **Modern Features** - Fuzzy completion, vi-mode editing
-- **Starship Integration** - P10K-inspired lean theme with Catppuccin colors
+### Zsh Shell
+- **Oh My Zsh** - Framework with plugins and themes
+- **Powerlevel10k** - Feature-rich prompt with instant feedback
+- **Starship Theme** - Modern alternative prompt configuration
 - **Tool Integration** - Atuin history, Zoxide navigation, Direnv support
-- **Theme Switching** - Easy toggle between lean and full prompt themes
+- **Shell Aliases** - Atuin-managed aliases with import/export
 
 ### Tmux Workflow
 - **Project Sessionizer** - Quick project switching with FZF
@@ -195,8 +186,8 @@ dotfiles/
 ### Window Management
 - **BSP Layout** - Binary space partitioning for optimal screen usage
 - **Smart Gaps** - 5px gaps with toggle functionality
-- **App Rules** - Specific behavior for different applications
-- **Mouse Integration** - Fn + mouse for window manipulation
+- **App Rules** - Specific window behavior per application
+- **Hotkey System** - Modal shortcuts with SKHD
 
 ## 🛠️ Customization
 
@@ -211,8 +202,8 @@ dotfiles/
 - **Tmux bindings**: Edit `dotfiles/tmux/.tmux.conf`
 
 ### Shell & Terminal Configuration
-- **Nushell Setup**: See `docs/NUSHELL_SETUP.md` - Modern shell configuration
-- **Zsh Fallback**: Original zsh config maintained for compatibility
+- **Zsh Setup**: Primary shell with Oh My Zsh and Powerlevel10k
+- **Ghostty**: Modern terminal emulator with optimized settings
 
 ### AI Configuration
 See documentation in `dotfiles/nvim/.config/nvim/docs/`:
@@ -229,8 +220,8 @@ make stow-install    # Install all dotfiles
 make stow-clean      # Remove all symlinks
 
 # System maintenance
-./scripts/macos-deps.sh      # Install dependencies
-./scripts/yabai-upgrade.sh   # Upgrade window manager
+./scripts/macos-deps.sh      # Install macOS dependencies
+./scripts/yabai-upgrade.sh   # Upgrade Yabai window manager
 
 # Alias management (Atuin)
 make export-aliases  # Export current aliases to file
@@ -238,14 +229,13 @@ make import-aliases  # Import aliases from file
 make backup-aliases  # Export and commit aliases to git
 
 # Tmux utilities
-~/.local/bin/tmux-sessionizer    # Project switcher
-~/.local/bin/tmux-windowizer     # Window manager
+~/.local/bin/tmux-sessionizer    # Quick project switcher
+~/.local/bin/tmux-windowizer     # Window/pane management
 
-# Nushell utilities
-starship-lean                    # Switch to lean P10K-style theme
-starship-full                    # Switch to full Starship theme
+# Utilities
 nvim-select                      # Interactive file selection for editing
 yy                               # Yazi file manager with directory change
+p10k configure                   # Configure Powerlevel10k prompt
 ```
 
 ## 🔍 Troubleshooting
@@ -276,15 +266,7 @@ git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
 - Verify network connectivity
 - See individual setup guides in `docs/` folder
 
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
-
-## 📚 References & Inspiration
+## 📚 References
 
 - [GNU Stow Guide](https://dr563105.github.io/blog/manage-dotfiles-with-gnu-stow/)
 - [AstroNvim Documentation](https://docs.astronvim.com/)
