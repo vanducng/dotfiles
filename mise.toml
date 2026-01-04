@@ -1,0 +1,25 @@
+# Mise configuration for dotfiles project development
+# This is project-specific and separate from user's stowed mise config
+
+[tools]
+python = "3.12"       # For zensical, linting, scripts
+shellcheck = "latest" # Shell script linting
+
+[env]
+# Create virtual environment for project dependencies
+_.python.venv = { path = ".venv", create = true }
+
+[settings]
+experimental = true
+
+[tasks.docs-serve]
+description = "Serve documentation locally"
+run = "zensical serve"
+
+[tasks.docs-build]
+description = "Build documentation"
+run = "zensical build --clean"
+
+[tasks.lint]
+description = "Lint shell scripts"
+run = "find scripts -name '*.sh' -exec shellcheck {} +"

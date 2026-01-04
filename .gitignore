@@ -56,5 +56,19 @@ Untitled.claude/settings.local.json
 # Shell history directory (user's home)
 .shell-history/
 
-.claude
-plans
+# Claude AI project config (keep local)
+.claude/
+plans/
+
+# Zensical build output
+site/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Python virtual environments
+.venv/
+__pycache__/
+*.pyc
