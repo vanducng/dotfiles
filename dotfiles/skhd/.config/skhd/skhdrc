@@ -26,8 +26,9 @@ meh - t : open "/Applications/Microsoft Teams classic.app"
 meh - i : open "/Applications/Structured.app"
 # meh - u : open "/Applications/Claude.app"
 meh - l : open "/Applications/Perplexity.app"
-meh - e : open "/Applications/Antigravity.app"
-meh - 0x32 : open "/Applications/Telegram.app"
+meh - 1 : open "/Applications/superwhisper.app"
+meh - 2 : open "/Applications/Telegram.app"
+meh - p : open "/Applications/Foxit PDF Reader.app"
 
 # -------------------------------------------------------------------------------------------------------
 # RESIZE MODE
