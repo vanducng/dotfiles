@@ -3,12 +3,27 @@
 
 # Check if gitleaks is installed
 if ! command -v gitleaks &> /dev/null; then
-    echo "Warning: gitleaks not installed. Install with: brew install gitleaks"
+    echo "⚠️  gitleaks not installed. Install with: brew install gitleaks"
     exit 0
 fi
 
-# Run gitleaks on staged changes
-gitleaks protect --staged --verbose
+# Get staged files and scan them
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM)
+if [ -z "$STAGED_FILES" ]; then
+    exit 0
+fi
+
+# Create temp dir with staged content
+TMPDIR=$(mktemp -d)
+trap "rm -rf $TMPDIR" EXIT
+
+for FILE in $STAGED_FILES; do
+    mkdir -p "$TMPDIR/$(dirname "$FILE")"
+    git show ":$FILE" > "$TMPDIR/$FILE" 2>/dev/null || continue
+done
+
+# Scan staged files
+gitleaks detect --source "$TMPDIR" --no-git --verbose
 
 if [ $? -ne 0 ]; then
     echo ""
@@ -17,3 +32,5 @@ if [ $? -ne 0 ]; then
     echo "   To bypass (use with caution): git commit --no-verify"
     exit 1
 fi
+
+echo "✅ No secrets detected"
