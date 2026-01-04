@@ -1,6 +1,6 @@
 [project]
 site_name = "Duc's Digital Workspace"
-site_url = "https://vanducng.github.io/dotfiles/"
+site_url = "https://dotfiles.vanducng.dev/"
 site_description = "AI-enhanced development environment for macOS featuring tiling window management, advanced terminal workflows, and integrated AI coding assistance."
 site_author = "vanducng"
 copyright = "© 2024-2026 vanducng. MIT License."
@@ -9,13 +9,17 @@ site_dir = "site"
 
 [project.theme]
 variant = "modern"
-color_scheme = "dark"
 features = [
   "navigation.instant",
   "navigation.tabs",
   "navigation.sections",
   "navigation.expand"
 ]
+
+[project.theme.palette]
+scheme = "slate"
+primary = "indigo"
+accent = "indigo"
 
 [[project.nav]]
 Home = "index.md"
