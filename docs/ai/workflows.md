@@ -6,8 +6,7 @@ Daily development patterns using AI tools.
 ```bash
 C-x + t     # Open project sessionizer
 nvim
-:Copilot status
-<leader>ac  # Test CodeCompanion
+<leader>ac  # Test CodeCompanion with Gemini
 ```
 
 ## Code Review Workflow
@@ -37,11 +36,10 @@ What's the best approach considering security and UX?"
 
 ### Implementation Phase
 ```javascript
-// Copilot keybindings:
+// Supermaven keybindings:
 // Tab: Accept suggestion
-// Ctrl+;: Accept full suggestion
-// Ctrl+': Accept word
-// Ctrl+]: Accept line
+// Ctrl+]: Dismiss suggestion
+// Auto-triggers while typing
 ```
 
 ### Refinement Phase

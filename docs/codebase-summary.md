@@ -81,10 +81,11 @@ Duc's Digital Workspace: AI-enhanced macOS development environment with 22 dotfi
 - **App Rules** - Specific window behavior per application
 
 ### AI Integration
-- **GitHub Copilot** - Code completion with custom keybindings
-- **CodeCompanion** - OpenAI chat and inline assistance
-- **Database AI** - SQL-specific AI helpers
-- **Unified System** - Conflict prevention across AI tools
+- **Supermaven** - Real-time code completion (Tab to accept)
+- **CodeCompanion** - Gemini API chat and inline assistance
+- **Database AI** - SQL-specific AI helpers via dbee
+- **fzf-lua** - Fuzzy finder (replaced Telescope)
+- **Oil.nvim** - File explorer (replaced Neo-tree)
 
 ### Terminal Workflows
 - **Tmux** - Session management with custom plugins
