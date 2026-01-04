@@ -4,26 +4,26 @@ Guide to using AI tools effectively in your development workflow.
 
 ## Tool Overview
 
-| Feature | CodeCompanion | GitHub Copilot | Database AI |
-|---------|---------------|----------------|-------------|
+| Feature | CodeCompanion | Supermaven | Database AI |
+|---------|---------------|-----------|-------------|
 | **Type** | Chat + Inline | Completion | SQL-specific |
-| **Cost** | Paid (OpenAI) | Paid | Included |
+| **API** | Google Gemini | Proprietary | Built-in dbee |
 | **Strength** | Complex problems | Real-time coding | SQL queries |
 | **Best For** | Architecture, debugging | Day-to-day coding | Database work |
-| **Keybindings** | Leader-based | Ergonomic Ctrl+ | Context-aware |
+| **Keybindings** | Leader-based | Auto-trigger | Context-aware |
 
 ## Quick Start
 
 ```bash
-# Check AI tool status
-:Copilot status
-<leader>ac  # Test CodeCompanion
-
-# Core keybindings
+# CodeCompanion (Chat with Gemini)
 <leader>ac  # Open AI chat
 <leader>aa  # AI actions menu
 <leader>ar  # Code review
 <leader>af  # Quick fixes
+
+# Supermaven (Completion - auto-triggers)
+# Just start typing, suggestions appear automatically
+# Tab to accept, Ctrl+] to dismiss
 ```
 
 ## Documentation

@@ -4,63 +4,37 @@
 
 ### API Key Problems
 ```bash
-# Check environment variable
-echo $OPENAI_API_KEY
-
-# Test API connectivity
-curl -H "Authorization: Bearer $OPENAI_API_KEY" \
-     https://api.openai.com/v1/models
+# Check Gemini API key
+echo $GEMINI_API_KEY
 
 # Set API key temporarily
-:lua vim.env.OPENAI_API_KEY = "your-key-here"
+:lua vim.env.GEMINI_API_KEY = "your-key-here"
 ```
 
 ### Chat Not Responding
 ```bash
 # Check network
-ping api.openai.com
+ping generativelanguage.googleapis.com
 
 # Restart CodeCompanion
 :CodeCompanion reset
 ```
 
-## GitHub Copilot Issues
-
-### Authentication Problems
-```bash
-# Check status
-:Copilot status
-
-# Re-authenticate
-:Copilot auth
-
-# Check logs
-:Copilot log
-```
+## Supermaven Issues
 
 ### Suggestions Not Appearing
 ```bash
-# Enable Copilot
-:Copilot enable
+# Check if Supermaven is running (auto-starts)
+# Try restarting Neovim
 
-# Check file type status
-:Copilot status
-
-# Manual trigger: Ctrl+] in insert mode
+# Ensure not in a large file (>100KB can disable AI)
 ```
 
-## NeoCodeium Issues
-
-### Setup Problems
+### Performance Issues
 ```bash
-# Check status
-:NeoCodeium status
-
-# Re-authenticate
-:NeoCodeium auth
-
-# Check config
-:lua print(vim.inspect(require("neocodeium").config))
+# Supermaven uses proprietary model
+# Check system resources
+# Large files may slow suggestions
 ```
 
 ## Database (Dbee) Issues
