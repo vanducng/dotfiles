@@ -12,7 +12,7 @@ AI-enhanced development environment for macOS.
 - **Terminal** - Ghostty + Tmux + Zsh with session management
 - **Editor** - Neovim (AstroNvim) with LSP and AI integration
 - **AI Tools** - CodeCompanion, GitHub Copilot, Database AI
-- **Utilities** - Atuin, Yazi, Starship, Mise, Direnv
+- **Utilities** - Atuin, Yazi, Starship, Mise, Direnv, Karabiner, Hammerspoon
 
 ## Documentation
 
