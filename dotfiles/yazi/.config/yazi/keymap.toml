@@ -2,11 +2,17 @@
 
 [mgr]
 prepend_keymap = [
-  # Better hierarchy navigation
-  { on = "gh", run = "cd ~", desc = "Go to home directory" },
-  { on = "g/", run = "cd /", desc = "Go to root" },
-  { on = "gd", run = "cd ~/Downloads", desc = "Go to downloads" },
-  { on = "gc", run = "cd ~/.config", desc = "Go to config" },
+  # Navigation (gg/G for top/bottom)
+  { on = [ "g", "g" ], run = "arrow -99999999", desc = "Go to top" },
+
+  # Goto shortcuts
+  { on = [ "g", "h" ], run = "cd ~", desc = "Go to home directory" },
+  { on = [ "g", "/" ], run = "cd /", desc = "Go to root" },
+  { on = [ "g", "d" ], run = "cd ~/Downloads", desc = "Go to downloads" },
+  { on = [ "g", "c" ], run = "cd ~/.config", desc = "Go to config" },
+  { on = [ "g", "-" ], run = "back", desc = "Go to previous directory" },
+  { on = [ "g", "i" ], run = "cd --interactive", desc = "Go to directory (input)" },
+  { on = [ "g", "0" ], run = "plugin initial-dir", desc = "Go to initial directory" },
   
   # Tree-like navigation
   { on = "H", run = "leave", desc = "Go to parent directory" },

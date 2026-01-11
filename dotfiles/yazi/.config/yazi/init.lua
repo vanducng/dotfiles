@@ -7,6 +7,8 @@
 -- Enable borders
 require("full-border"):setup()
 
+-- Initial directory is read by initial-dir plugin from YAZI_INITIAL_DIR env var
+
 -- Custom linemode for showing size and modification time
 function Linemode:size_and_mtime()
     local time = math.floor(self._file.cha.mtime or 0)
