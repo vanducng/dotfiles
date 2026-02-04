@@ -1,7 +1,7 @@
 ---@type LazySpec
 return {
   {
-    "iamcco/markdown-preview.nvim",
+    "vanducng/markdown-preview.nvim", -- Fork with Mermaid v11.12.2
     cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
     ft = { "markdown" },
     build = "cd app && ./install.sh",
@@ -92,6 +92,56 @@ return {
       { "<leader>mp", "<cmd>MarkdownPreview<cr>", desc = "Start Markdown Preview" },
       { "<leader>ms", "<cmd>MarkdownPreviewStop<cr>", desc = "Stop Markdown Preview" },
       { "<leader>mt", "<cmd>MarkdownPreviewToggle<cr>", desc = "Toggle Markdown Preview" },
+      {
+        "<leader>me",
+        function()
+          -- Extract mermaid code block from buffer
+          local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+          local in_mermaid = false
+          local mermaid_code = {}
+
+          for _, line in ipairs(lines) do
+            if line:match("^```mermaid") then
+              in_mermaid = true
+            elseif line:match("^```") and in_mermaid then
+              in_mermaid = false
+              break
+            elseif in_mermaid then
+              table.insert(mermaid_code, line)
+            end
+          end
+
+          if #mermaid_code == 0 then
+            vim.notify("No mermaid code block found", vim.log.levels.WARN)
+            return
+          end
+
+          -- Write to temp file and export
+          local tmp_mmd = "/tmp/mermaid_export.mmd"
+          local tmp_png = "/tmp/mermaid_export.png"
+          local file = io.open(tmp_mmd, "w")
+          if file then
+            file:write(table.concat(mermaid_code, "\n"))
+            file:close()
+          end
+
+          -- Run mmdc and copy to clipboard
+          vim.fn.jobstart(
+            string.format("mmdc -i %s -o %s -b transparent && osascript -e 'set the clipboard to (read (POSIX file \"%s\") as JPEG picture)'", tmp_mmd, tmp_png, tmp_png),
+            {
+              on_exit = function(_, code)
+                if code == 0 then
+                  vim.notify("Mermaid diagram copied to clipboard", vim.log.levels.INFO)
+                else
+                  vim.notify("Failed to export mermaid diagram", vim.log.levels.ERROR)
+                end
+              end,
+            }
+          )
+        end,
+        desc = "Export Mermaid to clipboard",
+        ft = "markdown",
+      },
     },
   },
 }
