@@ -125,9 +125,9 @@ return {
             file:close()
           end
 
-          -- Run mmdc and copy to clipboard
+          -- Run mmdc and copy to clipboard (scale 3x for higher resolution)
           vim.fn.jobstart(
-            string.format("mmdc -i %s -o %s -b transparent && osascript -e 'set the clipboard to (read (POSIX file \"%s\") as JPEG picture)'", tmp_mmd, tmp_png, tmp_png),
+            string.format("mmdc -i %s -o %s -b transparent -s 3 && osascript -e 'set the clipboard to (read (POSIX file \"%s\") as JPEG picture)'", tmp_mmd, tmp_png, tmp_png),
             {
               on_exit = function(_, code)
                 if code == 0 then
