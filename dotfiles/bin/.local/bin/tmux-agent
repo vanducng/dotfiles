@@ -25,9 +25,18 @@ get_repo_root() {
 }
 
 cmd_spawn() {
-  local prompt="${1:-}"
-  local repo_root slug branch worktree_path pane_id
+  local prompt="" ref_file="" slash_cmd=""
 
+  # Parse flags
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --file|-f)  ref_file="$2"; shift 2 ;;
+      --cmd|-c)   slash_cmd="$2"; shift 2 ;;
+      *)          prompt="${prompt:+$prompt }$1"; shift ;;
+    esac
+  done
+
+  local repo_root slug branch worktree_path pane_id
   repo_root=$(get_repo_root)
   local main_branch
   main_branch=$(get_main_branch)
@@ -57,20 +66,48 @@ cmd_spawn() {
     git -C "$repo_root" worktree add "$worktree_path" -b "$branch" "$main_branch"
   fi
 
+  # Build full prompt: slash command + prompt + file reference
+  local full_prompt=""
+  [[ -n "$slash_cmd" ]] && full_prompt="/${slash_cmd} "
+  full_prompt="${full_prompt}${prompt}"
+
+  # Append file content as context if --file provided
+  if [[ -n "$ref_file" ]]; then
+    local abs_file
+    # Resolve relative paths against repo root
+    if [[ "$ref_file" = /* ]]; then
+      abs_file="$ref_file"
+    else
+      abs_file="${repo_root}/${ref_file}"
+    fi
+    if [[ -f "$abs_file" ]]; then
+      local file_content
+      file_content=$(cat "$abs_file")
+      full_prompt="${full_prompt}
+
+<reference file=\"${ref_file}\">
+${file_content}
+</reference>"
+    else
+      echo -e "${YELLOW}Warning: file '${ref_file}' not found, skipping${NC}"
+    fi
+  fi
+
   # Write prompt to temp file to avoid shell injection via prompt content
   local prompt_file=""
-  if [[ -n "$prompt" ]]; then
+  if [[ -n "$full_prompt" ]]; then
     prompt_file="${worktree_path}/.agent-prompt"
-    printf '%s' "$prompt" > "$prompt_file"
+    printf '%s' "$full_prompt" > "$prompt_file"
   fi
 
   # Build launch script that reads prompt from file (safe from injection)
+  # Uses --allow-dangerously-skip-permissions so agent can work autonomously
+  local claude_flags="--allow-dangerously-skip-permissions"
   local launch_cmd="cd '${worktree_path}'"
   if [[ -n "$prompt_file" ]]; then
-    # Read prompt from file, delete file, launch claude with content
-    launch_cmd="${launch_cmd} && AGENT_PROMPT=\$(cat '${prompt_file}') && rm -f '${prompt_file}' && claude \"\$AGENT_PROMPT\""
+    launch_cmd="${launch_cmd} && AGENT_PROMPT=\$(cat '${prompt_file}') && rm -f '${prompt_file}' && claude ${claude_flags} \"\$AGENT_PROMPT\""
   else
-    launch_cmd="${launch_cmd} && claude"
+    launch_cmd="${launch_cmd} && claude ${claude_flags}"
   fi
 
   pane_id=$(tmux split-window -h -c "$worktree_path" -P -F '#{pane_id}' "bash -c '${launch_cmd}; exec bash'")
@@ -78,6 +115,8 @@ cmd_spawn() {
 
   echo -e "${GREEN}Spawned agent in ${worktree_path}${NC}"
   echo -e "Branch: ${branch} | Pane: ${pane_id}"
+  [[ -n "$slash_cmd" ]] && echo -e "Slash command: /${slash_cmd}"
+  [[ -n "$ref_file" ]] && echo -e "Reference: ${ref_file}"
 }
 
 cmd_merge() {
@@ -87,12 +126,10 @@ cmd_merge() {
   main_branch=$(get_main_branch)
   current_branch=$(git branch --show-current 2>/dev/null || echo "")
 
-  # Must be in a worktree, not main
   if [[ -z "$current_branch" || "$current_branch" == "$main_branch" ]]; then
     echo -e "${RED}Already on ${main_branch} — run this from an agent worktree${NC}" && exit 1
   fi
 
-  # Check for uncommitted changes
   if [[ -n $(git status --porcelain 2>/dev/null) ]]; then
     echo -e "${YELLOW}Uncommitted changes detected. Commit or stash first.${NC}" && exit 1
   fi
@@ -105,7 +142,6 @@ cmd_merge() {
   fi
 
   echo -e "${YELLOW}Phase 2: Merge ${current_branch} into ${main_branch}...${NC}"
-  # Checkout main, merge the agent branch, then go back
   git -C "$repo_root" checkout "$main_branch"
   git -C "$repo_root" merge "$current_branch" --no-edit
   git -C "$repo_root" checkout "$current_branch"
@@ -125,7 +161,6 @@ cmd_cleanup() {
     echo -e "${RED}Already on ${main_branch} — run this from an agent worktree${NC}" && exit 1
   fi
 
-  # cd out of worktree before removing it
   echo -e "${YELLOW}Removing worktree: ${worktree_path}${NC}"
   cd "$repo_root"
   git worktree remove "$worktree_path" --force 2>/dev/null || rm -rf "$worktree_path"
@@ -150,7 +185,7 @@ cmd_list() {
 
 # Main dispatcher
 case "${1:-help}" in
-  spawn)  shift; cmd_spawn "$*" ;;
+  spawn)  shift; cmd_spawn "$@" ;;
   merge)  cmd_merge ;;
   cleanup) shift; cmd_cleanup "${1:-}" ;;
   list)   cmd_list ;;
@@ -159,10 +194,22 @@ case "${1:-help}" in
 tmux-agent: Claude Code agent workflow with git worktrees
 
 USAGE:
-  tmux-agent spawn [prompt]    Create worktree + launch claude in new pane
-  tmux-agent merge             2-phase merge worktree → main
-  tmux-agent cleanup [--delete-branch]  Remove worktree
-  tmux-agent list              Show active agent worktrees
+  tmux-agent spawn [prompt]                     Create worktree + launch claude
+  tmux-agent spawn [prompt] -c <slash-cmd>      Prepend slash command to prompt
+  tmux-agent spawn [prompt] -f <file>           Attach file content as context
+  tmux-agent merge                              2-phase merge worktree → main
+  tmux-agent cleanup [--delete-branch]          Remove worktree
+  tmux-agent list                               Show active agent worktrees
+
+OPTIONS:
+  -c, --cmd <command>     Slash command (e.g. "cook", "fix", "plan")
+  -f, --file <path>       Reference file to include as context
+
+EXAMPLES:
+  tmux-agent spawn "fix auth bug"
+  tmux-agent spawn "implement caching" -c cook
+  tmux-agent spawn "fix the test" -f tests/auth.test.ts
+  tmux-agent spawn "refactor per spec" -c cook -f docs/api-spec.md
 
 TMUX KEYBINDINGS (prefix+g = dev mode):
   prefix+g, n      Spawn agent (prompts for task)
