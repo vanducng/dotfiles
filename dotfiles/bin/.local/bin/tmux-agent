@@ -1,0 +1,175 @@
+#!/usr/bin/env bash
+# tmux-agent: Spawn Claude Code agents in isolated git worktrees via tmux
+# Inspired by dmux (formkit/dmux) — native bash implementation
+set -euo pipefail
+
+RED='\033[0;31m' GREEN='\033[0;32m' YELLOW='\033[1;33m' NC='\033[0m'
+
+# Detect main branch
+get_main_branch() {
+  git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's|refs/remotes/origin/||' && return
+  git show-ref --verify --quiet refs/heads/main 2>/dev/null && echo main && return
+  git show-ref --verify --quiet refs/heads/master 2>/dev/null && echo master && return
+  echo main
+}
+
+# Get git root (handles worktrees)
+get_repo_root() {
+  local git_common_dir
+  git_common_dir=$(git rev-parse --git-common-dir 2>/dev/null)
+  if [[ "$git_common_dir" == ".git" ]]; then
+    git rev-parse --show-toplevel
+  else
+    dirname "$git_common_dir"
+  fi
+}
+
+cmd_spawn() {
+  local prompt="${1:-}"
+  local repo_root slug branch worktree_path pane_id
+
+  repo_root=$(get_repo_root)
+  local main_branch
+  main_branch=$(get_main_branch)
+
+  # Generate slug from prompt or ask for one
+  if [[ -n "$prompt" ]]; then
+    slug=$(echo "$prompt" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g' | sed 's/-\+/-/g' | sed 's/^-\|-$//g' | cut -c1-40)
+  else
+    echo -n "Slug (branch name): " && read -r slug
+  fi
+
+  # Validate slug is not empty
+  if [[ -z "${slug:-}" ]]; then
+    echo -e "${RED}Empty slug — provide a valid prompt or branch name${NC}" && exit 1
+  fi
+
+  worktree_path="${repo_root}/.worktrees/${slug}"
+  branch="agent/${slug}"
+
+  # Create worktree
+  git -C "$repo_root" worktree prune 2>/dev/null || true
+  mkdir -p "${repo_root}/.worktrees"
+
+  if git -C "$repo_root" show-ref --verify --quiet "refs/heads/${branch}" 2>/dev/null; then
+    git -C "$repo_root" worktree add "$worktree_path" "$branch"
+  else
+    git -C "$repo_root" worktree add "$worktree_path" -b "$branch" "$main_branch"
+  fi
+
+  # Write prompt to temp file to avoid shell injection via prompt content
+  local prompt_file=""
+  if [[ -n "$prompt" ]]; then
+    prompt_file="${worktree_path}/.agent-prompt"
+    printf '%s' "$prompt" > "$prompt_file"
+  fi
+
+  # Build launch script that reads prompt from file (safe from injection)
+  local launch_cmd="cd '${worktree_path}'"
+  if [[ -n "$prompt_file" ]]; then
+    # Read prompt from file, delete file, launch claude with content
+    launch_cmd="${launch_cmd} && AGENT_PROMPT=\$(cat '${prompt_file}') && rm -f '${prompt_file}' && claude \"\$AGENT_PROMPT\""
+  else
+    launch_cmd="${launch_cmd} && claude"
+  fi
+
+  pane_id=$(tmux split-window -h -c "$worktree_path" -P -F '#{pane_id}' "bash -c '${launch_cmd}; exec bash'")
+  tmux select-pane -t "$pane_id" -T "agent:${slug}"
+
+  echo -e "${GREEN}Spawned agent in ${worktree_path}${NC}"
+  echo -e "Branch: ${branch} | Pane: ${pane_id}"
+}
+
+cmd_merge() {
+  local repo_root main_branch current_branch
+
+  repo_root=$(get_repo_root)
+  main_branch=$(get_main_branch)
+  current_branch=$(git branch --show-current 2>/dev/null || echo "")
+
+  # Must be in a worktree, not main
+  if [[ -z "$current_branch" || "$current_branch" == "$main_branch" ]]; then
+    echo -e "${RED}Already on ${main_branch} — run this from an agent worktree${NC}" && exit 1
+  fi
+
+  # Check for uncommitted changes
+  if [[ -n $(git status --porcelain 2>/dev/null) ]]; then
+    echo -e "${YELLOW}Uncommitted changes detected. Commit or stash first.${NC}" && exit 1
+  fi
+
+  echo -e "${YELLOW}Phase 1: Merge ${main_branch} into ${current_branch}...${NC}"
+  if ! git merge "$main_branch" --no-edit; then
+    echo -e "${RED}Conflicts detected! Resolve them, then run 'tmux-agent merge' again.${NC}"
+    git diff --name-only --diff-filter=U
+    exit 1
+  fi
+
+  echo -e "${YELLOW}Phase 2: Merge ${current_branch} into ${main_branch}...${NC}"
+  # Checkout main, merge the agent branch, then go back
+  git -C "$repo_root" checkout "$main_branch"
+  git -C "$repo_root" merge "$current_branch" --no-edit
+  git -C "$repo_root" checkout "$current_branch"
+  echo -e "${GREEN}Merged ${current_branch} into ${main_branch}${NC}"
+}
+
+cmd_cleanup() {
+  local repo_root current_branch worktree_path delete_branch="${1:-}"
+
+  repo_root=$(get_repo_root)
+  current_branch=$(git branch --show-current 2>/dev/null || echo "")
+  worktree_path=$(git rev-parse --show-toplevel 2>/dev/null)
+  local main_branch
+  main_branch=$(get_main_branch)
+
+  if [[ -z "$current_branch" || "$current_branch" == "$main_branch" ]]; then
+    echo -e "${RED}Already on ${main_branch} — run this from an agent worktree${NC}" && exit 1
+  fi
+
+  # cd out of worktree before removing it
+  echo -e "${YELLOW}Removing worktree: ${worktree_path}${NC}"
+  cd "$repo_root"
+  git worktree remove "$worktree_path" --force 2>/dev/null || rm -rf "$worktree_path"
+  git worktree prune
+
+  if [[ "$delete_branch" == "--delete-branch" ]]; then
+    git branch -D "$current_branch" 2>/dev/null && echo -e "${GREEN}Branch ${current_branch} deleted${NC}"
+  else
+    echo -e "Branch ${current_branch} kept. Delete with: git branch -D ${current_branch}"
+  fi
+
+  echo -e "${GREEN}Cleanup complete${NC}"
+}
+
+cmd_list() {
+  local repo_root main_toplevel
+  repo_root=$(get_repo_root)
+  main_toplevel=$(git -C "$repo_root" rev-parse --show-toplevel)
+  echo -e "${GREEN}Agent worktrees:${NC}"
+  git -C "$repo_root" worktree list | grep -v "^${main_toplevel} " || echo "  (none)"
+}
+
+# Main dispatcher
+case "${1:-help}" in
+  spawn)  shift; cmd_spawn "$*" ;;
+  merge)  cmd_merge ;;
+  cleanup) shift; cmd_cleanup "${1:-}" ;;
+  list)   cmd_list ;;
+  *)
+    cat <<EOF
+tmux-agent: Claude Code agent workflow with git worktrees
+
+USAGE:
+  tmux-agent spawn [prompt]    Create worktree + launch claude in new pane
+  tmux-agent merge             2-phase merge worktree → main
+  tmux-agent cleanup [--delete-branch]  Remove worktree
+  tmux-agent list              Show active agent worktrees
+
+TMUX KEYBINDINGS (prefix+g = dev mode):
+  prefix+g, n      Spawn agent (prompts for task)
+  prefix+g, m      Merge current pane's worktree
+  prefix+g, c      Cleanup current pane's worktree
+  prefix+g, d      Cleanup + delete branch
+  prefix+g, w      List agent worktrees
+EOF
+    ;;
+esac
