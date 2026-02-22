@@ -49,6 +49,24 @@ Tmux is the backbone of the terminal workflow, providing session management, win
 | `C-x + a` | Toggle Zoom | Zoom current pane |
 | `C-x + A` | Next Pane Zoom | Switch to next pane and zoom |
 
+### Dev Prefix Mode (`C-x g`)
+| Shortcut | Action | Description |
+|----------|--------|-------------|
+| `C-x g, 0-9` | Jump Pane | Select pane by index (zoom-aware) |
+| `C-x g, n` | Spawn Agent | Create worktree + launch claude |
+| `C-x g, m` | Merge Worktree | 2-phase merge into main |
+| `C-x g, c` | Cleanup Worktree | Remove worktree (keep branch) |
+| `C-x g, d` | Delete All | Remove worktree + delete branch |
+| `C-x g, w` | List Worktrees | Show active agent worktrees |
+| `C-x g, q/Esc` | Exit Mode | Return to normal |
+
+### Layout Prefix Mode (`C-x Backspace`)
+| Shortcut | Action | Description |
+|----------|--------|-------------|
+| `C-x Bspace, 1` | Agentic Layout | Chat + editor + 2 terminals |
+| `C-x Bspace, 2` | 2x2 Grid | Four equal panes |
+| `C-x Bspace, 3` | 3x3 Grid | Nine tiled panes |
+
 ### Copy Mode
 | Shortcut | Action | Description |
 |----------|--------|-------------|
@@ -225,6 +243,57 @@ set -g @catppuccin_window_right_separator " "
 set -g @catppuccin_status_modules_right "directory meetings date_time"
 set -g @catppuccin_status_modules_left "session"
 set -g @catppuccin_date_time_text "%H:%M"
+```
+
+## Agent Workflow (tmux-agent)
+
+Native dmux-inspired workflow for running Claude Code agents in isolated git worktrees.
+
+### Commands
+```bash
+tmux-agent spawn [prompt]           # Create worktree + launch claude in new pane
+tmux-agent merge                    # 2-phase merge worktree → main
+tmux-agent cleanup [--delete-branch] # Remove worktree + optionally delete branch
+tmux-agent list                     # Show active agent worktrees
+```
+
+### Keybindings (prefix+g = dev mode)
+| Shortcut | Action | Description |
+|----------|--------|-------------|
+| `C-x g, n` | Spawn Agent | Prompt for task, create worktree + pane |
+| `C-x g, m` | Merge | 2-phase merge current worktree into main |
+| `C-x g, c` | Cleanup | Remove current worktree (keep branch) |
+| `C-x g, d` | Delete | Remove worktree + delete branch |
+| `C-x g, w` | List | Show active agent worktrees |
+
+### How It Works
+1. **Spawn**: Creates `.worktrees/<slug>` dir, `agent/<slug>` branch from main, opens tmux pane, launches `claude` with your prompt
+2. **Work**: Agent works in isolated worktree — no conflict with main branch
+3. **Merge**: First merges main→worktree (catch conflicts), then worktree→main
+4. **Cleanup**: Removes worktree directory, prunes git refs
+
+### Typical Workflow
+```bash
+# 1. Use Layout 1 for pane arrangement (prefix+backspace, 1)
+# 2. Spawn agent in pane 1
+C-x g, n → "fix authentication bug in login flow"
+
+# 3. Agent works in isolated worktree...
+# 4. When done, switch to agent pane and merge
+C-x g, m
+
+# 5. Cleanup worktree
+C-x g, d
+```
+
+### Worktree Structure
+```
+project/
+├── .worktrees/           # Agent worktrees (gitignored)
+│   ├── fix-auth-bug/     # Isolated copy for agent 1
+│   └── add-api-cache/    # Isolated copy for agent 2
+├── src/                  # Main working tree
+└── ...
 ```
 
 ## 🔄 Workflows
