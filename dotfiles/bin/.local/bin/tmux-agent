@@ -25,13 +25,12 @@ get_repo_root() {
 }
 
 cmd_spawn() {
-  local prompt="" ref_file="" slash_cmd=""
+  local prompt="" ref_file=""
 
   # Parse flags
   while [[ $# -gt 0 ]]; do
     case "$1" in
       --file|-f)  ref_file="$2"; shift 2 ;;
-      --cmd|-c)   slash_cmd="$2"; shift 2 ;;
       *)          prompt="${prompt:+$prompt }$1"; shift ;;
     esac
   done
@@ -66,10 +65,8 @@ cmd_spawn() {
     git -C "$repo_root" worktree add "$worktree_path" -b "$branch" "$main_branch"
   fi
 
-  # Build full prompt: slash command + prompt + file reference
-  local full_prompt=""
-  [[ -n "$slash_cmd" ]] && full_prompt="/${slash_cmd} "
-  full_prompt="${full_prompt}${prompt}"
+  # Build full prompt (slash commands work inline: "/cook fix the bug")
+  local full_prompt="$prompt"
 
   # Append file content as context if --file provided
   if [[ -n "$ref_file" ]]; then
@@ -115,7 +112,6 @@ ${file_content}
 
   echo -e "${GREEN}Spawned agent in ${worktree_path}${NC}"
   echo -e "Branch: ${branch} | Pane: ${pane_id}"
-  [[ -n "$slash_cmd" ]] && echo -e "Slash command: /${slash_cmd}"
   [[ -n "$ref_file" ]] && echo -e "Reference: ${ref_file}"
 }
 
@@ -195,21 +191,19 @@ tmux-agent: Claude Code agent workflow with git worktrees
 
 USAGE:
   tmux-agent spawn [prompt]                     Create worktree + launch claude
-  tmux-agent spawn [prompt] -c <slash-cmd>      Prepend slash command to prompt
   tmux-agent spawn [prompt] -f <file>           Attach file content as context
   tmux-agent merge                              2-phase merge worktree → main
   tmux-agent cleanup [--delete-branch]          Remove worktree
   tmux-agent list                               Show active agent worktrees
 
 OPTIONS:
-  -c, --cmd <command>     Slash command (e.g. "cook", "fix", "plan")
   -f, --file <path>       Reference file to include as context
 
 EXAMPLES:
   tmux-agent spawn "fix auth bug"
-  tmux-agent spawn "implement caching" -c cook
-  tmux-agent spawn "fix the test" -f tests/auth.test.ts
-  tmux-agent spawn "refactor per spec" -c cook -f docs/api-spec.md
+  tmux-agent spawn "/cook implement caching"
+  tmux-agent spawn "/fix failing tests" -f tests/auth.test.ts
+  tmux-agent spawn "/cook refactor per spec" -f docs/api-spec.md
 
 TMUX KEYBINDINGS (prefix+g = dev mode):
   prefix+g, n      Spawn agent (prompts for task)
