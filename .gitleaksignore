@@ -1,3 +1,11 @@
 # Gitleaks ignore file
 # Add fingerprints of false positives here
 # Format: one fingerprint per line (from gitleaks output)
+
+# False positives: VSCode/nvim keyboard shortcuts detected as API keys
+ca1a6417db508617ff31e6ed1016534d443fc44c:dotfiles/claude/.claude/commands/shared/mcp-cache-patterns.yml:generic-api-key:74
+2a2719dd90becc37df52d65baece18ea6bccb473:dotfiles/vscode/keyboard_shortcut.json:generic-api-key:115
+2a2719dd90becc37df52d65baece18ea6bccb473:dotfiles/vscode/keyboard_shortcut.json:generic-api-key:137
+2a2719dd90becc37df52d65baece18ea6bccb473:dotfiles/vscode/keyboard_shortcut.json:generic-api-key:307
+603c7083d9ee708a8042aa4a02b8777322474856:dotfiles/nvim-vscode/.config/nvim-vscode/keybindings.json:generic-api-key:111
+603c7083d9ee708a8042aa4a02b8777322474856:dotfiles/nvim-vscode/.config/nvim-vscode/keybindings.json:generic-api-key:133
