@@ -5,6 +5,9 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
+# Raise open file limit (prevents "too many open files" in nvim/git)
+ulimit -n 65536
+
 export EDITOR=nvim
 export VISUAL="$EDITOR"
 export ZSH="$HOME/.oh-my-zsh"
@@ -119,7 +122,8 @@ fof() {
 
 function yy() {
 	local tmp="$(mktemp -t "yazi-cwd.XXXXXX")"
-	YAZI_INITIAL_DIR="$PWD" yazi "$@" --cwd-file="$tmp"
+	export YAZI_INITIAL_DIR="$PWD"
+	yazi "$@" --cwd-file="$tmp"
 	if cwd="$(cat -- "$tmp")" && [ -n "$cwd" ] && [ "$cwd" != "$PWD" ]; then
 		cd -- "$cwd"
 	fi
@@ -173,8 +177,15 @@ if [ -d "$NVM_DIR/versions/node" ]; then
     DEFAULT_NODE_VERSION=$(ls -t "$NVM_DIR/versions/node" 2>/dev/null | head -1)
   fi
   if [ -n "$DEFAULT_NODE_VERSION" ]; then
+    # Add 'v' prefix if not already present (NVM directories use v prefix)
+    case "$DEFAULT_NODE_VERSION" in
+      v*) NODE_PATH="$NVM_DIR/versions/node/$DEFAULT_NODE_VERSION" ;;
+      *)  NODE_PATH="$NVM_DIR/versions/node/v$DEFAULT_NODE_VERSION" ;;
+    esac
     # Prepend nvm's node to PATH to take precedence over system node
-    export PATH="$NVM_DIR/versions/node/$DEFAULT_NODE_VERSION/bin:$PATH"
+    if [ -d "$NODE_PATH/bin" ]; then
+      export PATH="$NODE_PATH/bin:$PATH"
+    fi
   fi
 fi
 

@@ -7,7 +7,10 @@
 -- Enable borders
 require("full-border"):setup()
 
--- Initial directory is read by initial-dir plugin from YAZI_INITIAL_DIR env var
+-- Capture initial directory from env var
+-- YAZI_INITIAL_DIR: set by yy shell function
+-- NVIM_CWD: set by yazi.nvim when launched from neovim
+YAZI_INITIAL_DIR = os.getenv("YAZI_INITIAL_DIR") or os.getenv("NVIM_CWD")
 
 -- Custom linemode for showing size and modification time
 function Linemode:size_and_mtime()

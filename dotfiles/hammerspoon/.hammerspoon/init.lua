@@ -92,6 +92,51 @@ for _, config in pairs(urls) do
 end
 
 --------------------------------------------
+-- Dynamic Folder Opening Modal
+--------------------------------------------
+hs.hotkey.bind({ "cmd", "alt" }, "o", function()
+	local button, result = hs.dialog.textPrompt("Open Folder", "Enter folder path:", "", "Open", "Cancel")
+
+	if button == "Open" and result and result ~= "" then
+		-- Expand ~ to home directory
+		local path = result:gsub("^~", os.getenv("HOME"))
+
+		-- Check if folder exists
+		local attr = hs.fs.attributes(path)
+		if attr and attr.mode == "directory" then
+			os.execute("open '" .. path .. "'")
+			hs.notify.new({ title = "Hammerspoon", informativeText = "Opening: " .. path }):send()
+		else
+			hs.notify.new({ title = "Hammerspoon", informativeText = "Folder not found: " .. path }):send()
+		end
+	end
+end)
+
+--------------------------------------------
+-- Cycle windows in current Space
+--------------------------------------------
+local function cycleWindows(direction)
+	local wins = hs.window.orderedWindows()
+	if #wins < 2 then return end
+	-- Sort by window ID for stable ordering across invocations
+	table.sort(wins, function(a, b) return a:id() < b:id() end)
+	local focused = hs.window.focusedWindow()
+	if not focused then wins[1]:focus() return end
+	local currentIdx = 1
+	for i, w in ipairs(wins) do
+		if w:id() == focused:id() then
+			currentIdx = i
+			break
+		end
+	end
+	local nextIdx = ((currentIdx - 1 + direction) % #wins) + 1
+	wins[nextIdx]:focus()
+end
+
+hs.hotkey.bind(hyper, "tab", function() cycleWindows(1) end)
+hs.hotkey.bind(shift_hyper, "tab", function() cycleWindows(-1) end)
+
+--------------------------------------------
 -- Reload config
 --------------------------------------------
 myWatcher = hs.pathwatcher.new(os.getenv("HOME") .. "/.hammerspoon/", reloadConfig):start()

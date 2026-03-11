@@ -80,7 +80,7 @@ test_all_tools() {
                 ;;
             linux*)
                 case "$tool" in
-                    hammerspoon|karabiner|skhd|yabai|sketchybar)
+                    hammerspoon|karabiner|skhd|yabai)
                         log_info "Skipping $tool (macOS only)"
                         ;;
                     *)
