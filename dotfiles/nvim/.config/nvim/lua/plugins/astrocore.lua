@@ -114,6 +114,7 @@ return {
         -- tables with just a `desc` key will be registered with which-key if it's installed
         -- this is useful for naming menus
         ["<Leader>D"] = { desc = "󰆼 Database" },
+        ["<Leader>;"] = { desc = " HTTP" },
 
         -- Open project root in Oil
         ["<Leader>e"] = {
@@ -302,8 +303,15 @@ return {
           desc = "Find word under cursor",
         },
 
+        -- JSON formatting with jq (works in any filetype)
+        ["<Leader>jf"] = { ":%!jq .<CR>", desc = "Format buffer as JSON (jq)" },
+
         -- setting a mapping to false will disable it
         -- ["<C-S>"] = false,
+      },
+      v = {
+        -- JSON formatting for visual selection
+        ["<Leader>jf"] = { "!jq .<CR>", desc = "Format selection as JSON (jq)" },
       },
     },
   },
