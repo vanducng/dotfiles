@@ -1,3 +1,7 @@
+git:
+  paging:
+    colorArg: always
+    pager: delta --paging=never --side-by-side --line-numbers --syntax-theme=DarkNeon
 gui:
   language: "en"
   theme:
