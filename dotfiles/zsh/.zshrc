@@ -249,9 +249,7 @@ bindkey -s '^g' "$HOME/.local/bin/tmux-sessionizer\n"
 
 . "$HOME/.cargo/env"
 
-if command -v gh >/dev/null; then
-  eval "$(gh copilot alias -- zsh)"
-fi
+# gh copilot alias removed — gh-copilot v1.0.4 dropped the `alias` subcommand
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
@@ -300,3 +298,9 @@ export PATH="/Users/vanducng/.antigravity/antigravity/bin:$PATH"
 
 # Load Angular CLI autocompletion.
 source <(ng completion script)
+
+# Cortex CLI completion (disable via /settings in cortex)
+[[ -s ~/.zsh/completions/cortex.zsh ]] && source ~/.zsh/completions/cortex.zsh
+
+# CoPaw
+export PATH="$HOME/.copaw/bin:$PATH"
