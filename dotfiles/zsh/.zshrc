@@ -304,3 +304,6 @@ source <(ng completion script)
 
 # CoPaw
 export PATH="$HOME/.copaw/bin:$PATH"
+
+# MariaDB Connector/C for Python mariadb package
+export MARIADB_CONFIG=/opt/homebrew/opt/mariadb-connector-c/bin/mariadb_config
