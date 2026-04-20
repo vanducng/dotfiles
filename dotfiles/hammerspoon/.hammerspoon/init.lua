@@ -114,11 +114,29 @@ end)
 
 --------------------------------------------
 -- Cycle windows in current Space
+--
+-- Gotchas:
+--   * hs.window.orderedWindows() returns windows across ALL spaces, so it
+--     cycles into other desktops even when they are not visible.
+--   * hs.window.filter:setCurrentSpace(true) is unreliable on recent macOS
+--     (stale/missing windows after space switches).
+--   * hs.spaces.windowsForSpace() queries the WindowServer directly and is
+--     the authoritative source for "what is on this space right now".
 --------------------------------------------
 local function cycleWindows(direction)
-	local wins = hs.window.orderedWindows()
+	local spaceId = hs.spaces.focusedSpace()
+	local idsOnSpace = hs.spaces.windowsForSpace(spaceId) or {}
+	local idSet = {}
+	for _, id in ipairs(idsOnSpace) do idSet[id] = true end
+
+	local wins = {}
+	for _, w in ipairs(hs.window.orderedWindows()) do
+		if idSet[w:id()] and w:isStandard() and not w:isMinimized() then
+			wins[#wins + 1] = w
+		end
+	end
 	if #wins < 2 then return end
-	-- Sort by window ID for stable ordering across invocations
+
 	table.sort(wins, function(a, b) return a:id() < b:id() end)
 	local focused = hs.window.focusedWindow()
 	if not focused then wins[1]:focus() return end
@@ -134,7 +152,48 @@ local function cycleWindows(direction)
 end
 
 hs.hotkey.bind(hyper, "tab", function() cycleWindows(1) end)
-hs.hotkey.bind(shift_hyper, "tab", function() cycleWindows(-1) end)
+-- shift_hyper + tab is unreliable (Karabiner caps-lock=hyper interception
+-- + macOS app-switcher quirks), so use hyper + ` for backward cycle.
+hs.hotkey.bind(hyper, "`", function() cycleWindows(-1) end)
+
+--------------------------------------------
+-- Cycle windows within the focused App (current Space only)
+--
+-- Like macOS `cmd+backtick` but space-scoped: skips windows of the same app
+-- that live on other desktops.
+--------------------------------------------
+local function cycleAppWindows(direction)
+	local focused = hs.window.focusedWindow()
+	if not focused then return end
+	local app = focused:application()
+	if not app then return end
+
+	local spaceId = hs.spaces.focusedSpace()
+	local idsOnSpace = hs.spaces.windowsForSpace(spaceId) or {}
+	local idSet = {}
+	for _, id in ipairs(idsOnSpace) do idSet[id] = true end
+
+	local wins = {}
+	for _, w in ipairs(app:allWindows()) do
+		if idSet[w:id()] and w:isStandard() and not w:isMinimized() then
+			wins[#wins + 1] = w
+		end
+	end
+	if #wins < 2 then return end
+
+	table.sort(wins, function(a, b) return a:id() < b:id() end)
+	local currentIdx = 1
+	for i, w in ipairs(wins) do
+		if w:id() == focused:id() then
+			currentIdx = i
+			break
+		end
+	end
+	local nextIdx = ((currentIdx - 1 + direction) % #wins) + 1
+	wins[nextIdx]:focus()
+end
+
+hs.hotkey.bind(hyper, "q", function() cycleAppWindows(1) end)
 
 --------------------------------------------
 -- Reload config
