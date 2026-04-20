@@ -1,6 +1,7 @@
 ---@type LazySpec
 return {
   "vanducng/nvim-dbee",
+  enabled = false,
   branch = "main",
   dependencies = {
     "MunifTanjim/nui.nvim",
