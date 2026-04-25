@@ -253,12 +253,7 @@ bindkey -s '^g' "$HOME/.local/bin/tmux-sessionizer\n"
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
-# Lazy load mise to improve startup time
-mise() {
-  unset -f mise
-  eval "$(command ~/.local/bin/mise activate zsh)"
-  mise "$@"
-}
+eval "$(~/.local/bin/mise activate zsh)"
 
 
 # opencode
