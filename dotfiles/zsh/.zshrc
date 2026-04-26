@@ -39,6 +39,9 @@ export PATH="/opt/homebrew/opt/mysql-client/bin:$PATH"
 # Disable brew auto-update
 export HOMEBREW_NO_AUTO_UPDATE=1
 
+# Claude Code: flicker-free renderer + mouse support (v2.1.88+)
+export CLAUDE_CODE_NO_FLICKER=1
+
 # Aliases now managed by atuin dotfiles
 
 # pyenv init
@@ -302,3 +305,5 @@ export PATH="$HOME/.copaw/bin:$PATH"
 
 # MariaDB Connector/C for Python mariadb package
 export MARIADB_CONFIG=/opt/homebrew/opt/mariadb-connector-c/bin/mariadb_config
+
+if command -v wt >/dev/null 2>&1; then eval "$(command wt config shell init zsh)"; fi
