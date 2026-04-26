@@ -15,9 +15,28 @@ macos-window-shadow = false
 background-blur-radius = 0
 mouse-hide-while-typing = true
 theme = duskfox
-keybind = cmd+d=ignore
 macos-titlebar-style = tabs
 
 shell-integration = none
 keybind = shift+enter=text:\x1b\r
 macos-option-as-alt = true
+
+# Disable default cmd+d split (let tmux handle multiplexing inside surfaces)
+keybind = cmd+d=ignore
+keybind = cmd+shift+d=ignore
+
+# Tmux-style split panes for Ghostty (matches ~/.tmux.conf mnemonics)
+# Leader: cmd+s (avoids conflict with tmux prefix ctrl+x and macOS shortcuts).
+# Press cmd+s, release, then the next key. Same flow as tmux prefix.
+# Splits: v = top/bottom, m = left/right (matches tmux bindings)
+keybind = cmd+s>v=new_split:down
+keybind = cmd+s>m=new_split:right
+# Pane navigation: h/j/k/l (matches tmux bindings)
+keybind = cmd+s>h=goto_split:left
+keybind = cmd+s>j=goto_split:down
+keybind = cmd+s>k=goto_split:up
+keybind = cmd+s>l=goto_split:right
+# Zoom / close / equalize
+keybind = cmd+s>z=toggle_split_zoom
+keybind = cmd+s>x=close_surface
+keybind = cmd+s>e=equalize_splits
