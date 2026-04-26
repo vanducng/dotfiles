@@ -1,0 +1,122 @@
+#!/usr/bin/env bash
+#
+# agent-deck-bootstrap.sh — register the standard set of work + personal
+# projects as agent-deck sessions, organised by group.
+#
+# - Idempotent: skips sessions that already exist (matched by title+group).
+# - Skips paths that don't exist on this machine (e.g. unmounted volumes).
+# - Sessions are *added* (registered), not started. Press Enter in the TUI
+#   to attach/start, or pass START=1 to start immediately.
+#
+# Usage:
+#   agent-deck-bootstrap.sh           # add all (skip existing)
+#   START=1 agent-deck-bootstrap.sh   # add + start with claude
+#   TOOL=codex agent-deck-bootstrap.sh
+#   DRY=1 agent-deck-bootstrap.sh     # print actions, don't execute
+
+set -u
+set -o pipefail
+
+TOOL="${TOOL:-claude}"
+START="${START:-0}"
+DRY="${DRY:-0}"
+
+if ! command -v agent-deck >/dev/null 2>&1; then
+  echo "agent-deck not on PATH" >&2
+  exit 127
+fi
+
+# Silences the once-per-process tmux 3.6a NULL-deref warning so it doesn't
+# pollute our progress lines. Has no effect on a patched tmux.
+export AGENTDECK_SUPPRESS_TMUX_WARNING=1
+
+# title|group|path
+SESSIONS=(
+  # acme
+  "infra|acme|~/git/work/acme/acme-ds-infra"
+  "airflow|acme|~/git/work/acme/acme-ds-astro"
+  "dbt|acme|~/git/work/acme/acme-ds-dbt-order-form"
+  "data-contract|acme|~/git/work/acme/acme-data-contract"
+  "ws|acme|~/git/work/acme/acme-web-services"
+
+  # globex
+  "infra|globex|~/git/work/globex/infra"
+  "data-platform|globex|~/git/work/globex/data-platform"
+
+  # umbrella
+  "infra|umbrella|~/git/work/umbrella/umbrella-infra"
+  "harmony|umbrella|~/git/work/umbrella/harmony"
+
+  # initech
+  "infra|initech|~/git/work/initech/infra"
+  "app|initech|~/git/work/initech/services/initech-core"
+
+  # nlb
+  "goclaw|nlb|~/git/personal/nextlevelbuilder/goclaw"
+  "gcplane|nlb|~/git/gcplane"
+  "goclaw-config|nlb|~/git/goclaw-config"
+  "goclaw-charts|nlb|~/git/goclaw-charts"
+
+  # lab
+  "infra|lab|~/git/infra"
+  "runner|lab|~/git/runnerclubs"
+)
+
+added=0
+skipped_exists=0
+skipped_missing=0
+failed=0
+
+run() {
+  if [[ "$DRY" == "1" ]]; then
+    printf 'DRY: %s\n' "$*"
+    return 0
+  fi
+  "$@"
+}
+
+cmd_name="add"
+[[ "$START" == "1" ]] && cmd_name="launch"
+
+for entry in "${SESSIONS[@]}"; do
+  IFS='|' read -r title group path <<<"$entry"
+
+  if [[ ! -d "$path" ]]; then
+    printf '  skip   %-20s %-10s  (path missing: %s)\n' "$title" "$group" "$path"
+    skipped_missing=$((skipped_missing + 1))
+    continue
+  fi
+
+  # Capture both stdout/stderr; treat ALREADY_EXISTS as success.
+  if [[ "$DRY" == "1" ]]; then
+    printf 'DRY: agent-deck %s %q -t %q -g %q -c %q --no-parent --quiet\n' \
+      "$cmd_name" "$path" "$title" "$group" "$TOOL"
+    added=$((added + 1))
+    continue
+  fi
+
+  # Note: `agent-deck add` (in contrast to `launch`) exits 0 even when a
+  # session with the same title+path already exists, only printing
+  # "Session already exists ...". Detect that by grepping the output;
+  # `--quiet` would hide the message, so we deliberately don't pass it.
+  out=$(agent-deck "$cmd_name" "$path" -t "$title" -g "$group" -c "$TOOL" \
+    --no-parent 2>&1)
+  rc=$?
+
+  if [[ $rc -ne 0 ]]; then
+    printf '  FAIL   %-20s %-10s  %s\n         %s\n' "$title" "$group" "$path" "$out" >&2
+    failed=$((failed + 1))
+  elif grep -qiE 'already exists|ALREADY_EXISTS' <<<"$out"; then
+    printf '  exist  %-20s %-10s  %s\n' "$title" "$group" "$path"
+    skipped_exists=$((skipped_exists + 1))
+  else
+    printf '  add    %-20s %-10s  %s\n' "$title" "$group" "$path"
+    added=$((added + 1))
+  fi
+done
+
+echo
+printf 'added=%d  existing=%d  missing=%d  failed=%d\n' \
+  "$added" "$skipped_exists" "$skipped_missing" "$failed"
+
+[[ $failed -eq 0 ]]

@@ -16,6 +16,7 @@ background-blur-radius = 0
 mouse-hide-while-typing = true
 theme = duskfox
 keybind = cmd+d=ignore
+macos-titlebar-style = tabs
 
 shell-integration = none
 keybind = shift+enter=text:\x1b\r

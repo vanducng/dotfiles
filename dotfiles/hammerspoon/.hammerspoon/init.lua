@@ -113,6 +113,36 @@ hs.hotkey.bind({ "cmd", "alt" }, "o", function()
 end)
 
 --------------------------------------------
+-- Flash a highlight border around a window
+--
+-- Used by the cycle helpers so you can see which window just got focus.
+-- Draws an hs.canvas stroke matching the window frame, fades it, then
+-- destroys it. Reuses a single canvas per call (no global accumulation).
+--------------------------------------------
+local function flashFocus(win)
+	if not win then return end
+	local frame = win:frame()
+	local pad = 4
+	local canvas = hs.canvas.new({
+		x = frame.x - pad, y = frame.y - pad,
+		w = frame.w + pad * 2, h = frame.h + pad * 2,
+	})
+	canvas:level(hs.canvas.windowLevels.overlay)
+	canvas:behavior({ "canJoinAllSpaces", "transient" })
+	canvas[1] = {
+		type = "rectangle",
+		action = "stroke",
+		strokeColor = { red = 0.2, green = 0.9, blue = 0.4, alpha = 1.0 },
+		strokeWidth = 4,
+		roundedRectRadii = { xRadius = 8, yRadius = 8 },
+	}
+	canvas:show()
+	hs.timer.doAfter(1.0, function()
+		if canvas then canvas:delete() end
+	end)
+end
+
+--------------------------------------------
 -- Cycle windows in current Space
 --
 -- Gotchas:
@@ -149,6 +179,7 @@ local function cycleWindows(direction)
 	end
 	local nextIdx = ((currentIdx - 1 + direction) % #wins) + 1
 	wins[nextIdx]:focus()
+	flashFocus(wins[nextIdx])
 end
 
 hs.hotkey.bind(hyper, "tab", function() cycleWindows(1) end)
@@ -191,6 +222,7 @@ local function cycleAppWindows(direction)
 	end
 	local nextIdx = ((currentIdx - 1 + direction) % #wins) + 1
 	wins[nextIdx]:focus()
+	flashFocus(wins[nextIdx])
 end
 
 hs.hotkey.bind(hyper, "q", function() cycleAppWindows(1) end)

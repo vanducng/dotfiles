@@ -1,4 +1,4 @@
-STOW_FOLDERS=zsh tmux kitty skhd starship yabai bin vrapperrc yazi zathura lazygit nvim-vscode task ghostty nvim mise claude atuin direnv hammerspoon karabiner
+STOW_FOLDERS=zsh tmux kitty skhd starship yabai bin vrapperrc yazi zathura lazygit nvim-vscode task ghostty nvim mise claude atuin direnv hammerspoon karabiner diffnav gh-dash agent-deck
 SHELL := /bin/bash
 
 .PHONY: help stow-install stow-uninstall stow-status test validate deps platform-test
