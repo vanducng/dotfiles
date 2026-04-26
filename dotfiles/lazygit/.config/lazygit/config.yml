@@ -1,7 +1,7 @@
 git:
   paging:
     colorArg: always
-    pager: delta --paging=never --side-by-side --line-numbers --syntax-theme=DarkNeon
+    pager: delta --paging=never --side-by-side --line-numbers
 gui:
   language: "en"
   theme:
@@ -34,3 +34,19 @@ customCommands:
   - key: "<c-f>"
     command: "ruff check --fix --select I,W291,W292,W293,Q000 $(git diff --cached --name-only|tr '\n' ' ') --unsafe-fixes && ruff format --line-length 120 $(git diff --cached --name-only|tr '\n' ' ')"
     context: "global"
+
+  - key: "D"
+    command: "git diff | diffnav"
+    context: "files"
+    subprocess: true
+    description: "Open unstaged diff in diffnav"
+  - key: "D"
+    command: "git show {{.SelectedLocalCommit.Sha}} | diffnav"
+    context: "commits"
+    subprocess: true
+    description: "Open commit diff in diffnav"
+  - key: "D"
+    command: "git diff {{.SelectedLocalBranch.Name}}...HEAD | diffnav"
+    context: "localBranches"
+    subprocess: true
+    description: "Open PR-style diff (branch...HEAD) in diffnav"
