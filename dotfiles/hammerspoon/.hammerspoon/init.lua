@@ -116,11 +116,17 @@ end)
 -- Flash a highlight border around a window
 --
 -- Used by the cycle helpers so you can see which window just got focus.
--- Draws an hs.canvas stroke matching the window frame, fades it, then
--- destroys it. Reuses a single canvas per call (no global accumulation).
+-- Keeps only ONE active flash at a time: rapid presses cancel the previous
+-- canvas/timer so old borders never linger on stale windows.
 --------------------------------------------
+local activeFlashCanvas = nil
+local activeFlashTimer = nil
+
 local function flashFocus(win)
 	if not win then return end
+	if activeFlashTimer then activeFlashTimer:stop() end
+	if activeFlashCanvas then activeFlashCanvas:delete() end
+
 	local frame = win:frame()
 	local pad = 4
 	local canvas = hs.canvas.new({
@@ -137,8 +143,13 @@ local function flashFocus(win)
 		roundedRectRadii = { xRadius = 8, yRadius = 8 },
 	}
 	canvas:show()
-	hs.timer.doAfter(1.0, function()
-		if canvas then canvas:delete() end
+	activeFlashCanvas = canvas
+	activeFlashTimer = hs.timer.doAfter(0.5, function()
+		if activeFlashCanvas == canvas then
+			canvas:delete()
+			activeFlashCanvas = nil
+			activeFlashTimer = nil
+		end
 	end)
 end
 
@@ -182,10 +193,8 @@ local function cycleWindows(direction)
 	flashFocus(wins[nextIdx])
 end
 
-hs.hotkey.bind(hyper, "tab", function() cycleWindows(1) end)
--- shift_hyper + tab is unreliable (Karabiner caps-lock=hyper interception
--- + macOS app-switcher quirks), so use hyper + ` for backward cycle.
-hs.hotkey.bind(hyper, "`", function() cycleWindows(-1) end)
+hs.hotkey.bind(hyper, "j", function() cycleWindows(1) end)
+hs.hotkey.bind(hyper, "k", function() cycleWindows(-1) end)
 
 --------------------------------------------
 -- Cycle windows within the focused App (current Space only)
