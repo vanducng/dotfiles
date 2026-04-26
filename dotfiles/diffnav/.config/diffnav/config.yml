@@ -1,0 +1,13 @@
+# diffnav config — git diff pager with file tree (à la GitHub)
+# Schema: github.com/dlvhdr/diffnav/pkg/config/config.go
+ui:
+    hideHeader: false
+    hideFooter: false
+    showFileTree: true
+    fileTreeWidth: 45
+    searchTreeWidth: 60
+    icons: nerd-fonts-status
+    colorFileNames: true
+    sideBySide: true
+    showDiffStats: true
+    startFoldersOpenDepth: -1
