@@ -92,7 +92,7 @@ mcp_default_scope = ""
 [notifications]
   enabled = true
   max_shown = 0
-  show_all = false
+  show_all = true
   minimal = true
 
 [instances]
