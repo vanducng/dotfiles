@@ -1,78 +1,107 @@
 #!/usr/bin/env sh
+# =============================================================================
+# yabai configuration
+# Layout: BSP tiling | Theme: duskfox-aware borders
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Service bootstrap — load scripting addition (requires sudoers entry)
+# -----------------------------------------------------------------------------
 yabai -m signal --add event=dock_did_restart action="sudo yabai --load-sa"
 sudo yabai --load-sa
 
-# -------------------------------------------------------------------------------------------------------
-# TILING SETTINGS
-# -------------------------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+# Layout & gaps
+# -----------------------------------------------------------------------------
 yabai -m config layout                      bsp
-
-yabai -m config top_padding                 0
-yabai -m config bottom_padding              0
-yabai -m config left_padding                0
-yabai -m config right_padding               0
-yabai -m config window_gap                  5
-
-yabai -m config mouse_follows_focus         off
-yabai -m config focus_follows_mouse         off 
-
-yabai -m config window_topmost              off
-yabai -m config window_opacity              off
-yabai -m config window_shadow               float
-
-yabai -m config insert_feedback_color       0x00010101
-yabai -m config active_window_opacity       1.0
-yabai -m config normal_window_opacity       0.90
 yabai -m config split_ratio                 0.50
 yabai -m config auto_balance                off
 
+yabai -m config top_padding                 5
+yabai -m config bottom_padding              5
+yabai -m config left_padding                5
+yabai -m config right_padding               5
+yabai -m config window_gap                  5
+
+# -----------------------------------------------------------------------------
+# Focus & mouse behavior
+# -----------------------------------------------------------------------------
+yabai -m config mouse_follows_focus         off
+yabai -m config focus_follows_mouse         off
 yabai -m config mouse_modifier              fn
 yabai -m config mouse_action1               move
 yabai -m config mouse_action2               resize
-# yabai -m config external_bar 		            all:5:5
 
-# -------------------------------------------------------------------------------------------------------
-# RULES
-# -------------------------------------------------------------------------------------------------------
-yabai -m rule --add app=".*" sub-layer=normal
-yabai -m rule --add app="^System Preferences$" sticky=on layer=above manage=off
-yabai -m rule --add app="^Disk Utility$" sticky=on layer=above manage=off
-yabai -m rule --add app="^System Information$" sticky=on layer=above manage=off
-# yabai -m rule --add app="^System Settings$" sticky=on layer=above manage=off
-yabai -m rule --add app="^Activity Monitor$" sticky=on layer=above manage=off
-yabai -m rule --add app="^Path Finder$" manage=off
-yabai -m rule --add app="^Stats$" manage=off
-yabai -m rule --add app="^Time Out$" manage=off
-yabai -m rule --add app="^Harvest$" manage=off
-yabai -m rule --add app="^Docker Desktop$" manage=off
-yabai -m rule --add app="^Private Internet Access$" manage=off
-yabai -m rule --add app="^Microsoft Teams$" manage=off
-yabai -m rule --add app="^Telegram$" manage=off
-# yabai -m rule --add app="^Slack$" manage=off
-yabai -m rule --add app="^Calendar$" manage=off
-# yabai -m rule --add app="^Zalo$" manage=off
-yabai -m rule --add app="^Calculator$" manage=off
-yabai -m rule --add app="^SpaceLauncher$" manage=off
-yabai -m rule --add app="^LastPass$" manage=off
-yabai -m rule --add app="^zoom.us$" manage=off
-yabai -m rule --add app="^Discord$" manage=off
-yabai -m rule --add app="^Todoist$" manage=off
-yabai -m rule --add app="^KeePassXC$" manage=off
-yabai -m rule --add app="^Prismatik$" manage=off
-yabai -m rule --add app="^OpenVPN Connect$" manage=off
-yabai -m rule --add app="^Installer$" manage=off
-yabai -m rule --add app="^Messages$" manage=off
-yabai -m rule --add app="^FaceTime$" manage=off
-yabai -m rule --add app="^Five9$" manage=off
-yabai -m rule --add app="^CleanShot X$" manage=off
-yabai -m rule --add app="^QuickTime Player$" manage=off
-yabai -m rule --add app="^Structured$" sticky=on layer=above manage=off
-yabai -m rule --add app="^Raycast$" manage=off
-yabai -m rule --add app="^Structured$" manage=off
+# -----------------------------------------------------------------------------
+# Window visuals (borders handled by JankyBorders below)
+# -----------------------------------------------------------------------------
+yabai -m config window_topmost              off
+yabai -m config window_opacity              off
+yabai -m config window_shadow               float
+yabai -m config active_window_opacity       1.0
+yabai -m config normal_window_opacity       0.90
+yabai -m config insert_feedback_color       0x00010101
+# yabai -m config external_bar              all:5:5
 
-# yabai -m rule --add app="^Zalo$" space=^7
+# -----------------------------------------------------------------------------
+# App rules — managed=off (float) unless noted
+# Sorted alphabetically. Sticky+layer=above pins app on all spaces above tiles.
+# -----------------------------------------------------------------------------
+yabai -m rule --add app=".*"                          sub-layer=normal
 
-# Debug mode on
+# Pin apps to specific spaces (by index)
+yabai -m rule --add app="^Ghostty$"                   space=1
+yabai -m rule --add app="^Arc$"                       space=2
+
+# Sticky overlays (pinned across spaces, above tiled windows)
+yabai -m rule --add app="^Activity Monitor$"          sticky=on layer=above manage=off
+yabai -m rule --add app="^Disk Utility$"              sticky=on layer=above manage=off
+yabai -m rule --add app="^Structured$"                sticky=on layer=above manage=off
+yabai -m rule --add app="^System Information$"        sticky=on layer=above manage=off
+yabai -m rule --add app="^System Preferences$"        sticky=on layer=above manage=off
+
+# Floating apps (do not tile)
+yabai -m rule --add app="^Calculator$"                manage=off
+yabai -m rule --add app="^Calendar$"                  manage=off
+yabai -m rule --add app="^CleanShot X$"               manage=off
+yabai -m rule --add app="^Discord$"                   manage=off
+yabai -m rule --add app="^Docker Desktop$"            manage=off
+yabai -m rule --add app="^FaceTime$"                  manage=off
+yabai -m rule --add app="^Five9$"                     manage=off
+yabai -m rule --add app="^Harvest$"                   manage=off
+yabai -m rule --add app="^Installer$"                 manage=off
+yabai -m rule --add app="^KeePassXC$"                 manage=off
+yabai -m rule --add app="^LastPass$"                  manage=off
+yabai -m rule --add app="^Messages$"                  manage=off
+yabai -m rule --add app="^Microsoft Teams$"           manage=off
+yabai -m rule --add app="^OpenVPN Connect$"           manage=off
+yabai -m rule --add app="^Path Finder$"               manage=off
+yabai -m rule --add app="^Prismatik$"                 manage=off
+yabai -m rule --add app="^Private Internet Access$"   manage=off
+yabai -m rule --add app="^QuickTime Player$"          manage=off
+yabai -m rule --add app="^Raycast$"                   manage=off
+yabai -m rule --add app="^SpaceLauncher$"             manage=off
+yabai -m rule --add app="^Stats$"                     manage=off
+yabai -m rule --add app="^Telegram$"                  manage=off
+yabai -m rule --add app="^Time Out$"                  manage=off
+yabai -m rule --add app="^Todoist$"                   manage=off
+yabai -m rule --add app="^zoom.us$"                   manage=off
+
+# -----------------------------------------------------------------------------
+# Signals — fix non-native apps (LibreOffice, JetBrains, Wine) that ignore the
+# initial frame call. A no-op resize forces yabai to re-issue the frame.
+# -----------------------------------------------------------------------------
+yabai -m signal --add event=window_created \
+    action='sleep 0.3 && yabai -m window $YABAI_WINDOW_ID --resize bottom:0:0 2>/dev/null'
+
+# -----------------------------------------------------------------------------
+# Companion: JankyBorders (active=bright iris, inactive=transparent bg-highlight)
+# -----------------------------------------------------------------------------
+borders active_color=0xffd4a4ff inactive_color=0x40393552 width=2.0 style=round 2>/dev/null &
+
+# -----------------------------------------------------------------------------
+# Debug
+# -----------------------------------------------------------------------------
 yabai -m config debug_output on
 
 echo "yabai configuration loaded.."
