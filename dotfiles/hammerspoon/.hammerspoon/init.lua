@@ -113,6 +113,143 @@ hs.hotkey.bind({ "cmd", "alt" }, "o", function()
 end)
 
 --------------------------------------------
+-- Open clipboard content (URL or file path)
+--
+-- Reads the clipboard, trims whitespace, and opens the content using
+-- macOS `open`, which routes URLs to the default browser and files to
+-- the default app for their extension.
+--------------------------------------------
+local function shellEscape(s)
+	return "'" .. s:gsub("'", "'\\''") .. "'"
+end
+
+-- Extensions that should open in nvim (inside Ghostty) instead of LaunchServices default
+local nvimExts = {
+	-- docs / plain text
+	md = true, markdown = true, mdx = true, rst = true, adoc = true, asciidoc = true,
+	txt = true, log = true, csv = true, tsv = true, tex = true,
+	-- shell / scripting
+	sh = true, bash = true, zsh = true, fish = true, ksh = true, ps1 = true,
+	-- lua / vim
+	lua = true, vim = true, vimrc = true,
+	-- python / ruby / perl
+	py = true, pyi = true, ipynb = true, rb = true, erb = true, pl = true, pm = true,
+	-- javascript / typescript / web
+	js = true, mjs = true, cjs = true, ts = true, tsx = true, jsx = true,
+	html = true, htm = true, css = true, scss = true, sass = true, less = true,
+	vue = true, svelte = true, astro = true,
+	-- systems
+	go = true, rs = true, c = true, h = true, cpp = true, hpp = true, cc = true, hh = true,
+	cs = true, java = true, kt = true, kts = true, swift = true, m = true, mm = true,
+	zig = true, nim = true, dart = true, scala = true, clj = true, ex = true, exs = true,
+	erl = true, hs = true, ml = true, fs = true, fsx = true, jl = true, r = true,
+	-- config / data
+	json = true, jsonc = true, json5 = true, yaml = true, yml = true,
+	toml = true, ini = true, cfg = true, conf = true, properties = true,
+	xml = true, plist = true, env = true, editorconfig = true,
+	gitignore = true, gitattributes = true, gitconfig = true, gitmodules = true,
+	dockerfile = true, dockerignore = true, containerfile = true,
+	makefile = true, mk = true, cmake = true, ninja = true, bazel = true,
+	tf = true, tfvars = true, hcl = true, nomad = true,
+	-- db / query
+	sql = true, psql = true, prisma = true, graphql = true, gql = true,
+	-- diff / patch / misc dev
+	diff = true, patch = true, lock = true,
+}
+
+-- Resolve nvim once at load (Ghostty --command runs with --noprofile --norc, no PATH)
+local nvimBin = (function()
+	for _, p in ipairs({ "/opt/homebrew/bin/nvim", "/usr/local/bin/nvim", "/usr/bin/nvim" }) do
+		if hs.fs.attributes(p) then return p end
+	end
+	return "nvim"
+end)()
+
+local function openInNvim(path)
+	-- Wrap in `zsh -lc` so .zprofile/.zshrc populate PATH (mise, brew, etc.).
+	-- Without this, nvim plugins like yazi.nvim can't find their CLI deps.
+	local inner = string.format("exec %s %s", nvimBin, shellEscape(path))
+	local cmd = string.format(
+		"/usr/bin/open -na Ghostty --args --command=%s",
+		shellEscape("/bin/zsh -lc " .. shellEscape(inner))
+	)
+	os.execute(cmd)
+end
+
+hs.hotkey.bind(hyper, "v", function()
+	local raw = hs.pasteboard.getContents()
+	if not raw or raw == "" then
+		hs.notify.new({ title = "Open Clipboard", informativeText = "Clipboard is empty" }):send()
+		return
+	end
+
+	local target = raw:match("^%s*(.-)%s*$")
+	if target == "" then
+		hs.notify.new({ title = "Open Clipboard", informativeText = "Clipboard is empty" }):send()
+		return
+	end
+
+	-- URL: http(s), ftp, file, mailto, or bare domain like github.com/...
+	local isUrl = target:match("^%a[%w+.-]*://") or target:match("^mailto:")
+		or target:match("^[%w%-]+%.[%w%-%.]+/") or target:match("^[%w%-]+%.[%w%-]+$")
+
+	if isUrl then
+		os.execute("open " .. shellEscape(target))
+		hs.notify.new({ title = "Open Clipboard", informativeText = "URL: " .. target }):send()
+		return
+	end
+
+	-- File path: expand ~, then check existence
+	local path = target:gsub("^~", os.getenv("HOME"))
+	if path:sub(1, 7) == "file://" then
+		path = path:sub(8)
+	end
+
+	local attr = hs.fs.attributes(path)
+	if attr then
+		local ext = path:match("%.([^%.%/]+)$")
+		if attr.mode == "file" and ext and nvimExts[ext:lower()] then
+			openInNvim(path)
+			hs.notify.new({ title = "Open Clipboard", informativeText = "nvim: " .. path }):send()
+		else
+			os.execute("open " .. shellEscape(path))
+			hs.notify.new({ title = "Open Clipboard", informativeText = "Path: " .. path }):send()
+		end
+	else
+		hs.notify.new({ title = "Open Clipboard", informativeText = "Not a URL or existing path:\n" .. target }):send()
+	end
+end)
+
+--------------------------------------------
+-- Run clipboard as bash command in Ghostty (Hyper+B)
+--
+-- Spawns Ghostty, runs the clipboard command via login zsh (so PATH is
+-- populated), then drops into an interactive shell so output stays visible.
+-- WARNING: executes whatever is on the clipboard — only use when you trust it.
+--------------------------------------------
+hs.hotkey.bind(hyper, "b", function()
+	local raw = hs.pasteboard.getContents()
+	if not raw or raw:match("^%s*$") then
+		hs.notify.new({ title = "Run Clipboard", informativeText = "Clipboard is empty" }):send()
+		return
+	end
+
+	local cmdText = raw:match("^%s*(.-)%s*$")
+
+	-- Run command, then keep shell open. `; exec zsh -l` replaces the wrapper
+	-- so Ctrl-D / `exit` cleanly closes the window.
+	local inner = cmdText .. "; exec zsh -l"
+	local launch = string.format(
+		"/usr/bin/open -na Ghostty --args --command=%s",
+		shellEscape("/bin/zsh -lc " .. shellEscape(inner))
+	)
+	os.execute(launch)
+
+	local preview = #cmdText > 80 and (cmdText:sub(1, 77) .. "...") or cmdText
+	hs.notify.new({ title = "Run Clipboard", informativeText = preview }):send()
+end)
+
+--------------------------------------------
 -- Flash a highlight border around a window
 --
 -- Used by the cycle helpers so you can see which window just got focus.
