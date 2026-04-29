@@ -94,6 +94,14 @@ yabai -m rule --add app="^zoom.us$"                   manage=off
 yabai -m signal --add event=window_created \
     action='sleep 0.3 && yabai -m window $YABAI_WINDOW_ID --resize bottom:0:0 2>/dev/null'
 
+# Unzoom any zoom-fullscreen window when a new window appears in the same space,
+# otherwise the newly opened (often same-app) window stays hidden behind the zoom.
+yabai -m signal --add event=window_created \
+    action='zoomed=$(yabai -m query --windows --space | jq ".[] | select(.\"has-fullscreen-zoom\" == true) | .id" | head -1); \
+            if [ -n "$zoomed" ] && [ "$zoomed" != "$YABAI_WINDOW_ID" ]; then \
+                yabai -m window "$zoomed" --toggle zoom-fullscreen; \
+            fi'
+
 # -----------------------------------------------------------------------------
 # Companion: JankyBorders (active=bright iris, inactive=transparent bg-highlight)
 # -----------------------------------------------------------------------------
