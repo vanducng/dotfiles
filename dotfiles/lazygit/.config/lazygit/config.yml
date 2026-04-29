@@ -50,3 +50,32 @@ customCommands:
     context: "localBranches"
     subprocess: true
     description: "Open PR-style diff (branch...HEAD) in diffnav"
+  - key: "<c-d>"
+    context: "global"
+    subprocess: true
+    description: "PR-style diff vs target branch (fzf picker)"
+    command: >-
+      bash -c '
+      BRANCH=$(git for-each-ref --sort=-committerdate
+      --format="%(refname:short)" refs/heads/ refs/remotes/origin/
+      | awk "!seen[\$0]++"
+      | fzf --height=40% --reverse --prompt="Target branch > "
+      --preview="git log --oneline --color=always {}..HEAD | head -50")
+      && [ -n "$BRANCH" ] && git diff "$BRANCH"...HEAD | diffnav
+      '
+  - key: "<c-b>"
+    context: "global"
+    subprocess: true
+    description: "PR-style diff vs origin's default branch (auto)"
+    command: >-
+      bash -c '
+      BASE=$(git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null
+      | sed "s@^origin/@@")
+      && [ -n "$BASE" ] && git diff "$BASE"...HEAD | diffnav
+      || echo "no origin/HEAD set; run: git remote set-head origin --auto"
+      '
+  - key: "<c-e>"
+    context: "global"
+    subprocess: true
+    description: "PR-style diff vs dev"
+    command: "git diff dev...HEAD | diffnav"
