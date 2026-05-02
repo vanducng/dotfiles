@@ -25,22 +25,24 @@ ctrl + alt + cmd - r : yabai --restart-service
 # 2. App launchers (meh)
 # -----------------------------------------------------------------------------
 meh - a : open "/Applications/Ghostty.app"
+meh - d : open "/Applications/Dia.app"
 meh - g : open "/System/Volumes/Data/Applications/Discord.app"
 meh - i : open "/Applications/Structured.app"
 meh - j : open "/Applications/Claude.app"
 meh - k : open "/Applications/Slack.app"
 meh - l : open "/Applications/Perplexity.app"
+meh - m : open "/Applications/superwhisper.app"
 meh - p : open "/Applications/Foxit PDF Reader.app"
 meh - r : open "/System/Volumes/Data/Applications/Zalo.app"
 meh - s : open "/Applications/Arc.app"
 meh - u : open "/Applications/Telegram.app"
 meh - v : open "/Applications/Cursor.app"
 meh - w : open "/Applications/LibreOffice.app"
+meh - y : yabai -m space --focus 5; open "alter://hub/chat/"
 meh - z : open "/Applications/Zen Browser.app"
-# meh - 1 : open "/Applications/superwhisper.app"
 # meh - b : open "/Applications/Linear.app"
-# meh - d : open "/Applications/DBeaver.app"
-# meh - m : open "/Applications/Firefox.app"
+# meh - 1 : open "/Applications/Firefox.app"
+# meh - 2 : open "/Applications/DBeaver.app"
 # meh - o : open "/Applications/Obsidian.app"
 # meh - t : open "/Applications/Microsoft Teams classic.app"
 # meh - x : open "/Applications/kitty.app"
@@ -54,8 +56,6 @@ ctrl + shift - k : yabai -m window --focus north
 ctrl + shift - l : yabai -m window --focus east
 
 cmd + shift - h : yabai -m window --warp west
-cmd + shift - j : yabai -m window --warp south
-cmd + shift - k : yabai -m window --warp north
 cmd + shift - l : yabai -m window --warp east
 
 # -----------------------------------------------------------------------------
