@@ -34,9 +34,89 @@ hs.hotkey.bind(hyper, "W", function()
 	hs.alert.show("Hello World!")
 end)
 
-hs.loadSpoon("AClock")
+--------------------------------------------
+-- Floating clock with date (Hyper+C)
+--
+-- Replaces the AClock spoon: large HH:MM with a smaller date line below.
+-- Auto-hides after a few seconds; press Esc or Hyper+C again to dismiss early.
+--------------------------------------------
+local clockState = {
+	canvas = nil,
+	tickTimer = nil,
+	hideTimer = nil,
+	cancelHotkey = nil,
+	width = 360,
+	height = 260,
+	timeFont = "Impact",
+	timeSize = 135,
+	dateFont = "Helvetica Neue",
+	dateSize = 26,
+	color = { hex = "#1891C3" },
+	showDuration = 4,
+}
+
+local function clockFrame()
+	local res = hs.screen.primaryScreen():fullFrame()
+	return {
+		x = (res.w - clockState.width) / 2,
+		y = (res.h - clockState.height) / 2,
+		w = clockState.width,
+		h = clockState.height,
+	}
+end
+
+local function updateClockText()
+	if not clockState.canvas then return end
+	clockState.canvas[1].text = os.date("%H:%M")
+	clockState.canvas[2].text = os.date("%a, %b %d %Y")
+end
+
+local function hideClock()
+	if clockState.cancelHotkey then clockState.cancelHotkey:delete(); clockState.cancelHotkey = nil end
+	if clockState.tickTimer then clockState.tickTimer:stop(); clockState.tickTimer = nil end
+	if clockState.hideTimer then clockState.hideTimer:stop(); clockState.hideTimer = nil end
+	if clockState.canvas then clockState.canvas:hide() end
+end
+
+local function showClock()
+	if not clockState.canvas then
+		clockState.canvas = hs.canvas.new(clockFrame())
+		-- Time (large, top portion)
+		clockState.canvas[1] = {
+			type = "text",
+			text = "",
+			textFont = clockState.timeFont,
+			textSize = clockState.timeSize,
+			textColor = clockState.color,
+			textAlignment = "center",
+			frame = { x = 0, y = "0.05", w = "1.0", h = "0.75" },
+		}
+		-- Date (small, below time)
+		clockState.canvas[2] = {
+			type = "text",
+			text = "",
+			textFont = clockState.dateFont,
+			textSize = clockState.dateSize,
+			textColor = clockState.color,
+			textAlignment = "center",
+			frame = { x = 0, y = "0.78", w = "1.0", h = "0.2" },
+		}
+	else
+		clockState.canvas:frame(clockFrame())
+	end
+	updateClockText()
+	clockState.canvas:show()
+	clockState.tickTimer = hs.timer.doEvery(1, updateClockText)
+	clockState.cancelHotkey = hs.hotkey.bind({}, "escape", hideClock)
+	clockState.hideTimer = hs.timer.doAfter(clockState.showDuration, hideClock)
+end
+
 hs.hotkey.bind(hyper, "C", function()
-	spoon.AClock:toggleShow()
+	if clockState.canvas and clockState.canvas:isShowing() then
+		hideClock()
+	else
+		showClock()
+	end
 end)
 
 --------------------------------------------
@@ -123,10 +203,16 @@ local function shellEscape(s)
 	return "'" .. s:gsub("'", "'\\''") .. "'"
 end
 
+-- Extensions that should render as HTML in browser via markdown-novel-viewer skill
+local mdRenderExts = { md = true, markdown = true, mdx = true }
+
+-- Extensions that should open in Arc browser (already-rendered HTML reports/visualizations)
+local browserExts = { html = true, htm = true }
+
 -- Extensions that should open in nvim (inside Ghostty) instead of LaunchServices default
 local nvimExts = {
-	-- docs / plain text
-	md = true, markdown = true, mdx = true, rst = true, adoc = true, asciidoc = true,
+	-- docs / plain text (md/markdown/mdx handled by mdRenderExts above)
+	rst = true, adoc = true, asciidoc = true,
 	txt = true, log = true, csv = true, tsv = true, tex = true,
 	-- shell / scripting
 	sh = true, bash = true, zsh = true, fish = true, ksh = true, ps1 = true,
@@ -134,9 +220,9 @@ local nvimExts = {
 	lua = true, vim = true, vimrc = true,
 	-- python / ruby / perl
 	py = true, pyi = true, ipynb = true, rb = true, erb = true, pl = true, pm = true,
-	-- javascript / typescript / web
+	-- javascript / typescript / web (html/htm intentionally excluded — handled by browserExts above)
 	js = true, mjs = true, cjs = true, ts = true, tsx = true, jsx = true,
-	html = true, htm = true, css = true, scss = true, sass = true, less = true,
+	css = true, scss = true, sass = true, less = true,
 	vue = true, svelte = true, astro = true,
 	-- systems
 	go = true, rs = true, c = true, h = true, cpp = true, hpp = true, cc = true, hh = true,
@@ -176,6 +262,36 @@ local function openInNvim(path)
 	os.execute(cmd)
 end
 
+-- Open an already-rendered .html file as a new tab in Arc.
+-- Plain `open file.html` routes to Ghostty on this Mac (Ghostty is the .html
+-- LaunchServices default). The `arc` CLI reliably surfaces a tab in Arc.
+local function openInArc(path)
+	local url = "file://" .. path
+	os.execute(string.format("/usr/local/bin/arc tab open %s", shellEscape(url)))
+end
+
+-- Render markdown via the markdown-novel-viewer skill (HTTP server) and open in Arc.
+-- Reuses existing server on port 3456 if running; otherwise spawns one detached.
+-- Detached via nohup + zsh -lc so Hammerspoon doesn't block and node (nvm) is on PATH.
+local mdViewerScript = os.getenv("HOME") .. "/.claude/skills/markdown-novel-viewer/scripts/server.cjs"
+local mdViewerPort = 3456
+local function openMarkdownRendered(path)
+	local url = string.format("http://localhost:%d/view?file=%s", mdViewerPort, hs.http.encodeForQuery(path))
+	-- Start server with cwd=$HOME so its allowlist (startsWith $HOME) covers any md under home.
+	local script = string.format(
+		[[if ! /usr/bin/nc -z localhost %d 2>/dev/null; then
+			cd "$HOME" && nohup node %s --file %s --no-open --port %d >/dev/null 2>&1 &
+			for i in {1..50}; do /usr/bin/nc -z localhost %d 2>/dev/null && break; sleep 0.1; done
+		fi
+		/usr/local/bin/arc tab open %s]],
+		mdViewerPort,
+		shellEscape(mdViewerScript), shellEscape(path), mdViewerPort,
+		mdViewerPort,
+		shellEscape(url)
+	)
+	os.execute(string.format("nohup /bin/zsh -lc %s >/dev/null 2>&1 &", shellEscape(script)))
+end
+
 hs.hotkey.bind(hyper, "v", function()
 	local raw = hs.pasteboard.getContents()
 	if not raw or raw == "" then
@@ -194,8 +310,18 @@ hs.hotkey.bind(hyper, "v", function()
 		or target:match("^[%w%-]+%.[%w%-%.]+/") or target:match("^[%w%-]+%.[%w%-]+$")
 
 	if isUrl then
-		os.execute("open " .. shellEscape(target))
-		hs.notify.new({ title = "Open Clipboard", informativeText = "URL: " .. target }):send()
+		-- Route web URLs to Arc explicitly. Plain `open <url>` uses LaunchServices
+		-- default which is Ghostty for some schemes on this Mac. mailto/ftp keep
+		-- system default; only http/https/file go through Arc.
+		local scheme = target:match("^(%a[%w+.-]*)://")
+		if scheme == "http" or scheme == "https" or scheme == "file"
+			or (not scheme and (target:match("^[%w%-]+%.[%w%-%.]+/") or target:match("^[%w%-]+%.[%w%-]+$"))) then
+			os.execute("/usr/local/bin/arc tab open " .. shellEscape(target))
+			hs.notify.new({ title = "Open Clipboard", informativeText = "Arc: " .. target }):send()
+		else
+			os.execute("open " .. shellEscape(target))
+			hs.notify.new({ title = "Open Clipboard", informativeText = "URL: " .. target }):send()
+		end
 		return
 	end
 
@@ -208,7 +334,15 @@ hs.hotkey.bind(hyper, "v", function()
 	local attr = hs.fs.attributes(path)
 	if attr then
 		local ext = path:match("%.([^%.%/]+)$")
-		if attr.mode == "file" and ext and nvimExts[ext:lower()] then
+		local extLower = ext and ext:lower() or nil
+		if attr.mode == "file" and extLower and browserExts[extLower] then
+			-- Already-rendered HTML reports/visualizations → Arc tab
+			openInArc(path)
+			hs.notify.new({ title = "Open Clipboard", informativeText = "Arc: " .. path }):send()
+		elseif attr.mode == "file" and extLower and mdRenderExts[extLower] then
+			openMarkdownRendered(path)
+			hs.notify.new({ title = "Open Clipboard", informativeText = "Render md: " .. path }):send()
+		elseif attr.mode == "file" and extLower and nvimExts[extLower] then
 			openInNvim(path)
 			hs.notify.new({ title = "Open Clipboard", informativeText = "nvim: " .. path }):send()
 		else
@@ -244,6 +378,17 @@ hs.hotkey.bind(hyper, "b", function()
 		shellEscape("/bin/zsh -lc " .. shellEscape(inner))
 	)
 	os.execute(launch)
+
+	-- Follow the spawned terminal: activate Ghostty (jumps to its pinned space
+	-- per yabai rule) and focus its newest window once it materializes.
+	hs.timer.doAfter(0.4, function()
+		local app = hs.application.find("Ghostty")
+		if not app then return end
+		app:activate(true)
+		local wins = app:allWindows()
+		table.sort(wins, function(a, b) return a:id() > b:id() end)
+		if wins[1] then wins[1]:focus() end
+	end)
 
 	local preview = #cmdText > 80 and (cmdText:sub(1, 77) .. "...") or cmdText
 	hs.notify.new({ title = "Run Clipboard", informativeText = preview }):send()
