@@ -52,6 +52,22 @@ yabai -m rule --add app=".*"                          sub-layer=normal
 # Pin apps to specific spaces (by index)
 yabai -m rule --add app="^Ghostty$"                   space=1
 yabai -m rule --add app="^Arc$"                       space=2
+yabai -m rule --add app="^Dia$"                       space=3
+yabai -m rule --add app="^Claude$"                    space=4
+yabai -m rule --add app="^Alter$"                     space=5
+
+# Stacked spaces — only one window visible on top, others stacked beneath
+yabai -m space 3 --layout stack 2>/dev/null
+
+# Enforce app→space pinning for windows already open when yabai (re)starts.
+# Rules above only fire on window creation, so existing windows would otherwise
+# stay on whatever space they were on at restart. Mirror the pin rules here.
+for pin in "Ghostty:1" "Arc:2" "Dia:3" "Claude:4" "Alter:5"; do
+    app="${pin%:*}"; sp="${pin#*:}"
+    for id in $(yabai -m query --windows | jq -r --arg a "$app" '.[] | select(.app==$a) | .id'); do
+        yabai -m window "$id" --space "$sp" 2>/dev/null
+    done
+done
 
 # Sticky overlays (pinned across spaces, above tiled windows)
 yabai -m rule --add app="^Activity Monitor$"          sticky=on layer=above manage=off
@@ -64,7 +80,6 @@ yabai -m rule --add app="^System Preferences$"        sticky=on layer=above mana
 yabai -m rule --add app="^Calculator$"                manage=off
 yabai -m rule --add app="^Calendar$"                  manage=off
 yabai -m rule --add app="^CleanShot X$"               manage=off
-yabai -m rule --add app="^Discord$"                   manage=off
 yabai -m rule --add app="^Docker Desktop$"            manage=off
 yabai -m rule --add app="^FaceTime$"                  manage=off
 yabai -m rule --add app="^Five9$"                     manage=off
