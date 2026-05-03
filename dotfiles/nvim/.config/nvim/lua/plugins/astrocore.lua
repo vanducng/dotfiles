@@ -18,6 +18,20 @@ return {
       notifications = true, -- enable notifications at start
     },
 
+    -- nvim-treesitter (main branch) — AstroCore handles install + highlight enable
+    treesitter = {
+      ensure_installed = {
+        "lua", "vim", "vimdoc", "luap", "query",
+        "python", "yaml", "json", "jsonc",
+        "markdown", "markdown_inline",
+        "bash", "sql",
+        "typescript", "tsx", "javascript", "jsdoc",
+        "c", "html", "css",
+      },
+      highlight = true, -- indent intentionally not enabled (matches pre-migration behavior)
+      disable = { highlight = { "csv" } }, -- large-file gate handled by features.large_buf above
+    },
+
     -- Diagnostics configuration (for vim.diagnostics.config({...})) when diagnostics are on
     diagnostics = {
       virtual_text = true,
