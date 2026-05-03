@@ -43,8 +43,6 @@ return {
     ---@diagnostic disable: missing-fields
     config = {
       -- clangd = { capabilities = { offsetEncoding = "utf-8" } },
-      -- Disable pyright diagnostics in favor of ruff
-      pyright = false, -- Disable pyright completely
       basedpyright = {
         settings = {
           basedpyright = {
@@ -94,18 +92,11 @@ return {
         end,
       },
     },
-    -- customize how language servers are attached
+    -- customize how language servers are attached (boolean false disables setup)
     handlers = {
-      -- a function without a key is simply the default handler, functions take two parameters, the server name and the configured options table for that server
-      -- function(server, opts) require("lspconfig")[server].setup(opts) end
-
-      -- the key is the server that is being setup with `lspconfig`
-      -- rust_analyzer = false, -- setting a handler to false will disable the set up of that language server
-      -- pyright = function(_, opts) require("lspconfig").pyright.setup(opts) end -- or a custom handler function can be passed
+      pyright = false, -- use basedpyright + ruff instead
       htmlls = false, -- disable HTML language server
-      -- Disable tsserver if typescript-tools is being used
-      -- tsserver = false, -- disable tsserver to avoid conflicts with typescript-tools
-      ts_ls = false, -- disable ts_ls (new name for tsserver) to avoid conflicts
+      ts_ls = false, -- typescript pack uses vtsls; disable ts_ls to avoid conflicts
       marksman = false, -- disable markdown language server
       markdown_oxide = false, -- disable alternative markdown language server
     },
