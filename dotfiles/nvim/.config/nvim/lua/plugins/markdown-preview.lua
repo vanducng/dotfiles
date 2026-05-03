@@ -93,6 +93,36 @@ return {
       { "<leader>ms", "<cmd>MarkdownPreviewStop<cr>", desc = "Stop Markdown Preview" },
       { "<leader>mt", "<cmd>MarkdownPreviewToggle<cr>", desc = "Toggle Markdown Preview" },
       {
+        -- Open current markdown buffer in the markdown-render server (Dia).
+        -- Mirrors Hammerspoon's Hyper+V flow: ensure server on :3456, then
+        -- launch the rendered URL in Dia for a calm book-like view.
+        "<leader>mo",
+        function()
+          local path = vim.fn.expand("%:p")
+          if path == "" or vim.fn.filereadable(path) ~= 1 then
+            vim.notify("No file to render", vim.log.levels.WARN)
+            return
+          end
+          local server = vim.fn.expand("$HOME/skills/skills/markdown-render/scripts/server.cjs")
+          local port = 3456
+          -- URL-encode the path so spaces/specials survive the query string.
+          local encoded = vim.fn.substitute(path, [[\([^A-Za-z0-9._~/-]\)]], [[\=printf("%%%02X", char2nr(submatch(1)))]], "g")
+          local url = string.format("http://localhost:%d/view?file=%s", port, encoded)
+          -- Ensure server is up (cd $HOME so its allowlist covers any md under home),
+          -- then open the URL in Dia. Detached so nvim doesn't block.
+          local script = string.format([[
+            if ! /usr/bin/nc -z localhost %d 2>/dev/null; then
+              cd "$HOME" && nohup node %q --file %q --no-open --port %d >/dev/null 2>&1 &
+              for i in $(seq 1 50); do /usr/bin/nc -z localhost %d 2>/dev/null && break; sleep 0.1; done
+            fi
+            /usr/bin/open -a Dia %q
+          ]], port, server, path, port, port, url)
+          vim.fn.jobstart({ "/bin/zsh", "-lc", script }, { detach = true })
+          vim.notify("Opening in Dia: " .. vim.fn.fnamemodify(path, ":t"))
+        end,
+        desc = "Open in markdown-render (Dia)",
+      },
+      {
         "<leader>me",
         function()
           -- Extract mermaid code block from buffer
