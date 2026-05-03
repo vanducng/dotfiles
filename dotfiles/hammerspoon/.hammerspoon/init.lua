@@ -262,18 +262,18 @@ local function openInNvim(path)
 	os.execute(cmd)
 end
 
--- Open an already-rendered .html file as a new tab in Arc.
+-- Open an already-rendered .html file as a new tab in Dia.
 -- Plain `open file.html` routes to Ghostty on this Mac (Ghostty is the .html
--- LaunchServices default). The `arc` CLI reliably surfaces a tab in Arc.
-local function openInArc(path)
+-- LaunchServices default), so we force Dia explicitly via `open -a`.
+local function openInDia(path)
 	local url = "file://" .. path
-	os.execute(string.format("/usr/local/bin/arc tab open %s", shellEscape(url)))
+	os.execute(string.format("/usr/bin/open -a Dia %s", shellEscape(url)))
 end
 
--- Render markdown via the markdown-novel-viewer skill (HTTP server) and open in Arc.
+-- Render markdown via the markdown-novel-viewer skill (HTTP server) and open in Dia.
 -- Reuses existing server on port 3456 if running; otherwise spawns one detached.
 -- Detached via nohup + zsh -lc so Hammerspoon doesn't block and node (nvm) is on PATH.
-local mdViewerScript = os.getenv("HOME") .. "/.claude/skills/markdown-novel-viewer/scripts/server.cjs"
+local mdViewerScript = os.getenv("HOME") .. "/skills/skills/markdown-render/scripts/server.cjs"
 local mdViewerPort = 3456
 local function openMarkdownRendered(path)
 	local url = string.format("http://localhost:%d/view?file=%s", mdViewerPort, hs.http.encodeForQuery(path))
@@ -283,7 +283,7 @@ local function openMarkdownRendered(path)
 			cd "$HOME" && nohup node %s --file %s --no-open --port %d >/dev/null 2>&1 &
 			for i in {1..50}; do /usr/bin/nc -z localhost %d 2>/dev/null && break; sleep 0.1; done
 		fi
-		/usr/local/bin/arc tab open %s]],
+		/usr/bin/open -a Dia %s]],
 		mdViewerPort,
 		shellEscape(mdViewerScript), shellEscape(path), mdViewerPort,
 		mdViewerPort,
@@ -310,14 +310,14 @@ hs.hotkey.bind(hyper, "v", function()
 		or target:match("^[%w%-]+%.[%w%-%.]+/") or target:match("^[%w%-]+%.[%w%-]+$")
 
 	if isUrl then
-		-- Route web URLs to Arc explicitly. Plain `open <url>` uses LaunchServices
+		-- Route web URLs to Dia explicitly. Plain `open <url>` uses LaunchServices
 		-- default which is Ghostty for some schemes on this Mac. mailto/ftp keep
-		-- system default; only http/https/file go through Arc.
+		-- system default; only http/https/file go through Dia.
 		local scheme = target:match("^(%a[%w+.-]*)://")
 		if scheme == "http" or scheme == "https" or scheme == "file"
 			or (not scheme and (target:match("^[%w%-]+%.[%w%-%.]+/") or target:match("^[%w%-]+%.[%w%-]+$"))) then
-			os.execute("/usr/local/bin/arc tab open " .. shellEscape(target))
-			hs.notify.new({ title = "Open Clipboard", informativeText = "Arc: " .. target }):send()
+			os.execute("/usr/bin/open -a Dia " .. shellEscape(target))
+			hs.notify.new({ title = "Open Clipboard", informativeText = "Dia: " .. target }):send()
 		else
 			os.execute("open " .. shellEscape(target))
 			hs.notify.new({ title = "Open Clipboard", informativeText = "URL: " .. target }):send()
@@ -336,9 +336,9 @@ hs.hotkey.bind(hyper, "v", function()
 		local ext = path:match("%.([^%.%/]+)$")
 		local extLower = ext and ext:lower() or nil
 		if attr.mode == "file" and extLower and browserExts[extLower] then
-			-- Already-rendered HTML reports/visualizations → Arc tab
-			openInArc(path)
-			hs.notify.new({ title = "Open Clipboard", informativeText = "Arc: " .. path }):send()
+			-- Already-rendered HTML reports/visualizations → Dia tab
+			openInDia(path)
+			hs.notify.new({ title = "Open Clipboard", informativeText = "Dia: " .. path }):send()
 		elseif attr.mode == "file" and extLower and mdRenderExts[extLower] then
 			openMarkdownRendered(path)
 			hs.notify.new({ title = "Open Clipboard", informativeText = "Render md: " .. path }):send()
