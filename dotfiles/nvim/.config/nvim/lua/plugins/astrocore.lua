@@ -46,12 +46,12 @@ return {
         {
           event = "InsertEnter",
           desc = "Disable diagnostics in insert mode",
-          callback = function() vim.diagnostic.disable(0) end,
+          callback = function() vim.diagnostic.enable(false, { bufnr = 0 }) end,
         },
         {
           event = "InsertLeave",
           desc = "Enable diagnostics when leaving insert mode",
-          callback = function() vim.diagnostic.enable(0) end,
+          callback = function() vim.diagnostic.enable(true, { bufnr = 0 }) end,
         },
       },
     },
