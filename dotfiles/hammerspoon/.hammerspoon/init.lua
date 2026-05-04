@@ -191,7 +191,7 @@ local function openInNvim(path)
 end
 
 -- Render markdown / images / video / audio via the file-browser skill (HTTP
--- server) and open in Arc. The server dispatches by file extension:
+-- server) and open in Dia. The server dispatches by file extension:
 -- .md/.markdown/.mdx → novel-theme reader; image/video/audio → media viewer.
 -- Reuse server on port 3556 if running; otherwise spawn detached.
 -- zsh -lc to populate PATH so node (nvm/mise) is found.
@@ -214,7 +214,7 @@ local function openInFileBrowser(path)
 			cd "$HOME" && nohup node %s %s %s --no-open --port %d >/dev/null 2>&1 &
 			for i in {1..50}; do /usr/bin/nc -z localhost %d 2>/dev/null && break; sleep 0.1; done
 		fi
-		/usr/local/bin/arc tab open %s]],
+		/usr/bin/open -a Dia %s]],
 		fileBrowserPort,
 		shellEscape(fileBrowserScript), flag, shellEscape(path), fileBrowserPort,
 		fileBrowserPort,
