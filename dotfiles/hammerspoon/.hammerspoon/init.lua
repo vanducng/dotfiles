@@ -34,89 +34,9 @@ hs.hotkey.bind(hyper, "W", function()
 	hs.alert.show("Hello World!")
 end)
 
---------------------------------------------
--- Floating clock with date (Hyper+C)
---
--- Replaces the AClock spoon: large HH:MM with a smaller date line below.
--- Auto-hides after a few seconds; press Esc or Hyper+C again to dismiss early.
---------------------------------------------
-local clockState = {
-	canvas = nil,
-	tickTimer = nil,
-	hideTimer = nil,
-	cancelHotkey = nil,
-	width = 360,
-	height = 260,
-	timeFont = "Impact",
-	timeSize = 135,
-	dateFont = "Helvetica Neue",
-	dateSize = 26,
-	color = { hex = "#1891C3" },
-	showDuration = 4,
-}
-
-local function clockFrame()
-	local res = hs.screen.primaryScreen():fullFrame()
-	return {
-		x = (res.w - clockState.width) / 2,
-		y = (res.h - clockState.height) / 2,
-		w = clockState.width,
-		h = clockState.height,
-	}
-end
-
-local function updateClockText()
-	if not clockState.canvas then return end
-	clockState.canvas[1].text = os.date("%H:%M")
-	clockState.canvas[2].text = os.date("%a, %b %d %Y")
-end
-
-local function hideClock()
-	if clockState.cancelHotkey then clockState.cancelHotkey:delete(); clockState.cancelHotkey = nil end
-	if clockState.tickTimer then clockState.tickTimer:stop(); clockState.tickTimer = nil end
-	if clockState.hideTimer then clockState.hideTimer:stop(); clockState.hideTimer = nil end
-	if clockState.canvas then clockState.canvas:hide() end
-end
-
-local function showClock()
-	if not clockState.canvas then
-		clockState.canvas = hs.canvas.new(clockFrame())
-		-- Time (large, top portion)
-		clockState.canvas[1] = {
-			type = "text",
-			text = "",
-			textFont = clockState.timeFont,
-			textSize = clockState.timeSize,
-			textColor = clockState.color,
-			textAlignment = "center",
-			frame = { x = 0, y = "0.05", w = "1.0", h = "0.75" },
-		}
-		-- Date (small, below time)
-		clockState.canvas[2] = {
-			type = "text",
-			text = "",
-			textFont = clockState.dateFont,
-			textSize = clockState.dateSize,
-			textColor = clockState.color,
-			textAlignment = "center",
-			frame = { x = 0, y = "0.78", w = "1.0", h = "0.2" },
-		}
-	else
-		clockState.canvas:frame(clockFrame())
-	end
-	updateClockText()
-	clockState.canvas:show()
-	clockState.tickTimer = hs.timer.doEvery(1, updateClockText)
-	clockState.cancelHotkey = hs.hotkey.bind({}, "escape", hideClock)
-	clockState.hideTimer = hs.timer.doAfter(clockState.showDuration, hideClock)
-end
-
+hs.loadSpoon("AClock")
 hs.hotkey.bind(hyper, "C", function()
-	if clockState.canvas and clockState.canvas:isShowing() then
-		hideClock()
-	else
-		showClock()
-	end
+	spoon.AClock:toggleShow()
 end)
 
 --------------------------------------------
@@ -203,15 +123,23 @@ local function shellEscape(s)
 	return "'" .. s:gsub("'", "'\\''") .. "'"
 end
 
--- Extensions that should render as HTML in browser via markdown-novel-viewer skill
-local mdRenderExts = { md = true, markdown = true, mdx = true }
-
--- Extensions that should open in Arc browser (already-rendered HTML reports/visualizations)
-local browserExts = { html = true, htm = true }
+-- Extensions handled by the file-browser skill (one HTTP server, dispatches by
+-- extension): markdown → novel-theme reader; image/video/audio → media viewer.
+local fileBrowserExts = {
+	-- markdown
+	md = true, markdown = true, mdx = true,
+	-- images
+	png = true, jpg = true, jpeg = true, gif = true, webp = true, avif = true,
+	svg = true, bmp = true, ico = true, heic = true, heif = true, jxl = true, apng = true,
+	-- video
+	mp4 = true, m4v = true, webm = true, mov = true, mkv = true, ogv = true,
+	-- audio
+	mp3 = true, m4a = true, aac = true, ogg = true, opus = true, wav = true, flac = true,
+}
 
 -- Extensions that should open in nvim (inside Ghostty) instead of LaunchServices default
 local nvimExts = {
-	-- docs / plain text (md/markdown/mdx handled by mdRenderExts above)
+	-- docs / plain text (md/markdown/mdx handled by fileBrowserExts above)
 	rst = true, adoc = true, asciidoc = true,
 	txt = true, log = true, csv = true, tsv = true, tex = true,
 	-- shell / scripting
@@ -220,9 +148,9 @@ local nvimExts = {
 	lua = true, vim = true, vimrc = true,
 	-- python / ruby / perl
 	py = true, pyi = true, ipynb = true, rb = true, erb = true, pl = true, pm = true,
-	-- javascript / typescript / web (html/htm intentionally excluded — handled by browserExts above)
+	-- javascript / typescript / web
 	js = true, mjs = true, cjs = true, ts = true, tsx = true, jsx = true,
-	css = true, scss = true, sass = true, less = true,
+	html = true, htm = true, css = true, scss = true, sass = true, less = true,
 	vue = true, svelte = true, astro = true,
 	-- systems
 	go = true, rs = true, c = true, h = true, cpp = true, hpp = true, cc = true, hh = true,
@@ -262,31 +190,34 @@ local function openInNvim(path)
 	os.execute(cmd)
 end
 
--- Open an already-rendered .html file as a new tab in Dia.
--- Plain `open file.html` routes to Ghostty on this Mac (Ghostty is the .html
--- LaunchServices default), so we force Dia explicitly via `open -a`.
-local function openInDia(path)
-	local url = "file://" .. path
-	os.execute(string.format("/usr/bin/open -a Dia %s", shellEscape(url)))
-end
-
--- Render markdown via the markdown-novel-viewer skill (HTTP server) and open in Dia.
--- Reuses existing server on port 3456 if running; otherwise spawns one detached.
--- Detached via nohup + zsh -lc so Hammerspoon doesn't block and node (nvm) is on PATH.
-local mdViewerScript = os.getenv("HOME") .. "/skills/skills/markdown-render/scripts/server.cjs"
-local mdViewerPort = 3456
-local function openMarkdownRendered(path)
-	local url = string.format("http://localhost:%d/view?file=%s", mdViewerPort, hs.http.encodeForQuery(path))
-	-- Start server with cwd=$HOME so its allowlist (startsWith $HOME) covers any md under home.
+-- Render markdown / images / video / audio via the file-browser skill (HTTP
+-- server) and open in Arc. The server dispatches by file extension:
+-- .md/.markdown/.mdx → novel-theme reader; image/video/audio → media viewer.
+-- Reuse server on port 3556 if running; otherwise spawn detached.
+-- zsh -lc to populate PATH so node (nvm/mise) is found.
+local fileBrowserScript = os.getenv("HOME") .. "/skills/skills/file-browser/scripts/server.cjs"
+local fileBrowserPort = 3556
+local function openInFileBrowser(path)
+	local attr = hs.fs.attributes(path)
+	local isDir = attr and attr.mode == "directory"
+	local route = isDir and "browse?dir" or "view?file"
+	local flag = isDir and "--dir" or "--file"
+	local url = string.format(
+		"http://localhost:%d/%s=%s",
+		fileBrowserPort, route, hs.http.encodeForQuery(path)
+	)
+	-- Start server with cwd=$HOME so its allowlist (startsWith $HOME) covers
+	-- any path under home. First invocation seeds whichever path was passed;
+	-- subsequent calls just hit the existing server.
 	local script = string.format(
 		[[if ! /usr/bin/nc -z localhost %d 2>/dev/null; then
-			cd "$HOME" && nohup node %s --file %s --no-open --port %d >/dev/null 2>&1 &
+			cd "$HOME" && nohup node %s %s %s --no-open --port %d >/dev/null 2>&1 &
 			for i in {1..50}; do /usr/bin/nc -z localhost %d 2>/dev/null && break; sleep 0.1; done
 		fi
-		/usr/bin/open -a Dia %s]],
-		mdViewerPort,
-		shellEscape(mdViewerScript), shellEscape(path), mdViewerPort,
-		mdViewerPort,
+		/usr/local/bin/arc tab open %s]],
+		fileBrowserPort,
+		shellEscape(fileBrowserScript), flag, shellEscape(path), fileBrowserPort,
+		fileBrowserPort,
 		shellEscape(url)
 	)
 	os.execute(string.format("nohup /bin/zsh -lc %s >/dev/null 2>&1 &", shellEscape(script)))
@@ -310,18 +241,8 @@ hs.hotkey.bind(hyper, "v", function()
 		or target:match("^[%w%-]+%.[%w%-%.]+/") or target:match("^[%w%-]+%.[%w%-]+$")
 
 	if isUrl then
-		-- Route web URLs to Dia explicitly. Plain `open <url>` uses LaunchServices
-		-- default which is Ghostty for some schemes on this Mac. mailto/ftp keep
-		-- system default; only http/https/file go through Dia.
-		local scheme = target:match("^(%a[%w+.-]*)://")
-		if scheme == "http" or scheme == "https" or scheme == "file"
-			or (not scheme and (target:match("^[%w%-]+%.[%w%-%.]+/") or target:match("^[%w%-]+%.[%w%-]+$"))) then
-			os.execute("/usr/bin/open -a Dia " .. shellEscape(target))
-			hs.notify.new({ title = "Open Clipboard", informativeText = "Dia: " .. target }):send()
-		else
-			os.execute("open " .. shellEscape(target))
-			hs.notify.new({ title = "Open Clipboard", informativeText = "URL: " .. target }):send()
-		end
+		os.execute("open " .. shellEscape(target))
+		hs.notify.new({ title = "Open Clipboard", informativeText = "URL: " .. target }):send()
 		return
 	end
 
@@ -335,13 +256,9 @@ hs.hotkey.bind(hyper, "v", function()
 	if attr then
 		local ext = path:match("%.([^%.%/]+)$")
 		local extLower = ext and ext:lower() or nil
-		if attr.mode == "file" and extLower and browserExts[extLower] then
-			-- Already-rendered HTML reports/visualizations → Dia tab
-			openInDia(path)
-			hs.notify.new({ title = "Open Clipboard", informativeText = "Dia: " .. path }):send()
-		elseif attr.mode == "file" and extLower and mdRenderExts[extLower] then
-			openMarkdownRendered(path)
-			hs.notify.new({ title = "Open Clipboard", informativeText = "Render md: " .. path }):send()
+		if attr.mode == "file" and extLower and fileBrowserExts[extLower] then
+			openInFileBrowser(path)
+			hs.notify.new({ title = "Open Clipboard", informativeText = "file-browser: " .. path }):send()
 		elseif attr.mode == "file" and extLower and nvimExts[extLower] then
 			openInNvim(path)
 			hs.notify.new({ title = "Open Clipboard", informativeText = "nvim: " .. path }):send()
