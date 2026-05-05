@@ -89,8 +89,8 @@ image_bound      = [ 0, 0 ]
 suppress_preload = false
 
 [image]
-protocol = "auto"
-adaptor = "auto"
+protocol = "kgp"
+adaptor = "kgp"
 
 [plugin]
 
