@@ -34,9 +34,87 @@ hs.hotkey.bind(hyper, "W", function()
 	hs.alert.show("Hello World!")
 end)
 
-hs.loadSpoon("AClock")
+--------------------------------------------
+-- Floating clock with date (Hyper+C)
+--
+-- Replaces the AClock spoon: large HH:MM with a smaller date line below.
+-- Auto-hides after a few seconds; press Esc or Hyper+C again to dismiss early.
+--------------------------------------------
+local clockState = {
+	canvas = nil,
+	tickTimer = nil,
+	hideTimer = nil,
+	cancelHotkey = nil,
+	width = 360,
+	height = 260,
+	timeFont = "Impact",
+	timeSize = 135,
+	dateFont = "Helvetica Neue",
+	dateSize = 26,
+	color = { hex = "#1891C3" },
+	showDuration = 4,
+}
+
+local function clockFrame()
+	local res = hs.screen.primaryScreen():fullFrame()
+	return {
+		x = (res.w - clockState.width) / 2,
+		y = (res.h - clockState.height) / 2,
+		w = clockState.width,
+		h = clockState.height,
+	}
+end
+
+local function updateClockText()
+	if not clockState.canvas then return end
+	clockState.canvas[1].text = os.date("%H:%M")
+	clockState.canvas[2].text = os.date("%a, %b %d %Y")
+end
+
+local function hideClock()
+	if clockState.cancelHotkey then clockState.cancelHotkey:delete(); clockState.cancelHotkey = nil end
+	if clockState.tickTimer then clockState.tickTimer:stop(); clockState.tickTimer = nil end
+	if clockState.hideTimer then clockState.hideTimer:stop(); clockState.hideTimer = nil end
+	if clockState.canvas then clockState.canvas:hide() end
+end
+
+local function showClock()
+	if not clockState.canvas then
+		clockState.canvas = hs.canvas.new(clockFrame())
+		clockState.canvas[1] = {
+			type = "text",
+			text = "",
+			textFont = clockState.timeFont,
+			textSize = clockState.timeSize,
+			textColor = clockState.color,
+			textAlignment = "center",
+			frame = { x = 0, y = "0.05", w = "1.0", h = "0.75" },
+		}
+		clockState.canvas[2] = {
+			type = "text",
+			text = "",
+			textFont = clockState.dateFont,
+			textSize = clockState.dateSize,
+			textColor = clockState.color,
+			textAlignment = "center",
+			frame = { x = 0, y = "0.78", w = "1.0", h = "0.2" },
+		}
+	else
+		clockState.canvas:frame(clockFrame())
+	end
+	updateClockText()
+	clockState.canvas:show()
+	clockState.tickTimer = hs.timer.doEvery(1, updateClockText)
+	clockState.cancelHotkey = hs.hotkey.bind({}, "escape", hideClock)
+	clockState.hideTimer = hs.timer.doAfter(clockState.showDuration, hideClock)
+end
+
 hs.hotkey.bind(hyper, "C", function()
-	spoon.AClock:toggleShow()
+	if clockState.canvas and clockState.canvas:isShowing() then
+		hideClock()
+	else
+		showClock()
+	end
 end)
 
 --------------------------------------------
