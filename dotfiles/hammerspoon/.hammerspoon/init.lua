@@ -275,14 +275,45 @@ end
 -- zsh -lc to populate PATH so node (nvm/mise) is found.
 local fileBrowserScript = os.getenv("HOME") .. "/skills/skills/file-browser/scripts/server.cjs"
 local fileBrowserPort = 3556
+local function fileBrowserParentDir(p)
+	-- Strip trailing slashes, then drop the final segment.
+	-- Returns "/" for root-level files (e.g. /foo) so the URL is always well-formed.
+	local trimmed = (p or ""):gsub("/+$", "")
+	if trimmed == "" then return "/" end
+	local parent = trimmed:match("^(.*)/[^/]+$")
+	if not parent or parent == "" then return "/" end
+	return parent
+end
+-- Walk up from `start` looking for a `.git` entry (dir for normal repos, file
+-- for worktrees/submodules). Returns the project root or nil if outside any repo.
+local function findGitRoot(start)
+	local dir = start
+	while dir and dir ~= "/" and dir ~= "" do
+		local marker = hs.fs.attributes(dir .. "/.git")
+		if marker then return dir end
+		local parent = fileBrowserParentDir(dir)
+		if parent == dir then break end
+		dir = parent
+	end
+	return nil
+end
 local function openInFileBrowser(path)
 	local attr = hs.fs.attributes(path)
 	local isDir = attr and attr.mode == "directory"
 	local route = isDir and "browse?dir" or "view?file"
 	local flag = isDir and "--dir" or "--file"
+	-- Tree root: prefer the .git project root so the sidebar shows the whole
+	-- project; fall back to the directory itself / file's parent when not in a
+	-- repo. Sent as ?root= so each Hyper+V rebases the tree, overriding any
+	-- localStorage value from a prior session.
+	local fallbackRoot = isDir and path or fileBrowserParentDir(path)
+	local rootDir = findGitRoot(fallbackRoot) or fallbackRoot
+	local rootSuffix = (rootDir and rootDir ~= "")
+		and ("&root=" .. hs.http.encodeForQuery(rootDir))
+		or ""
 	local url = string.format(
-		"http://localhost:%d/%s=%s",
-		fileBrowserPort, route, hs.http.encodeForQuery(path)
+		"http://localhost:%d/%s=%s%s",
+		fileBrowserPort, route, hs.http.encodeForQuery(path), rootSuffix
 	)
 	-- Start server with cwd=$HOME so its allowlist (startsWith $HOME) covers
 	-- any path under home. First invocation seeds whichever path was passed;

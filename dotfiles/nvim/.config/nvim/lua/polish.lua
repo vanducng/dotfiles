@@ -8,37 +8,47 @@ vim.keymap.set("n", "<leader>yP", function()
 end, { noremap = true, silent = true, desc = "Copy absolute file path to clipboard" })
 
 -- <leader>mv — open current buffer in the file-browser skill (Dia).
--- Server dispatches by extension: .md → novel-theme reader; image/video/audio
--- → media viewer; anything else → folder gallery of the parent directory.
-local renderable_exts = {
-  -- markdown
-  md = true, markdown = true, mdx = true,
-  -- images
-  png = true, jpg = true, jpeg = true, gif = true, webp = true, avif = true,
-  svg = true, bmp = true, ico = true, heic = true, heif = true, jxl = true, apng = true,
-  -- video
-  mp4 = true, m4v = true, webm = true, mov = true, mkv = true, ogv = true,
-  -- audio
-  mp3 = true, m4a = true, aac = true, ogg = true, opus = true, wav = true, flac = true,
-}
+-- Server's /view route dispatches by content: markdown → novel reader;
+-- image/video/audio → media viewer; everything else → text/code view.
+-- Directory buffers (netrw/oil) → folder gallery.
 vim.keymap.set("n", "<leader>mv", function()
   local path = vim.fn.expand "%:p"
   if path == "" then
     vim.notify("No file in buffer", vim.log.levels.WARN)
     return
   end
-  -- If current file is renderable → single view; otherwise → parent folder gallery.
-  local ext = (path:match "%.([^%.%/]+)$" or ""):lower()
-  local renderable = renderable_exts[ext] == true
-  local target = renderable and path or vim.fn.fnamemodify(path, ":h")
-  local flag = renderable and "--file" or "--dir"
-  local route = renderable and "view?file" or "browse?dir"
+  local isDir = vim.fn.isdirectory(path) == 1
+  local target = path
+  local flag = isDir and "--dir" or "--file"
+  local route = isDir and "browse?dir" or "view?file"
 
   local server = vim.fn.expand "$HOME/skills/skills/file-browser/scripts/server.cjs"
   local port = 3556
-  local encoded =
-    vim.fn.substitute(target, [[\([^A-Za-z0-9._~/-]\)]], [[\=printf("%%%02X", char2nr(submatch(1)))]], "g")
-  local url = string.format("http://localhost:%d/%s=%s", port, route, encoded)
+  -- Sidebar tree root: walk up to find .git (project root); fall back to dir
+  -- itself / file's parent. Sent as ?root= so each launch overrides any
+  -- localStorage root from a prior session. .git can be a dir (normal repo)
+  -- or a file (worktree / submodule), so check both.
+  local function findGitRoot(start)
+    local dir = start
+    while dir and dir ~= "/" and dir ~= "" do
+      local marker = dir .. "/.git"
+      if vim.fn.isdirectory(marker) == 1 or vim.fn.filereadable(marker) == 1 then
+        return dir
+      end
+      local parent = vim.fn.fnamemodify(dir, ":h")
+      if parent == dir then break end
+      dir = parent
+    end
+    return nil
+  end
+  local fallbackRoot = isDir and path or vim.fn.fnamemodify(path, ":h")
+  local rootDir = findGitRoot(fallbackRoot) or fallbackRoot
+  local function urlEncode(s)
+    return vim.fn.substitute(s, [[\([^A-Za-z0-9._~/-]\)]], [[\=printf("%%%02X", char2nr(submatch(1)))]], "g")
+  end
+  local encoded = urlEncode(target)
+  local encodedRoot = urlEncode(rootDir)
+  local url = string.format("http://localhost:%d/%s=%s&root=%s", port, route, encoded, encodedRoot)
   local script = string.format(
     [[
     if ! /usr/bin/nc -z localhost %d 2>/dev/null; then
