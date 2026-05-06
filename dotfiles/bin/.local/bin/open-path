@@ -1,0 +1,167 @@
+#!/usr/bin/env bash
+# Path/URL handler used by tmux-fingers (Ctrl+hint, Alt+hint) and Hammerspoon
+# Hyper+V. Mode is forced by the caller — no extension-sniffing on this side.
+#
+#   open-path --browser   → file-browser HTTP server in Dia (file or dir)
+#   open-path --editor    → nvim in a fresh Ghostty window
+#
+# URL inputs always route to /usr/bin/open (default browser) regardless of
+# mode. Input is taken from $1 (after the mode flag) or stdin. Strips trailing
+# `:line[:col]` and `file://` prefixes; expands a leading `~`; resolves
+# relatives against $PWD (tmux-fingers chdirs to pane_current_path before
+# invoking the action) or $BASE_DIR.
+
+set -u
+
+# Debug log: every invocation appended to /tmp/open-path.log when the file
+# exists. `touch /tmp/open-path.log` to enable, `rm` to disable.
+if [[ -f /tmp/open-path.log ]]; then
+  exec 9>>/tmp/open-path.log
+  printf '[%(%H:%M:%S)T] argv=%s pwd=%s\n' -1 "$*" "$PWD" >&9
+fi
+
+# --------------------------- configurable apps --------------------------------
+# Override via env to swap targets without touching this script:
+#   OPEN_PATH_BROWSER=Arc OPEN_PATH_EDITOR=Cursor open-path --browser FILE
+: "${OPEN_PATH_BROWSER:=Dia}"      # macOS app name passed to `open -a`
+: "${OPEN_PATH_EDITOR:=Ghostty}"   # terminal app that runs the EDITOR_CMD
+: "${OPEN_PATH_EDITOR_CMD:=nvim}"  # cli inside the terminal app
+
+mode="${1:-}"
+case "$mode" in
+  --browser|--editor) shift ;;
+  *) echo "open-path: missing mode (--browser|--editor)" >&2; exit 2 ;;
+esac
+
+# --------------------------- target parsing -----------------------------------
+
+target="${1:-}"
+if [[ -z "$target" ]] && [[ ! -t 0 ]]; then
+  target="$(cat)"
+fi
+target="${target#"${target%%[![:space:]]*}"}"
+target="${target%"${target##*[![:space:]]}"}"
+# Strip trailing sentence punctuation that fingers captures together with the
+# match — e.g. `... migration.md.` from a log line ending with a period.
+target="${target%[.,;:!?\)\]\>]}"
+[[ -z "$target" ]] && exit 0
+
+# --------------------------- strong url detection -----------------------------
+# `scheme://...` or `mailto:...` always route to default browser, bypassing
+# mode (you can't edit a URL, and file-browser only handles paths).
+if [[ "$target" =~ ^[A-Za-z][A-Za-z0-9+.-]*:// ]] && [[ "$target" != file://* ]] \
+   || [[ "$target" =~ ^mailto: ]]; then
+  /usr/bin/open "$target"
+  exit 0
+fi
+
+# --------------------------- path normalization -------------------------------
+
+path="$target"
+[[ "$path" == file://* ]] && path="${path#file://}"
+path="${path%:[0-9]*:[0-9]*}"
+path="${path%:[0-9]*}"
+[[ "$path" == "~"* ]] && path="${HOME}${path:1}"
+if [[ "$path" != /* ]]; then
+  path="${BASE_DIR:-$PWD}/$path"
+fi
+
+# --------------------------- bare-domain fallback -----------------------------
+# `github.com/foo` style → default browser. Trailing `/` is REQUIRED so that
+# bare filenames like `CLAUDE.md` aren't misclassified as `host.tld`. Pure
+# `example.com` (no path) is rare in fingers context and would need a real
+# scheme to be unambiguous.
+if [[ ! -e "$path" ]] \
+   && [[ "$target" =~ ^[A-Za-z0-9.-]+\.[A-Za-z]{2,}/ ]]; then
+  /usr/bin/open "$target"
+  exit 0
+fi
+# At this point: path-shaped input. Dispatch by mode whether or not $path
+# exists — the file-browser server returns a clean 404 for misses, which is
+# more useful than LaunchServices guessing an app (e.g. opening .md in
+# Antigravity instead of Dia).
+
+# --------------------------- helpers ------------------------------------------
+
+# Single-quote escape: 'foo'\''bar' (matches shellEscape in init.lua)
+sq() { printf "'%s'" "$(printf '%s' "$1" | sed "s/'/'\\\\''/g")"; }
+
+url_encode() {
+  local s="$1" out="" i len="${#1}" c
+  for ((i = 0; i < len; i++)); do
+    c="${s:i:1}"
+    case "$c" in
+      [A-Za-z0-9._~-]) out+="$c" ;;
+      *) printf -v c '%%%02X' "'$c"; out+="$c" ;;
+    esac
+  done
+  printf '%s' "$out"
+}
+
+# Walk up looking for a .git entry; echoes the repo root or the start dir.
+git_root() {
+  local dir="$1"
+  while [[ -n "$dir" && "$dir" != "/" ]]; do
+    [[ -e "$dir/.git" ]] && { printf '%s' "$dir"; return; }
+    dir="${dir%/*}"
+  done
+  printf '%s' "$1"
+}
+
+open_in_browser() {
+  local p="$1"
+  local server="$HOME/skills/skills/file-browser/scripts/server.cjs"
+  local port=3556
+  local route flag root_seed
+  if [[ -d "$p" ]]; then
+    route="browse?dir"; flag="--dir"; root_seed="$p"
+  else
+    route="view?file"; flag="--file"
+    root_seed="${p%/*}"; [[ -z "$root_seed" ]] && root_seed="/"
+  fi
+  local root; root="$(git_root "$root_seed")"
+  local url
+  url="http://localhost:${port}/${route}=$(url_encode "$p")&root=$(url_encode "$root")"
+
+  if ! /usr/bin/nc -z localhost "$port" 2>/dev/null; then
+    ( cd "$HOME" && nohup node "$server" "$flag" "$p" --no-open --port "$port" >/dev/null 2>&1 & )
+    local i
+    for ((i = 0; i < 50; i++)); do
+      /usr/bin/nc -z localhost "$port" 2>/dev/null && break
+      sleep 0.1
+    done
+  fi
+  /usr/bin/open -a "$OPEN_PATH_BROWSER" "$url"
+}
+
+# Resolve $OPEN_PATH_EDITOR_CMD to an absolute path: Ghostty's --command spawns
+# with --noprofile --norc so PATH is bare. Fall back to bare name if not found.
+resolve_editor_cmd() {
+  if [[ "$OPEN_PATH_EDITOR_CMD" == /* ]]; then
+    printf '%s' "$OPEN_PATH_EDITOR_CMD"; return
+  fi
+  local cand
+  for cand in "/opt/homebrew/bin/$OPEN_PATH_EDITOR_CMD" \
+              "/usr/local/bin/$OPEN_PATH_EDITOR_CMD" \
+              "/usr/bin/$OPEN_PATH_EDITOR_CMD"; do
+    [[ -x "$cand" ]] && { printf '%s' "$cand"; return; }
+  done
+  printf '%s' "$OPEN_PATH_EDITOR_CMD"
+}
+
+open_in_editor() {
+  local p="$1"
+  local cmd_bin; cmd_bin="$(resolve_editor_cmd)"
+  # zsh -l so .zprofile/.zshrc populate PATH for plugins (yazi, mise, brew)
+  local inner cmd_arg
+  inner="exec $cmd_bin $(sq "$p")"
+  cmd_arg="/bin/zsh -lc $(sq "$inner")"
+  /usr/bin/open -na "$OPEN_PATH_EDITOR" --args "--command=$cmd_arg"
+}
+
+# --------------------------- dispatch -----------------------------------------
+
+case "$mode" in
+  --browser) open_in_browser "$path" ;;
+  --editor)  open_in_editor  "$path" ;;
+esac
