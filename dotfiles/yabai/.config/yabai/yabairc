@@ -63,6 +63,7 @@ yabai -m rule --add app="^Slack$"                     space=9
 yabai -m rule --add app="^Telegram$"                  space=10
 yabai -m rule --add app="^Zalo$"                      space=11
 yabai -m rule --add app="^Discord$"                   space=12
+yabai -m rule --add app="WhatsApp$"                   space=13
 
 # Stacked spaces — only one window visible on top, others stacked beneath
 yabai -m space 3 --layout stack 2>/dev/null
