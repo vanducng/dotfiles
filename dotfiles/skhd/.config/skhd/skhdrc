@@ -25,6 +25,7 @@ ctrl + alt + cmd - r : yabai --restart-service
 # 2. App launchers (meh)
 # -----------------------------------------------------------------------------
 meh - a : open "/Applications/Ghostty.app"
+meh - c : yabai -m space --focus 14; open "/Applications/Cliq.app"
 meh - d : open "/Applications/Arc.app"
 meh - g : open "/System/Volumes/Data/Applications/Discord.app"
 meh - h : yabai -m space --focus 13; open "/Applications/WhatsApp.app"
