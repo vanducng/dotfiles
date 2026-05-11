@@ -26,7 +26,8 @@ ctrl + alt + cmd - r : yabai --restart-service
 # -----------------------------------------------------------------------------
 meh - a : open "/Applications/Ghostty.app"
 meh - c : yabai -m space --focus 14; open "/Applications/Cliq.app"
-meh - d : open "/Applications/Arc.app"
+meh - d : yabai -m space --focus 13; open "/Applications/Arc.app"
+meh - e : yabai -m space --focus 8; open "/Applications/Herd.app"
 meh - g : open "/System/Volumes/Data/Applications/Discord.app"
 meh - h : yabai -m space --focus 13; open "/Applications/WhatsApp.app"
 meh - i : open "/Applications/Structured.app"
