@@ -39,6 +39,12 @@ export HOMEBREW_NO_AUTO_UPDATE=1
 # Claude Code: flicker-free renderer + mouse support (v2.1.88+)
 export CLAUDE_CODE_NO_FLICKER=1
 
+# wtfutil: github + jira credentials (sourced from gh CLI / gopass)
+export GITHUB_TOKEN="$(gh auth token 2>/dev/null)"
+export JIRA_DOMAIN="https://cnbacrylic.atlassian.net"
+export JIRA_EMAIL="me@vanducng.dev"
+export JIRA_API_KEY="$(gopass show -o work/cnb/atlassian-api-key 2>/dev/null)"
+
 # Aliases now managed by atuin dotfiles
 
 # pyenv init

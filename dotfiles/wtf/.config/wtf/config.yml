@@ -1,0 +1,160 @@
+wtf:
+  colors:
+    background: "default"
+    border:
+      focusable: "darkslateblue"
+      focused: "orange"
+      normal: "gray"
+    title: "white"
+  grid:
+    # 4 cols x 5 rows
+    columns: [40, 40, 40, 40]
+    rows: [10, 10, 10, 10, 12]
+  refreshInterval: 1
+  openFileUtil: "open"
+  sigils:
+    checkbox:
+      checked: "x"
+      unchecked: " "
+    paging:
+      normal: "*"
+      selected: "_"
+
+  mods:
+    # ── Row 0: at-a-glance ──────────────────────────────────────
+    clocks:
+      enabled: true
+      type: clocks
+      title: "Clocks"
+      colors:
+        rows:
+          even: "lightblue"
+          odd: "white"
+      locations:
+        Saigon: "Asia/Ho_Chi_Minh"
+        UTC: "Etc/UTC"
+        SF: "America/Los_Angeles"
+      sort: "alphabetical"
+      position: { top: 0, left: 0, height: 1, width: 1 }
+      refreshInterval: 30
+
+    power:
+      enabled: true
+      type: power
+      title: "Battery"
+      position: { top: 0, left: 1, height: 1, width: 1 }
+      refreshInterval: 30
+
+    resourceusage:
+      enabled: true
+      type: resourceusage
+      title: "System"
+      cpuCombined: false
+      gpuTemp: false
+      showCPU: true
+      showMem: true
+      showSwp: false
+      position: { top: 0, left: 2, height: 1, width: 2 }
+      refreshInterval: 5
+
+    # ── Rows 1-2: code dashboards ───────────────────────────────
+    git:
+      enabled: true
+      type: git
+      title: "Git"
+      commitCount: 5
+      commitFormat: "[forestgreen]%h [white]%s [grey]%an"
+      repositories:
+        - "~/dotfiles"
+      position: { top: 1, left: 0, height: 2, width: 2 }
+      refreshInterval: 60
+
+    github:
+      enabled: true
+      type: github
+      title: "GitHub"
+      username: "vanducng"
+      apiKey: "@envvar GITHUB_TOKEN"
+      enableStatus: true
+      showMyPullRequests: true
+      showOpenReviewRequests: true
+      showStats: false
+      # repositories list = per-repo status badges. customQueries
+      # already aggregate cross-repo PRs/reviews via Search API,
+      # so keep this minimal — add work repos here only if you
+      # want their CI/PR counts pinned.
+      repositories:
+        vanducng/dotfiles: ""
+      customQueries:
+        myPRs:
+          title: "My open PRs (all repos)"
+          filter: "is:open is:pr author:vanducng"
+        reviewRequested:
+          title: "Review requested"
+          filter: "is:open is:pr review-requested:vanducng"
+      position: { top: 1, left: 2, height: 2, width: 2 }
+      refreshInterval: 300
+
+    # ── Row 3: work surfaces ────────────────────────────────────
+    jira:
+      enabled: true
+      type: jira
+      title: "Jira (CNB)"
+      domain: "@envvar JIRA_DOMAIN"
+      email: "@envvar JIRA_EMAIL"
+      username: "@envvar JIRA_EMAIL"
+      apiKey: "@envvar JIRA_API_KEY"
+      project: ["ELT"]
+      jql: "assignee = currentUser() AND statusCategory != Done ORDER BY updated DESC"
+      verifyServerCertificate: true
+      position: { top: 3, left: 0, height: 1, width: 2 }
+      refreshInterval: 600
+
+    kube_problem_pods:
+      enabled: true
+      type: cmdrunner
+      title: "kube: non-Running pods"
+      cmd: "sh"
+      args:
+        - "-c"
+        - "echo \"ctx: $(kubectl config current-context)\"; echo; kubectl get pods -A --field-selector=status.phase!=Running,status.phase!=Succeeded 2>&1 | head -20"
+      position: { top: 3, left: 2, height: 1, width: 2 }
+      refreshInterval: 60
+
+    # ── Row 4: utilities ────────────────────────────────────────
+    todo:
+      enabled: true
+      type: todo
+      title: "Todos"
+      filename: "todo.yml"
+      position: { top: 4, left: 0, height: 1, width: 1 }
+      refreshInterval: 3600
+
+    weather:
+      enabled: true
+      type: prettyweather
+      title: "Saigon"
+      city: "Saigon"
+      unit: "c"
+      language: "en"
+      position: { top: 4, left: 1, height: 1, width: 1 }
+      refreshInterval: 3600
+
+    gh_pr_status:
+      enabled: true
+      type: cmdrunner
+      title: "gh pr status"
+      cmd: "gh"
+      args: ["pr", "status"]
+      pty: true
+      position: { top: 4, left: 2, height: 1, width: 1 }
+      refreshInterval: 300
+
+    brew_outdated:
+      enabled: true
+      type: cmdrunner
+      title: "brew outdated"
+      cmd: "brew"
+      args: ["outdated"]
+      position: { top: 4, left: 3, height: 1, width: 1 }
+      refreshInterval: 3600
