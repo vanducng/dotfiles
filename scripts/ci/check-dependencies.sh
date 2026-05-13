@@ -79,10 +79,10 @@ check_command() {
     else
         if [[ "$type" == "required" ]]; then
             echo -e "${RED}[MISSING]${NC} $cmd - $desc ${RED}(REQUIRED)${NC}"
-            ((MISSING_REQUIRED++))
+            MISSING_REQUIRED=$((MISSING_REQUIRED + 1))
         else
             echo -e "${YELLOW}[MISSING]${NC} $cmd - $desc (optional)"
-            ((MISSING_OPTIONAL++))
+            MISSING_OPTIONAL=$((MISSING_OPTIONAL + 1))
         fi
     fi
 }
@@ -96,7 +96,7 @@ check_npm_package() {
             echo -e "${GREEN}[OK]${NC} $package - $desc"
         else
             echo -e "${YELLOW}[MISSING]${NC} $package - $desc (optional)"
-            ((MISSING_OPTIONAL++))
+            MISSING_OPTIONAL=$((MISSING_OPTIONAL + 1))
         fi
     fi
 }
@@ -112,7 +112,7 @@ check_python_package() {
             echo -e "${GREEN}[OK]${NC} $package - $desc"
         else
             echo -e "${YELLOW}[MISSING]${NC} $package - $desc (optional)"
-            ((MISSING_OPTIONAL++))
+            MISSING_OPTIONAL=$((MISSING_OPTIONAL + 1))
         fi
     fi
 }

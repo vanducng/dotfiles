@@ -183,21 +183,21 @@ main() {
             
             if ! check_tool_dependencies "$tool"; then
                 echo -e "${RED}[FAIL]${NC} Missing dependencies"
-                ((failed++))
+                failed=$((failed + 1))
                 continue
             fi
-            
+
             # Test stow installation
             TEST_HOME="/tmp/dotfiles-platform-test-$$"
             mkdir -p "$TEST_HOME"
-            
-            if HOME="$TEST_HOME" make -C "$PROJECT_ROOT" stow-$tool >/dev/null 2>&1; then
+
+            if HOME="$TEST_HOME" make -C "$PROJECT_ROOT" "stow-$tool" >/dev/null 2>&1; then
                 echo -e "${GREEN}[PASS]${NC}"
-                ((passed++))
-                HOME="$TEST_HOME" make -C "$PROJECT_ROOT" unstow-$tool >/dev/null 2>&1 || true
+                passed=$((passed + 1))
+                HOME="$TEST_HOME" make -C "$PROJECT_ROOT" "unstow-$tool" >/dev/null 2>&1 || true
             else
                 echo -e "${RED}[FAIL]${NC}"
-                ((failed++))
+                failed=$((failed + 1))
             fi
             
             rm -rf "$TEST_HOME"

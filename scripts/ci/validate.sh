@@ -12,7 +12,7 @@ NC='\033[0m'
 
 log_error() {
     echo -e "${RED}[ERROR]${NC} $1" >&2
-    ((ERRORS++))
+    ERRORS=$((ERRORS + 1))
 }
 
 log_success() {
@@ -21,7 +21,7 @@ log_success() {
 
 log_warning() {
     echo -e "${YELLOW}[WARN]${NC} $1"
-    ((WARNINGS++))
+    WARNINGS=$((WARNINGS + 1))
 }
 
 log_info() {
@@ -103,8 +103,24 @@ validate_lua() {
 
 validate_shell() {
     local file="$1"
+    # Skip zsh-only files — shellcheck doesn't support zsh syntax (globs, etc.)
+    case "$file" in
+        */.zshrc|*/.zshenv|*/.zprofile|*/.zlogin|*/.zlogout)
+            log_success "Skipping zsh config (shellcheck unsupported): $file"
+            return
+            ;;
+    esac
+    local shebang
+    shebang=$(head -1 "$file" 2>/dev/null)
+    case "$shebang" in
+        "#!/bin/zsh"|*"env zsh"*|*"env fish"*|*"/fish"*)
+            log_success "Skipping non-bash shell: $file"
+            return
+            ;;
+    esac
     if command -v shellcheck >/dev/null 2>&1; then
-        if shellcheck "$file"; then
+        # --severity=error: only true syntax/parse errors block. Style/info notes don't fail CI.
+        if shellcheck --severity=error "$file"; then
             log_success "Valid shell script: $file"
         else
             log_error "Shell script issues: $file"

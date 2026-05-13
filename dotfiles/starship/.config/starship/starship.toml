@@ -5,7 +5,7 @@ right_format = """$all"""
 
 [direnv]
 disabled = false
-rc_path=~/.envrc
+rc_path = "~/.envrc"
 
 [aws]
 format = 'on [$symbol($profile )(\($region\) )]($style)'
