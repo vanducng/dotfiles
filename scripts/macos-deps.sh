@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 brew install obsidian
 brew install fzf
 brew install zsh-syntax-highlighting
