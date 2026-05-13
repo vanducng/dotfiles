@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 open "/Applications/Slack.app" && yabai -m window --space 6
 open "/System/Volumes/Data/Applications/Zalo.app" && yabai -m window --space 5
 open "/Applications/DBeaver.app" && yabai -m window --space 4
