@@ -54,7 +54,7 @@ yabai -m rule --add app="^Ghostty$"                   space=1
 yabai -m rule --add app="^Arc$"                       space=13
 yabai -m rule --add app="^Dia$"                       space=3
 yabai -m rule --add app="^Claude$"                    space=4
-yabai -m rule --add app="^Alter$"                     space=5
+yabai -m rule --add app="^Alter$"                     space=5 manage=off
 yabai -m rule --add app="^Preview$"                   space=6
 yabai -m rule --add app="^Foxit PDF Reader$"          space=6
 yabai -m rule --add app="^Structured$"                space=7 manage=off
@@ -87,6 +87,12 @@ for pin in "Ghostty:1" "Dia:3" "Claude:4" "Alter:5" "Preview:6" "Foxit PDF Reade
     for id in $(yabai -m query --windows | jq -r --arg a "$app" '.[] | select(.app==$a) | .id'); do
         yabai -m window "$id" --space "$sp" 2>/dev/null
     done
+done
+
+# Force-float apps that must never be tiled (manage=off rule only fires on
+# window creation; this re-floats existing windows after yabai restart).
+for id in $(yabai -m query --windows | jq -r '.[] | select((.app=="Alter" or .app=="Structured") and ."is-floating"==false) | .id'); do
+    yabai -m window "$id" --toggle float 2>/dev/null
 done
 
 # Sticky overlays (pinned across spaces, above tiled windows)
@@ -127,6 +133,12 @@ yabai -m rule --add app="^zoom.us$"                   manage=off
 # -----------------------------------------------------------------------------
 yabai -m signal --add event=window_created \
     action='sleep 0.3 && yabai -m window $YABAI_WINDOW_ID --resize bottom:0:0 2>/dev/null'
+
+# Keep Alter floating even if it gets tiled after moves/space changes.
+yabai -m signal --add event=window_created app="^Alter$" \
+    action='sleep 0.2 && [ "$(yabai -m query --windows --window $YABAI_WINDOW_ID | jq ."is-floating")" = "false" ] && yabai -m window $YABAI_WINDOW_ID --toggle float'
+yabai -m signal --add event=window_moved app="^Alter$" \
+    action='[ "$(yabai -m query --windows --window $YABAI_WINDOW_ID | jq ."is-floating")" = "false" ] && yabai -m window $YABAI_WINDOW_ID --toggle float'
 
 # Unzoom any zoom-fullscreen window when a new window appears in the same space,
 # otherwise the newly opened (often same-app) window stays hidden behind the zoom.
