@@ -13,7 +13,7 @@ NC='\033[0m'
 
 log_error() {
     echo -e "${RED}[ERROR]${NC} $1" >&2
-    ((ERRORS++))
+    ERRORS=$((ERRORS + 1))
 }
 
 log_success() {
@@ -51,16 +51,21 @@ test_stow_installation() {
     
     if HOME="$TEST_HOME" make "stow-$tool" 2>/dev/null; then
         log_success "Successfully installed $tool"
-        
-        local config_dir="$PROJECT_ROOT/dotfiles/$tool/.config"
-        if [[ -d "$config_dir" ]]; then
-            local expected_link="$TEST_HOME/.config/$(basename "$config_dir")"
+
+        local package_dir="$PROJECT_ROOT/dotfiles/$tool"
+        local checked_files=0
+        while IFS= read -r -d '' source_file; do
+            local relative_path="${source_file#"$package_dir"/}"
+            local expected_link="$TEST_HOME/$relative_path"
+
             if [[ -L "$expected_link" ]]; then
-                log_success "Config symlink created for $tool"
+                checked_files=$((checked_files + 1))
             else
-                log_error "Config symlink missing for $tool"
+                log_error "Symlink missing for $tool: $expected_link"
             fi
-        fi
+        done < <(find "$package_dir" -type f -not -name ".DS_Store" -not -name ".gitignore" -print0)
+
+        log_success "Verified $checked_files symlink(s) for $tool"
         
         HOME="$TEST_HOME" make "unstow-$tool" 2>/dev/null || true
     else
@@ -102,7 +107,7 @@ test_full_installation() {
         
         local symlinks_found=0
         while IFS= read -r -d '' link; do
-            ((symlinks_found++))
+            symlinks_found=$((symlinks_found + 1))
         done < <(find "$TEST_HOME" -type l -print0)
         
         log_success "Created $symlinks_found symlinks"
@@ -140,8 +145,12 @@ test_config_conflicts() {
     )
     
     for config in "${configs[@]}"; do
-        if [[ -e "$HOME/$config" ]] && [[ ! -L "$HOME/$config" ]]; then
-            log_error "Potential conflict: $HOME/$config exists and is not a symlink"
+        if [[ -e "$TEST_HOME/$config" ]] && [[ ! -L "$TEST_HOME/$config" ]]; then
+            if [[ -d "$TEST_HOME/$config" ]] && ! find "$TEST_HOME/$config" -mindepth 1 -print -quit | grep -q .; then
+                continue
+            fi
+
+            log_error "Potential conflict: $TEST_HOME/$config exists and is not a symlink"
         fi
     done
 }
@@ -151,10 +160,10 @@ main() {
     echo
     
     setup_test_env
+    test_config_conflicts
     test_makefile_targets
     test_all_tools
     test_full_installation
-    test_config_conflicts
     
     echo
     log_info "Test complete!"

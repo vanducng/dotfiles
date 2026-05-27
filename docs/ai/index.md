@@ -12,6 +12,10 @@ Guide to using AI tools effectively in your development workflow.
 | **Best For** | Architecture, debugging | Day-to-day coding | Database work |
 | **Keybindings** | Leader-based | Auto-trigger | Context-aware |
 
+## Codex CLI
+
+Codex is managed from this dotfiles repo through GNU Stow. See **[Codex](codex.md)** for the repo-owned `~/.codex/config.toml`, enabled features, `/goal` troubleshooting, MCP setup, and plugin checks.
+
 ## Quick Start
 
 ```bash
@@ -28,5 +32,6 @@ Guide to using AI tools effectively in your development workflow.
 
 ## Documentation
 
+- **[Codex](codex.md)** - CLI config, features, goals, MCP, plugins
 - **[Workflows](workflows.md)** - Daily workflows, code development, database AI
 - **[Best Practices](best-practices.md)** - Effective prompting, security, productivity

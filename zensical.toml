@@ -51,6 +51,7 @@ Home = "index.md"
 [[project.nav]]
 "AI Tools" = [
   { Overview = "ai/index.md" },
+  { Codex = "ai/codex.md" },
   { Workflows = "ai/workflows.md" },
   { "Best Practices" = "ai/best-practices.md" }
 ]
