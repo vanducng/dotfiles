@@ -27,8 +27,8 @@ All application shortcuts use the `meh` key (ctrl+alt+cmd) for consistency and t
 | Shortcut | Application | Description |
 |----------|-------------|-------------|
 | `meh + a` | Ghostty | Primary terminal emulator |
+| `meh + x` | Codex | AI coding assistant |
 | `meh + w` | Windsurf | AI-powered IDE |
-| `meh + x` | VSCode | Microsoft Visual Studio Code |
 | `meh + v` | Cursor | AI-powered code editor |
 | `meh + d` | DBeaver | Database management tool |
 
