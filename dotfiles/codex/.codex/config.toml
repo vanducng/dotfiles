@@ -1,0 +1,107 @@
+# Managed by ~/dotfiles via GNU Stow.
+# Install with: make stow-codex
+model = "gpt-5.5"
+model_reasoning_effort = "high"
+personality = "pragmatic"
+web_search = "cached"
+
+[projects."/Users/vanducng/dotfiles"]
+trust_level = "trusted"
+
+[projects."/Users/vanducng/skills"]
+trust_level = "trusted"
+
+[projects."/Users/vanducng/git/work/crashchat/infra"]
+trust_level = "trusted"
+
+[projects."/Users/vanducng/git/work/cnb/cnb-ds-dbt-order-form"]
+trust_level = "trusted"
+
+[projects."/Users/vanducng/git/personal/agents/mio"]
+trust_level = "trusted"
+
+[projects."/Users/vanducng/git/work/cnb/cnb-ds-astro"]
+trust_level = "trusted"
+
+[projects."/Users/vanducng/git/work/cnb/cnb-rnd-bridge"]
+trust_level = "trusted"
+
+[projects."/Users/vanducng/git/work/cnb/products/cnb-ai"]
+trust_level = "trusted"
+
+[projects."/Users/vanducng/git/work/bhcoe/harmony"]
+trust_level = "trusted"
+
+[projects."/Users/vanducng/git/personal/dataplanelabs/goclaw"]
+trust_level = "trusted"
+
+[projects."/Users/vanducng/git/personal/dataplanelabs/gcplane"]
+trust_level = "trusted"
+
+[features]
+apps = true
+browser_use = true
+browser_use_external = true
+computer_use = true
+enable_request_compression = true
+fast_mode = true
+goals = true
+guardian_approval = true
+hooks = true
+image_generation = true
+in_app_browser = true
+multi_agent = true
+personality = true
+plugin_sharing = true
+plugins = true
+prevent_idle_sleep = true
+shell_snapshot = true
+shell_tool = true
+skill_mcp_dependency_install = true
+terminal_resize_reflow = true
+tool_call_mcp_elicitation = true
+tool_suggest = true
+unified_exec = true
+workspace_dependencies = true
+
+[tui]
+status_line = [
+  "model-with-reasoning",
+  "current-dir",
+  "model",
+  "run-state",
+  "context-remaining",
+  "context-used",
+]
+
+[tui.model_availability_nux]
+"gpt-5.5" = 4
+
+[notice.model_migrations]
+"gpt-5.3-codex" = "gpt-5.4"
+
+[mcp_servers.openaiDeveloperDocs]
+url = "https://developers.openai.com/mcp"
+
+[plugins."browser-use@openai-bundled"]
+enabled = true
+
+[plugins."documents@openai-primary-runtime"]
+enabled = true
+
+[plugins."github@openai-curated"]
+enabled = true
+
+[plugins."presentations@openai-primary-runtime"]
+enabled = true
+
+[plugins."spreadsheets@openai-primary-runtime"]
+enabled = true
+
+[marketplaces.openai-bundled]
+source_type = "local"
+source = "/Users/vanducng/.codex/.tmp/bundled-marketplaces/openai-bundled"
+
+[marketplaces.openai-primary-runtime]
+source_type = "local"
+source = "/Users/vanducng/.cache/codex-runtimes/codex-primary-runtime/plugins/openai-primary-runtime"
