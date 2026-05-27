@@ -65,17 +65,46 @@ unified_exec = true
 workspace_dependencies = true
 
 [tui]
+animations = true
+notification_condition = "always"
+notification_method = "auto"
+notifications = true
+status_line_use_colors = true
 status_line = [
-  "model-with-reasoning",
-  "current-dir",
-  "model",
   "run-state",
+  "current-dir",
+  "git-branch",
+  "model-with-reasoning",
   "context-remaining",
   "context-used",
+  "task-progress",
 ]
+terminal_title = [
+  "activity",
+  "project",
+  "model",
+]
+vim_mode_default = true
 
 [tui.model_availability_nux]
 "gpt-5.5" = 4
+
+[[hooks.PermissionRequest]]
+matcher = ".*"
+
+[[hooks.PermissionRequest.hooks]]
+type = "command"
+command = "bash ~/.codex/hooks/attention-sound.sh permission"
+timeout = 5
+statusMessage = "Play attention sound"
+
+[[hooks.Stop]]
+
+[[hooks.Stop.hooks]]
+type = "command"
+command = "bash ~/.codex/hooks/attention-sound.sh stop"
+timeout = 5
+statusMessage = "Play completion sound"
 
 [notice.model_migrations]
 "gpt-5.3-codex" = "gpt-5.4"
