@@ -41,6 +41,7 @@ meh - s : open "/Applications/Dia.app"
 meh - u : open "/Applications/Telegram.app"
 meh - v : open "/Applications/Cursor.app"
 meh - w : open "/Applications/LibreOffice.app"
+meh - x : yabai -m space --focus 2; open "/Applications/Codex.app"
 meh - y : yabai -m space --focus 5; open "alter://hub/chat/"
 meh - z : open "/Applications/Zen Browser.app"
 meh - o : open -a "Preview"
@@ -49,7 +50,6 @@ meh - o : open -a "Preview"
 # meh - 2 : open "/Applications/DBeaver.app"
 # meh - o : open "/Applications/Obsidian.app"
 # meh - t : open "/Applications/Microsoft Teams classic.app"
-# meh - x : open "/Applications/kitty.app"
 
 # -----------------------------------------------------------------------------
 # 3. Window focus & warp
