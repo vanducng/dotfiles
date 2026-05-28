@@ -13,7 +13,7 @@ local excluded_filetypes = {
   "oil",
   "prompt",
   "toggleterm",
-  "dbee", -- Exclude dbee popup windows
+  "miudb", -- Exclude miudb scratch windows
 }
 
 local excluded_filenames = {

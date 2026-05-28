@@ -38,8 +38,8 @@ This Neovim configuration is built on **AstroNvim v5**, providing a modern, feat
 - **Streamlined AI System**: Simplified, conflict-free AI completion
 
 ### 🗄️ Database Development
-- **nvim-dbee**: Advanced database explorer
-- **Snowflake Integration**: MFA support and connection management
+- **miu-db.nvim**: Lightweight SQL buffer runner backed by `miudb`
+- **Native miudb Store**: Reuses saved `miudb` connections and secrets
 - **SQL Completion**: AI-powered SQL suggestions
 - **Query Execution**: Run queries directly from editor
 
@@ -144,12 +144,10 @@ ln -sf ~/.dotfiles/dotfiles/nvim/.config/nvim ~/.config/nvim
 ### Database Tools
 | Shortcut | Action | Description |
 |----------|--------|-------------|
-| `<leader>Dd` | Database Explorer | Open dbee database explorer |
-| `<leader>Dx` | Disconnect All | Disconnect all active database connections |
-| `x` | Toggle Connection | Toggle connection in dbee drawer |
-| `<leader>Dt` | Toggle Database | Toggle database window |
-| `<leader>De` | Execute Query | Run SQL query |
-| `<leader>Ds` | Save Connection | Save database connection |
+| `<leader>Dd` | Select Connection | Select a saved miudb connection |
+| `<leader>Dl` | List Connections | Show saved miudb connections |
+| `<leader>Dq` | Execute Query | Run current SQL buffer |
+| `<leader>j` | Execute Query | Run current SQL buffer |
 
 ### File Operations
 | Shortcut | Action | Description |
@@ -224,28 +222,23 @@ The keybindings are designed for comfortable typing flow:
 
 ## 🗄️ Database Development
 
-### nvim-dbee
-**Advanced database explorer and query tool**
+### miu-db.nvim
+**Lightweight SQL buffer runner backed by the `miudb` CLI**
 
 #### Features
-- **Connection Management**: Save and manage database connections
+- **Connection Selection**: Pick from saved `miudb` connections
 - **Query Execution**: Run SQL queries directly from Neovim
-- **Result Viewing**: Beautiful result display
-- **Snowflake Support**: Special handling for Snowflake MFA
+- **Result Viewing**: Scratch split with tab-separated results
+- **Secret Safety**: Credentials stay in the `miudb` store
 
 #### Setup
-1. **Open Database Explorer**: `<leader>Dd`
-2. **Add Connection**: Use the UI to add database connections
-3. **Save Connections**: Connections are saved automatically
-
-#### Snowflake Integration
-- **MFA Support**: Handles Snowflake multi-factor authentication
-- **Auto-disable**: Prevents auto-connection to avoid MFA prompts
-- **Manual Connection**: Connect only when needed
+1. **Select Connection**: `<leader>Dd`
+2. **Open SQL File**: edit any `.sql` buffer
+3. **Run Buffer**: `<leader>j`
 
 #### Usage
 ```sql
--- Execute query with BB (visual mode or normal mode)
+-- Execute current buffer with <leader>j
 SELECT * FROM my_table LIMIT 10;
 
 -- Use completion for table names and columns
@@ -383,14 +376,11 @@ config = {
 
 #### Database Connection Issues
 ```bash
-# Check dbee status
-:DbeeLoadConnections
+# Check miudb from Neovim
+:MiuDBConnections
 
 # Verify connection details
 # Check network connectivity to database
-
-# For Snowflake MFA issues
-:DbeeRestoreSnowflake
 ```
 
 ### Performance Issues
@@ -435,9 +425,9 @@ config = {
 ### Custom Commands
 ```bash
 # Database helpers
-:DbeeCreateExample    # Create example connections
-:DbeeLoadConnections  # Load connections manually
-:DbeeRestoreSnowflake # Restore Snowflake connections
+:MiuDBConnections      # List saved connections
+:MiuDBSelectConnection # Select active connection
+:MiuDBQuery            # Run current SQL buffer
 
 # AI commands
 :CodeCompanion        # Open AI chat

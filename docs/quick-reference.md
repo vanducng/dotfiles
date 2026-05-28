@@ -97,10 +97,10 @@ C-'     # Accept word
 C-]     # Accept line
 
 # Database AI
-<leader>Dd  # Open dbee
-<leader>Dx  # Disconnect all databases
-x           # Toggle connection (in dbee drawer)
-BB  # Execute query (visual/normal mode)
+<leader>Dd  # Select miudb connection
+<leader>Dl  # List miudb connections
+<leader>Dq  # Run current SQL buffer
+<leader>j   # Run current SQL buffer
 
 # Focus & Zen Mode
 <leader>z   # Zen mode (70% width)
@@ -225,10 +225,10 @@ git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
 
 ### Database Work
 ```bash
-1. <leader>Dd       # Open dbee
-2. Connect to database
+1. <leader>Dd       # Select miudb connection
+2. Open a .sql file
 3. Write SQL query
-4. BB               # Execute query
+4. <leader>j        # Execute buffer
 ```
 
 ## 🔗 Quick Links

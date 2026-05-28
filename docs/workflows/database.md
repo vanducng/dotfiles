@@ -3,15 +3,14 @@
 ## Database Explorer
 
 ```bash
-# Open database explorer
+# Select a saved miudb connection
 <leader>Dd
 
-# Connect to database
-# Press Enter or 'o' to connect
-# Press 'x' to toggle connection
+# List saved miudb connections
+<leader>Dl
 
-# Disconnect all
-<leader>Dx
+# Run current SQL buffer
+<leader>Dq
 ```
 
 ## Query Development
@@ -23,7 +22,7 @@ nvim query.sql
 <leader>ac  # "Find users who haven't logged in for 30 days"
 
 # Execute query
-BB  # Execute selection or entire file
+<leader>j  # Execute current SQL buffer
 ```
 
 ### Example Query
@@ -52,7 +51,7 @@ WHERE u.last_login < NOW() - INTERVAL '30 days'
 nvim migrations/001_create_users.sql
 
 # Execute migration
-BB
+<leader>j
 ```
 
 ## Query Optimization
