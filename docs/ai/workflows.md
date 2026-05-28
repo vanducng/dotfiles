@@ -72,7 +72,7 @@ SELECT u.id, u.email, u.last_login
 FROM users u
 WHERE u.last_login < NOW() - INTERVAL '30 days';
 
--- BB to execute query in dbee
+-- <leader>j to execute the current SQL buffer with miudb
 ```
 
 ### Schema Design

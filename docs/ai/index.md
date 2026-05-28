@@ -7,7 +7,7 @@ Guide to using AI tools effectively in your development workflow.
 | Feature | CodeCompanion | Supermaven | Database AI |
 |---------|---------------|-----------|-------------|
 | **Type** | Chat + Inline | Completion | SQL-specific |
-| **API** | Google Gemini | Proprietary | Built-in dbee |
+| **API** | Google Gemini | Proprietary | Built-in miudb |
 | **Strength** | Complex problems | Real-time coding | SQL queries |
 | **Best For** | Architecture, debugging | Day-to-day coding | Database work |
 | **Keybindings** | Leader-based | Auto-trigger | Context-aware |

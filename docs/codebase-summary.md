@@ -83,7 +83,7 @@ Duc's Digital Workspace: AI-enhanced macOS development environment with 22 dotfi
 ### AI Integration
 - **Supermaven** - Real-time code completion (Tab to accept)
 - **CodeCompanion** - Gemini API chat and inline assistance
-- **Database AI** - SQL-specific AI helpers via dbee
+- **Database AI** - SQL-specific AI helpers via miudb
 - **fzf-lua** - Fuzzy finder (replaced Telescope)
 - **Oil.nvim** - File explorer (replaced Neo-tree)
 

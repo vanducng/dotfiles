@@ -99,8 +99,8 @@ The plugin is pre-configured with optimal settings:
 
 ## Integration with Your Workflow
 
-### Database Work (with DBEE)
-1. Execute SQL query in DBEE
+### Database Work (with miudb)
+1. Execute SQL query with miudb
 2. Export results to CSV
 3. Open CSV file - automatic table formatting
 4. Use statistical functions for quick analysis

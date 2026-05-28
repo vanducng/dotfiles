@@ -64,25 +64,25 @@ ping generativelanguage.googleapis.com
 # Large files may slow suggestions
 ```
 
-## Database (Dbee) Issues
+## Database (miudb) Issues
 
 ### Connection Failures
 ```bash
-# Check dbee status
-:Dbee
+# List saved connections
+:MiuDBConnections
 
-# Load connections manually
-:DbeeLoadConnections
+# Select active connection
+:MiuDBSelectConnection
 
-# Check connection file
-cat ~/.cache/nvim/dbee/persistence.json
+# Check miudb CLI directly
+miudb connections list --output json
 ```
 
-### Snowflake MFA Problems
+### Query Problems
 ```bash
-# Disable auto-connect
-:lua require("config.dbee-helpers").disable_snowflake_autoconnect()
+# Run from Neovim
+:MiuDBQuery
 
-# Restore when needed
-:DbeeRestoreSnowflake
+# Run from shell for debugging
+miudb query run --connection <name> --sql 'select 1 as one' --output json
 ```
