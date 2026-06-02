@@ -33,8 +33,9 @@ function zvm_vi_yank() {
 
 export PATH="/opt/homebrew/opt/mysql-client/bin:$PATH"
 
-# Disable brew auto-update
-export HOMEBREW_NO_AUTO_UPDATE=1
+# Let Homebrew refresh metadata daily so cask upgrades see new releases.
+unset HOMEBREW_NO_AUTO_UPDATE
+export HOMEBREW_AUTO_UPDATE_SECS=86400
 
 # Claude Code: flicker-free renderer + mouse support (v2.1.88+)
 export CLAUDE_CODE_NO_FLICKER=1
