@@ -8,15 +8,15 @@ Dotfiles repository for macOS dev environment, managed with GNU Stow.
 dotfiles/          # Stow packages (each folder = one tool's config)
   zsh/, tmux/, nvim/, ghostty/, yabai/, skhd/, ...
 scripts/           # Utility & CI scripts
-website/           # Astro Starlight docs site (dotfiles.vanducng.dev), self-contained
-  docs/            #   authored Markdown/MDX content
-  src/             #   site config (content.config.ts) + theme (styles/theme.css)
+docs/              # Astro Starlight docs site (dotfiles.vanducng.dev), self-contained
+  content/         #   authored Markdown/MDX content
+  src/             #   config (content.config.ts), theme (styles/theme.css), components/
 Makefile           # Stow install/uninstall/test commands
 ```
 
 ## Docs site
 
-The docs at `dotfiles.vanducng.dev` are built with **Astro Starlight**, kept entirely under `website/` so the docs-site tooling never mixes with the repo's own source. Authored content lives in `website/docs/` (loaded via a glob loader in `website/src/content.config.ts`); brand/theme in `website/src/styles/theme.css`. Build locally with `cd website && npm run build`; deployed to GitHub Pages by `.github/workflows/docs.yml` (builds `./website`) on push to `main`. Every page needs `title:` frontmatter; the home page (`website/docs/index.mdx`) uses the `splash` template.
+The docs at `dotfiles.vanducng.dev` are built with **Astro Starlight**, kept entirely under `docs/` so the docs-site tooling never mixes with the repo's own source. Authored content lives in `docs/content/` (loaded via a glob loader in `docs/src/content.config.ts`); brand/theme in `docs/src/styles/theme.css`; React enabled (`@astrojs/react`) for occasional interactive MDX islands; `starlight-llms-txt` generates `/llms.txt`. Build locally with `cd docs && npm run build`; deployed to GitHub Pages by `.github/workflows/docs.yml` (builds `./docs`) on push to `main`. Every content page needs `title:` frontmatter.
 
 ## Key Commands
 

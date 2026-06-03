@@ -23,7 +23,7 @@ jobs:
       - name: Build with Astro
         uses: withastro/action@v6
         with:
-          path: ./website
+          path: ./docs
 
   deploy:
     needs: build
