@@ -1,7 +1,7 @@
 ---@type LazySpec
 return {
   {
-    dir = "~/git/personal/worktrees/miu-db-golang/ui/miu-db.nvim",
+    dir = "~/git/personal/miu-db/ui/miu-db.nvim",
     name = "miu-db.nvim",
     ft = { "sql" },
     cmd = {
