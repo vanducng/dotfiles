@@ -1,4 +1,6 @@
-# ⚡ Quick Reference Guide
+---
+title: "Quick Reference Guide"
+---
 
 Essential commands and shortcuts for daily development workflow.
 

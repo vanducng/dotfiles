@@ -1,4 +1,8 @@
-# Development Workflows
+---
+title: "Development Workflows"
+---
+
+import { CardGrid, LinkCard } from '@astrojs/starlight/components';
 
 Daily development patterns using the integrated environment.
 
@@ -64,26 +68,8 @@ nvim README.md
 
 ## Documentation
 
-<div class="dt-card-grid" markdown>
-<div class="dt-card" markdown>
-
-### [Coding](coding.md)
-
-Feature development workflow, refactoring patterns, and coding best practices.
-
-</div>
-<div class="dt-card" markdown>
-
-### [Database](database.md)
-
-Schema design, SQL queries, and database AI assistance with miudb.
-
-</div>
-<div class="dt-card" markdown>
-
-### [Review & Debug](review.md)
-
-Code review process, debugging techniques, and documentation workflows.
-
-</div>
-</div>
+<CardGrid>
+  <LinkCard title="Coding" href="/workflows/coding/" description="Feature development workflow, refactoring patterns, and coding best practices." />
+  <LinkCard title="Database" href="/workflows/database/" description="Schema design, SQL queries, and database AI assistance with miudb." />
+  <LinkCard title="Review & Debug" href="/workflows/review/" description="Code review process, debugging techniques, and documentation workflows." />
+</CardGrid>

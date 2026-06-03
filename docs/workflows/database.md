@@ -1,4 +1,6 @@
-# Database Workflow
+---
+title: "Database Workflow"
+---
 
 ## Database Explorer
 

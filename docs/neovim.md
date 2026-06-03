@@ -1,17 +1,9 @@
-# 🚀 Neovim - AI-Enhanced Code Editor
+---
+title: "Neovim - AI-Enhanced Code Editor"
+---
 
 A comprehensive Neovim setup based on AstroNvim v6 with extensive AI integration, database tools, and modern development features.
 
-## 📋 Table of Contents
-- [Overview](#overview)
-- [Key Features](#key-features)
-- [Installation & Setup](#installation-setup)
-- [Key Bindings](#key-bindings)
-- [AI Tools](#ai-tools)
-- [Database Development](#database-development)
-- [Plugin Management](#plugin-management)
-- [Customization](#customization)
-- [Troubleshooting](#troubleshooting)
 
 ## 🎯 Overview
 

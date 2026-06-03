@@ -1,4 +1,8 @@
-# AI Tools
+---
+title: "AI Tools"
+---
+
+import { CardGrid, LinkCard } from '@astrojs/starlight/components';
 
 Guide to using AI tools effectively in your development workflow.
 
@@ -32,26 +36,8 @@ Codex is managed from this dotfiles repo through GNU Stow. See **[Codex](codex.m
 
 ## Documentation
 
-<div class="dt-card-grid" markdown>
-<div class="dt-card" markdown>
-
-### [Codex](codex.md)
-
-CLI config, features, goals, MCP, and plugin checks for the Codex terminal agent.
-
-</div>
-<div class="dt-card" markdown>
-
-### [Workflows](workflows.md)
-
-Daily AI workflows: code development, database AI, and common patterns.
-
-</div>
-<div class="dt-card" markdown>
-
-### [Best Practices](best-practices.md)
-
-Effective prompting, security guidance, and productivity tips.
-
-</div>
-</div>
+<CardGrid>
+  <LinkCard title="Codex" href="/ai/codex/" description="CLI config, features, goals, MCP, and plugin checks for the Codex terminal agent." />
+  <LinkCard title="Workflows" href="/ai/workflows/" description="Daily AI workflows: code development, database AI, and common patterns." />
+  <LinkCard title="Best Practices" href="/ai/best-practices/" description="Effective prompting, security guidance, and productivity tips." />
+</CardGrid>

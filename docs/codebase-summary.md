@@ -1,4 +1,6 @@
-# Codebase Summary
+---
+title: "Codebase Summary"
+---
 
 Duc's Digital Workspace: AI-enhanced macOS development environment with 22 dotfiles packages managed via GNU Stow.
 

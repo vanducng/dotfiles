@@ -1,4 +1,6 @@
-# Terminal Troubleshooting
+---
+title: "Terminal Troubleshooting"
+---
 
 ## Tmux Problems
 

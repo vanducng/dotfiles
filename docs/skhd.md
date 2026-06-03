@@ -1,13 +1,9 @@
-# ⌨️ SKHD - Simple Hotkey Daemon
+---
+title: "SKHD - Simple Hotkey Daemon"
+---
 
 SKHD provides global hotkeys for seamless application launching and window management integration with Yabai.
 
-## 📋 Table of Contents
-- [Overview](#overview)
-- [Application Shortcuts](#application-shortcuts)
-- [Window Management](#window-management)
-- [Configuration](#configuration)
-- [Troubleshooting](#troubleshooting)
 
 ## 🎯 Overview
 

@@ -1,0 +1,54 @@
+---
+title: Duc's Digital Workspace
+description: AI-enhanced macOS development environment — tiling window management, terminal workflows, and integrated AI coding.
+template: splash
+hero:
+  tagline: An AI-native macOS dev environment, wired together and documented — 30 Stow-managed configs, reproducible from one command.
+  actions:
+    - text: Install from scratch
+      link: /installation/
+      icon: right-arrow
+      variant: primary
+    - text: Quick reference
+      link: /quick-reference/
+      variant: minimal
+    - text: AI coding setup
+      link: /ai/
+      variant: minimal
+---
+
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+## What's inside
+
+<CardGrid>
+  <LinkCard title="Core Tools" href="/neovim/" description="Neovim (AstroNvim v6), Tmux, Atuin, SKHD hotkeys, and Zen Mode — the daily-driver editing and terminal stack." />
+  <LinkCard title="AI Tools" href="/ai/" description="Codex CLI, Claude Code, CodeCompanion, and Supermaven — how they are configured and how they fit together." />
+  <LinkCard title="Workflows" href="/workflows/" description="End-to-end patterns for coding, database work, and review & debug across the whole toolchain." />
+  <LinkCard title="Troubleshooting" href="/troubleshooting/" description="Fixes for window management, terminal, Neovim, AI tools, and performance." />
+</CardGrid>
+
+## By the numbers
+
+<CardGrid>
+  <Card title="30" icon="laptop">Stow-managed tool configs</Card>
+  <Card title="4" icon="rocket">Integrated AI coding assistants</Card>
+  <Card title="14" icon="setting">Tiled app workspaces</Card>
+  <Card title="100%" icon="star">Keyboard-driven workflow</Card>
+</CardGrid>
+
+## Quick help
+
+Reload services and plugins after editing configs:
+
+```bash
+# Window manager + hotkeys
+brew services restart yabai
+brew services restart skhd
+
+# Shell + multiplexer
+source ~/.zshrc
+tmux source-file ~/.tmux.conf
+```
+
+Need the full setup? See the [installation guide](/installation/) or the [quick reference](/quick-reference/).

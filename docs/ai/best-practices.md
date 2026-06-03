@@ -1,4 +1,6 @@
-# AI Best Practices
+---
+title: "AI Best Practices"
+---
 
 ## Effective Prompting
 

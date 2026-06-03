@@ -1,16 +1,9 @@
-# 🖥️ Tmux - Terminal Multiplexer
+---
+title: "Tmux - Terminal Multiplexer"
+---
 
 Tmux is the backbone of the terminal workflow, providing session management, window splitting, and seamless project switching.
 
-## 📋 Table of Contents
-- [Overview](#overview)
-- [Key Bindings](#key-bindings)
-- [Session Management](#session-management)
-- [Project Sessionizer](#project-sessionizer)
-- [Plugins](#plugins)
-- [Configuration](#configuration)
-- [Workflows](#workflows)
-- [Troubleshooting](#troubleshooting)
 
 ## 🎯 Overview
 

@@ -60,7 +60,10 @@ Untitled.claude/settings.local.json
 .claude/
 plans/
 
-# Zensical build output
+# Astro / Starlight docs build output
+node_modules/
+dist/
+.astro/
 site/
 
 # Environment files

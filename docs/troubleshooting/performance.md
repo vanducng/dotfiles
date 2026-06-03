@@ -1,4 +1,6 @@
-# Performance & System Recovery
+---
+title: "Performance & System Recovery"
+---
 
 ## Slow Startup
 
