@@ -282,5 +282,5 @@ meh - shift - p : ~/.local/bin/project-setup.sh --template react
 
 ## 📖 Related Documentation
 - [SKHD Configuration](https://github.com/vanducng/dotfiles/blob/main/dotfiles/skhd/.config/skhd/skhdrc)
-- [Window Management](troubleshooting/window-management.md)
-- [Troubleshooting Guide](troubleshooting/index.md)
+- [Window Management](/troubleshooting/window-management/)
+- [Troubleshooting Guide](/troubleshooting/)

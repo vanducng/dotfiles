@@ -393,14 +393,14 @@ tmux new-session
 ```
 
 ### Getting Help
-- Check the [Troubleshooting Guide](troubleshooting/index.md)
+- Check the [Troubleshooting Guide](/troubleshooting/)
 - Review individual tool documentation
 - Check GitHub issues for specific problems
 
 ## 🎉 Next Steps
 
 ### Learn the Workflow
-1. Read the [Quick Reference](quick-reference.md)
+1. Read the [Quick Reference](/quick-reference/)
 2. Practice key bindings
 3. Explore AI tools
 4. Customize to your needs
@@ -429,8 +429,8 @@ brew update && brew upgrade
 ---
 
 ## 📖 Related Documentation
-- [Quick Reference](quick-reference.md)
-- [Troubleshooting Guide](troubleshooting/index.md)
-- [Neovim Setup](neovim/README.md)
-- [AI Tools Configuration](ai/index.md)
-- [Daily Workflows](workflows/index.md)
+- [Quick Reference](/quick-reference/)
+- [Troubleshooting Guide](/troubleshooting/)
+- [Neovim Setup](/neovim/)
+- [AI Tools Configuration](/ai/)
+- [Daily Workflows](/workflows/)
