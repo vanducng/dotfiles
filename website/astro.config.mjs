@@ -8,15 +8,17 @@ export default defineConfig({
   markdown: { remarkPlugins: [remarkGfm] },
   integrations: [
     starlight({
-      title: "Duc's Workspace",
+      title: 'dotfiles',
       description:
         'AI-enhanced macOS development environment — tiling window management, terminal workflows, and integrated AI coding.',
       customCss: ['./src/styles/theme.css'],
-      social: [
-        { icon: 'github', label: 'GitHub', href: 'https://github.com/vanducng/dotfiles' },
-      ],
+      components: {
+        ThemeSelect: './src/components/ThemeSelect.astro',
+        SocialIcons: './src/components/SocialIcons.astro',
+      },
       lastUpdated: true,
       sidebar: [
+        { label: 'Overview', link: '/' },
         {
           label: 'Getting Started',
           items: ['installation', 'quick-reference'],
