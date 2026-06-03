@@ -2,6 +2,7 @@
 set -euo pipefail
 
 event="${1:-attention}"
+app_name="${ATTENTION_APP_NAME:-Codex}"
 
 # Consume hook input so Codex never sees a broken pipe if it writes JSON to stdin.
 if [[ ! -t 0 ]]; then
@@ -10,8 +11,8 @@ fi
 
 case "$event" in
   permission)
-    title="Codex needs attention"
-    message="Approval is waiting"
+    title="${ATTENTION_PERMISSION_TITLE:-${app_name} needs attention}"
+    message="${ATTENTION_PERMISSION_MESSAGE:-Approval is waiting}"
     if [[ -f "${HOME}/.claude/notification.mp3" ]]; then
       sound="${HOME}/.claude/notification.mp3"
     else
@@ -19,18 +20,18 @@ case "$event" in
     fi
     ;;
   stop)
-    title="Codex turn complete"
-    message="The current turn has stopped"
+    title="${ATTENTION_STOP_TITLE:-${app_name} turn complete}"
+    message="${ATTENTION_STOP_MESSAGE:-The current turn has stopped}"
     sound="/System/Library/Sounds/Glass.aiff"
     ;;
   *)
-    title="Codex notification"
-    message="Codex has an update"
+    title="${ATTENTION_TITLE:-${app_name} notification}"
+    message="${ATTENTION_MESSAGE:-${app_name} has an update}"
     sound="/System/Library/Sounds/Ping.aiff"
     ;;
 esac
 
-if [[ "${CODEX_ATTENTION_SOUND_DRY_RUN:-0}" == "1" ]]; then
+if [[ "${ATTENTION_SOUND_DRY_RUN:-${CODEX_ATTENTION_SOUND_DRY_RUN:-0}}" == "1" ]]; then
   exit 0
 fi
 
