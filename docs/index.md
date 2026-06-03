@@ -3,11 +3,9 @@ title: Home
 description: AI-enhanced macOS development environment — tiling window management, terminal workflows, and integrated AI coding.
 ---
 
-# Duc's Digital Workspace
-
 <div class="dt-hero" markdown>
 <p class="dt-kicker">dotfiles.vanducng.dev</p>
-<h2>An AI-native macOS dev environment, wired together and documented.</h2>
+<h1>An AI-native macOS dev environment, wired together and documented.</h1>
 <p>Thirty Stow-managed tool configs that turn a fresh Mac into a keyboard-driven workspace: Yabai tiling, a Tmux + Ghostty terminal, AstroNvim, and Codex / Claude / CodeCompanion coding assistants — reproducible from one command.</p>
 <div class="dt-actions" markdown>
 [Install from scratch](installation.md){ .dt-button }
@@ -37,7 +35,7 @@ description: AI-enhanced macOS development environment — tiling window managem
 
 ## What's Inside
 
-Each folder under `dotfiles/` is a [GNU Stow](installation.md) package that symlinks into `$HOME`. The docs are grouped by what you're trying to do.
+Every folder under `dotfiles/` is a GNU Stow package symlinked into your home directory. The guides below are grouped by what you're trying to do.
 
 <div class="dt-card-grid dt-2col" markdown>
 <div class="dt-card" markdown>
