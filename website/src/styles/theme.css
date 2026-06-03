@@ -10,3 +10,28 @@
   --sl-color-accent: #4f46e5;
   --sl-color-accent-high: #312e81;
 }
+
+/* Center the article column. Starlight reserves half the leftover space as
+   TOC padding (content hugs left); instead give the TOC its natural width and
+   let the article center in the remaining area with symmetric margins. */
+@media (min-width: 72rem) {
+  [data-has-sidebar][data-has-toc] .main-pane {
+    width: calc(100% - 2 * var(--sl-sidebar-width)) !important;
+    --sl-content-margin-inline: auto;
+  }
+  [data-has-sidebar][data-has-toc] .right-sidebar,
+  [data-has-sidebar][data-has-toc] .right-sidebar-container {
+    width: var(--sl-sidebar-width) !important;
+  }
+}
+
+/* Search modal: narrower, calmer than the full-width default. */
+.dialog-frame:has(#starlight__search) {
+  max-inline-size: 42rem;
+  margin-inline: auto;
+}
+
+#starlight__search {
+  --pagefind-ui-scale: 0.9;
+  --pagefind-ui-border-radius: 0.6rem;
+}
