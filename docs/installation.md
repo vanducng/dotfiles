@@ -391,7 +391,7 @@ tmux new-session
 ```
 
 ### Getting Help
-- Check the [Troubleshooting Guide](troubleshooting.md)
+- Check the [Troubleshooting Guide](troubleshooting/index.md)
 - Review individual tool documentation
 - Check GitHub issues for specific problems
 
@@ -428,7 +428,7 @@ brew update && brew upgrade
 
 ## 📖 Related Documentation
 - [Quick Reference](quick-reference.md)
-- [Troubleshooting Guide](troubleshooting.md)
+- [Troubleshooting Guide](troubleshooting/index.md)
 - [Neovim Setup](neovim/README.md)
-- [AI Tools Configuration](ai/)
-- [Daily Workflows](workflows/)
+- [AI Tools Configuration](ai/index.md)
+- [Daily Workflows](workflows/index.md)

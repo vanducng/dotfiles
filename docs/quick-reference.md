@@ -233,8 +233,8 @@ git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
 
 ## 🔗 Quick Links
 
-- [Full Documentation](README.md)
-- [Troubleshooting](troubleshooting.md)
+- [Full Documentation](index.md)
+- [Troubleshooting](troubleshooting/index.md)
 - [Neovim Guide](neovim/README.md)
 - [AI Workflows](ai/workflows.md)
 - [Tmux Guide](tmux.md)

@@ -1,11 +1,11 @@
 # 🚀 Neovim - AI-Enhanced Code Editor
 
-A comprehensive Neovim setup based on AstroNvim v5 with extensive AI integration, database tools, and modern development features.
+A comprehensive Neovim setup based on AstroNvim v6 with extensive AI integration, database tools, and modern development features.
 
 ## 📋 Table of Contents
 - [Overview](#overview)
 - [Key Features](#key-features)
-- [Installation & Setup](#installation--setup)
+- [Installation & Setup](#installation-setup)
 - [Key Bindings](#key-bindings)
 - [AI Tools](#ai-tools)
 - [Database Development](#database-development)
@@ -15,7 +15,7 @@ A comprehensive Neovim setup based on AstroNvim v5 with extensive AI integration
 
 ## 🎯 Overview
 
-This Neovim configuration is built on **AstroNvim v5**, providing a modern, feature-rich development environment with:
+This Neovim configuration is built on **AstroNvim v6**, providing a modern, feature-rich development environment with:
 
 - **AI Integration**: Multiple AI assistants for coding help
 - **Database Tools**: Advanced SQL development with Snowflake support
@@ -24,7 +24,7 @@ This Neovim configuration is built on **AstroNvim v5**, providing a modern, feat
 - **Project Management**: Seamless integration with tmux sessionizer
 
 ### Base Framework
-- **AstroNvim v5**: Modern Neovim distribution
+- **AstroNvim v6**: Modern Neovim distribution
 - **Lazy.nvim**: Fast plugin manager
 - **Mason**: LSP, formatter, and linter installer
 - **Treesitter**: Advanced syntax highlighting
@@ -33,7 +33,7 @@ This Neovim configuration is built on **AstroNvim v5**, providing a modern, feat
 
 ### 🤖 AI-Powered Development
 - **CodeCompanion**: AI chat and inline assistance
-- **GitHub Copilot**: Primary AI code completion with ergonomic keybindings
+- **Supermaven**: Primary AI code completion (auto-triggers, Tab to accept)
 - **Database AI**: AI-powered SQL assistance
 - **Streamlined AI System**: Simplified, conflict-free AI completion
 
@@ -121,7 +121,7 @@ ln -sf ~/.dotfiles/dotfiles/nvim/.config/nvim ~/.config/nvim
 | `<leader>af` | Fix Code | AI code fixes |
 | `<leader>ao` | Optimize Code | AI optimization suggestions |
 
-### AI Completion (GitHub Copilot)
+### AI Completion (Supermaven)
 | Shortcut | Action | Description |
 |----------|--------|-------------|
 | `<Tab>` | Accept/Tab | Accept suggestion or normal tab |
@@ -195,30 +195,14 @@ ln -sf ~/.dotfiles/dotfiles/nvim/.config/nvim ~/.config/nvim
 - **Code Actions**: Context-aware AI actions
 - **Multiple Models**: Support for different AI models
 
-### GitHub Copilot
-**Primary AI code completion with ergonomic keybindings**
-
-#### Setup
-1. **Install**: Already configured in dotfiles
-2. **Authenticate**: `:Copilot auth`
-3. **Enable**: `:Copilot enable`
-
-#### Ergonomic Keybindings
-The keybindings are designed for comfortable typing flow:
-- **Left hand**: Holds `Ctrl` key
-- **Right hand**: Reaches for target keys
-- **Tab**: Smart accept or normal tab behavior
+### Supermaven
+**Primary AI code completion (auto-triggers; copilot.vim is disabled)**
 
 #### Key Features
 - **Smart Tab**: Accepts suggestions when available, normal tab otherwise
 - **Multiple Accept Options**: Full suggestion, word, or line
 - **Easy Navigation**: Previous/next suggestions with bracket keys
 - **Quick Dismiss**: Ctrl+Backspace for natural dismiss motion
-
-#### Usage Commands
-- **Panel**: `<leader>cp` to open Copilot panel
-- **Status**: `<leader>cs` to check status
-- **Enable/Disable**: `<leader>ce` / `<leader>cd`
 
 ## 🗄️ Database Development
 
@@ -448,8 +432,8 @@ config = {
 ---
 
 ## 📖 Related Documentation
-- [AI Tools Setup](../ai/)
-- [Database Configuration](../database/)
+- [AI Tools Setup](../ai/index.md)
+- [Database Workflows](../workflows/database.md)
 - [Tmux Integration](../tmux.md)
-- [Troubleshooting Guide](../troubleshooting.md)
-- [Plugin Configurations](../../dotfiles/nvim/.config/nvim/lua/plugins/)
+- [Troubleshooting Guide](../troubleshooting/index.md)
+- [Plugin Configurations](https://github.com/vanducng/dotfiles/blob/main/dotfiles/nvim/.config/nvim/lua/plugins/)

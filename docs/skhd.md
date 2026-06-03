@@ -285,7 +285,6 @@ meh - shift - p : ~/.local/bin/project-setup.sh --template react
 ---
 
 ## 📖 Related Documentation
-- [SKHD Configuration](../dotfiles/skhd/.config/skhd/skhdrc)
-- [Yabai Window Management](yabai.md)
-- [Application Setup](applications.md)
-- [Troubleshooting Guide](troubleshooting.md)
+- [SKHD Configuration](https://github.com/vanducng/dotfiles/blob/main/dotfiles/skhd/.config/skhd/skhdrc)
+- [Window Management](troubleshooting/window-management.md)
+- [Troubleshooting Guide](troubleshooting/index.md)

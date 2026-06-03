@@ -35,8 +35,40 @@ brew services list | grep -E "(yabai|skhd)"
 
 ## Troubleshooting by Category
 
-- **[Window Management](window-management.md)** - Yabai tiling, SKHD shortcuts, spaces
-- **[Terminal](terminal.md)** - Tmux sessions, Ghostty, colors
-- **[Neovim](neovim.md)** - Plugins, LSP, config errors
-- **[AI Tools](ai-tools.md)** - CodeCompanion, Copilot, database AI
-- **[Performance](performance.md)** - Slow startup, memory, system recovery
+<div class="dt-card-grid" markdown>
+<div class="dt-card" markdown>
+
+### [Window Management](window-management.md)
+
+Yabai tiling issues, SKHD shortcut conflicts, and spaces configuration.
+
+</div>
+<div class="dt-card" markdown>
+
+### [Terminal](terminal.md)
+
+Tmux session problems, Ghostty issues, and color/rendering fixes.
+
+</div>
+<div class="dt-card" markdown>
+
+### [Neovim](neovim.md)
+
+Plugin failures, LSP errors, and Neovim config troubleshooting.
+
+</div>
+<div class="dt-card" markdown>
+
+### [AI Tools](ai-tools.md)
+
+CodeCompanion, Supermaven, and miudb database AI issues.
+
+</div>
+<div class="dt-card" markdown>
+
+### [Performance](performance.md)
+
+Slow startup, high memory usage, and system recovery steps.
+
+</div>
+</div>

@@ -27,6 +27,25 @@ codex plugin list
 
 Only `~/.codex/config.toml` is managed by this repo. Auth files, history, SQLite state, logs, and caches should remain local.
 
+### miudb MCP
+
+Check the shared `miudb` MCP entry from each host:
+
+```bash
+codex mcp list | rg miudb
+claude mcp get miudb
+miudb describe mcp serve --output json
+```
+
+Cursor reads the same server from `~/.cursor/mcp.json`. That file is local-only because existing MCP servers may carry tokens. The `miudb` entry should be:
+
+```json
+{
+  "command": "miudb",
+  "args": ["mcp", "serve", "--transport", "stdio"]
+}
+```
+
 ## CodeCompanion Issues
 
 ### API Key Problems

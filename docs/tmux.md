@@ -444,7 +444,7 @@ ssh user@server -t tmux attach-session -t remote-dev
 ---
 
 ## 📖 Related Documentation
-- [Project Sessionizer Script](../dotfiles/bin/.local/bin/tmux-sessionizer)
-- [Tmux Configuration](../dotfiles/tmux/.tmux.conf)
+- [Project Sessionizer Script](https://github.com/vanducng/dotfiles/blob/main/dotfiles/bin/.local/bin/tmux-sessionizer)
+- [Tmux Configuration](https://github.com/vanducng/dotfiles/blob/main/dotfiles/tmux/.tmux.conf)
 - [Neovim Integration](neovim/README.md)
-- [Terminal Setup](terminal.md)
+- [Terminal Setup](troubleshooting/terminal.md)

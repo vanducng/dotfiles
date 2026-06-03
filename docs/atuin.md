@@ -5,10 +5,10 @@ Atuin replaces your existing shell history with a SQLite database, and records a
 ## 📋 Table of Contents
 - [Overview](#overview)
 - [Key Features](#key-features)
-- [Installation & Setup](#installation--setup)
+- [Installation & Setup](#installation-setup)
 - [Usage](#usage)
 - [Alias Management](#alias-management)
-- [Search & Navigation](#search--navigation)
+- [Search & Navigation](#search-navigation)
 - [Synchronization](#synchronization)
 - [Configuration](#configuration)
 - [Troubleshooting](#troubleshooting)
@@ -492,8 +492,8 @@ atuin stats | sort -nr
 ---
 
 ## 📖 Related Documentation
-- [Atuin Configuration](../dotfiles/atuin/.config/atuin/config.toml)
-- [Alias Management Scripts](../scripts/export-atuin-aliases.sh)
-- [Shell Configuration](zsh.md)
-- [Development Workflows](workflows/development.md)
+- [Atuin Configuration](https://github.com/vanducng/dotfiles/blob/main/dotfiles/atuin/.config/atuin/config.toml)
+- [Alias Management Scripts](https://github.com/vanducng/dotfiles/blob/main/scripts/export-atuin-aliases.sh)
+- [Shell Configuration](https://github.com/vanducng/dotfiles/blob/main/dotfiles/zsh/.zshrc)
+- [Development Workflows](workflows/index.md)
 - [Quick Reference](quick-reference.md)

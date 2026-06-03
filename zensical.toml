@@ -4,16 +4,26 @@ site_url = "https://dotfiles.vanducng.dev/"
 site_description = "AI-enhanced development environment for macOS featuring tiling window management, advanced terminal workflows, and integrated AI coding assistance."
 site_author = "vanducng"
 copyright = "© 2024-2026 vanducng. MIT License."
+repo_url = "https://github.com/vanducng/dotfiles"
+repo_name = "vanducng/dotfiles"
 docs_dir = "docs"
 site_dir = "site"
+extra_css = ["stylesheets/dotfiles.css"]
 
 [project.theme]
 variant = "modern"
+language = "en"
 features = [
+  "content.code.copy",
+  "content.tabs.link",
+  "navigation.footer",
+  "navigation.indexes",
   "navigation.instant",
-  "navigation.tabs",
+  "navigation.instant.prefetch",
+  "navigation.path",
   "navigation.sections",
-  "navigation.expand"
+  "navigation.tabs",
+  "toc.follow"
 ]
 
 [[project.theme.palette]]
@@ -29,6 +39,10 @@ primary = "indigo"
 accent = "indigo"
 toggle.icon = "lucide/moon"
 toggle.name = "Switch to dark mode"
+
+[project.markdown_extensions.attr_list]
+
+[project.markdown_extensions.md_in_html]
 
 [[project.nav]]
 Home = "index.md"
@@ -61,8 +75,7 @@ Workflows = [
   { Overview = "workflows/index.md" },
   { Coding = "workflows/coding.md" },
   { Database = "workflows/database.md" },
-  { "Review & Debug" = "workflows/review.md" },
-  { Temporal = "temporal.md" }
+  { "Review & Debug" = "workflows/review.md" }
 ]
 
 [[project.nav]]
@@ -73,4 +86,9 @@ Troubleshooting = [
   { Neovim = "troubleshooting/neovim.md" },
   { "AI Tools" = "troubleshooting/ai-tools.md" },
   { Performance = "troubleshooting/performance.md" }
+]
+
+[[project.nav]]
+Reference = [
+  { "Codebase Summary" = "codebase-summary.md" }
 ]
