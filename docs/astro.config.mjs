@@ -23,6 +23,7 @@ export default defineConfig({
       components: {
         ThemeSelect: './src/components/ThemeSelect.astro',
         SocialIcons: './src/components/SocialIcons.astro',
+        Search: './src/components/Search.astro',
       },
       plugins: [
         starlightLlmsTxt({
