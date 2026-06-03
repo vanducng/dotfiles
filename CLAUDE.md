@@ -8,7 +8,7 @@ Dotfiles repository for macOS dev environment, managed with GNU Stow.
 dotfiles/          # Stow packages (each folder = one tool's config)
   zsh/, tmux/, nvim/, ghostty/, yabai/, skhd/, ...
 scripts/           # Utility & CI scripts
-docs/              # Mintlify docs site (dotfiles.vanducng.dev)
+docs/              # Zensical docs site (dotfiles.vanducng.dev)
 Makefile           # Stow install/uninstall/test commands
 ```
 
