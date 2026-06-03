@@ -424,8 +424,8 @@ config = {
 ---
 
 ## 📖 Related Documentation
-- [AI Tools Setup](../ai/index.md)
-- [Database Workflows](../workflows/database.md)
-- [Tmux Integration](../tmux.md)
-- [Troubleshooting Guide](../troubleshooting/index.md)
+- [AI Tools Setup](/ai/)
+- [Database Workflows](/workflows/database/)
+- [Tmux Integration](/tmux/)
+- [Troubleshooting Guide](/troubleshooting/)
 - [Plugin Configurations](https://github.com/vanducng/dotfiles/blob/main/dotfiles/nvim/.config/nvim/lua/plugins/)

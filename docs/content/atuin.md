@@ -487,5 +487,5 @@ atuin stats | sort -nr
 - [Atuin Configuration](https://github.com/vanducng/dotfiles/blob/main/dotfiles/atuin/.config/atuin/config.toml)
 - [Alias Management Scripts](https://github.com/vanducng/dotfiles/blob/main/scripts/export-atuin-aliases.sh)
 - [Shell Configuration](https://github.com/vanducng/dotfiles/blob/main/dotfiles/zsh/.zshrc)
-- [Development Workflows](workflows/index.md)
-- [Quick Reference](quick-reference.md)
+- [Development Workflows](/workflows/)
+- [Quick Reference](/quick-reference/)

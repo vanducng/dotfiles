@@ -139,7 +139,7 @@ vim.fn.system(
 
 ## 📚 See Also
 
-- [Neovim Configuration](neovim/README.md)
-- [Tmux Guide](tmux.md)
-- [AI Workflows](ai/workflows.md)
-- [Quick Reference](quick-reference.md)
+- [Neovim Configuration](/neovim/)
+- [Tmux Guide](/tmux/)
+- [AI Workflows](/ai/workflows/)
+- [Quick Reference](/quick-reference/)
