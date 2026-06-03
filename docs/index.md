@@ -1,73 +1,105 @@
 ---
 title: Home
-description: AI-enhanced macOS development environment documentation
+description: AI-enhanced macOS development environment — tiling window management, terminal workflows, and integrated AI coding.
 ---
 
 # Duc's Digital Workspace
 
-Welcome to the comprehensive documentation for this modern macOS development environment. Quick setup, configuration guides, and troubleshooting for all tools.
+<div class="dt-hero" markdown>
+<p class="dt-kicker">dotfiles.vanducng.dev</p>
+<h2>An AI-native macOS dev environment, wired together and documented.</h2>
+<p>Thirty Stow-managed tool configs that turn a fresh Mac into a keyboard-driven workspace: Yabai tiling, a Tmux + Ghostty terminal, AstroNvim, and Codex / Claude / CodeCompanion coding assistants — reproducible from one command.</p>
+<div class="dt-actions" markdown>
+[Install from scratch](installation.md){ .dt-button }
+[Quick reference](quick-reference.md){ .dt-button .dt-button-secondary }
+[AI coding setup](ai/index.md){ .dt-button .dt-button-secondary }
+</div>
+</div>
 
-## Getting Started
+<div class="dt-metrics" markdown>
+<div markdown>
+<strong>30</strong>
+<span>Stow-managed tool configs</span>
+</div>
+<div markdown>
+<strong>4</strong>
+<span>integrated AI coding assistants</span>
+</div>
+<div markdown>
+<strong>14</strong>
+<span>tiled app workspaces</span>
+</div>
+<div markdown>
+<strong>100%</strong>
+<span>keyboard-driven workflow</span>
+</div>
+</div>
 
-- [Installation Guide](installation.md) - Complete setup from scratch
-- [Quick Reference](quick-reference.md) - Essential commands and shortcuts
-- [Troubleshooting](troubleshooting.md) - Common issues and solutions
+## What's Inside
 
-## Core Tools Documentation
+Each folder under `dotfiles/` is a [GNU Stow](installation.md) package that symlinks into `$HOME`. The docs are grouped by what you're trying to do.
 
-**Terminal & Multiplexing:**
-- [Tmux Setup](tmux.md) - Terminal multiplexer configuration
-- [Atuin](atuin.md) - Shell history and sync
+<div class="dt-card-grid" markdown>
+<div class="dt-card" markdown>
 
-**Window Management:**
-- [SKHD Configuration](skhd.md) - Hotkey daemon setup
+### [Core Tools](neovim/README.md)
 
-**Editors & IDE:**
-- [Neovim Configuration](neovim/README.md) - AstroNvim v5 setup
+Neovim (AstroNvim v6), Tmux, Atuin, SKHD hotkeys, and Zen Mode — the daily-driver editing and terminal stack.
 
-**Development Workflows:**
-- [Zen Mode](zen-mode.md) - Distraction-free coding with Tmux
-- [AI Workflows](ai/workflows.md) - Best practices for AI-assisted coding
+</div>
+<div class="dt-card" markdown>
+
+### [AI Tools](ai/index.md)
+
+Codex CLI, Claude Code, CodeCompanion, and Supermaven — how they're configured and how they fit together.
+
+</div>
+<div class="dt-card" markdown>
+
+### [Workflows](workflows/index.md)
+
+End-to-end patterns for coding, database work, and review & debug across the whole toolchain.
+
+</div>
+<div class="dt-card" markdown>
+
+### [Troubleshooting](troubleshooting/index.md)
+
+Fixes for window management, terminal, Neovim, AI tools, and performance when something misbehaves.
+
+</div>
+</div>
 
 ## Quick Help
 
-### Common Commands
+### Reload & restart
 
 ```bash
-# Restart services
+# Window manager + hotkeys
 brew services restart yabai
 brew services restart skhd
 
-# Reload configurations
-tmux source-file ~/.tmux.conf
+# Shell + multiplexer
 source ~/.zshrc
+tmux source-file ~/.tmux.conf
 
-# Update plugins
-:Lazy sync  # In Neovim
-prefix + I  # In Tmux
+# Plugins
+:Lazy sync   # in Neovim
+prefix + I   # in Tmux (prefix = Ctrl+X)
 ```
 
-### Emergency Recovery
+### Emergency recovery
 
 ```bash
-# If window manager breaks
+# Window manager wedged
 killall yabai skhd
 brew services restart yabai
 
-# If terminal breaks
+# Terminal broken — launch Ghostty directly
 /Applications/Ghostty.app/Contents/MacOS/ghostty
 ```
 
-## Documentation Structure
+## More
 
-1. **Installation** - Setup procedures and requirements
-2. **Quick Reference** - Shortcuts and common commands
-3. **Tool-Specific Guides** - Detailed configuration docs
-4. **Troubleshooting** - Debug and fix common issues
-5. **Workflows** - AI integration and daily patterns
-
-## File & Links
-
-- [Codebase Summary](../docs/codebase-summary.md) - Project structure overview
-- [Main README](../README.md) - Feature highlights and badges
-- [Neovim Docs](../dotfiles/nvim/.config/nvim/docs/) - AI tools and plugins
+- [Codebase Summary](codebase-summary.md) — repository structure and package overview
+- [GitHub repository](https://github.com/vanducng/dotfiles) — source, README, and feature highlights

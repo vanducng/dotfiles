@@ -64,6 +64,26 @@ nvim README.md
 
 ## Documentation
 
-- **[Coding](coding.md)** - Feature development, refactoring
-- **[Database](database.md)** - Schema design, queries
-- **[Review & Debug](review.md)** - Code review, debugging, documentation
+<div class="dt-card-grid" markdown>
+<div class="dt-card" markdown>
+
+### [Coding](coding.md)
+
+Feature development workflow, refactoring patterns, and coding best practices.
+
+</div>
+<div class="dt-card" markdown>
+
+### [Database](database.md)
+
+Schema design, SQL queries, and database AI assistance with miudb.
+
+</div>
+<div class="dt-card" markdown>
+
+### [Review & Debug](review.md)
+
+Code review process, debugging techniques, and documentation workflows.
+
+</div>
+</div>

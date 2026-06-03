@@ -32,6 +32,26 @@ Codex is managed from this dotfiles repo through GNU Stow. See **[Codex](codex.m
 
 ## Documentation
 
-- **[Codex](codex.md)** - CLI config, features, goals, MCP, plugins
-- **[Workflows](workflows.md)** - Daily workflows, code development, database AI
-- **[Best Practices](best-practices.md)** - Effective prompting, security, productivity
+<div class="dt-card-grid" markdown>
+<div class="dt-card" markdown>
+
+### [Codex](codex.md)
+
+CLI config, features, goals, MCP, and plugin checks for the Codex terminal agent.
+
+</div>
+<div class="dt-card" markdown>
+
+### [Workflows](workflows.md)
+
+Daily AI workflows: code development, database AI, and common patterns.
+
+</div>
+<div class="dt-card" markdown>
+
+### [Best Practices](best-practices.md)
+
+Effective prompting, security guidance, and productivity tips.
+
+</div>
+</div>

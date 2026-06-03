@@ -7,7 +7,7 @@ Duc's Digital Workspace: AI-enhanced macOS development environment with 22 dotfi
 ### Core Packages (22 total)
 
 **Editors & IDEs:**
-- `nvim` - Neovim with AstroNvim v5 distribution
+- `nvim` - Neovim with AstroNvim v6 distribution
 - `nvim-vscode` - VSCode Neovim integration
 - `vscode` - VSCode settings and keybindings
 

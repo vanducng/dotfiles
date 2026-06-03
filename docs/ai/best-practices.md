@@ -65,12 +65,10 @@ database connection errors and return appropriate HTTP status codes?"
 ### AI Not Responding
 ```bash
 # Check API keys
-echo $OPENAI_API_KEY
-:Copilot status
+echo $GEMINI_API_KEY
 
 # Test connectivity
-curl -I https://api.openai.com
-curl -I https://copilot-proxy.githubusercontent.com
+curl -I https://generativelanguage.googleapis.com
 ```
 
 ### Rate Limiting
@@ -94,7 +92,7 @@ curl -I https://copilot-proxy.githubusercontent.com
 ```
 
 ### Context Switching
-- **Copilot**: Real-time coding
+- **Supermaven**: Real-time coding
 - **CodeCompanion**: Complex problems
 - **Database AI**: SQL queries
 
