@@ -1,7 +1,7 @@
 git:
   paging:
     colorArg: always
-    pager: delta --paging=never --side-by-side --line-numbers
+    pager: delta --paging=never --line-numbers
 gui:
   language: "en"
   theme:
