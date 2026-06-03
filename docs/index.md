@@ -39,7 +39,7 @@ description: AI-enhanced macOS development environment — tiling window managem
 
 Each folder under `dotfiles/` is a [GNU Stow](installation.md) package that symlinks into `$HOME`. The docs are grouped by what you're trying to do.
 
-<div class="dt-card-grid" markdown>
+<div class="dt-card-grid dt-2col" markdown>
 <div class="dt-card" markdown>
 
 ### [Core Tools](neovim/README.md)
