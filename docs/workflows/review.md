@@ -1,4 +1,6 @@
-# Code Review & Debugging
+---
+title: "Code Review & Debugging"
+---
 
 ## Self Review
 

@@ -1,4 +1,6 @@
-# 🚀 Installation Guide
+---
+title: "Installation Guide"
+---
 
 Complete step-by-step installation guide for the development environment.
 

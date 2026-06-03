@@ -1,4 +1,6 @@
-# Neovim Troubleshooting
+---
+title: "Neovim Troubleshooting"
+---
 
 ## Plugin Issues
 

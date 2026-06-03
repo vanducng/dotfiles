@@ -1,4 +1,6 @@
-# AI Workflows
+---
+title: "AI Workflows"
+---
 
 Daily development patterns using AI tools.
 

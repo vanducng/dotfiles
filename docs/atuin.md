@@ -1,17 +1,9 @@
-# 🕰️ Atuin - Intelligent Shell History
+---
+title: "Atuin - Intelligent Shell History"
+---
 
 Atuin replaces your existing shell history with a SQLite database, and records additional context for your commands. It provides intelligent search, synchronization across machines, and powerful alias management.
 
-## 📋 Table of Contents
-- [Overview](#overview)
-- [Key Features](#key-features)
-- [Installation & Setup](#installation-setup)
-- [Usage](#usage)
-- [Alias Management](#alias-management)
-- [Search & Navigation](#search-navigation)
-- [Synchronization](#synchronization)
-- [Configuration](#configuration)
-- [Troubleshooting](#troubleshooting)
 
 ## 🎯 Overview
 

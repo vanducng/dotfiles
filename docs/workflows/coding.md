@@ -1,4 +1,6 @@
-# Coding Workflow
+---
+title: "Coding Workflow"
+---
 
 ## Feature Development Cycle
 

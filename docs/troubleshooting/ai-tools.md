@@ -1,4 +1,6 @@
-# AI Tools Troubleshooting
+---
+title: "AI Tools Troubleshooting"
+---
 
 ## Codex CLI
 

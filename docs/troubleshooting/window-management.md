@@ -1,4 +1,6 @@
-# Window Management Troubleshooting
+---
+title: "Window Management Troubleshooting"
+---
 
 ## Yabai Issues
 

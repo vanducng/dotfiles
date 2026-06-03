@@ -1,4 +1,6 @@
-# Codex
+---
+title: "Codex"
+---
 
 Codex CLI configuration is managed from this repository with GNU Stow.
 

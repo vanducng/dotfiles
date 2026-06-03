@@ -1,14 +1,9 @@
-# 🧘 Zen Mode - Distraction-Free Coding
+---
+title: "Zen Mode - Distraction-Free Coding"
+---
 
 Zen mode provides a distraction-free coding environment by hiding UI elements and centering your code for better focus.
 
-## 📋 Table of Contents
-- [Overview](#overview)
-- [Keybindings](#keybindings)
-- [Features](#features)
-- [Configuration](#configuration)
-- [Tmux Integration](#tmux-integration)
-- [Best Practices](#best-practices)
 
 ## 🎯 Overview
 

@@ -1,0 +1,49 @@
+---
+title: "Troubleshooting Guide"
+---
+
+import { CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+Quick fixes and recovery commands for common issues.
+
+## Quick Fixes
+
+### Emergency Recovery
+```bash
+# Window manager breaks
+killall yabai skhd
+brew services restart yabai
+brew services restart skhd
+
+# Terminal broken
+/Applications/Ghostty.app/Contents/MacOS/ghostty
+
+# Tmux unresponsive
+tmux kill-server
+tmux new-session
+
+# Neovim stuck
+:qa!  # Force quit all
+pkill nvim  # From another terminal
+```
+
+### Service Restart
+```bash
+# Restart all window management
+skhd --restart-service
+yabai --restart-service
+
+# Check status
+brew services list | grep -E "(yabai|skhd)"
+```
+
+
+## Troubleshooting by category
+
+<CardGrid>
+  <LinkCard title="Window Management" href="/troubleshooting/window-management/" description="Yabai tiling issues, SKHD shortcut conflicts, and spaces configuration." />
+  <LinkCard title="Terminal" href="/troubleshooting/terminal/" description="Tmux session problems, Ghostty issues, and color/rendering fixes." />
+  <LinkCard title="Neovim" href="/troubleshooting/neovim/" description="Plugin failures, LSP errors, and Neovim config troubleshooting." />
+  <LinkCard title="AI Tools" href="/troubleshooting/ai-tools/" description="CodeCompanion, Supermaven, and miudb database AI issues." />
+  <LinkCard title="Performance" href="/troubleshooting/performance/" description="Slow startup, high memory usage, and system recovery steps." />
+</CardGrid>
