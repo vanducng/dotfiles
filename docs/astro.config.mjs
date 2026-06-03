@@ -16,6 +16,10 @@ export default defineConfig({
       description:
         'AI-enhanced macOS development environment — tiling window management, terminal workflows, and integrated AI coding.',
       customCss: ['./src/styles/theme.css'],
+      expressiveCode: {
+        themes: ['catppuccin-mocha', 'catppuccin-latte'],
+        styleOverrides: { borderRadius: '0.5rem' },
+      },
       components: {
         ThemeSelect: './src/components/ThemeSelect.astro',
         SocialIcons: './src/components/SocialIcons.astro',
