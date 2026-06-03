@@ -1,9 +1,15 @@
 # Managed by ~/dotfiles via GNU Stow.
 # Install with: make stow-codex
 model = "gpt-5.5"
-model_reasoning_effort = "high"
+model_reasoning_effort = "xhigh"
 personality = "pragmatic"
 web_search = "cached"
+approvals_reviewer = "user"
+
+notify = ["/Users/vanducng/.codex/computer-use/Codex Computer Use.app/Contents/SharedSupport/SkyComputerUseClient.app/Contents/MacOS/SkyComputerUseClient", "turn-ended"]
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"
+service_tier = "default"
 
 [projects."/Users/vanducng/dotfiles"]
 trust_level = "trusted"
@@ -38,6 +44,45 @@ trust_level = "trusted"
 [projects."/Users/vanducng/git/personal/dataplanelabs/gcplane"]
 trust_level = "trusted"
 
+[projects."/Users/vanducng/git/personal/dataplanelabs/goclaw-config"]
+trust_level = "trusted"
+
+[projects."/Users/vanducng/git/personal/miu-db"]
+trust_level = "trusted"
+
+[projects."/Users/vanducng/git/work/ab-spectrum/data-platform"]
+trust_level = "trusted"
+
+[projects."/Users/vanducng"]
+trust_level = "trusted"
+
+[projects."/Users/vanducng/git/work/cnb/cnb-web-services"]
+trust_level = "trusted"
+
+[projects."/Users/vanducng/git/personal/dataplanelabs/infra"]
+trust_level = "trusted"
+
+[projects."/Users/vanducng/git/work/cnb/products/cnb-rocket-marketingtool"]
+trust_level = "trusted"
+
+[projects."/Users/vanducng/git/work/cnb/it-ops-scripts"]
+trust_level = "trusted"
+
+[projects."/Users/vanducng/git/personal/agents/devlog"]
+trust_level = "trusted"
+
+[projects."/Users/vanducng/git/work/bhcoe/jade-infra"]
+trust_level = "trusted"
+
+[projects."/Users/vanducng/git/work/cnb/cnb-ds-infra"]
+trust_level = "trusted"
+
+[projects."/Users/vanducng/git/personal/pass"]
+trust_level = "trusted"
+
+[projects."/Users/vanducng/git/personal/dataplanelabs/paymint"]
+trust_level = "trusted"
+
 [features]
 apps = true
 browser_use = true
@@ -63,6 +108,7 @@ tool_call_mcp_elicitation = true
 tool_suggest = true
 unified_exec = true
 workspace_dependencies = true
+js_repl = false
 
 [tui]
 animations = true
@@ -70,15 +116,7 @@ notification_condition = "always"
 notification_method = "auto"
 notifications = true
 status_line_use_colors = true
-status_line = [
-  "run-state",
-  "current-dir",
-  "git-branch",
-  "model-with-reasoning",
-  "context-remaining",
-  "context-used",
-  "task-progress",
-]
+status_line = ["run-state", "current-dir", "git-branch", "model-with-reasoning", "context-remaining", "context-used", "task-progress", "five-hour-limit", "weekly-limit", "context-window-size", "used-tokens", "total-input-tokens", "total-output-tokens", "fast-mode"]
 terminal_title = [
   "activity",
   "project",
@@ -106,14 +144,48 @@ command = "bash ~/.codex/hooks/attention-sound.sh stop"
 timeout = 5
 statusMessage = "Play completion sound"
 
+[hooks.state]
+
+[hooks.state."/Users/vanducng/.codex/config.toml:permission_request:0:0"]
+trusted_hash = "sha256:69789766a195ed5e4cbcc68bb83f828ee04c28ed79abcea505f17de785056265"
+
+[hooks.state."/Users/vanducng/.codex/config.toml:stop:0:0"]
+trusted_hash = "sha256:26ca0950cb66331fbe518aee308224db04dd36cad45b5870c37e58fdc159f346"
+
+[notice]
+hide_full_access_warning = true
+hide_rate_limit_model_nudge = true
+
 [notice.model_migrations]
 "gpt-5.3-codex" = "gpt-5.4"
 
 [mcp_servers.openaiDeveloperDocs]
 url = "https://developers.openai.com/mcp"
 
-[plugins."browser-use@openai-bundled"]
-enabled = true
+[mcp_servers.miudb]
+command = "miudb"
+args = ["mcp", "serve", "--transport", "stdio"]
+startup_timeout_sec = 10
+tool_timeout_sec = 60
+
+[mcp_servers.node_repl]
+args = []
+command = "/Applications/Codex.app/Contents/Resources/node_repl"
+startup_timeout_sec = 120
+
+[mcp_servers.node_repl.env]
+NODE_REPL_NATIVE_PIPE_CONNECT_TIMEOUT_MS = "1000"
+NODE_REPL_NODE_MODULE_DIRS = ""
+NODE_REPL_NODE_PATH = "/Applications/Codex.app/Contents/Resources/node"
+NODE_REPL_TRUSTED_CODE_PATHS = "/Users/vanducng/.codex"
+CODEX_HOME = "/Users/vanducng/.codex"
+NODE_REPL_TRUSTED_BROWSER_CLIENT_SHA256S = "0b0d41e7a14a4903d2f95b0b3f427ed796b12c8edca2fa392a03df43997075ae"
+BROWSER_USE_AVAILABLE_BACKENDS = "chrome,iab"
+NODE_REPL_INSTRUCTIONS_USE_CASE_BROWSER = "Control the in-app browser in conjunction with the Browser Plugin."
+NODE_REPL_INSTRUCTIONS_USE_CASE_CHROME = "Control the Chrome browser in conjunction with the Chrome Plugin. Prefer this method of controlling Chrome over alternatives (such as Computer Use) unless the user explicitly mentions an alternative."
+BROWSER_USE_CODEX_APP_BUILD_FLAVOR = "prod"
+SKY_CUA_SERVICE_PATH = "/Users/vanducng/.codex/plugins/cache/openai-bundled/computer-use/1.0.799/Codex Computer Use.app"
+CODEX_CLI_PATH = "/Applications/Codex.app/Contents/Resources/codex"
 
 [plugins."documents@openai-primary-runtime"]
 enabled = true
@@ -127,10 +199,36 @@ enabled = true
 [plugins."spreadsheets@openai-primary-runtime"]
 enabled = true
 
+[plugins."chrome@openai-bundled"]
+enabled = true
+
+[plugins."computer-use@openai-bundled"]
+enabled = true
+
+[plugins."browser@openai-bundled"]
+enabled = true
+
 [marketplaces.openai-bundled]
+last_updated = "2026-06-01T12:53:35Z"
 source_type = "local"
 source = "/Users/vanducng/.codex/.tmp/bundled-marketplaces/openai-bundled"
 
 [marketplaces.openai-primary-runtime]
+last_updated = "2026-06-01T18:26:15Z"
 source_type = "local"
 source = "/Users/vanducng/.cache/codex-runtimes/codex-primary-runtime/plugins/openai-primary-runtime"
+
+[desktop]
+keepRemoteControlAwakeWhilePluggedIn = true
+
+[desktop.open-in-target-preferences]
+global = "cursor"
+
+[desktop.open-in-target-preferences.perPath]
+"/Users/vanducng/git/work/cnb/products/cnb-ai" = "cursor"
+
+[sandbox_workspace_write]
+writable_roots = ["/Users/vanducng/.codex/memories"]
+exclude_tmpdir_env_var = false
+exclude_slash_tmp = false
+network_access = false
