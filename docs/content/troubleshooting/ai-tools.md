@@ -39,7 +39,11 @@ claude mcp get miudb
 miudb describe mcp serve --output json
 ```
 
-Cursor reads the same server from `~/.cursor/mcp.json`. That file is local-only because existing MCP servers may carry tokens. The `miudb` entry should be:
+Cursor reads the same server from `~/.cursor/mcp.json`.
+
+:::caution
+Keep `~/.cursor/mcp.json` local-only — existing MCP server entries may carry tokens. The `miudb` entry should be:
+:::
 
 ```json
 {

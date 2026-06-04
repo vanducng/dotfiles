@@ -40,10 +40,10 @@ database connection errors and return appropriate HTTP status codes?"
 ```
 
 ### Validate AI Suggestions
-- Don't blindly accept AI code
-- Test thoroughly
-- Understand the suggestions
-- Adapt to your specific context
+
+:::caution
+Don't blindly accept AI-generated code. Test thoroughly, understand the suggestions, and adapt them to your specific context.
+:::
 
 ## Security Considerations
 
@@ -57,6 +57,11 @@ database connection errors and return appropriate HTTP status codes?"
 ```
 
 ### Don't Share Sensitive Data
+
+:::danger
+Never paste actual API keys, tokens, or credentials into AI prompts. Use placeholders like `API_KEY` instead.
+:::
+
 ```markdown
 # Bad: Paste actual API keys
 # Good: Use placeholders like "API_KEY"

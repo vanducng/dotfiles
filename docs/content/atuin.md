@@ -421,6 +421,11 @@ cp ~/.local/share/atuin/history.db ~/atuin-backup.db
 ```
 
 #### Clean Up History
+
+:::caution
+`atuin history prune` and `atuin history delete` permanently remove history entries. There is no undo — back up the database first if unsure.
+:::
+
 ```bash
 # Remove old entries (older than 1 year)
 atuin history prune --days 365
