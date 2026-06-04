@@ -2,7 +2,7 @@
 
 AI-enhanced development environment for macOS.
 
-[![Docs](https://img.shields.io/badge/docs-zensical-blue?style=flat-square)](https://dotfiles.vanducng.dev)
+[![Docs](https://img.shields.io/badge/docs-dotfiles.vanducng.dev-7c3aed?style=flat-square)](https://dotfiles.vanducng.dev)
 ![macOS](https://img.shields.io/badge/macOS-000000?style=flat-square&logo=apple&logoColor=white)
 ![Neovim](https://img.shields.io/badge/NeoVim-%2357A143.svg?&style=flat-square&logo=neovim&logoColor=white)
 
