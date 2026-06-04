@@ -13,6 +13,7 @@ export default defineConfig({
   integrations: [
     starlight({
       title: 'dotfiles',
+      logo: { src: './src/assets/logo.svg' },
       description:
         'AI-enhanced macOS development environment — tiling window management, terminal workflows, and integrated AI coding.',
       customCss: ['./src/styles/theme.css'],
