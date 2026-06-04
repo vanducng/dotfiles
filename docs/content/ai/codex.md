@@ -47,7 +47,11 @@ Claude Code should be installed at user scope so it is available in every projec
 claude mcp add --scope user --transport stdio miudb -- miudb mcp serve --transport stdio
 ```
 
-Cursor uses `~/.cursor/mcp.json`. Do not commit the full live file if it contains existing tokens. Add only this server entry to the existing `mcpServers` object:
+Cursor uses `~/.cursor/mcp.json`. Add only this server entry to the existing `mcpServers` object:
+
+:::danger
+Do not commit the full live `~/.cursor/mcp.json` if it contains existing tokens. Add only the `miudb` entry below to the existing `mcpServers` object.
+:::
 
 ```json
 {
@@ -70,7 +74,9 @@ Codex does not currently expose Claude Code's `Notification` hook event. The clo
 - `Stop` runs `~/.codex/hooks/attention-sound.sh stop` and plays the macOS `Glass.aiff` sound.
 - Native TUI notifications are also enabled through `tui.notifications = true`, `tui.notification_condition = "always"`, and `tui.notification_method = "auto"`.
 
+:::note
 Restart Codex after changing hooks. If Codex prompts to trust hooks for a workspace, accept the trust prompt before expecting hook execution.
+:::
 
 ## Feature Checks
 
@@ -99,4 +105,8 @@ Restart Codex after changing feature flags because TUI command availability is l
 
 ## Local State
 
-Only `config.toml` and hook scripts under `~/.codex/hooks/` are repo-managed. Do not commit `~/.codex/auth.json`, account files, SQLite databases, history, logs, generated images, model caches, or temporary plugin snapshots.
+Only `config.toml` and hook scripts under `~/.codex/hooks/` are repo-managed.
+
+:::danger
+Do not commit `~/.codex/auth.json`, account files, SQLite databases, history, logs, generated images, model caches, or temporary plugin snapshots.
+:::

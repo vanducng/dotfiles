@@ -14,6 +14,8 @@ export default defineConfig({
     starlight({
       title: 'dotfiles',
       logo: { src: './src/assets/logo.svg' },
+      // Apply Starlight's markdown pipeline (asides, heading links) to the custom-loader content/ dir.
+      markdown: { processedDirs: ['./content'] },
       description:
         'AI-enhanced macOS development environment — tiling window management, terminal workflows, and integrated AI coding.',
       customCss: ['./src/styles/theme.css'],
@@ -66,6 +68,14 @@ export default defineConfig({
         {
           label: 'Reference',
           items: ['codebase-summary'],
+        },
+        {
+          label: 'Related docs',
+          items: [
+            { label: 'skills', link: 'https://skills.vanducng.dev', attrs: { target: '_blank' } },
+            { label: 'miudb', link: 'https://miudb.vanducng.dev', attrs: { target: '_blank' } },
+            { label: 'vd-cli', link: 'https://vd-cli.vanducng.dev', attrs: { target: '_blank' } },
+          ],
         },
       ],
     }),

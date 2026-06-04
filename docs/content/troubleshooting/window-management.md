@@ -33,6 +33,10 @@ csrutil status
 # csrutil enable --without fs --without debug --without nvram
 ```
 
+:::caution
+Partially disabling System Integrity Protection weakens macOS security. Only do this if you understand the tradeoff, and re-enable full SIP if you stop using yabai's scripting addition.
+:::
+
 ### Spaces Not Working
 ```bash
 # System Preferences → Mission Control

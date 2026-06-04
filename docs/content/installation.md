@@ -256,6 +256,10 @@ nvim
 # Press: <leader>ac
 ```
 
+:::caution
+Adding `OPENAI_API_KEY` to `~/.zshrc` stores the key in plaintext. Prefer a secrets manager or an ignored env file, and never commit `~/.zshrc` with a real key.
+:::
+
 ### NeoCodeium (Free Alternative)
 ```bash
 # Open Neovim

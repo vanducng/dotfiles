@@ -44,6 +44,10 @@ brew services restart yabai
 brew services restart skhd
 ```
 
+:::caution
+`rm -rf ~/.local/share/nvim` deletes all installed plugins and Neovim state, not just caches. Plugins reinstall on next launch, but any unsynced local data is lost.
+:::
+
 ### Swap Usage
 ```bash
 # Check swap
