@@ -1,0 +1,42 @@
+name: release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    steps:
+      # MiuMun app token (not GITHUB_TOKEN) so the auto-merged release commit re-triggers this workflow and cuts the tag.
+      - name: Generate MiuMun app token
+        id: app_token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.GH_APP_ID }}
+          private-key: ${{ secrets.GH_APP_MUNMIU_PRIVATE_KEY }}
+
+      - name: Release Please
+        id: release
+        uses: googleapis/release-please-action@v4
+        with:
+          token: ${{ steps.app_token.outputs.token }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+      # Immediate squash (main is unprotected, so --auto has no checks to gate on); --repo avoids needing a checkout.
+      - name: Auto-merge release PR
+        if: ${{ steps.release.outputs.pr }}
+        env:
+          GH_TOKEN: ${{ steps.app_token.outputs.token }}
+        run: gh pr merge --squash --repo "${{ github.repository }}" "${{ fromJson(steps.release.outputs.pr).number }}"
