@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/vanducng/dotfiles/compare/v0.1.0...v0.2.0) (2026-06-12)
+
+
+### Features
+
+* **ci:** register browser automation CLIs as optional deps ([#21](https://github.com/vanducng/dotfiles/issues/21)) ([61d3eb5](https://github.com/vanducng/dotfiles/commit/61d3eb5af488f8a0600ad3a1829615d0402cbbe8))
+
 ## 0.1.0 (2026-06-07)
 
 
