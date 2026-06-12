@@ -13,7 +13,9 @@ MISSING_REQUIRED=0
 MISSING_OPTIONAL=0
 
 declare -A TOOLS=(
+    ["agent-browser"]="optional:Browser automation CLI (Playwright engine, npm i -g agent-browser)"
     ["atuin"]="required:Shell history sync"
+    ["browse"]="optional:Browser automation CLI for vd browser/web-e2e skills (npm i -g @browserbasehq/browse-cli)"
     ["direnv"]="required:Environment management"
     ["ghostty"]="optional:GPU-accelerated terminal"
     ["git"]="required:Version control"
