@@ -1,0 +1,16 @@
+{
+  "rules": [
+    {
+      "path": "**/*.{sh,bash,zsh}",
+      "rule": "Shell: quote variable expansions, prefer `set -euo pipefail` in scripts, validate inputs; never commit secrets, tokens, or API keys."
+    },
+    {
+      "path": "**/*.lua",
+      "rule": "Lua/Neovim: prefer local over global variables, guard against nil, avoid blocking the UI thread; never commit secrets or tokens."
+    },
+    {
+      "path": "**/*",
+      "rule": "Flag any committed secrets, tokens, API keys, or private credentials in dotfiles."
+    }
+  ]
+}
