@@ -61,9 +61,9 @@ complete -o nospace -C /opt/homebrew/bin/terraform terraform
 LC_CTYPE=en_US.UTF-8
 LC_ALL=en_US.UTF-8
 
-# GoLang
-export GOROOT=/usr/local/go
-export PATH=$GOROOT/bin:$PATH
+# GoLang — go itself is managed by mise (see `mise activate` later in this file).
+# Do NOT hard-set GOROOT to /usr/local/go: it ran before mise activated and shadowed
+# mise's pinned go, producing a 1.24.3-tool / 1.23.4-stdlib "compile: version" mismatch.
 export GOPATH=/Users/vanducng/go
 export PATH=$GOPATH/bin:$PATH
 export PATH="$HOME/.local/bin:$PATH"
