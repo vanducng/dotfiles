@@ -37,6 +37,8 @@ Tmux is the backbone of the terminal workflow, providing session management, win
 | `C-x + m` | Split Horizontal | Create horizontal split |
 | `C-x + v` | Split Vertical | Create vertical split |
 | `C-x + c` | New Window | Create new window in current directory |
+| `C-x + Space` | Last Window | Toggle between current and previous window |
+| `C-x + Tab` | Tmux Fingers | Select and copy/open visible text hints |
 | `C-x + h/j/k/l` | Navigate Panes | Vim-style pane navigation |
 | `C-x + H/J/K/L` | Resize Panes | Resize panes in direction |
 | `C-x + a` | Toggle Zoom | Zoom current pane |
