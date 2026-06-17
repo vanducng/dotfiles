@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/vanducng/dotfiles/compare/v0.2.0...v0.2.1) (2026-06-17)
+
+
+### Bug Fixes
+
+* **zsh:** stop hard-setting GOROOT — let mise own go ([#25](https://github.com/vanducng/dotfiles/issues/25)) ([6145e1f](https://github.com/vanducng/dotfiles/commit/6145e1f014dcadee2792340edd5be94f8f8bee6d))
+
 ## [0.2.0](https://github.com/vanducng/dotfiles/compare/v0.1.0...v0.2.0) (2026-06-12)
 
 
