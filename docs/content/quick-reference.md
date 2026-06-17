@@ -36,7 +36,9 @@ tmux kill-server && tmux new-session
 |-----|--------|-----|--------|
 | `C-x + t` | Project Sessionizer | `C-x + m` | Split Horizontal |
 | `C-x + v` | Split Vertical | `C-x + hjkl` | Navigate Panes |
-| `C-x + r` | Reload Config | `C-x + a` | Zoom Pane |
+| `C-x + Space` | Last Window | `C-x + c` | New Window |
+| `C-x + Tab` | Tmux Fingers | `C-x + a` | Zoom Pane |
+| `C-x + r` | Reload Config | `C-x + i` | Show Pane Numbers |
 
 ### Neovim
 | Key | Action | Key | Action |
