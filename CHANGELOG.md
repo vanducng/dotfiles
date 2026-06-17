@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/vanducng/dotfiles/compare/v0.2.1...v0.3.0) (2026-06-17)
+
+
+### Features
+
+* **tmux:** make space toggle last window ([#27](https://github.com/vanducng/dotfiles/issues/27)) ([84a42d2](https://github.com/vanducng/dotfiles/commit/84a42d29960ec55ee3ccee2e8ab782ce6c3fc7e3))
+
 ## [0.2.1](https://github.com/vanducng/dotfiles/compare/v0.2.0...v0.2.1) (2026-06-17)
 
 
