@@ -12,7 +12,7 @@
 #   7. Spaces — focus             (alt)
 #   8. Spaces — send window       (hyper)
 #   9. Spaces — send + follow     (cmd+ctrl)
-#  10. Displays — send + follow   (cmd+ctrl + ])
+#  10. Displays — send + follow   (cmd+ctrl + arrows / ])
 #  11. Layout — balance/gaps/rotate/mirror  (hyper)
 # =============================================================================
 
@@ -39,7 +39,7 @@ meh - p : open "/Applications/Foxit PDF Reader.app"
 meh - r : open "/System/Volumes/Data/Applications/Zalo.app"
 meh - s : open "/Applications/Dia.app"
 meh - u : open "/Applications/Telegram.app"
-meh - v : open "/Applications/Cursor.app"
+meh - f : open "/Applications/Cursor.app"
 meh - w : open "/Applications/LibreOffice.app"
 meh - x : yabai -m space --focus 2; open "/Applications/Codex.app"
 meh - y : yabai -m space --focus 7; open "alter://hub/chat/"
@@ -134,6 +134,14 @@ cmd + ctrl - 4 : id=$(yabai -m query --windows --window | jq .id); \
 # -----------------------------------------------------------------------------
 # 10. Displays — send window to next display + follow + refocus (toggle)
 # -----------------------------------------------------------------------------
+cmd + ctrl - left : id=$(yabai -m query --windows --window | jq .id); \
+                    yabai -m window --display prev  || yabai -m window --display last; \
+                    yabai -m display --focus prev   || yabai -m display --focus last; \
+                    yabai -m window --focus $id
+cmd + ctrl - right : id=$(yabai -m query --windows --window | jq .id); \
+                     yabai -m window --display next  || yabai -m window --display first; \
+                     yabai -m display --focus next   || yabai -m display --focus first; \
+                     yabai -m window --focus $id
 cmd + ctrl - 0x1E : id=$(yabai -m query --windows --window | jq .id); \
                     yabai -m window --display next  || yabai -m window --display first; \
                     yabai -m display --focus next   || yabai -m display --focus first; \

@@ -84,6 +84,7 @@ SKHD integrates with Yabai for powerful window management capabilities.
 | `hyper + 1-9` | Send to Space | Move window to specific space |
 | `hyper + x` | Send to Recent | Move window to recent space |
 | `cmd + ctrl + 1-4` | Move & Follow | Move window and follow to space |
+| `cmd + ctrl + ←/→` | Move to Display | Move window to previous/next display and follow |
 
 ### Layout Controls
 | Shortcut | Action | Description |
