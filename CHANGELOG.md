@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/vanducng/dotfiles/compare/v0.3.0...v0.4.0) (2026-06-19)
+
+
+### Features
+
+* **skhd:** rebind Cursor to meh-f, add cmd+ctrl arrow display moves ([315378a](https://github.com/vanducng/dotfiles/commit/315378a49610d150a6e3e113557137b10813998a))
+
 ## [0.3.0](https://github.com/vanducng/dotfiles/compare/v0.2.1...v0.3.0) (2026-06-17)
 
 
