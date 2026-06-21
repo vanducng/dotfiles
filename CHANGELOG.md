@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/vanducng/dotfiles/compare/v0.4.0...v0.5.0) (2026-06-21)
+
+
+### Features
+
+* **codex:** track ~/.codex/hooks.json in dotfiles ([2c4cd7b](https://github.com/vanducng/dotfiles/commit/2c4cd7bc397b1b311ebf7d7176f931d63c6e5ee4))
+
 ## [0.4.0](https://github.com/vanducng/dotfiles/compare/v0.3.0...v0.4.0) (2026-06-19)
 
 
