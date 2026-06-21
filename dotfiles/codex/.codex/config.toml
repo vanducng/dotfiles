@@ -127,30 +127,7 @@ vim_mode_default = true
 [tui.model_availability_nux]
 "gpt-5.5" = 4
 
-[[hooks.PermissionRequest]]
-matcher = ".*"
-
-[[hooks.PermissionRequest.hooks]]
-type = "command"
-command = "bash ~/.codex/hooks/attention-sound.sh permission"
-timeout = 5
-statusMessage = "Play attention sound"
-
-[[hooks.Stop]]
-
-[[hooks.Stop.hooks]]
-type = "command"
-command = "bash ~/.codex/hooks/attention-sound.sh stop"
-timeout = 5
-statusMessage = "Play completion sound"
-
 [hooks.state]
-
-[hooks.state."/Users/vanducng/.codex/config.toml:permission_request:0:0"]
-trusted_hash = "sha256:69789766a195ed5e4cbcc68bb83f828ee04c28ed79abcea505f17de785056265"
-
-[hooks.state."/Users/vanducng/.codex/config.toml:stop:0:0"]
-trusted_hash = "sha256:26ca0950cb66331fbe518aee308224db04dd36cad45b5870c37e58fdc159f346"
 
 [notice]
 hide_full_access_warning = true
