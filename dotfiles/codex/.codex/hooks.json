@@ -1,0 +1,102 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 '/Users/vanducng/.codex/hooks/pr-merge-guard.py'"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash|Glob|Grep|Read|Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node '/Users/vanducng/.codex/hooks/scout-block.cjs'"
+          }
+        ]
+      },
+      {
+        "matcher": "AskUserQuestion",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "afplay /System/Library/Sounds/Pop.aiff"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node '/Users/vanducng/.codex/hooks/session-init.cjs'"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node '/Users/vanducng/.codex/hooks/dev-rules-reminder.cjs'"
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node '/Users/vanducng/.codex/hooks/team-context-inject.cjs'"
+          },
+          {
+            "type": "command",
+            "command": "node '/Users/vanducng/.codex/hooks/subagent-init.cjs'"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 '/Users/vanducng/.codex/hooks/agent-notify.py' claude stop"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.codex/hooks/attention-sound.sh stop",
+            "timeout": 5,
+            "statusMessage": "Play completion sound"
+          }
+        ]
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.codex/hooks/attention-sound.sh permission",
+            "timeout": 5,
+            "statusMessage": "Play attention sound"
+          }
+        ]
+      }
+    ]
+  }
+}
