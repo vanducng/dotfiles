@@ -4,14 +4,6 @@
 default_provider = 'zai'
 
 [providers]
-[providers.anthropic]
-kind = 'anthropic'
-base_url = 'https://taphoaapi.info.vn/'
-model = 'claude-sonnet-4-6'
-auth_env = 'ANTHROPIC_API_KEY'
-auth_command = ['sh', '-lc', 'direnv exec ~ printenv ANTHROPIC_API_KEY']
-auth = 'bearer'
-
 [providers.openai]
 kind = 'openai'
 base_url = 'https://api.openai.com/v1'
