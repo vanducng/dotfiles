@@ -5,10 +5,9 @@ model_reasoning_effort = "xhigh"
 personality = "pragmatic"
 web_search = "cached"
 approvals_reviewer = "user"
-
-notify = ["/Users/vanducng/.codex/computer-use/Codex Computer Use.app/Contents/SharedSupport/SkyComputerUseClient.app/Contents/MacOS/SkyComputerUseClient", "turn-ended"]
-approval_policy = "on-request"
-sandbox_mode = "workspace-write"
+notify = ["python3", "/Users/vanducng/skills/hooks/agent-notify.py", "codex"]
+approval_policy = "never"
+sandbox_mode = "danger-full-access"
 service_tier = "default"
 
 [projects."/Users/vanducng/dotfiles"]
@@ -83,6 +82,78 @@ trust_level = "trusted"
 [projects."/Users/vanducng/git/personal/dataplanelabs/paymint"]
 trust_level = "trusted"
 
+[projects."/private/tmp/claude-501/codex_imagegen_ajpzuwyy"]
+trust_level = "trusted"
+
+[projects."/private/tmp/claude-501/codex_imagegen_w6t8mw_q"]
+trust_level = "trusted"
+
+[projects."/private/tmp/claude-501/codex_imagegen_nvqrcphu"]
+trust_level = "trusted"
+
+[projects."/private/tmp/claude-501/codex_imagegen_rba0z6eu"]
+trust_level = "trusted"
+
+[projects."/private/tmp/claude-501/codex_imagegen_bzt7znvt"]
+trust_level = "trusted"
+
+[projects."/private/tmp/claude-501/codex_imagegen_p3e6w5v5"]
+trust_level = "trusted"
+
+[projects."/private/tmp/claude-501/codex_imagegen_ia_0vwpr"]
+trust_level = "trusted"
+
+[projects."/private/tmp/claude-501/diagram_codex_o9aib39i"]
+trust_level = "trusted"
+
+[projects."/private/var/folders/3w/tzhb570n5tb7szdbsg61xkqm0000gn/T/codex_imagegen_syy2w51u"]
+trust_level = "trusted"
+
+[projects."/private/var/folders/3w/tzhb570n5tb7szdbsg61xkqm0000gn/T/diagram_codex_c0z1frha"]
+trust_level = "trusted"
+
+[projects."/Users/vanducng/git/personal/dataplanelabs/annhien"]
+trust_level = "trusted"
+
+[projects."/Users/vanducng/git/work/ab-spectrum/infra"]
+trust_level = "trusted"
+
+[projects."/private/var/folders/3w/tzhb570n5tb7szdbsg61xkqm0000gn/T/codex_imagegen_3_q_3xvf"]
+trust_level = "trusted"
+
+[projects."/private/tmp/codex_ref.8abDnZ"]
+trust_level = "trusted"
+
+[projects."/private/var/folders/3w/tzhb570n5tb7szdbsg61xkqm0000gn/T/codex_imagegen_rfi0vjzj"]
+trust_level = "trusted"
+
+[projects."/private/var/folders/3w/tzhb570n5tb7szdbsg61xkqm0000gn/T/codex_imagegen__ga70b62"]
+trust_level = "trusted"
+
+[projects."/private/var/folders/3w/tzhb570n5tb7szdbsg61xkqm0000gn/T/codex_imagegen_b5potwac"]
+trust_level = "trusted"
+
+[projects."/private/var/folders/3w/tzhb570n5tb7szdbsg61xkqm0000gn/T/codex_imagegen_4ln70fn4"]
+trust_level = "trusted"
+
+[projects."/private/var/folders/3w/tzhb570n5tb7szdbsg61xkqm0000gn/T/codex_imagegen_u118un00"]
+trust_level = "trusted"
+
+[projects."/Users/vanducng/git/work/cnb/products/hire-intelligence"]
+trust_level = "trusted"
+
+[projects."/Users/vanducng/git/personal/agents/vd-cli"]
+trust_level = "trusted"
+
+[projects."/Users/vanducng/git/personal/agents/mio/prototypes/channel-pulse-stack"]
+trust_level = "trusted"
+
+[projects."/private/var/folders/3w/tzhb570n5tb7szdbsg61xkqm0000gn/T/diagram_codex_xji95248"]
+trust_level = "trusted"
+
+[projects."/Users/vanducng/git/personal/external/vibesmith"]
+trust_level = "trusted"
+
 [features]
 apps = true
 browser_use = true
@@ -147,21 +218,21 @@ tool_timeout_sec = 60
 
 [mcp_servers.node_repl]
 args = []
-command = "/Applications/Codex.app/Contents/Resources/node_repl"
+command = "/Applications/Codex.app/Contents/Resources/cua_node/bin/node_repl"
 startup_timeout_sec = 120
 
 [mcp_servers.node_repl.env]
 NODE_REPL_NATIVE_PIPE_CONNECT_TIMEOUT_MS = "1000"
-NODE_REPL_NODE_MODULE_DIRS = ""
-NODE_REPL_NODE_PATH = "/Applications/Codex.app/Contents/Resources/node"
+NODE_REPL_NODE_MODULE_DIRS = "/Applications/Codex.app/Contents/Resources/cua_node/lib/node_modules"
+NODE_REPL_NODE_PATH = "/Applications/Codex.app/Contents/Resources/cua_node/bin/node"
 NODE_REPL_TRUSTED_CODE_PATHS = "/Users/vanducng/.codex"
 CODEX_HOME = "/Users/vanducng/.codex"
-NODE_REPL_TRUSTED_BROWSER_CLIENT_SHA256S = "0b0d41e7a14a4903d2f95b0b3f427ed796b12c8edca2fa392a03df43997075ae"
+NODE_REPL_TRUSTED_BROWSER_CLIENT_SHA256S = "72614174f4dad67a58d46a3ac759cffb45c92fa48a293af4c4ea35102ba391ba"
 BROWSER_USE_AVAILABLE_BACKENDS = "chrome,iab"
 NODE_REPL_INSTRUCTIONS_USE_CASE_BROWSER = "Control the in-app browser in conjunction with the Browser Plugin."
 NODE_REPL_INSTRUCTIONS_USE_CASE_CHROME = "Control the Chrome browser in conjunction with the Chrome Plugin. Prefer this method of controlling Chrome over alternatives (such as Computer Use) unless the user explicitly mentions an alternative."
 BROWSER_USE_CODEX_APP_BUILD_FLAVOR = "prod"
-SKY_CUA_SERVICE_PATH = "/Users/vanducng/.codex/plugins/cache/openai-bundled/computer-use/1.0.799/Codex Computer Use.app"
+BROWSER_USE_CODEX_APP_VERSION = "26.608.12217"
 CODEX_CLI_PATH = "/Applications/Codex.app/Contents/Resources/codex"
 
 [plugins."documents@openai-primary-runtime"]
@@ -185,13 +256,16 @@ enabled = true
 [plugins."browser@openai-bundled"]
 enabled = true
 
+[plugins."pdf@openai-primary-runtime"]
+enabled = true
+
 [marketplaces.openai-bundled]
-last_updated = "2026-06-01T12:53:35Z"
+last_updated = "2026-06-11T11:22:01Z"
 source_type = "local"
 source = "/Users/vanducng/.codex/.tmp/bundled-marketplaces/openai-bundled"
 
 [marketplaces.openai-primary-runtime]
-last_updated = "2026-06-01T18:26:15Z"
+last_updated = "2026-06-15T01:25:50Z"
 source_type = "local"
 source = "/Users/vanducng/.cache/codex-runtimes/codex-primary-runtime/plugins/openai-primary-runtime"
 
@@ -203,12 +277,6 @@ global = "cursor"
 
 [desktop.open-in-target-preferences.perPath]
 "/Users/vanducng/git/work/cnb/products/cnb-ai" = "cursor"
-
-[sandbox_workspace_write]
-writable_roots = ["/Users/vanducng/.codex/memories"]
-exclude_tmpdir_env_var = false
-exclude_slash_tmp = false
-network_access = false
 
 [agents]
 max_threads = 4
