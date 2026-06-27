@@ -17,3 +17,18 @@ model = 'glm-5.2'
 auth_env = 'ZAI_API_KEY'
 auth_command = ['sh', '-lc', 'direnv exec ~ printenv ZAI_API_KEY']
 auth = 'bearer'
+
+[review]
+gate = 'high'
+filter_mode = 'diff_context'
+min_severity = 'low'
+timeout = '900s'
+expand = 20
+token_budget = 0
+deep_context = true
+conversation = true
+suggest = true
+patch_repair = true
+temperature = 0       # 0 = deterministic; applies only when thinking is OFF (non-thinking models, e.g. glm)
+thinking = 'auto'     # auto|off|low|medium|high; auto = extended thinking/reasoning ON when the model supports it (Claude, gpt-5/o-series, codex)
+# context_hops is intentionally omitted so deep_context can choose automatically.
