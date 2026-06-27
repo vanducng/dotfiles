@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.2.0](https://github.com/vanducng/dotfiles/compare/v0.1.0...v0.2.0) (2026-06-27)
+
+
+### Features
+
+* **ci:** register browser automation CLIs as optional deps ([#21](https://github.com/vanducng/dotfiles/issues/21)) ([61d3eb5](https://github.com/vanducng/dotfiles/commit/61d3eb5af488f8a0600ad3a1829615d0402cbbe8))
+* **codex:** add [agents] block to tune native subagents ([3c3a5a2](https://github.com/vanducng/dotfiles/commit/3c3a5a24458ce702ed5952be0d19314e02d3b259))
+* **codex:** track ~/.codex/hooks.json in dotfiles ([2c4cd7b](https://github.com/vanducng/dotfiles/commit/2c4cd7bc397b1b311ebf7d7176f931d63c6e5ee4))
+* **miu:** tracked miu-cr config ([#33](https://github.com/vanducng/dotfiles/issues/33)) ([2758751](https://github.com/vanducng/dotfiles/commit/2758751afa3decbe5de3218469a9de484c0b8a8f))
+* **skhd:** rebind Cursor to meh-f, add cmd+ctrl arrow display moves ([315378a](https://github.com/vanducng/dotfiles/commit/315378a49610d150a6e3e113557137b10813998a))
+* **tmux:** make space toggle last window ([#27](https://github.com/vanducng/dotfiles/issues/27)) ([84a42d2](https://github.com/vanducng/dotfiles/commit/84a42d29960ec55ee3ccee2e8ab782ce6c3fc7e3))
+
+
+### Bug Fixes
+
+* **zsh:** stop hard-setting GOROOT — let mise own go ([#25](https://github.com/vanducng/dotfiles/issues/25)) ([6145e1f](https://github.com/vanducng/dotfiles/commit/6145e1f014dcadee2792340edd5be94f8f8bee6d))
+
 ## [0.1.0](https://github.com/vanducng/dotfiles/compare/v0.5.0...v0.1.0) (2026-06-25)
 
 
