@@ -127,10 +127,8 @@ The project sessionizer is a powerful FZF-based tool for quick project switching
 ```bash
 ~/personal
 ~/projects
-~/work/cnb
-~/work/cormac
-~/work/mountain
-~/work/timo
+~/git/personal
+~/git/work
 ```
 
 ### Usage Examples
@@ -149,6 +147,7 @@ Edit `~/.local/bin/tmux-sessionizer` to add new search paths:
 search_paths=(
     ~/personal
     ~/projects
+    ~/git/personal
     ~/work/your-company
     ~/custom/path
 )

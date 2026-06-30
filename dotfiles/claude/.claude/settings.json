@@ -13,7 +13,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "ATTENTION_APP_NAME='Claude Code' ATTENTION_STOP_MESSAGE='The current turn has completed' bash \"$HOME/.codex/hooks/attention-sound.sh\" stop",
+            "command": "/usr/bin/env ATTENTION_APP_NAME='Claude Code' ATTENTION_STOP_MESSAGE='The current turn has completed' /bin/bash /Users/vanducng/.codex/hooks/attention-sound.sh stop",
             "timeout": 5
           }
         ]
@@ -25,7 +25,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "afplay ~/.claude/notification.mp3"
+            "command": "/usr/bin/afplay /Users/vanducng/.claude/notification.mp3"
           }
         ]
       }
@@ -36,7 +36,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "afplay /System/Library/Sounds/Pop.aiff"
+            "command": "/usr/bin/afplay /System/Library/Sounds/Pop.aiff"
           }
         ]
       }

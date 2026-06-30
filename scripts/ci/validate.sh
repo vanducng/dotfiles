@@ -159,6 +159,54 @@ validate_makefile() {
     fi
 }
 
+validate_agent_hook_commands() {
+    log_info "Validating agent hook commands..."
+    if ! command -v python3 >/dev/null 2>&1; then
+        log_warning "Python not installed, skipping agent hook command validation"
+        return
+    fi
+
+    local output
+    if output=$(python3 - dotfiles/codex/.codex/hooks.json dotfiles/claude/.claude/settings.json 2>&1 <<'PY'
+import json
+import pathlib
+import shlex
+import sys
+
+errors = []
+for name in sys.argv[1:]:
+    path = pathlib.Path(name)
+    data = json.loads(path.read_text())
+    for event, entries in data.get("hooks", {}).items():
+        for entry in entries:
+            for hook in entry.get("hooks", []):
+                command = hook.get("command")
+                if not command:
+                    continue
+                try:
+                    executable = shlex.split(command)[0]
+                except ValueError as exc:
+                    errors.append(f"{path}: {event}: {exc}")
+                    continue
+                if not executable.startswith("/"):
+                    errors.append(f"{path}: {event}: PATH-dependent command: {command}")
+                elif not pathlib.Path(executable).exists():
+                    errors.append(f"{path}: {event}: missing executable: {executable}")
+
+if errors:
+    print("\n".join(errors), file=sys.stderr)
+    sys.exit(1)
+PY
+    ); then
+        log_success "Agent hook commands use absolute executables"
+    else
+        log_error "Agent hook command validation failed"
+        if [ -n "$output" ]; then
+            printf '%s\n' "$output" | sed 's/^/  /'
+        fi
+    fi
+}
+
 main() {
     log_info "Starting dotfiles validation..."
     log_info "Project root: $PROJECT_ROOT"
@@ -194,6 +242,7 @@ main() {
     
     validate_symlinks
     validate_makefile
+    validate_agent_hook_commands
     
     echo
     log_info "Validation complete!"
