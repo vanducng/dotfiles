@@ -32,13 +32,14 @@ meh - e : yabai -m space --focus 8; open "/Applications/Herd.app"
 meh - g : open "/System/Volumes/Data/Applications/Discord.app"
 meh - h : yabai -m space --focus 13; open "/Applications/WhatsApp.app"
 meh - i : open "/Applications/Structured.app"
-meh - j : open "/Applications/Claude.app"
+meh - j : yabai -m space --focus 16; open "/Applications/Claude.app"
 meh - k : open "/Applications/Slack.app"
 meh - l : open "/Applications/Perplexity.app"
 meh - m : open "/Applications/superwhisper.app"
 meh - p : open "/Applications/Foxit PDF Reader.app"
 meh - r : open "/System/Volumes/Data/Applications/Zalo.app"
 meh - s : open "/Applications/Dia.app"
+meh - t : yabai -m space --focus 15; open "/Applications/kitty.app"
 meh - u : open "/Applications/Telegram.app"
 meh - f : open "/Applications/Cursor.app"
 meh - w : open "/Applications/LibreOffice.app"
@@ -49,7 +50,6 @@ meh - o : open -a "Preview"
 # meh - 1 : open "/Applications/Firefox.app"
 # meh - 2 : open "/Applications/DBeaver.app"
 # meh - o : open "/Applications/Obsidian.app"
-# meh - t : open "/Applications/Microsoft Teams classic.app"
 
 # -----------------------------------------------------------------------------
 # 3. Window focus & warp
@@ -58,6 +58,7 @@ ctrl + shift - h : yabai -m window --focus west
 ctrl + shift - j : yabai -m window --focus south
 ctrl + shift - k : yabai -m window --focus north
 ctrl + shift - l : yabai -m window --focus east
+ctrl + shift - tab : yabai -m window --focus stack.next || yabai -m window --focus stack.prev
 
 cmd + shift - h : yabai -m window --warp west
 cmd + shift - l : yabai -m window --warp east

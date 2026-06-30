@@ -13,42 +13,46 @@ SKHD (Simple Hotkey Daemon) is a lightweight hotkey daemon for macOS that enable
 - **Global Hotkeys**: System-wide keyboard shortcuts
 - **Application Launching**: Quick access to development tools
 - **Window Management**: Integration with Yabai tiling
-- **Modifier Keys**: Uses `meh` (ctrl+alt+cmd) and `hyper` (ctrl+alt+cmd+shift)
+- **Modifier Keys**: Uses `meh` (ctrl+alt+shift) and `hyper` (ctrl+alt+cmd+shift)
 
 ## 🚀 Application Shortcuts
 
-All application shortcuts use the `meh` key (ctrl+alt+cmd) for consistency and to avoid conflicts.
+All application shortcuts use the `meh` key (ctrl+alt+shift) for consistency and to avoid conflicts.
 
 ### Development Tools
 | Shortcut | Application | Description |
 |----------|-------------|-------------|
 | `meh + a` | Ghostty | Primary terminal emulator |
+| `meh + t` | Kitty | Secondary terminal emulator on display 2, space 15 |
 | `meh + x` | Codex | AI coding assistant |
-| `meh + w` | Windsurf | AI-powered IDE |
-| `meh + v` | Cursor | AI-powered code editor |
-| `meh + d` | DBeaver | Database management tool |
+| `meh + f` | Cursor | AI-powered code editor |
+| `meh + e` | Herd | Local development environment |
+| `meh + y` | Alter | Chat hub |
 
 ### Browsers & Communication
 | Shortcut | Application | Description |
 |----------|-------------|-------------|
-| `meh + s` | Arc | Primary web browser |
-| `meh + m` | Firefox | Secondary browser |
-| `meh + j` | Zen Browser | Alternative browser |
+| `meh + s` | Dia | Primary web browser |
+| `meh + d` | Arc | Browser on space 13 |
+| `meh + z` | Zen Browser | Alternative browser |
 | `meh + k` | Slack | Team communication |
 | `meh + r` | Zalo | Messaging app |
+| `meh + u` | Telegram | Messaging app |
 | `meh + g` | Discord | Community chat |
-| `meh + z` | Zoom | Video conferencing |
-| `meh + t` | Microsoft Teams | Enterprise communication |
+| `meh + h` | WhatsApp | Messaging app on space 13 |
+| `meh + c` | Cliq | Team communication on space 14 |
 
 ### Productivity & AI Tools
 | Shortcut | Application | Description |
 |----------|-------------|-------------|
-| `meh + o` | Obsidian | Note-taking and knowledge management |
-| `meh + u` | Claude | AI assistant |
+| `meh + j` | Claude | AI assistant on display 2, space 16 |
 | `meh + l` | Perplexity | AI search engine |
-| `meh + b` | Linear | Project management |
 | `meh + i` | Structured | Task and time management |
-| `meh + e` | LibreOffice | Office suite |
+| `meh + w` | LibreOffice | Office suite |
+| `meh + p` | Foxit PDF Reader | PDF reader |
+| `meh + o` | Preview | macOS preview app |
+| `meh + m` | superwhisper | Voice input |
+| `meh + b` | Borumi | Productivity app |
 
 ## 🪟 Window Management
 
@@ -61,13 +65,12 @@ SKHD integrates with Yabai for powerful window management capabilities.
 | `ctrl + shift + j` | Focus South | Move focus to bottom window |
 | `ctrl + shift + k` | Focus North | Move focus to top window |
 | `ctrl + shift + l` | Focus East | Move focus to right window |
+| `ctrl + shift + tab` | Focus Stack | Toggle the visible window in a stacked space |
 
 ### Window Movement
 | Shortcut | Action | Description |
 |----------|--------|-------------|
 | `cmd + shift + h` | Warp West | Move window to the left |
-| `cmd + shift + j` | Warp South | Move window down |
-| `cmd + shift + k` | Warp North | Move window up |
 | `cmd + shift + l` | Warp East | Move window to the right |
 
 ### Window Resizing
@@ -82,7 +85,7 @@ SKHD integrates with Yabai for powerful window management capabilities.
 | Shortcut | Action | Description |
 |----------|--------|-------------|
 | `hyper + 1-9` | Send to Space | Move window to specific space |
-| `hyper + x` | Send to Recent | Move window to recent space |
+| `hyper + tab` | Send to Recent | Move window to recent space |
 | `cmd + ctrl + 1-4` | Move & Follow | Move window and follow to space |
 | `cmd + ctrl + ←/→` | Move to Display | Move window to previous/next display and follow |
 
@@ -111,8 +114,8 @@ SKHD integrates with Yabai for powerful window management capabilities.
 ### Key Modifier Definitions
 ```bash
 # Modifier key definitions
-meh = ctrl + alt + cmd          # Primary modifier for apps
-hyper = ctrl + alt + cmd + shift # Secondary modifier for window management
+meh = ctrl + alt + shift          # Primary modifier for apps
+hyper = ctrl + alt + cmd + shift  # Secondary modifier for window management
 ```
 
 ### Adding New Shortcuts

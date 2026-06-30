@@ -51,10 +51,11 @@ yabai -m rule --add app=".*"                          sub-layer=normal
 
 # Pin apps to specific spaces (by index)
 yabai -m rule --add app="^Ghostty$"                   space=1
+yabai -m rule --add app="^kitty$"                     space=15
 yabai -m rule --add app="^Codex$"                     space=16
 yabai -m rule --add app="^Arc$"                       space=13
 yabai -m rule --add app="^Dia$"                       space=3
-yabai -m rule --add app="^Claude$"                    space=4
+yabai -m rule --add app="^Claude$"                    space=16
 yabai -m rule --add app="^Cursor$"                    space=5
 yabai -m rule --add app="^Preview$"                   space=6
 yabai -m rule --add app="^Foxit PDF Reader$"          space=6
@@ -69,6 +70,7 @@ yabai -m rule --add app="^Cliq$"                      space=14
 
 # Stacked spaces — only one window visible on top, others stacked beneath
 yabai -m space 3 --layout stack 2>/dev/null
+yabai -m space 16 --layout stack 2>/dev/null
 
 # -----------------------------------------------------------------------------
 # Multi-display reconcile — keep display 2 holding exactly one space (Cliq=14)
@@ -83,7 +85,7 @@ yabai -m signal --add event=display_removed \
 # Enforce app→space pinning for windows already open when yabai (re)starts.
 # Rules above only fire on window creation, so existing windows would otherwise
 # stay on whatever space they were on at restart. Mirror the pin rules here.
-for pin in "Ghostty:1" "Codex:16" "Dia:3" "Claude:4" "Cursor:5" "Preview:6" "Foxit PDF Reader:6" "Alter:7" "Herd:8" "Slack:9" "Telegram:10" "Zalo:11" "Discord:12" "Arc:13" "Cliq:14"; do
+for pin in "Ghostty:1" "kitty:15" "Codex:16" "Claude:16" "Dia:3" "Cursor:5" "Preview:6" "Foxit PDF Reader:6" "Alter:7" "Herd:8" "Slack:9" "Telegram:10" "Zalo:11" "Discord:12" "Arc:13" "Cliq:14"; do
     app="${pin%:*}"; sp="${pin#*:}"
     for id in $(yabai -m query --windows | jq -r --arg a "$app" '.[] | select(.app==$a) | .id'); do
         yabai -m window "$id" --space "$sp" 2>/dev/null
@@ -133,6 +135,11 @@ yabai -m rule --add app="^zoom.us$"                   manage=off
 # Signals — fix non-native apps (LibreOffice, JetBrains, Wine) that ignore the
 # initial frame call. A no-op resize forces yabai to re-issue the frame.
 # -----------------------------------------------------------------------------
+yabai -m signal --add event=application_activated app="^Codex$" \
+    action='id=$(yabai -m query --windows | jq -r ".[] | select(.app==\"Codex\") | .id" | head -1); [ -n "$id" ] && yabai -m window "$id" --focus 2>/dev/null'
+yabai -m signal --add event=application_activated app="^Claude$" \
+    action='id=$(yabai -m query --windows | jq -r ".[] | select(.app==\"Claude\") | .id" | head -1); [ -n "$id" ] && yabai -m window "$id" --focus 2>/dev/null'
+
 yabai -m signal --add event=window_created \
     action='sleep 0.3 && yabai -m window $YABAI_WINDOW_ID --resize bottom:0:0 2>/dev/null'
 
