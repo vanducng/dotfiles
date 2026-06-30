@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 '/Users/vanducng/.codex/hooks/pr-merge-guard.py'"
+            "command": "/usr/bin/python3 /Users/vanducng/.codex/hooks/pr-merge-guard.py"
           }
         ]
       },
@@ -15,7 +15,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node '/Users/vanducng/.codex/hooks/scout-block.cjs'"
+            "command": "/opt/homebrew/bin/node /Users/vanducng/.codex/hooks/scout-block.cjs"
           }
         ]
       },
@@ -24,7 +24,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "afplay /System/Library/Sounds/Pop.aiff"
+            "command": "/usr/bin/afplay /System/Library/Sounds/Pop.aiff"
           }
         ]
       }
@@ -35,7 +35,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node '/Users/vanducng/.codex/hooks/session-init.cjs'"
+            "command": "/opt/homebrew/bin/node /Users/vanducng/.codex/hooks/session-init.cjs"
           }
         ]
       }
@@ -45,7 +45,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node '/Users/vanducng/.codex/hooks/dev-rules-reminder.cjs'"
+            "command": "/opt/homebrew/bin/node /Users/vanducng/.codex/hooks/dev-rules-reminder.cjs"
           }
         ]
       }
@@ -56,11 +56,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node '/Users/vanducng/.codex/hooks/team-context-inject.cjs'"
+            "command": "/opt/homebrew/bin/node /Users/vanducng/.codex/hooks/team-context-inject.cjs"
           },
           {
             "type": "command",
-            "command": "node '/Users/vanducng/.codex/hooks/subagent-init.cjs'"
+            "command": "/opt/homebrew/bin/node /Users/vanducng/.codex/hooks/subagent-init.cjs"
           }
         ]
       }
@@ -70,7 +70,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 '/Users/vanducng/.codex/hooks/agent-notify.py' claude stop"
+            "command": "/usr/bin/python3 /Users/vanducng/.codex/hooks/agent-notify.py claude stop"
           }
         ]
       },
@@ -78,7 +78,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.codex/hooks/attention-sound.sh stop",
+            "command": "/bin/bash /Users/vanducng/.codex/hooks/attention-sound.sh stop",
             "timeout": 5,
             "statusMessage": "Play completion sound"
           }
@@ -91,7 +91,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.codex/hooks/attention-sound.sh permission",
+            "command": "/bin/bash /Users/vanducng/.codex/hooks/attention-sound.sh permission",
             "timeout": 5,
             "statusMessage": "Play attention sound"
           }
