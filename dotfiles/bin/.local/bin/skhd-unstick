@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+#
+# skhd-unstick — recover skhd when it aborts with
+#   "secure keyboard entry is enabled by (PID) '<app>'"
+#
+# Cause: an app (terminal/browser) enables macOS Secure Keyboard Entry, then
+# terminates without releasing it. The session slot kCGSSessionSecureInputPID
+# is left pointing at a dead PID, so skhd can never install its keyboard tap.
+# Fix: claim+release secure input from a live process to rewrite/clear the slot.
+
+set -euo pipefail
+
+before=$(ioreg -l -w 0 | grep -o 'kCGSSessionSecureInputPID"=[0-9]*' | head -1 || true)
+echo "before: ${before:-<none>}"
+
+/usr/bin/python3 - <<'PY'
+import ctypes
+c = ctypes.CDLL('/System/Library/Frameworks/Carbon.framework/Carbon')
+c.EnableSecureEventInput()
+c.DisableSecureEventInput()
+PY
+
+after=$(ioreg -l -w 0 | grep -o 'kCGSSessionSecureInputPID"=[0-9]*' | head -1 || true)
+echo "after:  ${after:-<cleared>}"
+
+rm -f "/tmp/skhd_${USER}.pid"
+skhd --start-service
+sleep 1
+if pgrep -x skhd >/dev/null; then
+  echo "skhd running (pid $(pgrep -x skhd))"
+else
+  echo "skhd still down — check /tmp/skhd_${USER}.err.log" >&2
+  exit 1
+fi
