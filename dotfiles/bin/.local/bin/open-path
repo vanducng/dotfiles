@@ -130,9 +130,15 @@ canonical_if_exists() {
 }
 
 norm_path() {
-  local py
+  local py result
   py="$(command -v python3 2>/dev/null || true)"
-  [[ -n "$py" ]] && "$py" -c 'import os, sys; print(os.path.normpath(sys.argv[1]))' "$1" 2>/dev/null || printf '%s' "$1"
+  if [[ -n "$py" ]]; then
+    result="$("$py" -c 'import os, sys; print(os.path.normpath(sys.argv[1]))' "$1" 2>/dev/null)" && {
+      printf '%s' "$result"
+      return
+    }
+  fi
+  printf '%s' "$1"
 }
 
 resolve_path() {
