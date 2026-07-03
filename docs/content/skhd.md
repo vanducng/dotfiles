@@ -23,9 +23,9 @@ All application shortcuts use the `meh` key (ctrl+alt+shift) for consistency and
 | Shortcut | Application | Description |
 |----------|-------------|-------------|
 | `meh + a` | Ghostty | Primary terminal emulator |
-| `meh + t` | Kitty | Secondary terminal emulator on display 2, space 15 |
+| `meh + f` | Kitty | Secondary terminal emulator on display 2, space 15 |
 | `meh + x` | Codex | AI coding assistant |
-| `meh + f` | Cursor | AI-powered code editor |
+| `meh + g` | Cursor | AI-powered code editor |
 | `meh + e` | Herd | Local development environment |
 | `meh + y` | Alter | Chat hub |
 
@@ -38,7 +38,7 @@ All application shortcuts use the `meh` key (ctrl+alt+shift) for consistency and
 | `meh + k` | Slack | Team communication |
 | `meh + r` | Zalo | Messaging app |
 | `meh + u` | Telegram | Messaging app |
-| `meh + g` | Discord | Community chat |
+| `meh + t` | Discord | Community chat |
 | `meh + h` | WhatsApp | Messaging app on space 13 |
 | `meh + c` | Cliq | Team communication on space 14 |
 
