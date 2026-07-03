@@ -1,34 +1,47 @@
 #!/usr/bin/env bash
 #
-# skhd-unstick — recover skhd when it aborts with
+# skhd-unstick — recover skhd after it aborts with
 #   "secure keyboard entry is enabled by (PID) '<app>'"
 #
-# Cause: an app (terminal/browser) enables macOS Secure Keyboard Entry, then
-# terminates without releasing it. The session slot kCGSSessionSecureInputPID
-# is left pointing at a dead PID, so skhd can never install its keyboard tap.
-# Fix: claim+release secure input from a live process to rewrite/clear the slot.
+# Cause: an app (usually an Electron browser — Dia/WhatsApp/Zalo/Slack) enables
+# macOS Secure Event Input when a password field is focused, then dies without
+# releasing it. The login-session latch stays ON, so skhd can't install its key
+# tap and its launchd KeepAlive just crash-loops every ~10s.
+#
+# Reality (verified against Chromium/espanso/iTerm2 sources): an orphaned latch
+# left by a DEAD or loginwindow holder cannot be cleared by any process —
+# EnableSecureEventInput/DisableSecureEventInput only balance the CALLER's own
+# refcount. The ONLY reliable clear is a loginwindow cycle: lock (Ctrl+Cmd+Q)
+# then unlock. The Hammerspoon screensDidUnlock hook restarts skhd on unlock.
+#
+# So this script: if the latch is already clear, (re)start skhd; if it's still
+# latched, name the holder and tell you to lock/unlock. No snake-oil toggling.
 
 set -euo pipefail
+SKHD=/opt/homebrew/bin/skhd
 
-before=$(ioreg -l -w 0 | grep -o 'kCGSSessionSecureInputPID"=[0-9]*' | head -1 || true)
-echo "before: ${before:-<none>}"
-
-/usr/bin/python3 - <<'PY'
-import ctypes
-c = ctypes.CDLL('/System/Library/Frameworks/Carbon.framework/Carbon')
-c.EnableSecureEventInput()
-c.DisableSecureEventInput()
+secure_input_set() {
+	/usr/bin/python3 - <<'PY'
+import ctypes, sys
+carbon = ctypes.CDLL('/System/Library/Frameworks/Carbon.framework/Carbon')
+carbon.IsSecureEventInputEnabled.restype = ctypes.c_bool
+sys.exit(0 if carbon.IsSecureEventInputEnabled() else 1)
 PY
+}
 
-after=$(ioreg -l -w 0 | grep -o 'kCGSSessionSecureInputPID"=[0-9]*' | head -1 || true)
-echo "after:  ${after:-<cleared>}"
+if secure_input_set; then
+	holder=$(ioreg -l -w 0 | grep -o 'kCGSSessionSecureInputPID"=[0-9]*' | head -1 | grep -o '[0-9]*' || true)
+	echo "Secure Keyboard Entry is ON (session slot pid: ${holder:-unknown}; best-effort, may name the frontmost app not the real holder)." >&2
+	echo "An orphaned latch can't be cleared programmatically — press Ctrl+Cmd+Q to lock, then unlock." >&2
+	echo "skhd auto-restarts on unlock via the Hammerspoon hook (or run this again once unlocked)." >&2
+	exit 1
+fi
 
-rm -f "/tmp/skhd_${USER}.pid"
-skhd --start-service
+"$SKHD" --restart-service
 sleep 1
 if pgrep -x skhd >/dev/null; then
-  echo "skhd running (pid $(pgrep -x skhd))"
+	echo "skhd running (pid $(pgrep -x skhd))"
 else
-  echo "skhd still down — check /tmp/skhd_${USER}.err.log" >&2
-  exit 1
+	echo "skhd still down — check /tmp/skhd_${USER}.err.log" >&2
+	exit 1
 fi

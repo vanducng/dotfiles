@@ -545,6 +545,23 @@ end
 hs.hotkey.bind(hyper, "q", function() cycleAppWindows(1) end)
 
 --------------------------------------------
+-- Auto-recover skhd after a stuck Secure Keyboard Entry latch
+--
+-- An Electron app (Dia/WhatsApp/Zalo/Slack) that dies while a password field is
+-- focused leaks macOS Secure Event Input: the login-session latch stays ON
+-- pointing at a dead PID, skhd aborts at startup, and its launchd KeepAlive just
+-- crash-loops. No process can clear an orphaned latch — only a loginwindow cycle
+-- (lock -> unlock) does. So the instant the screen unlocks (when the latch is
+-- gone), kick skhd; KeepAlive's next respawn then passes the secure-input check.
+-- Hammerspoon uses RegisterEventHotKey, not CGEventTap, so it is itself immune.
+--------------------------------------------
+skhdRecover = hs.caffeinate.watcher.new(function(event)
+	if event == hs.caffeinate.watcher.screensDidUnlock then
+		hs.execute("/opt/homebrew/bin/skhd --restart-service")
+	end
+end):start()
+
+--------------------------------------------
 -- Reload config
 --------------------------------------------
 myWatcher = hs.pathwatcher.new(os.getenv("HOME") .. "/.hammerspoon/", reloadConfig):start()
