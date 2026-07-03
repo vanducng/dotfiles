@@ -325,3 +325,4 @@ export PATH="/Users/vanducng/Library/Application Support/Herd/bin/":$PATH
 export HERD_PHP_85_INI_SCAN_DIR="/Users/vanducng/Library/Application Support/Herd/config/php/85/"
 
 . "$HOME/.bruin/env"
+export AGENT_BROWSER_PROFILE="$HOME/.agent-browser-profiles/default"
