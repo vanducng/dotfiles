@@ -36,8 +36,8 @@ All application shortcuts use the `meh` key (ctrl+alt+shift) for consistency and
 | `meh + d` | Arc | Browser on space 13 |
 | `meh + z` | Zen Browser | Alternative browser |
 | `meh + k` | Slack | Team communication |
-| `meh + r` | Zalo | Messaging app |
-| `meh + u` | Telegram | Messaging app |
+| `meh + r` | Telegram | Messaging app |
+| `meh + u` | Zalo | Messaging app |
 | `meh + t` | Discord | Community chat |
 | `meh + h` | WhatsApp | Messaging app on space 13 |
 | `meh + c` | Cliq | Team communication on space 14 |
