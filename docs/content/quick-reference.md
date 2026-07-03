@@ -25,11 +25,11 @@ tmux kill-server && tmux new-session
 ### Global (SKHD)
 | Key | Action | Key | Action |
 |-----|--------|-----|--------|
-| `meh + a` | Ghostty | `meh + s` | Arc Browser |
-| `meh + w` | Windsurf | `meh + x` | VSCode |
-| `meh + d` | DBeaver | `meh + u` | Claude |
-| `ctrl+shift+hjkl` | Focus Window | `cmd+shift+hjkl` | Move Window |
-| `hyper + hjkl` | Resize Window | `hyper + f` | Fullscreen |
+| `meh + a` | Ghostty | `meh + s` | Dia |
+| `meh + f` | Kitty | `meh + g` | Cursor |
+| `meh + t` | Discord | `meh + x` | Codex |
+| `ctrl+shift+hjkl` | Focus Window | `cmd+shift+h/l` | Move Window |
+| `hyper + arrows` | Resize Window | `hyper + f` | Fullscreen |
 
 ### Tmux (Prefix: C-x)
 | Key | Action | Key | Action |
