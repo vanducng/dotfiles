@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.4.0](https://github.com/vanducng/dotfiles/compare/v0.3.0...v0.4.0) (2026-07-03)
+
+
+### Features
+
+* **codex:** add [agents] block to tune native subagents ([3c3a5a2](https://github.com/vanducng/dotfiles/commit/3c3a5a24458ce702ed5952be0d19314e02d3b259))
+* **codex:** track ~/.codex/hooks.json in dotfiles ([2c4cd7b](https://github.com/vanducng/dotfiles/commit/2c4cd7bc397b1b311ebf7d7176f931d63c6e5ee4))
+* **miu:** tracked miu-cr config ([#33](https://github.com/vanducng/dotfiles/issues/33)) ([2758751](https://github.com/vanducng/dotfiles/commit/2758751afa3decbe5de3218469a9de484c0b8a8f))
+* **skhd:** rebind Cursor to meh-f, add cmd+ctrl arrow display moves ([315378a](https://github.com/vanducng/dotfiles/commit/315378a49610d150a6e3e113557137b10813998a))
+
+
+### Bug Fixes
+
+* harden agent hooks and desktop placement ([b4ee388](https://github.com/vanducng/dotfiles/commit/b4ee388f27c201329e53f03d0b18de52e995e540))
+* **skhd:** reassign meh app launchers ([#39](https://github.com/vanducng/dotfiles/issues/39)) ([3381452](https://github.com/vanducng/dotfiles/commit/3381452fc99bafbb4e667551393087b90e94d91e))
+
 ## [0.3.0](https://github.com/vanducng/dotfiles/compare/v0.2.0...v0.3.0) (2026-06-30)
 
 
