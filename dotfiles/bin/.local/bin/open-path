@@ -41,6 +41,21 @@ if [[ -z "$target" ]] && [[ ! -t 0 ]]; then
 fi
 target="${target#"${target%%[![:space:]]*}"}"
 target="${target%"${target##*[![:space:]]}"}"
+target="${target%$'\r'}"
+target="${target%[.,;:!?\)\]\>]}"
+for _ in 1 2 3; do
+  case "$target" in
+    \"*\"|\'*\'|\`*\`) target="${target:1:${#target}-2}" ;;
+  esac
+  target="${target#"${target%%[![:space:]]*}"}"
+  target="${target%"${target##*[![:space:]]}"}"
+  case "$target" in
+    [Ff]ile:*) target="${target#*:}" ;;
+    [Pp]ath:*) target="${target#*:}" ;;
+  esac
+  target="${target#"${target%%[![:space:]]*}"}"
+  target="${target%"${target##*[![:space:]]}"}"
+done
 # Strip trailing sentence punctuation that fingers captures together with the
 # match — e.g. `... migration.md.` from a log line ending with a period.
 target="${target%[.,;:!?\)\]\>]}"
@@ -62,9 +77,6 @@ path="$target"
 path="${path%:[0-9]*:[0-9]*}"
 path="${path%:[0-9]*}"
 [[ "$path" == "~"* ]] && path="${HOME}${path:1}"
-if [[ "$path" != /* ]]; then
-  path="${BASE_DIR:-$PWD}/$path"
-fi
 
 # --------------------------- bare-domain fallback -----------------------------
 # `github.com/foo` style → default browser. Trailing `/` is REQUIRED so that
@@ -107,6 +119,53 @@ git_root() {
   done
   printf '%s' "$1"
 }
+
+canonical_if_exists() {
+  local p="$1"
+  if [[ -e "$p" ]]; then
+    realpath -q "$p" 2>/dev/null || printf '%s' "$p"
+    return 0
+  fi
+  return 1
+}
+
+norm_path() {
+  local py
+  py="$(command -v python3 2>/dev/null || true)"
+  [[ -n "$py" ]] && "$py" -c 'import os, sys; print(os.path.normpath(sys.argv[1]))' "$1" 2>/dev/null || printf '%s' "$1"
+}
+
+resolve_path() {
+  local raw="$1" base="${BASE_DIR:-$PWD}" candidate root main_root
+  if [[ "$raw" == /* ]]; then
+    raw="$(norm_path "$raw")"
+    canonical_if_exists "$raw" || printf '%s' "$raw"
+    return
+  fi
+
+  candidate="$(norm_path "$base/$raw")"
+  canonical_if_exists "$candidate" && return
+
+  root="$(git -C "$base" rev-parse --show-toplevel 2>/dev/null || true)"
+  if [[ -n "$root" ]]; then
+    candidate="$(norm_path "$root/$raw")"
+    canonical_if_exists "$candidate" && return
+  fi
+
+  main_root="$(git -C "$base" rev-parse --path-format=absolute --git-common-dir 2>/dev/null || true)"
+  if [[ "${main_root##*/}" == ".git" ]]; then
+    candidate="$(norm_path "${main_root%/.git}/$raw")"
+    canonical_if_exists "$candidate" && return
+  fi
+
+  norm_path "${root:-$base}/$raw"
+}
+
+path="$(resolve_path "$path")"
+if [[ "${OPEN_PATH_RESOLVE_ONLY:-0}" == 1 ]]; then
+  printf '%s\n' "$path"
+  exit 0
+fi
 
 open_in_browser() {
   local p="$1"
