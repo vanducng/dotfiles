@@ -39,4 +39,4 @@ jobs:
         if: ${{ steps.release.outputs.pr }}
         env:
           GH_TOKEN: ${{ steps.app_token.outputs.token }}
-        run: gh pr merge --squash --repo "${{ github.repository }}" "${{ fromJson(steps.release.outputs.pr).number }}"
+        run: gh pr merge --squash --delete-branch --repo "${{ github.repository }}" "${{ fromJson(steps.release.outputs.pr).number }}"
