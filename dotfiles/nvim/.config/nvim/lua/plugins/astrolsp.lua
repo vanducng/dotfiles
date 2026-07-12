@@ -19,10 +19,19 @@ local function open_workflow_function_definition()
         { "composer", "show", "durable-workflow/workflow", "--path" },
         { text = true, cwd = vim.fs.dirname(composer_file) },
         function(package_result)
-          local package_path = package_result.code == 0
-              and package_result.stdout
-              and vim.trim(package_result.stdout):match "%s(.+)$"
-            or nil
+          if package_result.code ~= 0 then
+            vim.schedule(function()
+              vim.notify(
+                "Unable to resolve durable-workflow: " .. vim.trim(package_result.stderr or "unknown error"),
+                vim.log.levels.WARN
+              )
+              vim.lsp.buf.definition()
+            end)
+
+            return
+          end
+
+          local package_path = package_result.stdout and vim.trim(package_result.stdout):match "%s(.+)$" or nil
           local functions_file = package_path and package_path .. "/src/V2/functions.php" or nil
 
           vim.schedule(function()
@@ -32,7 +41,13 @@ local function open_workflow_function_definition()
               return
             end
 
-            vim.cmd.edit(vim.fn.fnameescape(functions_file))
+            local opened, err = pcall(vim.cmd.edit, vim.fn.fnameescape(functions_file))
+
+            if not opened then
+              vim.notify("Unable to open workflow functions: " .. err, vim.log.levels.ERROR)
+
+              return
+            end
 
             if vim.fn.search("\\<function\\s\\+" .. function_name .. "\\>") == 0 then
               vim.notify("Workflow V2 function not found: " .. function_name, vim.log.levels.WARN)
