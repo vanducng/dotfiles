@@ -126,6 +126,46 @@ return {
     mappings = {
       n = {
         -- a `cond` key can provided as the string of a server capability to be required to attach, or a function with `client` and `bufnr` parameters from the `on_attach` that returns a boolean
+        gd = {
+          function()
+            if vim.bo.filetype == "php" then
+              local function_name = vim.fn.expand "<cword>"
+
+              for _, line in ipairs(vim.api.nvim_buf_get_lines(0, 0, -1, false)) do
+                local imported_function = line:match "^%s*use%s+function%s+Workflow\\V2\\([%w_]+)%s*;"
+
+                if imported_function == function_name then
+                  local composer_file =
+                    vim.fs.find("composer.json", { path = vim.api.nvim_buf_get_name(0), upward = true })[1]
+                  local package_result = composer_file
+                      and vim
+                        .system(
+                          { "composer", "show", "durable-workflow/workflow", "--path" },
+                          { text = true, cwd = vim.fs.dirname(composer_file) }
+                        )
+                        :wait()
+                    or nil
+                  local package_path = package_result
+                      and package_result.code == 0
+                      and vim.trim(package_result.stdout):match "%s(.+)$"
+                    or nil
+                  local functions_file = package_path and package_path .. "/src/V2/functions.php" or nil
+
+                  if functions_file and vim.uv.fs_stat(functions_file) then
+                    vim.cmd.edit(vim.fn.fnameescape(functions_file))
+                    vim.fn.search("\\<function\\s\\+" .. function_name .. "\\>")
+
+                    return
+                  end
+                end
+              end
+            end
+
+            vim.lsp.buf.definition()
+          end,
+          desc = "Show the definition of current symbol",
+          cond = "textDocument/definition",
+        },
         gD = {
           function() vim.lsp.buf.declaration() end,
           desc = "Declaration of current symbol",
