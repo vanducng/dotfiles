@@ -11,6 +11,7 @@ return {
         "lua-language-server",
         "ruff",
         "basedpyright",
+        "phpactor",
 
         -- install formatters
         "stylua",
