@@ -11,13 +11,15 @@ local function open_workflow_function_definition()
 
   if not composer_file then return false end
 
-  for _, line in ipairs(vim.api.nvim_buf_get_lines(0, 0, -1, false)) do
+  local use_end = math.min(100, vim.api.nvim_buf_line_count(0))
+
+  for _, line in ipairs(vim.api.nvim_buf_get_lines(0, 0, use_end, false)) do
     local imported_function = line:match "^%s*use%s+function%s+Workflow\\V2\\([%w_]+)%s*;"
 
     if imported_function == function_name then
       vim.system(
         { "composer", "show", "durable-workflow/workflow", "--path" },
-        { text = true, cwd = vim.fs.dirname(composer_file) },
+        { text = true, cwd = vim.fs.dirname(composer_file), timeout = 5000 },
         function(package_result)
           if package_result.code ~= 0 then
             vim.schedule(function()
@@ -31,7 +33,10 @@ local function open_workflow_function_definition()
             return
           end
 
-          local package_path = package_result.stdout and vim.trim(package_result.stdout):match "%s(.+)$" or nil
+          local composer_output = package_result.stdout and vim.trim(package_result.stdout) or nil
+          local package_path = composer_output
+              and (composer_output:match "^durable%-workflow/workflow%s+(.+)$" or composer_output)
+            or nil
           local functions_file = package_path and package_path .. "/src/V2/functions.php" or nil
 
           vim.schedule(function()
@@ -49,7 +54,9 @@ local function open_workflow_function_definition()
               return
             end
 
-            if vim.fn.search("\\<function\\s\\+" .. function_name .. "\\>") == 0 then
+            local escaped_name = vim.fn.escape(function_name, "\\.*~$[]")
+
+            if vim.fn.search("\\<function\\s\\+" .. escaped_name .. "\\>") == 0 then
               vim.notify("Workflow V2 function not found: " .. function_name, vim.log.levels.WARN)
             end
           end)
