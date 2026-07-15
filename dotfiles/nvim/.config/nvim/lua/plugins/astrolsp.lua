@@ -140,7 +140,7 @@ return {
 
                 if functions_file and vim.uv.fs_stat(functions_file) then
                   vim.cmd.edit(vim.fn.fnameescape(functions_file))
-                  vim.fn.search("\\<function\\s\\+" .. function_name .. "\\>")
+                  vim.fn.search("^\\s*function\\s\\+" .. function_name .. "\\>")
 
                   return
                 end
