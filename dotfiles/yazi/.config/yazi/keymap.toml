@@ -17,6 +17,8 @@ prepend_keymap = [
   # Tree-like navigation
   { on = "H", run = "leave", desc = "Go to parent directory" },
   { on = "L", run = "enter", desc = "Enter directory" },
+  { on = "<Backspace>", run = "back", desc = "Go back to previous directory" },
+  { on = "<C-o>", run = "forward", desc = "Go forward in directory history" },
   
   # Toggle hidden files to see full hierarchy
   { on = ".", run = "hidden toggle", desc = "Toggle hidden files" },

@@ -260,7 +260,7 @@ return {
 				return
 			end
 
-			ya.manager_emit(bookmarks[selected].isdir == "true" and "cd" or "reveal", { bookmarks[selected].file_url })
+			ya.emit(bookmarks[selected].isdir == "true" and "cd" or "reveal", { bookmarks[selected].file_url })
 
 			return
 		elseif action == "delete" then
