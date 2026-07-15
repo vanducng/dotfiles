@@ -130,21 +130,19 @@ return {
           function()
             if vim.bo.filetype == "php" then
               local function_name = vim.fn.expand "<cword>"
+              local import_pattern = [[^\s*use\s\+function\s\+Workflow\\V2\\]] .. function_name .. [[\s*;]]
 
-              for _, line in ipairs(vim.api.nvim_buf_get_lines(0, 0, -1, false)) do
-                local imported_function = line:match("^%s*use%s+function%s+Workflow\\V2\\([%w_]+)%s*;")
+              if function_name:match "^[%w_]+$" and vim.fn.search(import_pattern, "nw") > 0 then
+                local root = vim.fs.root(0, "composer.json")
+                local functions_file = root
+                  and vim.fs.joinpath(root, "vendor", "durable-workflow", "workflow", "src", "V2", "functions.php")
+                  or nil
 
-                if imported_function == function_name then
-                  local package_result = vim.system({ "composer", "show", "durable-workflow/workflow", "--path" }, { text = true }):wait()
-                  local package_path = package_result.code == 0 and vim.trim(package_result.stdout):match("%s(.+)$") or nil
-                  local functions_file = package_path and package_path .. "/src/V2/functions.php" or nil
+                if functions_file and vim.uv.fs_stat(functions_file) then
+                  vim.cmd.edit(vim.fn.fnameescape(functions_file))
+                  vim.fn.search("\\<function\\s\\+" .. function_name .. "\\>")
 
-                  if functions_file and vim.uv.fs_stat(functions_file) then
-                    vim.cmd.edit(vim.fn.fnameescape(functions_file))
-                    vim.fn.search("\\<function\\s\\+" .. function_name .. "\\>")
-
-                    return
-                  end
+                  return
                 end
               end
             end
