@@ -53,7 +53,7 @@
   "alwaysThinkingEnabled": true,
   "autoUpdatesChannel": "stable",
   "skipDangerousModePermissionPrompt": true,
-  "teammateMode": "tmux",
+  "teammateMode": "in-process",
   "feedbackSurveyState": {
     "lastShownTime": 1754065071861
   }

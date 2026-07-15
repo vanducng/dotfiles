@@ -4,7 +4,7 @@
 local goto_initial = ya.sync(function()
   local initial_dir = YAZI_INITIAL_DIR or os.getenv("YAZI_INITIAL_DIR")
   if initial_dir and initial_dir ~= "" then
-    ya.manager_emit("cd", { initial_dir })
+    ya.emit("cd", { initial_dir })
   else
     ya.notify {
       title = "Initial Dir",
