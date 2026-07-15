@@ -126,6 +126,32 @@ return {
     mappings = {
       n = {
         -- a `cond` key can provided as the string of a server capability to be required to attach, or a function with `client` and `bufnr` parameters from the `on_attach` that returns a boolean
+        gd = {
+          function()
+            if vim.bo.filetype == "php" then
+              local function_name = vim.fn.expand "<cword>"
+              local import_pattern = [[^\s*use\s\+function\s\+Workflow\\V2\\]] .. function_name .. [[\s*;]]
+
+              if function_name:match "^[%w_]+$" and vim.fn.search(import_pattern, "nw") > 0 then
+                local root = vim.fs.root(0, "composer.json")
+                local functions_file = root
+                  and vim.fs.joinpath(root, "vendor", "durable-workflow", "workflow", "src", "V2", "functions.php")
+                  or nil
+
+                if functions_file and vim.uv.fs_stat(functions_file) then
+                  vim.cmd.edit(vim.fn.fnameescape(functions_file))
+                  vim.fn.search("^\\s*function\\s\\+" .. function_name .. "\\>")
+
+                  return
+                end
+              end
+            end
+
+            vim.lsp.buf.definition()
+          end,
+          desc = "Show the definition of current symbol",
+          cond = "textDocument/definition",
+        },
         gD = {
           function() vim.lsp.buf.declaration() end,
           desc = "Declaration of current symbol",
