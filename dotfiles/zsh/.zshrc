@@ -325,3 +325,14 @@ export PATH="/Users/vanducng/Library/Application Support/Herd/bin/":$PATH
 export HERD_PHP_85_INI_SCAN_DIR="/Users/vanducng/Library/Application Support/Herd/config/php/85/"
 
 . "$HOME/.bruin/env"
+
+# go is mise-managed (mise exports GOROOT), but /opt/homebrew/bin/go (1.26, pulled in as a
+# wails dependency) and /usr/local/go/bin/go (1.24) sit earlier in PATH. The resulting
+# tool-vs-GOROOT mismatch breaks every go command with:
+#   compile: version "go1.23.4" does not match go tool version "go1.26.3"
+# Keep last: `mise activate` runs ~line 263 and cannot outrank the prepends after it.
+if command -v mise >/dev/null 2>&1; then
+  _mise_go="$(mise which go 2>/dev/null)"
+  [[ -n "$_mise_go" ]] && export PATH="${_mise_go:h}:$PATH"
+  unset _mise_go
+fi
