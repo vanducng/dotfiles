@@ -78,6 +78,7 @@ yabai -m rule --add app="^Zalo$"                      space=11
 yabai -m rule --add app="^Discord$"                   space=12
 yabai -m rule --add app="WhatsApp$"                   space=13
 yabai -m rule --add app="^Cliq$"                      space=14
+yabai -m rule --add app="^tldraw offline$"            space=17
 
 # Stacked spaces — only one window visible on top, others stacked beneath
 yabai -m space 3 --layout stack 2>/dev/null
@@ -86,7 +87,7 @@ yabai -m space 16 --layout stack 2>/dev/null
 # Enforce app→space pinning for windows already open when yabai (re)starts.
 # Rules above only fire on window creation, so existing windows would otherwise
 # stay on whatever space they were on at restart. Mirror the pin rules here.
-for pin in "Ghostty:1" "kitty:15" "Codex:16" "ChatGPT:16" "Claude:16" "Dia:3" "Cursor:5" "Preview:6" "Foxit PDF Reader:6" "Alter:7" "Herd:8" "Slack:9" "Telegram:10" "Zalo:11" "Discord:12" "Arc:13" "Cliq:14"; do
+for pin in "Ghostty:1" "kitty:15" "Codex:16" "ChatGPT:16" "Claude:16" "tldraw offline:17" "Dia:3" "Cursor:5" "Preview:6" "Foxit PDF Reader:6" "Alter:7" "Herd:8" "Slack:9" "Telegram:10" "Zalo:11" "Discord:12" "Arc:13" "Cliq:14"; do
     app="${pin%:*}"; sp="${pin#*:}"
     for id in $(yabai -m query --windows | jq -r --arg a "$app" '.[] | select(.app==$a) | .id'); do
         yabai -m window "$id" --space "$sp" 2>/dev/null
