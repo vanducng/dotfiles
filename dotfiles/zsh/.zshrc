@@ -336,3 +336,15 @@ if command -v mise >/dev/null 2>&1; then
   [[ -n "$_mise_go" ]] && export PATH="${_mise_go:h}:$PATH"
   unset _mise_go
 fi
+
+claws() {
+  env \
+    -u AWS_ACCESS_KEY_ID \
+    -u AWS_SECRET_ACCESS_KEY \
+    -u AWS_SESSION_TOKEN \
+    -u AWS_SECURITY_TOKEN \
+    -u AWS_ENDPOINT \
+    -u AWS_ENDPOINT_URL \
+    -u AWS_USE_PATH_STYLE_ENDPOINT \
+    /opt/homebrew/bin/claws "$@"
+}

@@ -190,6 +190,80 @@ hs.hotkey.bind({ "cmd", "alt" }, "o", function()
 	end
 end)
 
+local gopassBin = (function()
+	for _, path in ipairs({ "/opt/homebrew/bin/gopass", "/usr/local/bin/gopass" }) do
+		if hs.fs.attributes(path) then return path end
+	end
+end)()
+local gopassChooser
+local gopassHistoryKey = "gopassRecentKeys"
+
+local function copyGopassPassword(key)
+	local task = hs.task.new(gopassBin, function(exitCode, _, stdErr)
+		if exitCode == 0 then
+			local recent = { key }
+			for _, previous in ipairs(hs.settings.get(gopassHistoryKey) or {}) do
+				if previous ~= key and #recent < 8 then recent[#recent + 1] = previous end
+			end
+			hs.settings.set(gopassHistoryKey, recent)
+			hs.notify.new({ title = "Gopass", informativeText = "Password copied for 45 seconds" }):send()
+		else
+			local message = (stdErr or ""):match("^%s*(.-)%s*$")
+			hs.notify.new({ title = "Gopass", informativeText = message ~= "" and message or "Could not copy password" }):send()
+		end
+	end, { "--nosync", "show", "--clip", key })
+
+	if not task or not task:start() then
+		hs.notify.new({ title = "Gopass", informativeText = "Could not start gopass" }):send()
+	end
+end
+
+hs.hotkey.bind(hyper, "p", function()
+	if not gopassBin then
+		hs.notify.new({ title = "Gopass", informativeText = "gopass was not found" }):send()
+		return
+	end
+
+	local task = hs.task.new(gopassBin, function(exitCode, stdOut, stdErr)
+		if exitCode ~= 0 then
+			local message = (stdErr or ""):match("^%s*(.-)%s*$")
+			hs.notify.new({ title = "Gopass", informativeText = message ~= "" and message or "Could not list keys" }):send()
+			return
+		end
+
+		local keys, available = {}, {}
+		for key in (stdOut or ""):gmatch("[^\r\n]+") do
+			keys[#keys + 1] = key
+			available[key] = true
+		end
+
+		local choices, seen = {}, {}
+		for _, key in ipairs(hs.settings.get(gopassHistoryKey) or {}) do
+			if available[key] then
+				choices[#choices + 1] = { text = key, subText = "Recent", key = key }
+				seen[key] = true
+			end
+		end
+		for _, key in ipairs(keys) do
+			if not seen[key] then choices[#choices + 1] = { text = key, key = key } end
+		end
+
+		if #choices == 0 then
+			hs.notify.new({ title = "Gopass", informativeText = "No keys found" }):send()
+			return
+		end
+
+		gopassChooser = hs.chooser.new(function(choice)
+			if choice then copyGopassPassword(choice.key) end
+		end)
+		gopassChooser:choices(choices):placeholderText("Search gopass keys"):rows(12):show()
+	end, { "--nosync", "list", "--flat" })
+
+	if not task or not task:start() then
+		hs.notify.new({ title = "Gopass", informativeText = "Could not start gopass" }):send()
+	end
+end)
+
 --------------------------------------------
 -- Open clipboard content (URL or file path)
 --
