@@ -61,7 +61,7 @@ complete -o nospace -C /opt/homebrew/bin/terraform terraform
 LC_CTYPE=en_US.UTF-8
 LC_ALL=en_US.UTF-8
 
-# GoLang — go itself is managed by mise (see `mise activate` later in this file).
+# GoLang - go itself is managed by mise (see `mise activate` later in this file).
 # Do NOT hard-set GOROOT to /usr/local/go: it ran before mise activated and shadowed
 # mise's pinned go, producing a 1.24.3-tool / 1.23.4-stdlib "compile: version" mismatch.
 export GOPATH=/Users/vanducng/go
@@ -256,11 +256,11 @@ bindkey -s '^g' "$HOME/.local/bin/tmux-sessionizer\n"
 
 . "$HOME/.cargo/env"
 
-# gh copilot alias removed — gh-copilot v1.0.4 dropped the `alias` subcommand
+# gh copilot alias removed - gh-copilot v1.0.4 dropped the `alias` subcommand
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
-eval "$(~/.local/bin/mise activate zsh)"
+eval "$(mise activate zsh)"
 
 
 # opencode

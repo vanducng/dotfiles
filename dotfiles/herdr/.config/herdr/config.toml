@@ -1,0 +1,30 @@
+onboarding = false
+
+[theme]
+name = "catppuccin"
+
+[terminal]
+shell_mode = "auto"
+new_cwd = "follow"
+
+[keys]
+prefix = "ctrl+x"
+reload_config = "prefix+r"
+resize_mode = "prefix+shift+r"
+previous_workspace = "prefix+shift+left"
+next_workspace = "prefix+shift+right"
+switch_workspace = "prefix+shift+1..9"
+previous_agent = "prefix+shift+up"
+next_agent = "prefix+shift+down"
+focus_agent = "prefix+ctrl+shift+1..9"
+previous_tab = ["prefix+p", "prefix+space"]
+last_pane = "prefix+a"
+split_vertical = "prefix+m"
+split_horizontal = "prefix+v"
+
+[ui.sound]
+enabled = true
+
+[ui.toast]
+enabled = true
+delivery = "herdr"

@@ -1,5 +1,6 @@
 [tools]
 "aqua:junegunn/fzf" = "latest"
+"github:ogulcancelik/herdr" = "latest"
 go = "1.23.4"
 node = "22"
 python = "3"
