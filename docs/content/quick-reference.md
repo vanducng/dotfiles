@@ -28,7 +28,7 @@ tmux kill-server && tmux new-session
 | `meh + a` | Ghostty | `meh + s` | Dia |
 | `meh + f` | Kitty | `meh + g` | Cursor |
 | `meh + t` | Discord | `meh + x` | ChatGPT |
-| `meh + n` | tldraw offline | | |
+| `meh + v` | tldraw offline | | |
 | `ctrl+shift+hjkl` | Focus Window | `cmd+shift+h/l` | Move Window |
 | `hyper + arrows` | Resize Window | `hyper + f` | Fullscreen |
 
@@ -48,9 +48,11 @@ tmux kill-server && tmux new-session
 | `C-x + hjkl` | Navigate Panes | `C-x + Space` | Previous Tab |
 | `C-x + Shift-Left/Right` | Previous/Next Workspace | `C-x + Shift-1..9` | Switch Workspace |
 | `C-x + Shift-Up/Down` | Previous/Next Agent | `C-x + Ctrl-Shift-1..9` | Focus Agent |
-| `C-x + a` | Last Pane | `C-x + c` | New Tab |
+| `C-x + Tab` | Pick Recent Target | `C-x + a` | Last Pane |
+| `C-x + f` | Agent Address Picker | `C-x + g` | Session Navigator |
+| `C-x + c` | New Tab | `C-x + w` | Workspace Picker |
 | `C-x + r` | Reload Config | `C-x + R` | Resize Mode |
-| `C-x + w` | Workspace Picker | `C-x + ?` | Key Help |
+| `C-x + ?` | Key Help | | |
 
 ### Neovim
 | Key | Action | Key | Action |
