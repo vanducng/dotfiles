@@ -188,8 +188,6 @@ open_in_browser() {
   local p="$1"
   local server="$HOME/skills/skills/file-browser/scripts/server.cjs"
   local port=3556
-  local nc_bin; nc_bin="$(command -v nc || true)"
-  [[ -n "$nc_bin" ]] || { printf 'open-path: nc is required\n' >&2; return 1; }
   local route flag root_seed
   if [[ -d "$p" ]]; then
     route="browse?dir"; flag="--dir"; root_seed="$p"
@@ -201,16 +199,18 @@ open_in_browser() {
   local url
   url="http://localhost:${port}/${route}=$(url_encode "$p")&root=$(url_encode "$root")"
 
-  if ! "$nc_bin" -z localhost "$port" 2>/dev/null; then
+  if ! (exec 3<>"/dev/tcp/localhost/$port") 2>/dev/null; then
     ( cd "$HOME" && nohup node "$server" "$flag" "$p" --no-open --port "$port" >/dev/null 2>&1 & )
     local i
     for ((i = 0; i < 50; i++)); do
-      "$nc_bin" -z localhost "$port" 2>/dev/null && break
+      (exec 3<>"/dev/tcp/localhost/$port") 2>/dev/null && break
       sleep 0.1
     done
   fi
   if [[ "$(uname -s)" == "Darwin" ]]; then
     /usr/bin/open -a "$OPEN_PATH_BROWSER" "$url"
+  elif command -v "$OPEN_PATH_BROWSER" >/dev/null 2>&1; then
+    "$OPEN_PATH_BROWSER" "$url"
   else
     open_url "$url"
   fi
@@ -234,7 +234,9 @@ resolve_editor_cmd() {
 open_in_editor() {
   local p="$1"
   local cmd_bin; cmd_bin="$(resolve_editor_cmd)"
-  # zsh -l so .zprofile/.zshrc populate PATH for plugins (yazi, mise, brew)
+  if [[ "$(uname -s)" != "Darwin" ]]; then
+    exec "$cmd_bin" "$p"
+  fi
   local inner cmd_arg
   inner="exec $cmd_bin $(sq "$p")"
   cmd_arg="/bin/zsh -lc $(sq "$inner")"

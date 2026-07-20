@@ -7,7 +7,9 @@ trap 'rm -r "$test_dir"' EXIT
 
 cat >"$test_dir/herdr" <<'EOF'
 #!/usr/bin/env bash
+set -euo pipefail
 [[ "$*" == "pane read pane-1 --source recent-unwrapped --lines 500 --format text" ]] || exit 1
+[[ "${HERDR_FINGERS_HERDR_FAIL:-0}" == 0 ]] || exit 7
 printf '%s\n' \
   'Old docs: ./README.md' \
   'Old URL: https://example.com/docs).' \
@@ -20,13 +22,34 @@ EOF
 
 cat >"$test_dir/fzf" <<'EOF'
 #!/usr/bin/env bash
+set -euo pipefail
 cat >"$HERDR_FINGERS_CHOICES"
+[[ "${HERDR_FINGERS_FZF_STATUS:-0}" == 0 ]] || exit "$HERDR_FINGERS_FZF_STATUS"
 printf '%s\n' "$HERDR_FINGERS_TEST_ACTION"
 grep -m1 '^./README.md:7$' "$HERDR_FINGERS_CHOICES"
 EOF
 
+cat >"$test_dir/rg" <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+if [[ "${1:-}" == "--pcre2-version" ]]; then
+  exit 0
+fi
+cat >/dev/null
+printf '%s\n' \
+  'https://example.com/docs.' \
+  '"My Project/report.md"' \
+  './README.md:7.' \
+  'artifacts/' \
+  "$HOME/" \
+  '/dev/null' \
+  'https://example.com/docs).' \
+  './README.md'
+EOF
+
 cat >"$test_dir/open-path" <<'EOF'
 #!/usr/bin/env bash
+set -euo pipefail
 if [[ "${OPEN_PATH_RESOLVE_ONLY:-0}" == 1 ]]; then
   printf 'unexpected per-candidate resolver call\n' >&2
   exit 1
@@ -36,24 +59,34 @@ EOF
 
 cat >"$test_dir/pbcopy" <<'EOF'
 #!/usr/bin/env bash
+set -euo pipefail
 cat >"$HERDR_FINGERS_CLIPBOARD_CAPTURE"
 EOF
 
 cat >"$test_dir/uname" <<'EOF'
 #!/usr/bin/env bash
+set -euo pipefail
 printf 'Linux\n'
 EOF
 
 cat >"$test_dir/xdg-open" <<'EOF'
 #!/usr/bin/env bash
+set -euo pipefail
 printf '%s\n' "$1" >"$OPEN_PATH_XDG_CAPTURE"
 EOF
 
-chmod +x "$test_dir/herdr" "$test_dir/fzf" "$test_dir/open-path" "$test_dir/pbcopy" "$test_dir/uname" "$test_dir/xdg-open"
-mkdir -p "$test_dir/project/src" "$test_dir/project/artifacts"
+cat >"$test_dir/nvim" <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+printf '%s\n' "$1" >"$OPEN_PATH_EDITOR_CAPTURE"
+EOF
+
+chmod +x "$test_dir/herdr" "$test_dir/fzf" "$test_dir/rg" "$test_dir/open-path" "$test_dir/pbcopy" "$test_dir/uname" "$test_dir/xdg-open" "$test_dir/nvim"
+mkdir -p "$test_dir/project/src" "$test_dir/project/artifacts" "$test_dir/project/My Project"
 : >"$test_dir/project/src/main.ts"
 : >"$test_dir/project/README.md"
 : >"$test_dir/project/Makefile"
+: >"$test_dir/project/My Project/report.md"
 capture="$test_dir/capture"
 choices="$test_dir/choices"
 clipboard_capture="$test_dir/clipboard-capture"
@@ -68,7 +101,7 @@ HERDR_FINGERS_TEST_ACTION="enter" \
   "$project_root/dotfiles/bin/.local/bin/herdr-fingers"
 
 [[ "$(cat "$capture")" == "--browser ./README.md:7|$test_dir/project" ]]
-[[ "$(cat "$choices")" == $'https://example.com/docs\n./README.md:7\nartifacts/' ]]
+[[ "$(cat "$choices")" == $'https://example.com/docs\nMy Project/report.md\n./README.md:7\nartifacts/' ]]
 
 HERDR_FINGERS_TEST_ACTION="ctrl-y" \
   PATH="$test_dir:$PATH" \
@@ -92,8 +125,46 @@ HERDR_FINGERS_TEST_ACTION="ctrl-e" \
   "$project_root/dotfiles/bin/.local/bin/herdr-fingers"
 [[ "$(cat "$capture")" == "--editor ./README.md:7|$test_dir/project" ]]
 
+if HERDR_FINGERS_HERDR_FAIL=1 \
+  PATH="$test_dir:$PATH" \
+  HERDR_BIN_PATH="$test_dir/herdr" \
+  HERDR_ACTIVE_PANE_ID="pane-1" \
+  HERDR_ACTIVE_PANE_CWD="$test_dir/project" \
+  HERDR_FINGERS_CAPTURE="$capture" \
+  HERDR_FINGERS_CHOICES="$choices" \
+  HERDR_FINGERS_CLIPBOARD_CAPTURE="$clipboard_capture" \
+  HERDR_FINGERS_TEST_ACTION="enter" \
+  "$project_root/dotfiles/bin/.local/bin/herdr-fingers" 2>"$test_dir/herdr-error"; then
+  exit 1
+fi
+grep -q 'failed to read pane pane-1' "$test_dir/herdr-error"
+
+set +e
+HERDR_FINGERS_FZF_STATUS=2 \
+  PATH="$test_dir:$PATH" \
+  HERDR_BIN_PATH="$test_dir/herdr" \
+  HERDR_ACTIVE_PANE_ID="pane-1" \
+  HERDR_ACTIVE_PANE_CWD="$test_dir/project" \
+  HERDR_FINGERS_CAPTURE="$capture" \
+  HERDR_FINGERS_CHOICES="$choices" \
+  HERDR_FINGERS_CLIPBOARD_CAPTURE="$clipboard_capture" \
+  HERDR_FINGERS_TEST_ACTION="enter" \
+  "$project_root/dotfiles/bin/.local/bin/herdr-fingers" 2>"$test_dir/fzf-error"
+fzf_status=$?
+set -e
+[[ "$fzf_status" == 2 ]]
+grep -q 'fzf exited with code 2' "$test_dir/fzf-error"
+
 xdg_capture="$test_dir/xdg-capture"
 PATH="$test_dir:$PATH" OPEN_PATH_XDG_CAPTURE="$xdg_capture" \
   "$project_root/dotfiles/bin/.local/bin/open-path" --browser "https://example.com/docs"
 [[ "$(cat "$xdg_capture")" == "https://example.com/docs" ]]
+
+editor_capture="$test_dir/editor-capture"
+PATH="$test_dir:$PATH" \
+OPEN_PATH_EDITOR_CMD="$test_dir/nvim" \
+OPEN_PATH_EDITOR_CAPTURE="$editor_capture" \
+BASE_DIR="$test_dir/project" \
+  "$project_root/dotfiles/bin/.local/bin/open-path" --editor "My Project/report.md"
+[[ "$(cat "$editor_capture")" == "$(realpath "$test_dir/project/My Project/report.md")" ]]
 printf 'herdr-fingers test: ok\n'

@@ -10,6 +10,7 @@ open_path="$(command -v open-path || true)"
 [[ -n "$open_path" ]] || { printf 'herdr-fingers: open-path is required\n' >&2; exit 1; }
 command -v rg >/dev/null 2>&1 || { printf 'herdr-fingers: ripgrep is required\n' >&2; exit 1; }
 command -v fzf >/dev/null 2>&1 || { printf 'herdr-fingers: fzf is required\n' >&2; exit 1; }
+rg --pcre2-version >/dev/null 2>&1 || { printf 'herdr-fingers: ripgrep must support PCRE2\n' >&2; exit 1; }
 
 base_dir="${HERDR_ACTIVE_PANE_CWD:-$PWD}"
 repo_root="$(git -C "$base_dir" rev-parse --show-toplevel 2>/dev/null || true)"
@@ -17,7 +18,15 @@ git_common_dir="$(git -C "$base_dir" rev-parse --path-format=absolute --git-comm
 main_root=""
 [[ "${git_common_dir##*/}" == ".git" ]] && main_root="${git_common_dir%/.git}"
 extensions='md|markdown|mdx|png|jpe?g|gif|webp|heic|heif|pdf|csv|tsv|xlsx|txt|json|ya?ml|toml|lua|sh|zsh|fish|py|js|jsx|ts|tsx|go|rs|java|kt|swift|c|cc|cpp|h|hpp'
-pattern="https?://[^[:space:]<>\"]+|(?:~|/|\\./|\\.\\./)?(?:[[:alnum:]_@%+=,.-]+/)+[[:alnum:]_@%+=,.-]*(?::[0-9]+(?::[0-9]+)?)?|(?:~|/|\\./|\\.\\./)?[[:alnum:]_@%+=,.-]+\\.(?:${extensions})(?::[0-9]+(?::[0-9]+)?)?|(?:Makefile|Dockerfile|Justfile|Taskfile|LICENSE|README|CHANGELOG)"
+url_pattern='https?://[^[:space:]<>\"]+'
+path_prefix='(?:~|/|\./|\.\./)?'
+segment='[[:alnum:]_@%+=,.-]'
+location='(?::[0-9]+(?::[0-9]+)?)?'
+path_pattern="${path_prefix}(?:${segment}+/)+${segment}*${location}"
+file_pattern="${path_prefix}${segment}+\\.(?:${extensions})${location}"
+quoted_pattern="\"[^\"\\r\\n]+(?:/|\\.(?:${extensions})${location})\"|'[^'\\r\\n]+(?:/|\\.(?:${extensions})${location})'"
+bare_pattern='(?:Makefile|Dockerfile|Justfile|Taskfile|LICENSE|README|CHANGELOG)'
+pattern="${url_pattern}|${quoted_pattern}|${path_pattern}|${file_pattern}|${bare_pattern}"
 
 normalize_candidate() {
   local value="$1" previous
@@ -26,6 +35,9 @@ normalize_candidate() {
     value="${value%[.,;:!?\)\]\>]}"
     [[ "$value" == "$previous" ]] && break
   done
+  if [[ "$value" == \"*\" || "$value" == \'*\' ]]; then
+    value="${value:1:${#value}-2}"
+  fi
   printf '%s\n' "$value"
 }
 
@@ -67,9 +79,21 @@ copy_value() {
   fi
 }
 
-candidates="$("$herdr_bin" pane read "$pane_id" --source recent-unwrapped --lines 500 --format text \
+if ! pane_output="$("$herdr_bin" pane read "$pane_id" --source recent-unwrapped --lines 500 --format text)"; then
+  printf 'herdr-fingers: failed to read pane %s\n' "$pane_id" >&2
+  exit 1
+fi
+
+set +e
+candidates="$(printf '%s\n' "$pane_output" \
   | awk '{ rows[NR] = $0 } END { for (i = NR; i >= 1; i--) print rows[i] }' \
-  | rg --only-matching --no-line-number --no-filename --pcre2 "$pattern" || true)"
+  | rg --only-matching --no-line-number --no-filename --pcre2 "$pattern")"
+match_status=$?
+set -e
+if ((match_status > 1)); then
+  printf 'herdr-fingers: ripgrep exited with code %s\n' "$match_status" >&2
+  exit "$match_status"
+fi
 matches="$(while IFS= read -r candidate; do
   [[ -n "$candidate" ]] || continue
   candidate="$(normalize_candidate "$candidate")"
@@ -89,13 +113,24 @@ if [[ -z "$matches" ]]; then
   exit 0
 fi
 
+set +e
 result="$(printf '%s\n' "$matches" | fzf \
   --layout=reverse \
   --border=none \
   --no-info \
   --expect=enter,ctrl-y,ctrl-e \
   --prompt='Pick > ' \
-  --header='Newest first | Enter open | Ctrl-Y copy | Ctrl-E edit')" || exit 0
+  --header='Newest first | Enter open | Ctrl-Y copy | Ctrl-E edit')"
+fzf_status=$?
+set -e
+case "$fzf_status" in
+  0) ;;
+  1|130) exit 0 ;;
+  *)
+    printf 'herdr-fingers: fzf exited with code %s\n' "$fzf_status" >&2
+    exit "$fzf_status"
+    ;;
+esac
 
 action="${result%%$'\n'*}"
 selection="${result#*$'\n'}"

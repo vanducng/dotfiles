@@ -76,6 +76,7 @@ platform-test:
 
 script-test:
 	@./scripts/ci/test-herdr-fingers.sh
+	@./scripts/ci/test-herdr-agents.sh
 
 install-test:
 	@./scripts/ci/test-install.sh

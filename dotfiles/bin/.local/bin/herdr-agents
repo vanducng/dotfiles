@@ -1,0 +1,77 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+herdr_bin="${HERDR_BIN_PATH:-$(command -v herdr || true)}"
+[[ -n "$herdr_bin" ]] || { printf 'herdr-agents: herdr is required\n' >&2; exit 1; }
+command -v jq >/dev/null 2>&1 || { printf 'herdr-agents: jq is required\n' >&2; exit 1; }
+command -v fzf >/dev/null 2>&1 || { printf 'herdr-agents: fzf is required\n' >&2; exit 1; }
+
+workspace_json="$("$herdr_bin" workspace list)" || { printf 'herdr-agents: failed to list workspaces\n' >&2; exit 1; }
+tab_json="$("$herdr_bin" tab list)" || { printf 'herdr-agents: failed to list tabs\n' >&2; exit 1; }
+agent_json="$("$herdr_bin" agent list)" || { printf 'herdr-agents: failed to list agents\n' >&2; exit 1; }
+
+decode_number() {
+  local encoded="$1" alphabet='123456789ABCDEFGHJKMNPQRSTVWXYZ0' value=0 char prefix
+  while [[ -n "$encoded" ]]; do
+    char="${encoded:0:1}"
+    encoded="${encoded:1}"
+    [[ "$alphabet" == *"$char"* ]] || return 1
+    prefix="${alphabet%%"$char"*}"
+    value=$((value * 32 + ${#prefix} + 1))
+  done
+  printf '%s\n' "$value"
+}
+
+rows="$(jq -rn \
+  --argjson workspaces "$workspace_json" \
+  --argjson tabs "$tab_json" \
+  --argjson agents "$agent_json" '
+    ($workspaces.result.workspaces | map({key: .workspace_id, value: .number}) | from_entries) as $workspace_numbers |
+    ($tabs.result.tabs | map({key: .tab_id, value: .number}) | from_entries) as $tab_numbers |
+    $agents.result.agents[] |
+    [
+      $workspace_numbers[.workspace_id],
+      $tab_numbers[.tab_id],
+      (.pane_id | capture(":p(?<number>.+)$").number),
+      .pane_id,
+      (if .focused then "*" else " " end),
+      (.label // .agent // "agent" | gsub("[\\t\\r\\n]"; " ")),
+      (.agent // "unknown" | gsub("[\\t\\r\\n]"; " ")),
+      (.agent_status // "unknown"),
+      (.foreground_cwd // .cwd // "" | gsub("[\\t\\r\\n]"; " "))
+    ] | @tsv
+  ')"
+
+choices=""
+while IFS=$'\t' read -r workspace tab encoded pane_id focused label agent status cwd; do
+  [[ -n "$pane_id" ]] || continue
+  pane="$(decode_number "$encoded")" || continue
+  [[ "$cwd" != "$HOME"* ]] || cwd="~${cwd#"$HOME"}"
+  choices+="${focused} ${workspace}.${tab}.${pane}  ${label}  ${agent}  ${status}  ${cwd}"$'\t'"${pane_id}"$'\n'
+done <<<"$rows"
+
+[[ -n "$choices" ]] || { printf 'No active agents found.\n\nPress Enter to close.'; read -r; exit 0; }
+
+set +e
+selection="$(printf '%s' "$choices" | fzf \
+  --layout=reverse \
+  --border=none \
+  --no-info \
+  --delimiter=$'\t' \
+  --with-nth=1 \
+  --prompt='Agent > ' \
+  --header='Address: workspace.tab.pane | Enter focus')"
+fzf_status=$?
+set -e
+case "$fzf_status" in
+  0) ;;
+  1|130) exit 0 ;;
+  *)
+    printf 'herdr-agents: fzf exited with code %s\n' "$fzf_status" >&2
+    exit "$fzf_status"
+    ;;
+esac
+
+pane_id="${selection##*$'\t'}"
+[[ -n "$pane_id" && "$pane_id" != "$selection" ]] || exit 0
+"$herdr_bin" agent focus "$pane_id" >/dev/null

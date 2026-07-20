@@ -20,19 +20,21 @@ Install the prerequisites first.
 macOS:
 
 ```bash
-brew install git stow mise
+brew install git stow mise fzf jq ripgrep node
 ```
 
 Debian or Ubuntu:
 
 ```bash
 sudo apt-get update
-sudo apt-get install -y git stow
+sudo apt-get install -y git stow fzf jq ripgrep nodejs npm xdg-utils wl-clipboard xclip
 curl https://mise.run | sh
 export PATH="$HOME/.local/bin:$PATH"
 ```
 
-Other Linux distributions can use the matching method in the [mise installation guide](https://mise.jdx.dev/installing-mise.html) and their package manager's GNU Stow package.
+Other Linux distributions can use the matching method in the [mise installation guide](https://mise.jdx.dev/installing-mise.html) and their package manager's GNU Stow package. Linux path copying needs one of `wl-copy`, `xclip`, or `xsel`, and URL opening needs `xdg-open`.
+
+The `C-x Tab` file-opening action also expects the `vd:file-browser` skill at `$HOME/skills/skills/file-browser`. Without it, the picker can still copy paths and open URLs, but it cannot render local files in the browser.
 
 Then clone the repository and run:
 
@@ -63,6 +65,7 @@ Herdr uses the same `C-x` prefix as this repository's tmux setup.
 | `C-x v` | Split down, stacked |
 | `C-x h/j/k/l` | Focus pane |
 | `C-x Tab` | Pick a recent path or URL |
+| `C-x f` | Find an agent by `workspace.tab.pane` address |
 | `C-x Shift-Left/Right` | Previous/next workspace |
 | `C-x Shift-1..9` | Switch to workspace 1-9 |
 | `C-x Shift-Up/Down` | Previous/next agent |
@@ -73,12 +76,14 @@ Herdr uses the same `C-x` prefix as this repository's tmux setup.
 | `C-x [` | Copy mode |
 | `C-x 1..9` | Switch tab |
 | `C-x w` | Workspace picker |
-| `C-x g` | Session navigator |
+| `C-x g` | Search and jump to any workspace, tab, or pane |
 | `C-x r` | Reload config |
 | `C-x R` | Resize mode |
 | `C-x ?` | Active key help |
 
 The picker scans the latest 500 rows of the focused pane and lists matching paths and URLs newest-first. Press `Enter` to open in the file browser, `Ctrl-Y` to copy, or `Ctrl-E` to open in the editor. URLs open in the default browser, and relative paths resolve from the pane's working directory. Exiting the temporary picker returns to the original pane.
+
+Use `C-x f` when the target is an agent. Each row starts with a stable address such as `1.2.30`, meaning workspace 1, tab 2, pane 30. Use `C-x g` for the native searchable tree when the target may be a shell pane. `C-x Shift-Up/Down` remains the fastest way to cycle agents without choosing a specific address.
 
 The config does not copy the tmux sessionizer. Herdr already provides workspace navigation, agent state, mouse control, copy mode, and persistent sessions.
 
