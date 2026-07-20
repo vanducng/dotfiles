@@ -184,6 +184,12 @@ if [[ "${OPEN_PATH_RESOLVE_ONLY:-0}" == 1 ]]; then
   exit 0
 fi
 
+port_open() {
+  local port="$1"
+  (exec 3<>"/dev/tcp/localhost/$port") 2>/dev/null \
+    || { command -v nc >/dev/null 2>&1 && nc -z localhost "$port" >/dev/null 2>&1; }
+}
+
 open_in_browser() {
   local p="$1"
   local server="$HOME/skills/skills/file-browser/scripts/server.cjs"
@@ -199,16 +205,11 @@ open_in_browser() {
   local url
   url="http://localhost:${port}/${route}=$(url_encode "$p")&root=$(url_encode "$root")"
 
-  port_open() {
-    (exec 3<>"/dev/tcp/localhost/$port") 2>/dev/null \
-      || { command -v nc >/dev/null 2>&1 && nc -z localhost "$port" >/dev/null 2>&1; }
-  }
-
-  if ! port_open; then
+  if ! port_open "$port"; then
     ( cd "$HOME" && nohup node "$server" "$flag" "$p" --no-open --port "$port" >/dev/null 2>&1 & )
     local i
     for ((i = 0; i < 50; i++)); do
-      port_open && break
+      port_open "$port" && break
       sleep 0.1
     done
   fi
@@ -245,6 +246,7 @@ open_in_editor() {
       return 1
     }
     exec "$cmd_bin" "$p"
+    return 1
   fi
   local inner cmd_arg
   inner="exec $cmd_bin $(sq "$p")"

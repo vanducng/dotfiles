@@ -215,6 +215,9 @@ if PATH="$test_dir:$PATH" \
   BASE_DIR="$test_dir/project" \
   "$project_root/dotfiles/bin/.local/bin/open-path" --editor "README.md" 2>"$test_dir/editor-error"; then
   exit 1
+else
+  missing_editor_status=$?
 fi
+[[ "$missing_editor_status" == 1 ]]
 grep -q 'editor command not found' "$test_dir/editor-error"
 printf 'herdr-fingers test: ok\n'
