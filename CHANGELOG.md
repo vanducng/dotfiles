@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.7.0](https://github.com/vanducng/dotfiles/compare/v0.6.0...v0.7.0) (2026-07-20)
+
+
+### Features
+
+* **agents:** add shared global instructions ([#55](https://github.com/vanducng/dotfiles/issues/55)) ([4deac9f](https://github.com/vanducng/dotfiles/commit/4deac9f62cefe10b60c157c9c75d0c3cad6ed059))
+* **nvim:** enable PHP LSP ([#49](https://github.com/vanducng/dotfiles/issues/49)) ([4bf0583](https://github.com/vanducng/dotfiles/commit/4bf0583932f074629ad14d9d08feaef40bece257))
+* **skhd:** add tldraw offline shortcut ([#54](https://github.com/vanducng/dotfiles/issues/54)) ([ef25212](https://github.com/vanducng/dotfiles/commit/ef252128560d4459f6b8736f6965d572eb7c8c22))
+
+
+### Bug Fixes
+
+* restored desktop and editor workflows ([#53](https://github.com/vanducng/dotfiles/issues/53)) ([dd32a15](https://github.com/vanducng/dotfiles/commit/dd32a15f5c013c75c3ec1a7caf9c6bc2de641ca3))
+* **zsh:** front mise go bin in PATH to fix go tool/GOROOT mismatch ([c2cfb12](https://github.com/vanducng/dotfiles/commit/c2cfb12fe1a2c8453ee000a131cae070b7e3189c))
+
 ## [0.6.0](https://github.com/vanducng/dotfiles/compare/v0.5.0...v0.6.0) (2026-07-03)
 
 
