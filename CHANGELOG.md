@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.0](https://github.com/vanducng/dotfiles/compare/v0.7.0...v0.8.0) (2026-07-20)
+
+
+### Features
+
+* **herdr:** added portable tmux-style setup ([#56](https://github.com/vanducng/dotfiles/issues/56)) ([dbfebca](https://github.com/vanducng/dotfiles/commit/dbfebca4d49ae083b628c57ece425c157681a891))
+
 ## [0.7.0](https://github.com/vanducng/dotfiles/compare/v0.6.0...v0.7.0) (2026-07-20)
 
 
