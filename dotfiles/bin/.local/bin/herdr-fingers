@@ -45,7 +45,11 @@ resolve_candidate() {
   local raw="$1" path root
   raw="${raw%:[0-9]*:[0-9]*}"
   raw="${raw%:[0-9]*}"
-  [[ "$raw" == "~"* ]] && raw="${HOME}${raw:1}"
+  case "$raw" in
+    \~) raw="$HOME" ;;
+    \~/*) raw="${HOME}${raw:1}" ;;
+    \~*) return 1 ;;
+  esac
 
   if [[ "$raw" == /* ]]; then
     [[ -f "$raw" || -d "$raw" ]] && printf '%s\n' "${raw%/}"

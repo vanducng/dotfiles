@@ -46,7 +46,11 @@ choices=""
 while IFS=$'\t' read -r workspace tab encoded pane_id focused label agent status cwd; do
   [[ -n "$pane_id" ]] || continue
   pane="$(decode_number "$encoded")" || continue
-  [[ "$cwd" != "$HOME"* ]] || cwd="~${cwd#"$HOME"}"
+  if [[ "$cwd" == "$HOME" ]]; then
+    cwd="~"
+  elif [[ "$cwd" == "$HOME/"* ]]; then
+    cwd="~${cwd#"$HOME"}"
+  fi
   choices+="${focused} ${workspace}.${tab}.${pane}  ${label}  ${agent}  ${status}  ${cwd}"$'\t'"${pane_id}"$'\n'
 done <<<"$rows"
 
@@ -74,4 +78,7 @@ esac
 
 pane_id="${selection##*$'\t'}"
 [[ -n "$pane_id" && "$pane_id" != "$selection" ]] || exit 0
-"$herdr_bin" agent focus "$pane_id" >/dev/null
+"$herdr_bin" agent focus "$pane_id" >/dev/null || {
+  printf 'herdr-agents: failed to focus agent %s\n' "$pane_id" >&2
+  exit 1
+}

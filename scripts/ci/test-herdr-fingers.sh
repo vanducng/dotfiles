@@ -82,7 +82,13 @@ set -euo pipefail
 printf '%s\n' "$1" >"$OPEN_PATH_EDITOR_CAPTURE"
 EOF
 
-chmod +x "$test_dir/herdr" "$test_dir/fzf" "$test_dir/rg" "$test_dir/open-path" "$test_dir/pbcopy" "$test_dir/uname" "$test_dir/xdg-open" "$test_dir/nvim"
+cat >"$test_dir/git" <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+exit 1
+EOF
+
+chmod +x "$test_dir/herdr" "$test_dir/fzf" "$test_dir/rg" "$test_dir/open-path" "$test_dir/pbcopy" "$test_dir/uname" "$test_dir/xdg-open" "$test_dir/nvim" "$test_dir/git"
 mkdir -p "$test_dir/project/src" "$test_dir/project/artifacts" "$test_dir/project/My Project"
 : >"$test_dir/project/src/main.ts"
 : >"$test_dir/project/README.md"
