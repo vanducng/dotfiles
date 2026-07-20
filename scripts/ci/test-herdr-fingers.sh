@@ -121,8 +121,7 @@ HERDR_FINGERS_TEST_ACTION="ctrl-y" \
   "$project_root/dotfiles/bin/.local/bin/herdr-fingers"
 [[ "$(cat "$clipboard_capture")" == "./README.md:7" ]]
 
-set +e
-HERDR_FINGERS_CLIPBOARD_FAIL=1 \
+if HERDR_FINGERS_CLIPBOARD_FAIL=1 \
   HERDR_FINGERS_TEST_ACTION="ctrl-y" \
   PATH="$test_dir:$PATH" \
   HERDR_BIN_PATH="$test_dir/herdr" \
@@ -131,9 +130,11 @@ HERDR_FINGERS_CLIPBOARD_FAIL=1 \
   HERDR_FINGERS_CAPTURE="$capture" \
   HERDR_FINGERS_CHOICES="$choices" \
   HERDR_FINGERS_CLIPBOARD_CAPTURE="$clipboard_capture" \
-  "$project_root/dotfiles/bin/.local/bin/herdr-fingers" 2>"$test_dir/clipboard-error"
-clipboard_status=$?
-set -e
+  "$project_root/dotfiles/bin/.local/bin/herdr-fingers" 2>"$test_dir/clipboard-error"; then
+  exit 1
+else
+  clipboard_status=$?
+fi
 [[ "$clipboard_status" == 1 ]]
 grep -q 'pbcopy failed' "$test_dir/clipboard-error"
 
@@ -162,8 +163,7 @@ if HERDR_FINGERS_HERDR_FAIL=1 \
 fi
 grep -q 'failed to read pane pane-1' "$test_dir/herdr-error"
 
-set +e
-HERDR_FINGERS_FZF_STATUS=2 \
+if HERDR_FINGERS_FZF_STATUS=2 \
   PATH="$test_dir:$PATH" \
   HERDR_BIN_PATH="$test_dir/herdr" \
   HERDR_ACTIVE_PANE_ID="pane-1" \
@@ -172,9 +172,11 @@ HERDR_FINGERS_FZF_STATUS=2 \
   HERDR_FINGERS_CHOICES="$choices" \
   HERDR_FINGERS_CLIPBOARD_CAPTURE="$clipboard_capture" \
   HERDR_FINGERS_TEST_ACTION="enter" \
-  "$project_root/dotfiles/bin/.local/bin/herdr-fingers" 2>"$test_dir/fzf-error"
-fzf_status=$?
-set -e
+  "$project_root/dotfiles/bin/.local/bin/herdr-fingers" 2>"$test_dir/fzf-error"; then
+  exit 1
+else
+  fzf_status=$?
+fi
 [[ "$fzf_status" == 2 ]]
 grep -q 'fzf exited with code 2' "$test_dir/fzf-error"
 

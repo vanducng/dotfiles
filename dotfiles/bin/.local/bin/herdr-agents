@@ -22,10 +22,14 @@ decode_number() {
   printf '%s\n' "$value"
 }
 
-rows="$(jq -rn \
+if ! rows="$(jq -rn \
   --argjson workspaces "$workspace_json" \
   --argjson tabs "$tab_json" \
   --argjson agents "$agent_json" '
+    if ($workspaces.result.workspaces | type) != "array" or
+       ($tabs.result.tabs | type) != "array" or
+       ($agents.result.agents | type) != "array"
+    then error("unexpected herdr response") else
     ($workspaces.result.workspaces | map({key: .workspace_id, value: .number}) | from_entries) as $workspace_numbers |
     ($tabs.result.tabs | map({key: .tab_id, value: .number}) | from_entries) as $tab_numbers |
     $agents.result.agents[] |
@@ -40,7 +44,12 @@ rows="$(jq -rn \
       (.agent_status // "unknown" | gsub("[\\t\\r\\n]"; " ")),
       (.foreground_cwd // .cwd // "" | gsub("[\\t\\r\\n]"; " "))
     ] | @tsv
+    end
   ')"
+then
+  printf 'herdr-agents: unexpected herdr response format\n' >&2
+  exit 1
+fi
 
 choices=""
 while IFS=$'\t' read -r workspace tab encoded pane_id focused label agent status cwd; do

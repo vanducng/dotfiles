@@ -17,6 +17,10 @@ case "$1 $2" in
     ;;
   'agent list')
     [[ "${HERDR_AGENTS_HERDR_FAIL:-0}" == 0 ]] || exit 7
+    if [[ "${HERDR_AGENTS_HERDR_MALFORMED:-0}" == 1 ]]; then
+      printf '%s\n' '{}'
+      exit 0
+    fi
     printf '%s\n' '{"result":{"agents":[{"workspace_id":"wA","tab_id":"wA:t2","pane_id":"wA:pY","focused":true,"label":"review","agent":"codex","agent_status":"working","foreground_cwd":"/tmp/project"}]}}'
     ;;
   'agent focus')
@@ -57,6 +61,16 @@ if HERDR_AGENTS_HERDR_FAIL=1 \
   exit 1
 fi
 grep -q 'failed to list agents' "$test_dir/herdr-error"
+
+if HERDR_AGENTS_HERDR_MALFORMED=1 \
+  PATH="$test_dir:$PATH" \
+  HERDR_BIN_PATH="$test_dir/herdr" \
+  HERDR_AGENTS_CHOICES="$choices" \
+  HERDR_AGENTS_FOCUS_CAPTURE="$focus_capture" \
+  "$project_root/dotfiles/bin/.local/bin/herdr-agents" 2>"$test_dir/herdr-format-error"; then
+  exit 1
+fi
+grep -q 'unexpected herdr response format' "$test_dir/herdr-format-error"
 
 if HERDR_AGENTS_FZF_STATUS=2 \
   PATH="$test_dir:$PATH" \
