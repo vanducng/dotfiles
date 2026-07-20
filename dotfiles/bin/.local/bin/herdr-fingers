@@ -66,13 +66,13 @@ resolve_candidate() {
 
 copy_value() {
   if command -v pbcopy >/dev/null 2>&1; then
-    printf '%s' "$1" | pbcopy
+    printf '%s' "$1" | pbcopy || { printf 'herdr-fingers: pbcopy failed\n' >&2; return 1; }
   elif command -v wl-copy >/dev/null 2>&1; then
-    printf '%s' "$1" | wl-copy
+    printf '%s' "$1" | wl-copy || { printf 'herdr-fingers: wl-copy failed\n' >&2; return 1; }
   elif command -v xclip >/dev/null 2>&1; then
-    printf '%s' "$1" | xclip -selection clipboard
+    printf '%s' "$1" | xclip -selection clipboard || { printf 'herdr-fingers: xclip failed\n' >&2; return 1; }
   elif command -v xsel >/dev/null 2>&1; then
-    printf '%s' "$1" | xsel --clipboard --input
+    printf '%s' "$1" | xsel --clipboard --input || { printf 'herdr-fingers: xsel failed\n' >&2; return 1; }
   else
     printf 'herdr-fingers: no clipboard command found\n' >&2
     return 1

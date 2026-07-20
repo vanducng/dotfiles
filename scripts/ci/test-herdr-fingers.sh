@@ -61,6 +61,7 @@ cat >"$test_dir/pbcopy" <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
 cat >"$HERDR_FINGERS_CLIPBOARD_CAPTURE"
+[[ "${HERDR_FINGERS_CLIPBOARD_FAIL:-0}" == 0 ]] || exit 4
 EOF
 
 cat >"$test_dir/uname" <<'EOF'
@@ -113,6 +114,22 @@ HERDR_FINGERS_TEST_ACTION="ctrl-y" \
   HERDR_FINGERS_CLIPBOARD_CAPTURE="$clipboard_capture" \
   "$project_root/dotfiles/bin/.local/bin/herdr-fingers"
 [[ "$(cat "$clipboard_capture")" == "./README.md:7" ]]
+
+set +e
+HERDR_FINGERS_CLIPBOARD_FAIL=1 \
+  HERDR_FINGERS_TEST_ACTION="ctrl-y" \
+  PATH="$test_dir:$PATH" \
+  HERDR_BIN_PATH="$test_dir/herdr" \
+  HERDR_ACTIVE_PANE_ID="pane-1" \
+  HERDR_ACTIVE_PANE_CWD="$test_dir/project" \
+  HERDR_FINGERS_CAPTURE="$capture" \
+  HERDR_FINGERS_CHOICES="$choices" \
+  HERDR_FINGERS_CLIPBOARD_CAPTURE="$clipboard_capture" \
+  "$project_root/dotfiles/bin/.local/bin/herdr-fingers" 2>"$test_dir/clipboard-error"
+clipboard_status=$?
+set -e
+[[ "$clipboard_status" == 1 ]]
+grep -q 'pbcopy failed' "$test_dir/clipboard-error"
 
 HERDR_FINGERS_TEST_ACTION="ctrl-e" \
   PATH="$test_dir:$PATH" \
@@ -167,4 +184,12 @@ OPEN_PATH_EDITOR_CAPTURE="$editor_capture" \
 BASE_DIR="$test_dir/project" \
   "$project_root/dotfiles/bin/.local/bin/open-path" --editor "My Project/report.md"
 [[ "$(cat "$editor_capture")" == "$(realpath "$test_dir/project/My Project/report.md")" ]]
+
+if PATH="$test_dir:$PATH" \
+  OPEN_PATH_EDITOR_CMD="$test_dir/missing-editor" \
+  BASE_DIR="$test_dir/project" \
+  "$project_root/dotfiles/bin/.local/bin/open-path" --editor "README.md" 2>"$test_dir/editor-error"; then
+  exit 1
+fi
+grep -q 'editor command not found' "$test_dir/editor-error"
 printf 'herdr-fingers test: ok\n'

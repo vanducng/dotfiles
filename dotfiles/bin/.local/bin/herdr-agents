@@ -37,7 +37,7 @@ rows="$(jq -rn \
       (if .focused then "*" else " " end),
       (.label // .agent // "agent" | gsub("[\\t\\r\\n]"; " ")),
       (.agent // "unknown" | gsub("[\\t\\r\\n]"; " ")),
-      (.agent_status // "unknown"),
+      (.agent_status // "unknown" | gsub("[\\t\\r\\n]"; " ")),
       (.foreground_cwd // .cwd // "" | gsub("[\\t\\r\\n]"; " "))
     ] | @tsv
   ')"

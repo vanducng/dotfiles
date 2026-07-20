@@ -235,6 +235,10 @@ open_in_editor() {
   local p="$1"
   local cmd_bin; cmd_bin="$(resolve_editor_cmd)"
   if [[ "$(uname -s)" != "Darwin" ]]; then
+    command -v "$cmd_bin" >/dev/null 2>&1 || {
+      printf 'open-path: editor command not found: %s\n' "$cmd_bin" >&2
+      return 1
+    }
     exec "$cmd_bin" "$p"
   fi
   local inner cmd_arg
