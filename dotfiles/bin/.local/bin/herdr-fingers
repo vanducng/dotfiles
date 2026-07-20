@@ -1,0 +1,152 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+pane_id="${HERDR_ACTIVE_PANE_ID:-}"
+[[ -n "$pane_id" ]] || { printf 'herdr-fingers: no active pane\n' >&2; exit 1; }
+
+herdr_bin="${HERDR_BIN_PATH:-$(command -v herdr || true)}"
+open_path="$(command -v open-path || true)"
+[[ -n "$herdr_bin" ]] || { printf 'herdr-fingers: herdr is required\n' >&2; exit 1; }
+[[ -n "$open_path" ]] || { printf 'herdr-fingers: open-path is required\n' >&2; exit 1; }
+command -v rg >/dev/null 2>&1 || { printf 'herdr-fingers: ripgrep is required\n' >&2; exit 1; }
+command -v fzf >/dev/null 2>&1 || { printf 'herdr-fingers: fzf is required\n' >&2; exit 1; }
+rg --pcre2-version >/dev/null 2>&1 || { printf 'herdr-fingers: ripgrep must support PCRE2\n' >&2; exit 1; }
+
+base_dir="${HERDR_ACTIVE_PANE_CWD:-$PWD}"
+repo_root="$(git -C "$base_dir" rev-parse --show-toplevel 2>/dev/null || true)"
+git_common_dir="$(git -C "$base_dir" rev-parse --path-format=absolute --git-common-dir 2>/dev/null || true)"
+main_root=""
+[[ "${git_common_dir##*/}" == ".git" ]] && main_root="${git_common_dir%/.git}"
+extensions='md|markdown|mdx|png|jpe?g|gif|webp|heic|heif|pdf|csv|tsv|xlsx|txt|json|ya?ml|toml|lua|sh|zsh|fish|py|js|jsx|ts|tsx|go|rs|java|kt|swift|c|cc|cpp|h|hpp'
+url_pattern='https?://[^[:space:]<>\"]+'
+path_prefix='(?:~|/|\./|\.\./)?'
+segment='[[:alnum:]_@%+=,.-]'
+location='(?::[0-9]+(?::[0-9]+)?)?'
+path_pattern="${path_prefix}(?:${segment}+/)+${segment}*${location}"
+file_pattern="${path_prefix}${segment}+\\.(?:${extensions})${location}"
+quoted_pattern="\"[^\"\\r\\n]+(?:/|\\.(?:${extensions})${location})\"|'[^'\\r\\n]+(?:/|\\.(?:${extensions})${location})'"
+bare_pattern='(?:Makefile|Dockerfile|Justfile|Taskfile|LICENSE|README|CHANGELOG)'
+pattern="${url_pattern}|${quoted_pattern}|${path_pattern}|${file_pattern}|${bare_pattern}"
+
+normalize_candidate() {
+  local value="$1" previous
+  while true; do
+    previous="$value"
+    value="${value%[.,;:!?\)\]\>]}"
+    [[ "$value" == "$previous" ]] && break
+  done
+  if [[ "$value" == \"*\" || "$value" == \'*\' ]]; then
+    value="${value:1:${#value}-2}"
+  fi
+  printf '%s\n' "$value"
+}
+
+resolve_candidate() {
+  local raw="$1" path root
+  raw="${raw%:[0-9]*:[0-9]*}"
+  raw="${raw%:[0-9]*}"
+  case "$raw" in
+    \~) raw="$HOME" ;;
+    \~/*) raw="${HOME}${raw:1}" ;;
+    \~*) return 1 ;;
+  esac
+
+  if [[ "$raw" == /* ]]; then
+    [[ -f "$raw" || -d "$raw" ]] && printf '%s\n' "${raw%/}"
+    return
+  fi
+
+  raw="${raw#./}"
+  for root in "$base_dir" "$repo_root" "$main_root"; do
+    [[ -n "$root" ]] || continue
+    path="$root/$raw"
+    if [[ -f "$path" || -d "$path" ]]; then
+      printf '%s\n' "${path%/}"
+      return
+    fi
+  done
+  return 1
+}
+
+copy_value() {
+  if command -v pbcopy >/dev/null 2>&1; then
+    printf '%s' "$1" | pbcopy || { printf 'herdr-fingers: pbcopy failed\n' >&2; return 1; }
+  elif command -v wl-copy >/dev/null 2>&1; then
+    printf '%s' "$1" | wl-copy || { printf 'herdr-fingers: wl-copy failed\n' >&2; return 1; }
+  elif command -v xclip >/dev/null 2>&1; then
+    printf '%s' "$1" | xclip -selection clipboard || { printf 'herdr-fingers: xclip failed\n' >&2; return 1; }
+  elif command -v xsel >/dev/null 2>&1; then
+    printf '%s' "$1" | xsel --clipboard --input || { printf 'herdr-fingers: xsel failed\n' >&2; return 1; }
+  else
+    printf 'herdr-fingers: no clipboard command found\n' >&2
+    return 1
+  fi
+}
+
+if ! pane_output="$("$herdr_bin" pane read "$pane_id" --source recent-unwrapped --lines 500 --format text)"; then
+  printf 'herdr-fingers: failed to read pane %s\n' "$pane_id" >&2
+  exit 1
+fi
+
+set +e
+candidates="$(printf '%s\n' "$pane_output" \
+  | awk '{ rows[NR] = $0 } END { for (i = NR; i >= 1; i--) print rows[i] }' \
+  | rg --only-matching --no-line-number --no-filename --pcre2 "$pattern")"
+match_status=$?
+set -e
+if ((match_status > 1)); then
+  printf 'herdr-fingers: ripgrep exited with code %s\n' "$match_status" >&2
+  exit "$match_status"
+fi
+matches="$(while IFS= read -r candidate; do
+  [[ -n "$candidate" ]] || continue
+  candidate="$(normalize_candidate "$candidate")"
+  [[ -n "$candidate" ]] || continue
+  if [[ "$candidate" == http://* || "$candidate" == https://* ]]; then
+    printf '%s\t%s\n' "$candidate" "$candidate"
+    continue
+  fi
+  resolved_key="$(resolve_candidate "$candidate")" || continue
+  [[ -n "$resolved_key" && "$resolved_key" != "${HOME%/}" ]] || continue
+  printf '%s\t%s\n' "$resolved_key" "$candidate"
+done <<<"$candidates" | awk -F '\t' '!seen[$1]++ { sub(/^[^\t]*\t/, ""); print }')"
+
+if [[ -z "$matches" ]]; then
+  printf 'No paths or URLs found in the latest 500 rows.\n\nPress Enter to close.'
+  read -r
+  exit 0
+fi
+
+set +e
+result="$(printf '%s\n' "$matches" | fzf \
+  --layout=reverse \
+  --border=none \
+  --no-info \
+  --expect=enter,ctrl-y,ctrl-e \
+  --prompt='Pick > ' \
+  --header='Newest first | Enter open | Ctrl-Y copy | Ctrl-E edit')"
+fzf_status=$?
+set -e
+case "$fzf_status" in
+  0) ;;
+  1|130) exit 0 ;;
+  *)
+    printf 'herdr-fingers: fzf exited with code %s\n' "$fzf_status" >&2
+    exit "$fzf_status"
+    ;;
+esac
+
+action="${result%%$'\n'*}"
+selection="${result#*$'\n'}"
+if [[ "$selection" == "$result" ]]; then
+  [[ "$action" != enter && "$action" != ctrl-y && "$action" != ctrl-e ]] || exit 0
+  action="enter"
+  selection="$result"
+fi
+[[ -n "$selection" ]] || exit 0
+
+case "$action" in
+  ctrl-y) copy_value "$selection" ;;
+  ctrl-e) BASE_DIR="$base_dir" "$open_path" --editor "$selection" ;;
+  *) BASE_DIR="$base_dir" "$open_path" --browser "$selection" ;;
+esac

@@ -18,9 +18,25 @@ previous_agent = "prefix+shift+up"
 next_agent = "prefix+shift+down"
 focus_agent = "prefix+ctrl+shift+1..9"
 previous_tab = ["prefix+p", "prefix+space"]
+cycle_pane_next = ""
 last_pane = "prefix+a"
 split_vertical = "prefix+m"
 split_horizontal = "prefix+v"
+
+[[keys.command]]
+key = "prefix+tab"
+type = "pane"
+command = "herdr-fingers"
+description = "pick recent path"
+
+[[keys.command]]
+key = "prefix+f"
+type = "pane"
+command = "herdr-agents"
+description = "focus agent by address"
+
+[ui]
+agent_panel_scope = "current"
 
 [ui.sound]
 enabled = true
