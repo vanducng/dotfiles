@@ -1,0 +1,124 @@
+---
+title: "Herdr"
+---
+
+Herdr is the terminal workspace manager for coding agents. It is unrelated to Laravel Herd.
+
+## Source of truth
+
+The repository owns both parts of the setup:
+
+- `dotfiles/herdr/.config/herdr/config.toml` - theme, notifications, terminal behavior, and keys
+- `dotfiles/mise/.config/mise/config.toml` - Herdr binary installation and updates
+
+Stow links the config to `~/.config/herdr/config.toml`. Logs and session state in that directory remain local and are not committed.
+
+## Install
+
+Install the prerequisites first.
+
+macOS:
+
+```bash
+brew install git stow mise
+```
+
+Debian or Ubuntu:
+
+```bash
+sudo apt-get update
+sudo apt-get install -y git stow
+curl https://mise.run | sh
+export PATH="$HOME/.local/bin:$PATH"
+```
+
+Other Linux distributions can use the matching method in the [mise installation guide](https://mise.jdx.dev/installing-mise.html) and their package manager's GNU Stow package.
+
+Then clone the repository and run:
+
+```bash
+make stow-install
+mise install
+mise exec -- herdr --version
+mise exec -- herdr
+```
+
+The mise GitHub backend is used because it works on macOS and Linux, including mise versions that do not yet expose the short `herdr` registry name.
+
+If `~/.config/herdr/config.toml` already exists as a regular file, preserve it before Stow takes ownership:
+
+```bash
+mv ~/.config/herdr/config.toml ~/.config/herdr/config.toml.pre-dotfiles
+make stow-herdr
+```
+
+## Tmux-style keys
+
+Herdr uses the same `C-x` prefix as this repository's tmux setup.
+
+| Key | Action |
+|---|---|
+| `C-x c` | New tab |
+| `C-x m` | Split right, side by side |
+| `C-x v` | Split down, stacked |
+| `C-x h/j/k/l` | Focus pane |
+| `C-x Shift-Left/Right` | Previous/next workspace |
+| `C-x Shift-1..9` | Switch to workspace 1-9 |
+| `C-x Shift-Up/Down` | Previous/next agent |
+| `C-x Ctrl-Shift-1..9` | Focus agent 1-9 |
+| `C-x Space` | Previous tab |
+| `C-x a` | Last pane |
+| `C-x z` | Zoom pane |
+| `C-x [` | Copy mode |
+| `C-x 1..9` | Switch tab |
+| `C-x w` | Workspace picker |
+| `C-x g` | Session navigator |
+| `C-x r` | Reload config |
+| `C-x R` | Resize mode |
+| `C-x ?` | Active key help |
+
+The config does not copy tmux plugins or the tmux sessionizer. Herdr already provides workspace navigation, agent state, mouse control, copy mode, and persistent sessions.
+
+## Reload and update
+
+Reload most config changes without stopping panes:
+
+```bash
+herdr server reload-config
+```
+
+Inspect both client and server before updating the mise-managed binary:
+
+```bash
+herdr status
+mise upgrade github:ogulcancelik/herdr
+```
+
+An updated client can remain attached only when the old server uses a compatible protocol. The 0.7.0 to 0.7.4 update changes protocol 14 to 16, so defer that switch until the old server's pane processes can safely exit:
+
+```bash
+mise exec -- herdr --version
+herdr server stop
+if [ -x "$HOME/.local/bin/herdr" ]; then
+  mv "$HOME/.local/bin/herdr" "$HOME/.local/bin/herdr.pre-mise"
+fi
+mise exec -- herdr
+```
+
+After that session exits, start a fresh Zsh and confirm `herdr --version` resolves the mise-managed release.
+
+## Diagnostics
+
+```bash
+herdr --version
+herdr status
+tail -f ~/.config/herdr/herdr-server.log
+```
+
+Herdr falls back to safe defaults and reports a startup warning when a config value is invalid. The in-app help at `C-x ?` shows the bindings actually loaded by the running session.
+
+## References
+
+- [Herdr configuration](https://herdr.dev/docs/configuration/)
+- [Herdr keyboard guide](https://herdr.dev/docs/keyboard/)
+- [Herdr installation](https://herdr.dev/docs/install/)

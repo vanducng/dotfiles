@@ -39,7 +39,7 @@ brew --version
 
 ```bash
 # Install essential tools
-brew install git stow
+brew install git stow mise
 
 # Install development tools
 brew install neovim tmux fzf ripgrep fd
@@ -91,10 +91,19 @@ make stow-install
 # This creates symlinks for:
 # - Shell configuration (zsh)
 # - Terminal multiplexer (tmux)
+# - Agent workspace manager (Herdr)
 # - Editor configuration (neovim)
 # - Window manager (yabai, skhd)
 # - Application configs (kitty, ghostty, etc.)
+
+# Install the managed CLI versions, including Herdr
+mise install
+
+# Verify Herdr
+mise exec -- herdr --version
 ```
+
+New Zsh sessions activate mise automatically. Run `mise exec -- herdr` to start Herdr immediately in the current shell.
 
 ## 🐚 Step 6: Shell Setup
 

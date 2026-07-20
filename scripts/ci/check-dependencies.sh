@@ -20,6 +20,7 @@ declare -A TOOLS=(
     ["ghostty"]="optional:GPU-accelerated terminal"
     ["git"]="required:Version control"
     ["hammerspoon"]="optional:macOS automation (macOS only)"
+    ["herdr"]="required:Agent terminal workspace manager"
     ["jq"]="required:JSON processing"
     ["karabiner"]="optional:Keyboard customization (macOS only)"
     ["kitty"]="optional:Terminal emulator"

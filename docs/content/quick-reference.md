@@ -41,6 +41,17 @@ tmux kill-server && tmux new-session
 | `C-x + Tab` | Tmux Fingers | `C-x + a` | Zoom Pane |
 | `C-x + r` | Reload Config | `C-x + i` | Show Pane Numbers |
 
+### Herdr (Prefix: C-x)
+| Key | Action | Key | Action |
+|-----|--------|-----|--------|
+| `C-x + m` | Split Right | `C-x + v` | Split Down |
+| `C-x + hjkl` | Navigate Panes | `C-x + Space` | Previous Tab |
+| `C-x + Shift-Left/Right` | Previous/Next Workspace | `C-x + Shift-1..9` | Switch Workspace |
+| `C-x + Shift-Up/Down` | Previous/Next Agent | `C-x + Ctrl-Shift-1..9` | Focus Agent |
+| `C-x + a` | Last Pane | `C-x + c` | New Tab |
+| `C-x + r` | Reload Config | `C-x + R` | Resize Mode |
+| `C-x + w` | Workspace Picker | `C-x + ?` | Key Help |
+
 ### Neovim
 | Key | Action | Key | Action |
 |-----|--------|-----|--------|
@@ -66,6 +77,7 @@ yabai --restart-service
 
 # Reload configurations
 tmux source-file ~/.tmux.conf
+herdr server reload-config
 source ~/.zshrc
 
 # Update plugins
@@ -122,6 +134,7 @@ C-]     # Accept line
 ~/.config/yabai/         # Yabai config
 ~/.config/skhd/          # SKHD config
 ~/.config/atuin/         # Atuin config
+~/.config/herdr/         # Herdr config and local runtime state
 ~/.tmux.conf             # Tmux config
 ~/.zshrc                 # Zsh config
 
@@ -148,6 +161,7 @@ ps aux | grep -E "(yabai|skhd|nvim|tmux)"
 # Check health
 :checkhealth  # Neovim
 tmux info     # Tmux
+herdr status  # Herdr client and server
 
 # View logs
 tail -f /usr/local/var/log/yabai/yabai.err.log
@@ -157,13 +171,16 @@ tail -f /usr/local/var/log/skhd/skhd.err.log
 ## 🛠️ Installation Commands
 
 ```bash
-# Install dotfiles
+# Install prerequisites
+brew install git stow mise
+
+# Install dotfiles and managed tools
 git clone https://github.com/vanducng/dotfiles.git ~/.dotfiles
 cd ~/.dotfiles
-make stow-install
-
-# Install dependencies
 ./scripts/macos-deps.sh
+make stow-install
+mise install
+mise exec -- herdr --version
 
 # Setup AI tools
 :Copilot auth  # GitHub Copilot

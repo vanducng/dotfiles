@@ -7,7 +7,7 @@ import remarkGfm from 'remark-gfm';
 
 export default defineConfig({
   site: 'https://dotfiles.vanducng.dev',
-  // GFM (tables, strikethrough) for MDX — .mdx does not get it by default.
+  // GFM (tables, strikethrough) for MDX - .mdx does not get it by default.
   // NOTE: markdown.remarkPlugins is deprecated in Astro 6; migrate when bumping major.
   markdown: { remarkPlugins: [remarkGfm] },
   integrations: [
@@ -17,7 +17,7 @@ export default defineConfig({
       // Apply Starlight's markdown pipeline (asides, heading links) to the custom-loader content/ dir.
       markdown: { processedDirs: ['./content'] },
       description:
-        'AI-enhanced macOS development environment — tiling window management, terminal workflows, and integrated AI coding.',
+        'AI-enhanced macOS development environment - tiling window management, terminal workflows, and integrated AI coding.',
       customCss: ['./src/styles/theme.css'],
       expressiveCode: {
         themes: ['catppuccin-mocha', 'catppuccin-latte'],
@@ -30,7 +30,7 @@ export default defineConfig({
       },
       plugins: [
         starlightLlmsTxt({
-          projectName: 'dotfiles — Duc\'s macOS workspace',
+          projectName: 'dotfiles - Duc\'s macOS workspace',
           description:
             'AI-enhanced macOS development environment: tiling window management, terminal workflows, and integrated AI coding.',
         }),
@@ -44,7 +44,7 @@ export default defineConfig({
         },
         {
           label: 'Core Tools',
-          items: ['neovim', 'tmux', 'atuin', 'skhd', 'zen-mode'],
+          items: ['neovim', 'tmux', 'herdr', 'atuin', 'skhd', 'zen-mode'],
         },
         {
           label: 'AI Tools',
