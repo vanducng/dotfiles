@@ -35,12 +35,12 @@ type = "pane"
 command = "herdr-agents"
 description = "focus agent by address"
 
+[ui]
+agent_panel_scope = "current"
+
 [ui.sound]
 enabled = true
 
 [ui.toast]
 enabled = true
 delivery = "herdr"
-
-[ui]
-agent_panel_scope = "current"

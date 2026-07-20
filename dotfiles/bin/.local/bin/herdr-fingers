@@ -139,6 +139,7 @@ esac
 action="${result%%$'\n'*}"
 selection="${result#*$'\n'}"
 if [[ "$selection" == "$result" ]]; then
+  [[ "$action" != enter && "$action" != ctrl-y && "$action" != ctrl-e ]] || exit 0
   action="enter"
   selection="$result"
 fi

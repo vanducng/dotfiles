@@ -199,11 +199,16 @@ open_in_browser() {
   local url
   url="http://localhost:${port}/${route}=$(url_encode "$p")&root=$(url_encode "$root")"
 
-  if ! (exec 3<>"/dev/tcp/localhost/$port") 2>/dev/null; then
+  port_open() {
+    (exec 3<>"/dev/tcp/localhost/$port") 2>/dev/null \
+      || { command -v nc >/dev/null 2>&1 && nc -z localhost "$port" >/dev/null 2>&1; }
+  }
+
+  if ! port_open; then
     ( cd "$HOME" && nohup node "$server" "$flag" "$p" --no-open --port "$port" >/dev/null 2>&1 & )
     local i
     for ((i = 0; i < 50; i++)); do
-      (exec 3<>"/dev/tcp/localhost/$port") 2>/dev/null && break
+      port_open && break
       sleep 0.1
     done
   fi
