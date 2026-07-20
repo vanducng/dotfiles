@@ -239,14 +239,14 @@ resolve_editor_cmd() {
 
 open_in_editor() {
   local p="$1"
-  local cmd_bin; cmd_bin="$(resolve_editor_cmd)"
+  local cmd_bin requested_cmd; cmd_bin="$(resolve_editor_cmd)"; requested_cmd="$cmd_bin"
   if [[ "$(uname -s)" != "Darwin" ]]; then
-    command -v "$cmd_bin" >/dev/null 2>&1 || {
-      printf 'open-path: editor command not found: %s\n' "$cmd_bin" >&2
+    cmd_bin="$(command -v "$cmd_bin" || true)"
+    [[ -n "$cmd_bin" ]] || {
+      printf 'open-path: editor command not found: %s\n' "$requested_cmd" >&2
       return 1
     }
     exec "$cmd_bin" "$p"
-    return 1
   fi
   local inner cmd_arg
   inner="exec $cmd_bin $(sq "$p")"

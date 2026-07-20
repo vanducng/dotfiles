@@ -3,7 +3,7 @@ set -euo pipefail
 
 project_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 test_dir="$(mktemp -d "${TMPDIR:-/tmp}/herdr-agents-test.XXXXXX")"
-trap 'rm -r "$test_dir"' EXIT
+trap '[[ -n "${test_dir:-}" ]] && rm -r "$test_dir"' EXIT
 
 cat >"$test_dir/herdr" <<'EOF'
 #!/usr/bin/env bash
@@ -25,7 +25,7 @@ case "$1 $2" in
     ;;
   'agent focus')
     [[ "${HERDR_AGENTS_FOCUS_FAIL:-0}" == 0 ]] || exit 8
-    printf '%s\n' "$3" >"$HERDR_AGENTS_FOCUS_CAPTURE"
+    printf '%s\n' "${3:-}" >"${HERDR_AGENTS_FOCUS_CAPTURE:?}"
     ;;
   *) exit 2 ;;
 esac
