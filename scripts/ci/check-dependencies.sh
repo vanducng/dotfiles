@@ -18,6 +18,7 @@ declare -A TOOLS=(
     ["browse"]="optional:Browser automation CLI for vd browser/web-e2e skills (npm i -g @browserbasehq/browse-cli)"
     ["direnv"]="required:Environment management"
     ["ghostty"]="optional:GPU-accelerated terminal"
+    ["herdr"]="required:Agent terminal workspace manager"
     ["git"]="required:Version control"
     ["hammerspoon"]="optional:macOS automation (macOS only)"
     ["jq"]="required:JSON processing"

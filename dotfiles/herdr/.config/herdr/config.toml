@@ -1,0 +1,24 @@
+onboarding = false
+
+[theme]
+name = "catppuccin"
+
+[terminal]
+shell_mode = "auto"
+new_cwd = "follow"
+
+[keys]
+prefix = "ctrl+x"
+reload_config = "prefix+r"
+resize_mode = "prefix+shift+r"
+previous_tab = ["prefix+p", "prefix+space"]
+last_pane = "prefix+a"
+split_vertical = "prefix+m"
+split_horizontal = "prefix+v"
+
+[ui.sound]
+enabled = true
+
+[ui.toast]
+enabled = true
+delivery = "herdr"
