@@ -46,6 +46,8 @@ tmux kill-server && tmux new-session
 |-----|--------|-----|--------|
 | `C-x + m` | Split Right | `C-x + v` | Split Down |
 | `C-x + hjkl` | Navigate Panes | `C-x + Space` | Previous Tab |
+| `C-x + Shift-Left/Right` | Previous/Next Workspace | `C-x + Shift-1..9` | Switch Workspace |
+| `C-x + Shift-Up/Down` | Previous/Next Agent | `C-x + Ctrl-Shift-1..9` | Focus Agent |
 | `C-x + a` | Last Pane | `C-x + c` | New Tab |
 | `C-x + r` | Reload Config | `C-x + R` | Resize Mode |
 | `C-x + w` | Workspace Picker | `C-x + ?` | Key Help |

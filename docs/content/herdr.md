@@ -62,6 +62,10 @@ Herdr uses the same `C-x` prefix as this repository's tmux setup.
 | `C-x m` | Split right, side by side |
 | `C-x v` | Split down, stacked |
 | `C-x h/j/k/l` | Focus pane |
+| `C-x Shift-Left/Right` | Previous/next workspace |
+| `C-x Shift-1..9` | Switch to workspace 1-9 |
+| `C-x Shift-Up/Down` | Previous/next agent |
+| `C-x Ctrl-Shift-1..9` | Focus agent 1-9 |
 | `C-x Space` | Previous tab |
 | `C-x a` | Last pane |
 | `C-x z` | Zoom pane |
