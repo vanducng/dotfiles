@@ -17,6 +17,7 @@ declare -A TOOLS=(
     ["atuin"]="required:Shell history sync"
     ["browse"]="optional:Browser automation CLI for vd browser/web-e2e skills (npm i -g @browserbasehq/browse-cli)"
     ["direnv"]="required:Environment management"
+    ["fzf"]="required:Fuzzy finder"
     ["ghostty"]="optional:GPU-accelerated terminal"
     ["git"]="required:Version control"
     ["hammerspoon"]="optional:macOS automation (macOS only)"

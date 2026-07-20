@@ -62,6 +62,7 @@ Herdr uses the same `C-x` prefix as this repository's tmux setup.
 | `C-x m` | Split right, side by side |
 | `C-x v` | Split down, stacked |
 | `C-x h/j/k/l` | Focus pane |
+| `C-x Tab` | Pick a recent path or URL |
 | `C-x Shift-Left/Right` | Previous/next workspace |
 | `C-x Shift-1..9` | Switch to workspace 1-9 |
 | `C-x Shift-Up/Down` | Previous/next agent |
@@ -77,7 +78,9 @@ Herdr uses the same `C-x` prefix as this repository's tmux setup.
 | `C-x R` | Resize mode |
 | `C-x ?` | Active key help |
 
-The config does not copy tmux plugins or the tmux sessionizer. Herdr already provides workspace navigation, agent state, mouse control, copy mode, and persistent sessions.
+The picker scans the latest 500 rows of the focused pane and lists matching paths and URLs newest-first. Press `Enter` to open in the file browser, `Ctrl-Y` to copy, or `Ctrl-E` to open in the editor. URLs open in the default browser, and relative paths resolve from the pane's working directory. Exiting the temporary picker returns to the original pane.
+
+The config does not copy the tmux sessionizer. Herdr already provides workspace navigation, agent state, mouse control, copy mode, and persistent sessions.
 
 ## Reload and update
 

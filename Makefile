@@ -1,7 +1,7 @@
 STOW_FOLDERS=zsh tmux herdr kitty skhd starship yabai borders bin vrapperrc yazi zathura lazygit nvim-vscode task ghostty nvim mise miu agents claude codex atuin direnv hammerspoon karabiner diffnav gh-dash agent-deck wtf delta rift vscode launchd git
 SHELL := /bin/bash
 
-.PHONY: help stow-install stow-uninstall stow-status test validate deps platform-test
+.PHONY: help stow-install stow-uninstall stow-status test validate deps platform-test script-test
 
 help:
 	@echo "Dotfiles Management"
@@ -62,7 +62,7 @@ endef
 $(foreach tool,$(STOW_FOLDERS),$(eval $(call make-stow-target,$(tool))))
 
 # CI/CD Testing
-test: validate deps platform-test
+test: validate deps platform-test script-test
 	@echo "All tests passed!"
 
 validate:
@@ -73,6 +73,9 @@ deps:
 
 platform-test:
 	@./scripts/ci/test-platforms.sh
+
+script-test:
+	@./scripts/ci/test-herdr-fingers.sh
 
 install-test:
 	@./scripts/ci/test-install.sh
