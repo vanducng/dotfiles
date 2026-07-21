@@ -18,7 +18,6 @@ theme = duskfox
 macos-titlebar-style = tabs
 
 shell-integration = none
-keybind = shift+enter=text:\x1b\r
 macos-option-as-alt = true
 
 # Don't auto-toggle Secure Keyboard Entry on password-prompt heuristic.
