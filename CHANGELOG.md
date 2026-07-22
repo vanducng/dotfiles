@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.9.0](https://github.com/vanducng/dotfiles/compare/v0.8.0...v0.9.0) (2026-07-21)
+
+
+### Features
+
+* improve Herdr navigation and route agents to Droid ([#58](https://github.com/vanducng/dotfiles/issues/58)) ([19b5172](https://github.com/vanducng/dotfiles/commit/19b5172c2a0975b460321cb99973587140c94009))
+
+
+### Bug Fixes
+
+* **ghostty:** drop shift+enter=text:\x1b\r so newline works in herdr panes ([725cb46](https://github.com/vanducng/dotfiles/commit/725cb46c51979276f7f7ef16d015ec2fc8b1cf10))
+
 ## [0.8.0](https://github.com/vanducng/dotfiles/compare/v0.7.0...v0.8.0) (2026-07-20)
 
 
