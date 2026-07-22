@@ -167,7 +167,7 @@ validate_agent_hook_commands() {
     fi
 
     local output
-    if output=$(python3 - dotfiles/codex/.codex/hooks.json dotfiles/claude/.claude/settings.json 2>&1 <<'PY'
+    if output=$(python3 - dotfiles/codex/.codex/hooks.json dotfiles/claude/.claude/settings.json dotfiles/agents/.factory/hooks.json 2>&1 <<'PY'
 import json
 import pathlib
 import shlex

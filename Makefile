@@ -1,7 +1,7 @@
 STOW_FOLDERS=zsh tmux herdr kitty skhd starship yabai borders bin vrapperrc yazi zathura lazygit nvim-vscode task ghostty nvim mise miu agents claude codex atuin direnv hammerspoon karabiner diffnav gh-dash agent-deck wtf delta rift vscode launchd git
 SHELL := /bin/bash
 
-.PHONY: help stow-install stow-uninstall stow-status test validate deps platform-test script-test
+.PHONY: help stow-install stow-uninstall stow-status setup-herdr test validate deps platform-test script-test
 
 help:
 	@echo "Dotfiles Management"
@@ -12,6 +12,7 @@ help:
 	@echo "  make stow-status     - Check installation status"
 	@echo "  make stow-<tool>     - Install specific tool"
 	@echo "  make unstow-<tool>   - Remove specific tool"
+	@echo "  make setup-herdr     - Install Herdr's Droid integration"
 	@echo ""
 	@echo "Testing:"
 	@echo "  make test            - Run all tests"
@@ -61,6 +62,13 @@ endef
 
 $(foreach tool,$(STOW_FOLDERS),$(eval $(call make-stow-target,$(tool))))
 
+setup-herdr:
+	@command -v herdr >/dev/null || { echo "herdr is required"; exit 1; }
+	@command -v droid >/dev/null || { echo "droid is required"; exit 1; }
+	@herdr integration install droid
+	@herdr config check
+	@herdr integration status | grep '^droid:'
+
 # CI/CD Testing
 test: validate deps platform-test script-test
 	@echo "All tests passed!"
@@ -77,6 +85,7 @@ platform-test:
 script-test:
 	@./scripts/ci/test-herdr-fingers.sh
 	@./scripts/ci/test-herdr-agents.sh
+	@./scripts/ci/test-droid-moshi-notify.sh
 
 install-test:
 	@./scripts/ci/test-install.sh

@@ -16,12 +16,18 @@ next_workspace = "prefix+shift+right"
 switch_workspace = "prefix+shift+1..9"
 previous_agent = "prefix+shift+up"
 next_agent = "prefix+shift+down"
-focus_agent = "prefix+ctrl+shift+1..9"
+focus_agent = "prefix+alt+1..9"
 previous_tab = ["prefix+p", "prefix+space"]
 cycle_pane_next = ""
 last_pane = "prefix+a"
 split_vertical = "prefix+m"
 split_horizontal = "prefix+v"
+
+[[keys.command]]
+key = "prefix+d"
+type = "pane"
+command = "droid"
+description = "start Droid"
 
 [[keys.command]]
 key = "prefix+tab"
@@ -36,11 +42,19 @@ command = "herdr-agents"
 description = "focus agent by address"
 
 [ui]
-agent_panel_scope = "current"
+agent_panel_scope = "all"
+agent_panel_sort = "spaces"
+show_agent_labels_on_pane_borders = true
+
+[session]
+resume_agents_on_restore = true
+
+[remote]
+manage_ssh_config = true
 
 [ui.sound]
 enabled = true
 
 [ui.toast]
-enabled = true
 delivery = "herdr"
+delay_seconds = 1
