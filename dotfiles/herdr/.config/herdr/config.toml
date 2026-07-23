@@ -36,6 +36,8 @@ command = "herdr-agents"
 description = "focus agent by address"
 
 [ui]
+sidebar_start_collapsed = true
+
 [ui.sound]
 enabled = true
 
