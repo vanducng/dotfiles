@@ -66,7 +66,7 @@ yabai -m rule --add app="^Codex$"                     space=16
 yabai -m rule --add app="^ChatGPT$"                   space=16
 yabai -m rule --add app="^Arc$"                       space=13
 yabai -m rule --add app="^Dia$"                       space=3
-yabai -m rule --add app="^Claude$"                    space=16
+yabai -m rule --add app="^Claude$"                    space=18
 yabai -m rule --add app="^Cursor$"                    space=5
 yabai -m rule --add app="^Preview$"                   space=6
 yabai -m rule --add app="^Foxit PDF Reader$"          space=6
@@ -87,7 +87,7 @@ yabai -m space 16 --layout stack 2>/dev/null
 # Enforce app→space pinning for windows already open when yabai (re)starts.
 # Rules above only fire on window creation, so existing windows would otherwise
 # stay on whatever space they were on at restart. Mirror the pin rules here.
-for pin in "Ghostty:1" "kitty:15" "Codex:16" "ChatGPT:16" "Claude:16" "tldraw offline:17" "Dia:3" "Cursor:5" "Preview:6" "Foxit PDF Reader:6" "Alter:7" "Herd:8" "Slack:9" "Telegram:10" "Zalo:11" "Discord:12" "Arc:13" "Cliq:14"; do
+for pin in "Ghostty:1" "kitty:15" "Codex:16" "ChatGPT:16" "Claude:18" "tldraw offline:17" "Dia:3" "Cursor:5" "Preview:6" "Foxit PDF Reader:6" "Alter:7" "Herd:8" "Slack:9" "Telegram:10" "Zalo:11" "Discord:12" "Arc:13" "Cliq:14"; do
     app="${pin%:*}"; sp="${pin#*:}"
     for id in $(yabai -m query --windows | jq -r --arg a "$app" '.[] | select(.app==$a) | .id'); do
         yabai -m window "$id" --space "$sp" 2>/dev/null
@@ -96,7 +96,7 @@ done
 
 # Force-float apps that must never be tiled (manage=off rule only fires on
 # window creation; this re-floats existing windows after yabai restart).
-for id in $(yabai -m query --windows | jq -r '.[] | select((.app=="Alter" or .app=="Structured") and ."is-floating"==false) | .id'); do
+for id in $(yabai -m query --windows | jq -r '.[] | select((.app=="Alter" or .app=="Structured" or .app=="superwhisper") and ."is-floating"==false) | .id'); do
     yabai -m window "$id" --toggle float 2>/dev/null
 done
 
@@ -128,6 +128,7 @@ yabai -m rule --add app="^QuickTime Player$"          manage=off
 yabai -m rule --add app="^Raycast$"                   manage=off
 yabai -m rule --add app="^SpaceLauncher$"             manage=off
 yabai -m rule --add app="^Stats$"                     manage=off
+yabai -m rule --add app="^superwhisper$"              manage=off
 yabai -m rule --add app="^Telegram$"                  manage=off
 yabai -m rule --add app="^Time Out$"                  manage=off
 yabai -m rule --add app="^Todoist$"                   manage=off

@@ -45,12 +45,12 @@ tmux kill-server && tmux new-session
 | Key | Action | Key | Action |
 |-----|--------|-----|--------|
 | `C-x + m` | Split Right | `C-x + v` | Split Down |
-| `C-x + hjkl` | Navigate Panes | `C-x + Space` | Previous Tab |
-| `C-x + Shift-Left/Right` | Previous/Next Workspace | `C-x + Shift-1..9` | Switch Workspace |
+| `Ctrl-Alt-hjkl` | Navigate Panes | `C-x + Space` | Previous Tab |
+| `C-x + Shift-Left/Right` | Previous/Next Workspace | `Ctrl-Shift-1..9` | Switch Workspace |
 | `C-x + Shift-Up/Down` | Previous/Next Agent | `C-x + Ctrl-Shift-1..9` | Focus Agent |
 | `C-x + Tab` | Pick Recent Target | `C-x + a` | Last Pane |
 | `C-x + f` | Agent Address Picker | `C-x + g` | Session Navigator |
-| `C-x + c` | New Tab | `C-x + w` | Workspace Picker |
+| `C-x + c` | New Tab | `Ctrl-1..9` | Switch Tab |
 | `C-x + r` | Reload Config | `C-x + R` | Resize Mode |
 | `C-x + ?` | Key Help | | |
 

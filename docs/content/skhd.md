@@ -41,12 +41,12 @@ All application shortcuts use the `meh` key (ctrl+alt+shift) for consistency and
 | `meh + u` | Zalo | Messaging app |
 | `meh + t` | Discord | Community chat |
 | `meh + h` | WhatsApp | Messaging app on space 13 |
-| `meh + c` | Cliq | Team communication on space 14 |
+| `meh + j` | Cliq | Team communication on space 14 |
 
 ### Productivity & AI Tools
 | Shortcut | Application | Description |
 |----------|-------------|-------------|
-| `meh + j` | Claude | AI assistant on display 2, space 16 |
+| `meh + c` | Claude | AI assistant on display 2, space 18 |
 | `meh + l` | Perplexity | AI search engine |
 | `meh + i` | Structured | Task and time management |
 | `meh + w` | LibreOffice | Office suite |

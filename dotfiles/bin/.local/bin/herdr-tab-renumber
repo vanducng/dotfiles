@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+set -euo pipefail
+shopt -s extglob
+
+herdr_bin="${HERDR_BIN_PATH:-$(command -v herdr || true)}"
+[[ -n "$herdr_bin" ]] || { printf 'herdr-tab-renumber: herdr is required\n' >&2; exit 1; }
+command -v jq >/dev/null 2>&1 || { printf 'herdr-tab-renumber: jq is required\n' >&2; exit 1; }
+
+tab_json="$("$herdr_bin" tab list)" || { printf 'herdr-tab-renumber: failed to list tabs\n' >&2; exit 1; }
+
+if ! rows="$(jq -r '
+    if (.result.tabs | type) != "array"
+    then error("unexpected herdr response") else
+    .result.tabs
+    | sort_by(.workspace_id, .number)
+    | .[]
+    | [.tab_id, .workspace_id, (.label // "" | gsub("[\\t\\r\\n]"; " "))]
+    | @tsv
+    end
+  ' <<<"$tab_json")"; then
+  printf 'herdr-tab-renumber: unexpected herdr response format\n' >&2
+  exit 1
+fi
+
+declare -A next_index
+renamed=0
+while IFS=$'\t' read -r tab_id workspace label; do
+  [[ -n "$tab_id" ]] || continue
+  index="${next_index[$workspace]:-1}"
+  next_index[$workspace]=$((index + 1))
+  # ponytail: strips a leading "<digits>-" so re-runs don't stack prefixes;
+  # a genuine label like "3d-model" also loses its head — rename such tabs by hand.
+  base="${label##+([0-9])-}"
+  desired="${index}-${base}"
+  [[ "$label" == "$desired" ]] && continue
+  if "$herdr_bin" tab rename "$tab_id" "$desired" >/dev/null; then
+    renamed=$((renamed + 1))
+  else
+    printf 'herdr-tab-renumber: failed to rename %s\n' "$tab_id" >&2
+  fi
+done <<<"$rows"
+
+printf 'herdr-tab-renumber: renamed %d tab(s)\n' "$renamed"
