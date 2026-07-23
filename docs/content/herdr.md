@@ -63,18 +63,18 @@ Herdr uses the same `C-x` prefix as this repository's tmux setup.
 | `C-x c` | New tab |
 | `C-x m` | Split right, side by side |
 | `C-x v` | Split down, stacked |
-| `C-x h/j/k/l` | Focus pane |
+| `Ctrl-Alt-h/j/k/l` | Focus pane |
 | `C-x Tab` | Pick a recent path or URL |
 | `C-x f` | Find an agent by `workspace.tab.pane` address |
 | `C-x Shift-Left/Right` | Previous/next workspace |
-| `C-x Shift-1..9` | Switch to workspace 1-9 |
+| `Ctrl-Shift-1..9` | Switch to workspace 1-9 |
 | `C-x Shift-Up/Down` | Previous/next agent |
 | `C-x Ctrl-Shift-1..9` | Focus agent 1-9 |
 | `C-x Space` | Previous tab |
 | `C-x a` | Last pane |
 | `C-x z` | Zoom pane |
 | `C-x [` | Copy mode |
-| `C-x 1..9` | Switch tab |
+| `Ctrl-1..9` | Switch tab |
 | `C-x w` | Workspace picker |
 | `C-x g` | Search and jump to any workspace, tab, or pane |
 | `C-x r` | Reload config |
