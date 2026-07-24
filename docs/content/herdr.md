@@ -34,7 +34,7 @@ export PATH="$HOME/.local/bin:$PATH"
 
 Other Linux distributions can use the matching method in the [mise installation guide](https://mise.jdx.dev/installing-mise.html) and their package manager's GNU Stow package. Linux path copying needs one of `wl-copy`, `xclip`, or `xsel`, and URL opening needs `xdg-open`.
 
-The `C-x Tab` file-opening action also expects the `vd:file-browser` skill at `$HOME/skills/skills/file-browser`. Without it, the picker can still copy paths and open URLs, but it cannot render local files in the browser.
+The `C-x Space` file-opening action also expects the `vd:file-browser` skill at `$HOME/skills/skills/file-browser`. Without it, the picker can still copy paths and open external URLs, but it cannot render local files in the browser.
 
 Then clone the repository and run:
 
@@ -64,24 +64,24 @@ Herdr uses the same `C-x` prefix as this repository's tmux setup.
 | `C-x m` | Split right, side by side |
 | `C-x v` | Split down, stacked |
 | `Ctrl-Alt-h/j/k/l` | Focus pane |
-| `C-x Tab` | Pick a recent path or URL |
+| `C-x Space` | Pick a recent path or URL |
 | `C-x f` | Find an agent by `workspace.tab.pane` address |
-| `C-x Shift-Left/Right` | Previous/next workspace |
-| `Ctrl-Shift-1..9` | Switch to workspace 1-9 |
+| `C-x Shift-Right` | Next workspace |
+| `Ctrl-Alt-1..9` | Switch to workspace 1-9 |
 | `C-x Shift-Up/Down` | Previous/next agent |
-| `C-x Ctrl-Shift-1..9` | Focus agent 1-9 |
-| `C-x Space` | Previous tab |
+| `C-x Alt-1..9` | Focus agent 1-9 |
+| `C-x p` | Previous tab |
 | `C-x a` | Last pane |
 | `C-x z` | Zoom pane |
 | `C-x [` | Copy mode |
 | `Ctrl-1..9` | Switch tab |
 | `C-x w` | Workspace picker |
 | `C-x g` | Search and jump to any workspace, tab, or pane |
-| `C-x r` | Reload config |
-| `C-x R` | Resize mode |
+| `C-x r` | Resize mode |
+| `C-x R` | Reload config |
 | `C-x ?` | Active key help |
 
-The picker scans the latest 500 rows of the focused pane and lists matching paths and URLs newest-first. Press `Enter` to open in the file browser, `Ctrl-Y` to copy, or `Ctrl-E` to open in the editor. URLs open in the default browser, and relative paths resolve from the pane's working directory. Exiting the temporary picker returns to the original pane.
+The picker scans the latest 500 rows of the focused pane and lists matching paths and URLs newest-first. Press `Enter` to open in the file browser, `Ctrl-Y` to copy, or `Ctrl-E` to open in the editor. External URLs open in the default browser, existing localhost viewer URLs restart the file browser when needed, and relative paths resolve from the pane's working directory. Exiting the temporary picker returns to the original pane.
 
 Use `C-x f` when the target is an agent. Each row starts with a stable address such as `1.2.30`, meaning workspace 1, tab 2, pane 30. Use `C-x g` for the native searchable tree when the target may be a shell pane. `C-x Shift-Up/Down` remains the fastest way to cycle agents without choosing a specific address.
 
