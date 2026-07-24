@@ -202,6 +202,14 @@ PATH="$test_dir:$PATH" OPEN_PATH_XDG_CAPTURE="$xdg_capture" \
   "$project_root/dotfiles/bin/.local/bin/open-path" --browser "https://example.com/docs"
 [[ "$(cat "$xdg_capture")" == "https://example.com/docs" ]]
 
+decoded_path="$(
+  PATH="$test_dir:$PATH" \
+  OPEN_PATH_RESOLVE_ONLY=1 \
+    "$project_root/dotfiles/bin/.local/bin/open-path" --browser \
+      "http://localhost:3556/view?file=$(node -e 'process.stdout.write(encodeURIComponent(process.argv[1]))' "$test_dir/project/README.md")&root=%2Ftmp"
+)"
+[[ "$decoded_path" == "$(realpath "$test_dir/project/README.md")" ]]
+
 editor_capture="$test_dir/editor-capture"
 PATH="$test_dir:$PATH" \
 OPEN_PATH_EDITOR_CMD="$test_dir/nvim" \
