@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.10.0](https://github.com/vanducng/dotfiles/compare/v0.9.0...v0.10.0) (2026-07-24)
+
+
+### Features
+
+* **herdr:** integrate Droid and Moshi remote workflows ([0629cbc](https://github.com/vanducng/dotfiles/commit/0629cbca25cb291b8ab7be13947496e7f75edc0d))
+
+
+### Bug Fixes
+
+* **herdr:** improve navigation and path opening ([#62](https://github.com/vanducng/dotfiles/issues/62)) ([f3dc194](https://github.com/vanducng/dotfiles/commit/f3dc1946a5604687d0cb82d385eebe21b372584c))
+* **yabai:** repair broken signals and Alter focus-steal on app launch ([8d3fa91](https://github.com/vanducng/dotfiles/commit/8d3fa915641824fb27d1dd317e7b540a5d092cc2))
+
 ## [0.9.0](https://github.com/vanducng/dotfiles/compare/v0.8.0...v0.9.0) (2026-07-21)
 
 
