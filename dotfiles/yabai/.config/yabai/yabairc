@@ -150,16 +150,22 @@ yabai -m signal --add event=window_created \
 
 # Keep Alter floating even if it gets tiled after moves/space changes.
 yabai -m signal --add event=window_created app="^Alter$" \
-    action='sleep 0.2 && [ "$(yabai -m query --windows --window $YABAI_WINDOW_ID | jq ."is-floating")" = "false" ] && yabai -m window $YABAI_WINDOW_ID --toggle float'
+    action='sleep 0.2 && [ "$(yabai -m query --windows --window $YABAI_WINDOW_ID | jq .\"is-floating\")" = "false" ] && yabai -m window $YABAI_WINDOW_ID --toggle float'
 yabai -m signal --add event=window_moved app="^Alter$" \
-    action='[ "$(yabai -m query --windows --window $YABAI_WINDOW_ID | jq ."is-floating")" = "false" ] && yabai -m window $YABAI_WINDOW_ID --toggle float'
+    action='[ "$(yabai -m query --windows --window $YABAI_WINDOW_ID | jq .\"is-floating\")" = "false" ] && yabai -m window $YABAI_WINDOW_ID --toggle float'
 
 # Unzoom any zoom-fullscreen window when a new window appears in the same space,
 # otherwise the newly opened (often same-app) window stays hidden behind the zoom.
+# Scoped to the new window's space (not the focused one), and the unzoomed window
+# gets a no-op resize afterwards - some apps ignore the restore frame and would
+# otherwise sit full-size behind the new window.
 yabai -m signal --add event=window_created \
-    action='zoomed=$(yabai -m query --windows --space | jq ".[] | select(.\"has-fullscreen-zoom\" == true) | .id" | head -1); \
+    action='sp=$(yabai -m query --windows --window $YABAI_WINDOW_ID | jq .space); \
+            zoomed=$(yabai -m query --windows --space "$sp" | jq ".[] | select(.\"has-fullscreen-zoom\" == true) | .id" | head -1); \
             if [ -n "$zoomed" ] && [ "$zoomed" != "$YABAI_WINDOW_ID" ]; then \
                 yabai -m window "$zoomed" --toggle zoom-fullscreen; \
+                sleep 0.2; \
+                yabai -m window "$zoomed" --resize bottom:0:0 2>/dev/null; \
             fi'
 
 # -----------------------------------------------------------------------------
