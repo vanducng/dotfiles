@@ -72,9 +72,27 @@ open_url() {
   fi
 }
 
+file_browser_path_from_url() {
+  command -v node >/dev/null 2>&1 || return
+  node -e '
+    try {
+      const url = new URL(process.argv[1]);
+      const local = url.hostname === "localhost" || url.hostname === "127.0.0.1";
+      const key = url.pathname === "/view" ? "file" : url.pathname === "/browse" ? "dir" : "";
+      if (local && url.port === "3556" && key) process.stdout.write(url.searchParams.get(key) || "");
+    } catch {}
+  ' "$1" 2>/dev/null
+}
+
 # --------------------------- strong url detection -----------------------------
 # `scheme://...` or `mailto:...` always route to default browser, bypassing
 # mode (you can't edit a URL, and file-browser only handles paths).
+case "$target" in
+  http://localhost:3556/view\?*|http://localhost:3556/browse\?*|http://127.0.0.1:3556/view\?*|http://127.0.0.1:3556/browse\?*)
+    file_browser_path="$(file_browser_path_from_url "$target")"
+    [[ -n "$file_browser_path" ]] && target="$file_browser_path"
+    ;;
+esac
 if [[ "$target" =~ ^[A-Za-z][A-Za-z0-9+.-]*:// ]] && [[ "$target" != file://* ]] \
    || [[ "$target" =~ ^mailto: ]]; then
   open_url "$target"
@@ -206,12 +224,15 @@ open_in_browser() {
   url="http://localhost:${port}/${route}=$(url_encode "$p")&root=$(url_encode "$root")"
 
   if ! port_open "$port"; then
-    ( cd "$HOME" && nohup node "$server" "$flag" "$p" --no-open --port "$port" >/dev/null 2>&1 & )
+    [[ -f "$server" ]] || { printf 'open-path: file-browser is not installed\n' >&2; return 1; }
+    node "$server" "$flag" "$p" --no-open --port "$port" --background >/dev/null 2>&1 \
+      || { printf 'open-path: failed to start file-browser\n' >&2; return 1; }
     local i
     for ((i = 0; i < 50; i++)); do
       port_open "$port" && break
       sleep 0.1
     done
+    port_open "$port" || { printf 'open-path: file-browser did not become ready\n' >&2; return 1; }
   fi
   if [[ "$(uname -s)" == "Darwin" ]]; then
     /usr/bin/open -a "$OPEN_PATH_BROWSER" "$url"
