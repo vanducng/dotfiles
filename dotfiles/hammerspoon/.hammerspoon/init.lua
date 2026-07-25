@@ -195,11 +195,12 @@ local gopassBin = (function()
 		if hs.fs.attributes(path) then return path end
 	end
 end)()
+local gopassPath = "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 local gopassChooser
 local gopassHistoryKey = "gopassRecentKeys"
 
 local function copyGopassPassword(key)
-	local task = hs.task.new(gopassBin, function(exitCode, _, stdErr)
+	local task = hs.task.new("/usr/bin/env", function(exitCode, _, stdErr)
 		if exitCode == 0 then
 			local recent = { key }
 			for _, previous in ipairs(hs.settings.get(gopassHistoryKey) or {}) do
@@ -211,7 +212,7 @@ local function copyGopassPassword(key)
 			local message = (stdErr or ""):match("^%s*(.-)%s*$")
 			hs.notify.new({ title = "Gopass", informativeText = message ~= "" and message or "Could not copy password" }):send()
 		end
-	end, { "--nosync", "show", "--clip", key })
+	end, { "PATH=" .. gopassPath, gopassBin, "--nosync", "show", "--clip", key })
 
 	if not task or not task:start() then
 		hs.notify.new({ title = "Gopass", informativeText = "Could not start gopass" }):send()
@@ -224,7 +225,7 @@ hs.hotkey.bind(hyper, "p", function()
 		return
 	end
 
-	local task = hs.task.new(gopassBin, function(exitCode, stdOut, stdErr)
+	local task = hs.task.new("/usr/bin/env", function(exitCode, stdOut, stdErr)
 		if exitCode ~= 0 then
 			local message = (stdErr or ""):match("^%s*(.-)%s*$")
 			hs.notify.new({ title = "Gopass", informativeText = message ~= "" and message or "Could not list keys" }):send()
@@ -257,7 +258,7 @@ hs.hotkey.bind(hyper, "p", function()
 			if choice then copyGopassPassword(choice.key) end
 		end)
 		gopassChooser:choices(choices):placeholderText("Search gopass keys"):rows(12):show()
-	end, { "--nosync", "list", "--flat" })
+	end, { "PATH=" .. gopassPath, gopassBin, "--nosync", "list", "--flat" })
 
 	if not task or not task:start() then
 		hs.notify.new({ title = "Gopass", informativeText = "Could not start gopass" }):send()
