@@ -27,13 +27,13 @@ All application shortcuts use the `meh` key (ctrl+alt+shift) for consistency and
 | `meh + x` | ChatGPT | AI assistant on display 2, space 16 |
 | `meh + v` | tldraw offline | Whiteboard on display 2, space 17 |
 | `meh + g` | Cursor | AI-powered code editor |
-| `meh + e` | Herd | Local development environment |
 | `meh + y` | Alter | Chat hub |
 
 ### Browsers & Communication
 | Shortcut | Application | Description |
 |----------|-------------|-------------|
 | `meh + s` | Dia | Primary web browser |
+| `meh + e` | Ego | Lightweight browser on space 1 with Ghostty |
 | `meh + d` | Arc | Browser on space 13 |
 | `meh + z` | Zen Browser | Alternative browser |
 | `meh + k` | Slack | Team communication |
