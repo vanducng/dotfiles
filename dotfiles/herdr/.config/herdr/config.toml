@@ -23,6 +23,7 @@ focus_pane_up = "ctrl+alt+k"
 focus_pane_right = "ctrl+alt+l"
 previous_tab = "prefix+p"
 switch_tab = "ctrl+1..9"
+rename_pane = ""
 cycle_pane_next = ""
 last_pane = "prefix+a"
 split_vertical = "prefix+m"
@@ -39,6 +40,18 @@ key = "prefix+f"
 type = "pane"
 command = "herdr-agents"
 description = "focus agent by address"
+
+[[keys.command]]
+key = "prefix+shift+p"
+type = "shell"
+command = "herdr-pane-rename"
+description = "rename pane from project context"
+
+[[keys.command]]
+key = "prefix+shift+g"
+type = "shell"
+command = "gh repo view --web"
+description = "open current GitHub repository"
 
 [[keys.command]]
 key = "prefix+shift+i"
