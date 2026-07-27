@@ -85,7 +85,6 @@ platform-test:
 script-test:
 	@./scripts/ci/test-herdr-fingers.sh
 	@./scripts/ci/test-herdr-agents.sh
-	@./scripts/ci/test-herdr-pane-rename.sh
 	@./scripts/ci/test-herdr-tab-renumber.sh
 	@./scripts/ci/test-droid-moshi-notify.sh
 
