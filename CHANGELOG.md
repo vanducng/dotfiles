@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.11.0](https://github.com/vanducng/dotfiles/compare/v0.10.0...v0.11.0) (2026-07-27)
+
+
+### Features
+
+* improve local agent workflows ([942c3a6](https://github.com/vanducng/dotfiles/commit/942c3a63b5d1b7979b35c99e7c970ea0b5e9ed6e))
+* **skhd:** launch Ego on space one ([035da36](https://github.com/vanducng/dotfiles/commit/035da36b158748d3792573b7a5a9f440ca16f137))
+
 ## [0.10.0](https://github.com/vanducng/dotfiles/compare/v0.9.0...v0.10.0) (2026-07-24)
 
 
