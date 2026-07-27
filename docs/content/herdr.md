@@ -72,7 +72,6 @@ Herdr uses the same `C-x` prefix as this repository's tmux setup.
 | `C-x Alt-1..9` | Focus agent 1-9 |
 | `C-x p` | Previous tab |
 | `C-x Shift-T` | Rename tab |
-| `C-x Shift-P` | Rename pane from its project context |
 | `C-x a` | Last pane |
 | `C-x z` | Zoom pane |
 | `C-x [` | Copy mode |
@@ -85,8 +84,6 @@ Herdr uses the same `C-x` prefix as this repository's tmux setup.
 | `C-x ?` | Active key help |
 
 The picker scans the latest 500 rows of the focused pane and lists matching paths and URLs newest-first. Press `Enter` to open in the file browser, `Ctrl-Y` to copy, or `Ctrl-E` to open in the editor. External URLs open in the default browser, existing localhost viewer URLs restart the file browser when needed, and relative paths resolve from the pane's working directory. Exiting the temporary picker returns to the original pane.
-
-`C-x Shift-P` names a Git pane as `<repo>:<branch>` using its foreground working directory and Git origin. Outside Git, it uses the current folder name. It runs only when pressed and needs no background service.
 
 Use `C-x f` when the target is an agent. Each row starts with a stable address such as `1.2.30`, meaning workspace 1, tab 2, pane 30. Use `C-x g` for the native searchable tree when the target may be a shell pane. `C-x Shift-Up/Down` remains the fastest way to cycle agents without choosing a specific address.
 
