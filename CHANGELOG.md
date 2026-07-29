@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.11.1](https://github.com/vanducng/dotfiles/compare/v0.11.0...v0.11.1) (2026-07-29)
+
+
+### Bug Fixes
+
+* **docs:** center navigation shell ([#69](https://github.com/vanducng/dotfiles/issues/69)) ([935fb8b](https://github.com/vanducng/dotfiles/commit/935fb8b8927f508b4fbfe29cbba158d8423fce22))
+* **docs:** restore layout and feature Herdr ([#67](https://github.com/vanducng/dotfiles/issues/67)) ([a43cfb1](https://github.com/vanducng/dotfiles/commit/a43cfb14b3eae1836a44890b4e647ac3bd1a7a7a))
+
 ## [0.11.0](https://github.com/vanducng/dotfiles/compare/v0.10.0...v0.11.0) (2026-07-27)
 
 
