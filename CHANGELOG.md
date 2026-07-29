@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.12.1](https://github.com/vanducng/dotfiles/compare/v0.12.0...v0.12.1) (2026-07-29)
+
+
+### Bug Fixes
+
+* **docs:** scope search trigger sizing ([#74](https://github.com/vanducng/dotfiles/issues/74)) ([b2f82a0](https://github.com/vanducng/dotfiles/commit/b2f82a01b26d89e6d06fd2ba9b49d4506bf2927d))
+
 ## [0.12.0](https://github.com/vanducng/dotfiles/compare/v0.11.2...v0.12.0) (2026-07-29)
 
 
