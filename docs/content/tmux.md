@@ -1,8 +1,9 @@
 ---
-title: "Tmux - Terminal Multiplexer"
+title: "Tmux - Legacy Terminal Multiplexer"
+description: Legacy Tmux configuration retained as a fallback for remote and compatibility workflows.
 ---
 
-Tmux is the backbone of the terminal workflow, providing session management, window splitting, and seamless project switching.
+Tmux is retained as a legacy fallback for remote and compatibility workflows. [Herdr](/herdr/) is the primary terminal workspace manager.
 
 
 ## 🎯 Overview

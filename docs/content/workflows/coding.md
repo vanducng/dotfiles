@@ -60,7 +60,7 @@ K   # Show documentation
 
 # Project switching
 C-f     # From Neovim
-C-x + t # From tmux
+C-x + g # From Herdr
 ```
 
 ## Refactoring Workflow

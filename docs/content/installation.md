@@ -42,7 +42,7 @@ brew --version
 brew install git stow mise
 
 # Install development tools
-brew install neovim tmux fzf ripgrep fd
+brew install neovim fzf ripgrep fd
 
 # Install window management
 brew install yabai skhd
@@ -54,7 +54,6 @@ brew install --cask ghostty kitty
 git --version
 stow --version
 nvim --version
-tmux -V
 ```
 
 ## 🏠 Step 3: Clone Dotfiles Repository
@@ -90,8 +89,8 @@ make stow-install
 
 # This creates symlinks for:
 # - Shell configuration (zsh)
-# - Terminal multiplexer (tmux)
 # - Agent workspace manager (Herdr)
+# - Legacy terminal multiplexer config (tmux)
 # - Editor configuration (neovim)
 # - Window manager (yabai, skhd)
 # - Application configs (kitty, ghostty, etc.)
@@ -173,20 +172,16 @@ ps aux | grep skhd
 
 ## 💻 Step 8: Terminal Setup
 
-### Configure Tmux
+### Configure Herdr
 ```bash
-# Install Tmux Plugin Manager (TPM)
-git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+# Validate the managed config
+mise exec -- herdr config check
 
-# Start tmux
-tmux new-session
-
-# Install plugins (in tmux)
-# Press: Ctrl-x + I (capital I)
-
-# Verify tmux configuration
-tmux source-file ~/.tmux.conf
+# Start or resume the workspace manager
+mise exec -- herdr
 ```
+
+The [Tmux guide](/tmux/) remains available for legacy remote and compatibility workflows.
 
 ### Configure Terminal Emulator
 ```bash
@@ -313,9 +308,9 @@ nvim
 # Press: meh + a (should open Ghostty)
 # Press: ctrl + shift + h (should focus left window)
 
-# Test tmux
-tmux new-session -s test
-# Press: Ctrl-x + t (should open project sessionizer)
+# Test Herdr
+herdr status
+# Press: Ctrl-x + ? (should open active key help)
 
 # Test Neovim
 nvim
@@ -329,7 +324,7 @@ nvim
 brew services list | grep -E "(yabai|skhd)"
 
 # Check process status
-ps aux | grep -E "(yabai|skhd|tmux)"
+ps aux | grep -E "(yabai|skhd|herdr)"
 
 # Test key bindings
 skhd --observe  # Press some keys to test
@@ -350,17 +345,12 @@ skhd --restart-service
 yabai --restart-service
 ```
 
-### Add Personal Projects
+### Open a Project Workspace
 ```bash
-# Edit tmux sessionizer paths
-nvim ~/.local/bin/tmux-sessionizer
+cd ~/projects/your-project
+herdr
 
-# Add your project directories
-search_paths=(
-    ~/personal
-    ~/projects
-    ~/work/your-company
-)
+# Inside Herdr, use C-x g to search workspaces, tabs, and panes
 ```
 
 ## 🆘 Troubleshooting Installation
@@ -397,12 +387,10 @@ nvim
 :Lazy clean
 :Lazy sync
 
-# Tmux plugins
-tmux kill-server
-rm -rf ~/.tmux/plugins
-git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
-tmux new-session
-# Press: Ctrl-x + I
+# Herdr config and runtime
+mise exec -- herdr config check
+herdr status
+tail -n 100 ~/.config/herdr/herdr-server.log
 ```
 
 ### Getting Help
