@@ -1,6 +1,6 @@
 # Duc's Digital Workspace
 
-AI-enhanced development environment for macOS.
+AI-native macOS development environment centered on Herdr workspaces.
 
 [![Docs](https://img.shields.io/badge/docs-dotfiles.vanducng.dev-7c3aed?style=flat-square)](https://dotfiles.vanducng.dev)
 ![macOS](https://img.shields.io/badge/macOS-000000?style=flat-square&logo=apple&logoColor=white)
@@ -9,7 +9,7 @@ AI-enhanced development environment for macOS.
 ## Features
 
 - **Window Management** - Yabai + SKHD for tiling and hotkeys
-- **Terminal** - Ghostty + Tmux + Zsh with session management
+- **Terminal** - Ghostty + Herdr + Zsh with persistent agent workspaces
 - **Editor** - Neovim (AstroNvim) with LSP and AI integration
 - **AI Tools** - CodeCompanion, GitHub Copilot, Database AI
 - **Utilities** - Atuin, Yazi, Starship, Mise, Direnv, Karabiner, Hammerspoon

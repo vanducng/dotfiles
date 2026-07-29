@@ -2,11 +2,11 @@
 title: "Codebase Summary"
 ---
 
-Duc's Digital Workspace: AI-enhanced macOS development environment with 22 dotfiles packages managed via GNU Stow.
+Duc's Digital Workspace: AI-native macOS development environment with 35 dotfiles packages managed via GNU Stow.
 
 ## Structure Overview
 
-### Core Packages (22 total)
+### Core Packages (35 total)
 
 **Editors & IDEs:**
 - `nvim` - Neovim with AstroNvim v6 distribution
@@ -15,7 +15,8 @@ Duc's Digital Workspace: AI-enhanced macOS development environment with 22 dotfi
 
 **Terminal & Shell:**
 - `zsh` - Primary shell configuration with Oh My Zsh
-- `tmux` - Terminal multiplexer with custom plugins
+- `herdr` - Primary terminal workspace manager for coding agents
+- `tmux` - Legacy terminal multiplexer with custom plugins
 - `ghostty` - Modern terminal emulator
 - `kitty` - Alternative terminal emulator
 - `atuin` - Intelligent shell history with sync
@@ -30,7 +31,7 @@ Duc's Digital Workspace: AI-enhanced macOS development environment with 22 dotfi
 **File & Git Management:**
 - `yazi` - File manager with custom plugins
 - `lazygit` - Git TUI configuration
-- `bin` - Custom scripts (tmux-sessionizer, git-worktree-manager, etc.)
+- `bin` - Custom workspace, file-opening, and automation scripts
 
 **Development Tools:**
 - `direnv` - Automatic environment loading
@@ -90,7 +91,8 @@ Duc's Digital Workspace: AI-enhanced macOS development environment with 22 dotfi
 - **Oil.nvim** - File explorer (replaced Neo-tree)
 
 ### Terminal Workflows
-- **Tmux** - Session management with custom plugins
+- **Herdr** - Persistent workspaces, panes, and agent navigation
+- **Tmux** - Legacy session management with custom plugins
 - **Atuin** - Command history with cloud sync
 - **Starship** - Modern shell prompt with themes
 - **Ghostty** - Primary terminal with modern features
@@ -111,17 +113,11 @@ Duc's Digital Workspace: AI-enhanced macOS development environment with 22 dotfi
 
 **Installed via Scripts:**
 - Neovim + plugins
-- Tmux + TPM
+- Herdr via mise
+- Tmux + TPM (legacy)
 - Terminal emulators (Ghostty, Kitty)
 - Development tools (Node, Python, Rust)
 - Window managers (Yabai, SKHD)
-
-## File Statistics
-
-- Total Files: 102
-- Total Tokens: 126,785
-- Configuration-heavy (minimal code)
-- Well-documented with inline comments
 
 ## Maintenance
 
@@ -136,13 +132,14 @@ Duc's Digital Workspace: AI-enhanced macOS development environment with 22 dotfi
 - Stow install/clean: `make stow-install/clean`
 - Alias management: `make export/import-aliases`
 - Service restart: `brew services restart yabai skhd`
-- Plugin updates: `:Lazy sync` (Neovim), `prefix + I` (Tmux)
+- Config reload: `herdr server reload-config`
+- Plugin updates: `:Lazy sync` (Neovim), `prefix + I` (legacy Tmux)
 
 ## Documentation Hierarchy
 
 1. **Installation** - Setup from scratch
 2. **Quick Reference** - Essential commands
-3. **Tool Guides** - Detailed configuration (Tmux, SKHD, Atuin, etc.)
+3. **Tool Guides** - Detailed configuration (Herdr, Neovim, SKHD, Atuin, and legacy Tmux)
 4. **Troubleshooting** - Common issues and fixes
 5. **AI Workflows** - Best practices for AI tools
 6. **Advanced** - Custom configurations and extensions

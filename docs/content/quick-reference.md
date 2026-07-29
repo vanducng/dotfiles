@@ -13,8 +13,9 @@ killall yabai skhd && brew services restart yabai && brew services restart skhd
 # Terminal broke
 /Applications/Ghostty.app/Contents/MacOS/ghostty
 
-# Tmux unresponsive
-tmux kill-server && tmux new-session
+# Herdr diagnostics
+herdr status
+tail -n 100 ~/.config/herdr/herdr-server.log
 
 # Neovim stuck
 :qa! # or pkill nvim
@@ -32,7 +33,21 @@ tmux kill-server && tmux new-session
 | `ctrl+shift+hjkl` | Focus Window | `cmd+shift+h/l` | Move Window |
 | `hyper + arrows` | Resize Window | `hyper + f` | Fullscreen |
 
-### Tmux (Prefix: C-x)
+### Herdr (Prefix: C-x)
+| Key | Action | Key | Action |
+|-----|--------|-----|--------|
+| `C-x + m` | Split Right | `C-x + v` | Split Down |
+| `Ctrl-Alt-hjkl` | Navigate Panes | `C-x + Space` | Pick Recent Target |
+| `C-x + Shift-Right` | Next Workspace | `Ctrl-Alt-1..9` | Switch Workspace |
+| `C-x + Shift-Up/Down` | Previous/Next Agent | `C-x + Alt-1..9` | Focus Agent |
+| `C-x + p` | Previous Tab | `C-x + a` | Last Pane |
+| `C-x + f` | Agent Address Picker | `C-x + g` | Session Navigator |
+| `C-x + c` | New Tab | `C-x + Shift-T` | Rename Tab |
+| `Ctrl-1..9` | Switch Tab | `C-x + w` | Workspace Picker |
+| `C-x + r` | Resize Mode | `C-x + R` | Reload Config |
+| `C-x + ?` | Key Help | | |
+
+### Tmux (Legacy, Prefix: C-x)
 | Key | Action | Key | Action |
 |-----|--------|-----|--------|
 | `C-x + t` | Project Sessionizer | `C-x + m` | Split Horizontal |
@@ -40,19 +55,6 @@ tmux kill-server && tmux new-session
 | `C-x + Space` | Last Window | `C-x + c` | New Window |
 | `C-x + Tab` | Tmux Fingers | `C-x + a` | Zoom Pane |
 | `C-x + r` | Reload Config | `C-x + i` | Show Pane Numbers |
-
-### Herdr (Prefix: C-x)
-| Key | Action | Key | Action |
-|-----|--------|-----|--------|
-| `C-x + m` | Split Right | `C-x + v` | Split Down |
-| `Ctrl-Alt-hjkl` | Navigate Panes | `C-x + Space` | Previous Tab |
-| `C-x + Shift-Left/Right` | Previous/Next Workspace | `Ctrl-Shift-1..9` | Switch Workspace |
-| `C-x + Shift-Up/Down` | Previous/Next Agent | `C-x + Ctrl-Shift-1..9` | Focus Agent |
-| `C-x + Tab` | Pick Recent Target | `C-x + a` | Last Pane |
-| `C-x + f` | Agent Address Picker | `C-x + g` | Session Navigator |
-| `C-x + c` | New Tab | `Ctrl-1..9` | Switch Tab |
-| `C-x + r` | Reload Config | `C-x + R` | Resize Mode |
-| `C-x + ?` | Key Help | | |
 
 ### Neovim
 | Key | Action | Key | Action |
@@ -78,26 +80,27 @@ skhd --restart-service
 yabai --restart-service
 
 # Reload configurations
-tmux source-file ~/.tmux.conf
 herdr server reload-config
 source ~/.zshrc
 
+# Legacy Tmux only
+tmux source-file ~/.tmux.conf
+
 # Update plugins
 :Lazy sync  # Neovim
-prefix + I  # Tmux
+prefix + I  # Legacy Tmux
 ```
 
 ### Project Management
 ```bash
 # Quick project switch
-C-x + t  # From tmux
+C-x + g  # Search Herdr workspaces, tabs, and panes
+C-x + w  # Open the Herdr workspace picker
 C-f      # From Neovim
 
-# New project session
-tmux new-session -s project -c ~/path/to/project
-
-# Attach to session
-tmux attach-session -t project
+# New project tab
+C-x + c
+C-x + Shift-T  # Rename the tab
 ```
 
 ### AI Tools
@@ -124,7 +127,7 @@ C-]     # Accept line
 # Focus & Zen Mode
 <leader>z   # Zen mode (70% width)
 <leader>Z   # Full screen zen mode
-<leader>zx  # Exit zen mode (all tmux panes)
+<leader>zx  # Exit zen mode across legacy Tmux panes
 <leader>tt  # Toggle twilight
 ```
 
@@ -137,7 +140,7 @@ C-]     # Accept line
 ~/.config/skhd/          # SKHD config
 ~/.config/atuin/         # Atuin config
 ~/.config/herdr/         # Herdr config and local runtime state
-~/.tmux.conf             # Tmux config
+~/.tmux.conf             # Legacy Tmux config
 ~/.zshrc                 # Zsh config
 
 # Dotfiles
@@ -158,12 +161,12 @@ C-]     # Accept line
 ```bash
 # Check service status
 brew services list | grep -E "(yabai|skhd)"
-ps aux | grep -E "(yabai|skhd|nvim|tmux)"
+ps aux | grep -E "(yabai|skhd|nvim|herdr)"
 
 # Check health
 :checkhealth  # Neovim
-tmux info     # Tmux
 herdr status  # Herdr client and server
+tmux info     # Legacy Tmux
 
 # View logs
 tail -f /usr/local/var/log/yabai/yabai.err.log
@@ -216,7 +219,7 @@ tar -czf ~/dotfiles-backup-$(date +%Y%m%d).tar.gz ~/.dotfiles
 rm -rf ~/.config/nvim ~/.local/share/nvim ~/.cache/nvim
 make stow-install
 
-# Reset tmux
+# Reset legacy Tmux
 tmux kill-server
 rm -rf ~/.tmux/plugins
 git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
@@ -226,10 +229,11 @@ git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
 
 ### Daily Startup
 ```bash
-1. C-x + t          # Select main project
-2. nvim             # Open editor
-3. <leader>Dd       # Open database if needed
-4. <leader>ac       # Start AI chat if needed
+1. herdr             # Start or resume the workspace manager
+2. C-x + g           # Select a workspace, tab, or pane
+3. nvim              # Open editor
+4. <leader>Dd        # Open database if needed
+5. <leader>ac        # Start AI chat if needed
 ```
 
 ### Code Review
@@ -242,9 +246,9 @@ git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
 
 ### Project Switch
 ```bash
-1. C-x + t          # Project sessionizer
-2. Type project name
-3. Enter            # Switch to project
+1. C-x + g          # Search Herdr sessions
+2. Type project or agent name
+3. Enter            # Focus the target
 ```
 
 ### Database Work
@@ -261,4 +265,5 @@ git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
 - [Troubleshooting](/troubleshooting/)
 - [Neovim Guide](/neovim/)
 - [AI Workflows](/ai/workflows/)
-- [Tmux Guide](/tmux/)
+- [Herdr Guide](/herdr/)
+- [Legacy Tmux Guide](/tmux/)

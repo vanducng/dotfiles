@@ -17,7 +17,7 @@ export default defineConfig({
       // Apply Starlight's markdown pipeline (asides, heading links) to the custom-loader content/ dir.
       markdown: { processedDirs: ['./content'] },
       description:
-        'AI-enhanced macOS development environment - tiling window management, terminal workflows, and integrated AI coding.',
+        'AI-native macOS development environment with Herdr workspaces, tiling window management, Neovim, and integrated AI coding.',
       customCss: ['./src/styles/theme.css'],
       expressiveCode: {
         themes: ['catppuccin-mocha', 'catppuccin-latte'],
@@ -32,7 +32,7 @@ export default defineConfig({
         starlightLlmsTxt({
           projectName: 'dotfiles - Duc\'s macOS workspace',
           description:
-            'AI-enhanced macOS development environment: tiling window management, terminal workflows, and integrated AI coding.',
+            'AI-native macOS development environment with Herdr workspaces, tiling window management, Neovim, and integrated AI coding.',
         }),
       ],
       lastUpdated: true,
@@ -44,7 +44,14 @@ export default defineConfig({
         },
         {
           label: 'Core Tools',
-          items: ['neovim', 'tmux', 'herdr', 'atuin', 'skhd', 'zen-mode'],
+          items: [
+            'neovim',
+            { label: 'Herdr - Agent Workspace Manager', link: '/herdr/' },
+            { label: 'Tmux - Legacy Multiplexer', link: '/tmux/' },
+            'atuin',
+            'skhd',
+            'zen-mode',
+          ],
         },
         {
           label: 'AI Tools',

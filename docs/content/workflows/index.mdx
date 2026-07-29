@@ -12,8 +12,9 @@ Daily development patterns using the integrated environment.
 ```bash
 # Open terminal (Ghostty starts automatically)
 
-# Navigate to project
-C-x + t  # Open tmux sessionizer
+# Start or resume the workspace manager
+herdr
+C-x + g  # Find a workspace, tab, or pane
 
 # Open editor
 nvim
@@ -53,7 +54,8 @@ cd ~/projects/new-project
 git init
 git remote add origin <url>
 
-C-x + t  # Create tmux session
+herdr
+C-x + Shift-T  # Name the current tab
 nvim
 <leader>ac  # Ask AI for project structure
 ```
