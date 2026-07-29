@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.11.2](https://github.com/vanducng/dotfiles/compare/v0.11.1...v0.11.2) (2026-07-29)
+
+
+### Bug Fixes
+
+* **docs:** restore shell spacing ([#70](https://github.com/vanducng/dotfiles/issues/70)) ([27ec309](https://github.com/vanducng/dotfiles/commit/27ec309cbc92b01fda1a910cfd16f1ed920ec50e))
+
 ## [0.11.1](https://github.com/vanducng/dotfiles/compare/v0.11.0...v0.11.1) (2026-07-29)
 
 
