@@ -64,7 +64,7 @@ gen_intent() {
       [[ -n "$codex_bin" ]] || return 1
       out="$(mktemp "${TMPDIR:-/tmp}/herdr-pane-rename.XXXXXX")"
       if ! perl -e 'alarm shift; exec @ARGV' 120 \
-        "$codex_bin" exec --skip-git-repo-check -s read-only --output-last-message "$out" \
+        env -u OPENAI_API_KEY "$codex_bin" exec --skip-git-repo-check -s read-only --output-last-message "$out" \
         "$prompt" </dev/null >/dev/null 2>&1; then
         rm -f "$out"
         return 1
