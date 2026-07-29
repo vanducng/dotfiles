@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.12.0](https://github.com/vanducng/dotfiles/compare/v0.11.2...v0.12.0) (2026-07-29)
+
+
+### Features
+
+* **herdr:** added session-context pane rename on prefix+shift+p ([#72](https://github.com/vanducng/dotfiles/issues/72)) ([01742dc](https://github.com/vanducng/dotfiles/commit/01742dc11e213e749e37e6c3b3902293b5f7fc96))
+
 ## [0.11.2](https://github.com/vanducng/dotfiles/compare/v0.11.1...v0.11.2) (2026-07-29)
 
 
