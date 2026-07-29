@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.12.2](https://github.com/vanducng/dotfiles/compare/v0.12.1...v0.12.2) (2026-07-29)
+
+
+### Bug Fixes
+
+* **docs:** keep header search clickable ([#76](https://github.com/vanducng/dotfiles/issues/76)) ([8d9dd46](https://github.com/vanducng/dotfiles/commit/8d9dd4642627ad51f1b3bbbe86364c24fa0a3086))
+
 ## [0.12.1](https://github.com/vanducng/dotfiles/compare/v0.12.0...v0.12.1) (2026-07-29)
 
 
