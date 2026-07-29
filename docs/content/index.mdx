@@ -1,17 +1,17 @@
 ---
 title: Overview
-description: AI-enhanced macOS development environment — tiling window management, terminal workflows, and integrated AI coding.
+description: AI-native macOS development environment with Herdr workspaces, tiling window management, Neovim, and integrated AI coding.
 ---
 
 import { CardGrid, LinkCard } from '@astrojs/starlight/components';
 
-An AI-native macOS dev environment, wired together and documented — **30 Stow-managed configs**, reproducible from one command. Start with the [installation guide](/installation/), or jump to a section below.
+An AI-native macOS dev environment, wired together and documented with **35 Stow-managed configs**, reproducible from one command. Herdr is the primary terminal workspace manager for coding agents. Start with the [installation guide](/installation/), or jump to a section below.
 
 ## What's inside
 
 <CardGrid>
-  <LinkCard title="Core Tools" href="/neovim/" description="Neovim (AstroNvim v6), Tmux, Atuin, SKHD hotkeys, and Zen Mode — the daily-driver editing and terminal stack." />
-  <LinkCard title="AI Tools" href="/ai/" description="Codex CLI, Claude Code, CodeCompanion, and Supermaven — how they are configured and how they fit together." />
+  <LinkCard title="Core Tools" href="/herdr/" description="Herdr, Ghostty, Neovim (AstroNvim v6), Atuin, and SKHD form the daily-driver agent workspace." />
+  <LinkCard title="AI Tools" href="/ai/" description="Codex CLI, Claude Code, CodeCompanion, and Supermaven - how they are configured and how they fit together." />
   <LinkCard title="Workflows" href="/workflows/" description="End-to-end patterns for coding, database work, and review & debug across the whole toolchain." />
   <LinkCard title="Troubleshooting" href="/troubleshooting/" description="Fixes for window management, terminal, Neovim, AI tools, and performance." />
 </CardGrid>
@@ -25,9 +25,9 @@ Reload services and plugins after editing configs:
 brew services restart yabai
 brew services restart skhd
 
-# Shell + multiplexer
+# Shell + workspace manager
 source ~/.zshrc
-tmux source-file ~/.tmux.conf
+herdr server reload-config
 ```
 
 New here? Follow the [installation guide](/installation/) end to end, then keep the [quick reference](/quick-reference/) handy.
