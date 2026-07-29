@@ -38,3 +38,11 @@ Across ALL projects, default to writing ZERO comments. Add one only when a futur
 - Never reference current task / PR / fix in code - belongs in commit msg / PR description.
 - One short line max per comment. No multi-line preambles or docstring paragraphs.
 - Exported funcs needing GoDoc: one line, the WHY not the signature restatement.
+
+## Reusable Skill Privacy
+
+- Treat every reusable skill, reference, example, test fixture, and asset as potentially publishable.
+- Do not include private repository or organization names, internal URLs or hostnames, customer names, ticket contents, usernames, emails, absolute personal paths, production identifiers, connection names, credentials, secrets, or sensitive business data.
+- Use generic placeholders such as `<org>/<repo>`, `<repo-root>`, `<connection>`, `<database>`, and `<internal-host>`.
+- Discover private values at runtime from the current repository, environment, or private repo-local configuration. Keep that context out of reusable skill files.
+- Before completing a skill change, scan changed skill files for private or sensitive identifiers and replace them with placeholders.
