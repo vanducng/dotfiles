@@ -42,6 +42,12 @@ command = "herdr-agents"
 description = "focus agent by address"
 
 [[keys.command]]
+key = "prefix+shift+p"
+type = "shell"
+command = "herdr-pane-rename"
+description = "rename pane from session context"
+
+[[keys.command]]
 key = "prefix+shift+g"
 type = "shell"
 command = "gh repo view --web"
