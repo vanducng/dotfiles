@@ -45,7 +45,7 @@ chmod +x "$test_dir/claude-long"
 cat >"$test_dir/claude-too-long" <<'EOF'
 #!/usr/bin/env bash
 printf 'widget:'
-printf 'x%.0s' {1..100}
+printf 'context-word-%.0s' {1..10}
 EOF
 chmod +x "$test_dir/claude-too-long"
 
@@ -114,8 +114,8 @@ assert_label "label can exceed old limit" $'w1:p1\twidget:investigate-flaky-inte
 
 run env HERDR_RENAME_CWD="$git_dir/subdir" \
   HERDR_RENAME_CLAUDE_BIN="$test_dir/claude-too-long" HERDR_RENAME_CODEX_BIN="$missing"
-expected_long="widget:$(printf 'x%.0s' {1..73})"
-assert_label "label is capped at new limit" $'w1:p1\t'"$expected_long"
+expected_long="widget:$(printf 'context-word-%.0s' {1..5})context"
+assert_label "label is capped at a word boundary" $'w1:p1\t'"$expected_long"
 
 long_dir="$test_dir/long-project"
 mkdir -p "$long_dir"
