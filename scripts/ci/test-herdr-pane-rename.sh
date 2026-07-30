@@ -28,19 +28,38 @@ chmod +x "$test_dir/herdr"
 
 cat >"$test_dir/claude" <<'EOF'
 #!/usr/bin/env bash
-printf 'Fix Auth Token Refresh\n'
+set -euo pipefail
+prompt="${!#}"
+[[ "$prompt" == *'80 characters or fewer'* ]]
+[[ "$prompt" == *'Shorten the project only when needed'* ]]
+printf 'widget:Fix Auth Token Refresh\n'
 EOF
 chmod +x "$test_dir/claude"
 
 cat >"$test_dir/claude-long" <<'EOF'
 #!/usr/bin/env bash
-printf 'Investigate Flaky Integration Test Timeouts\n'
+printf 'widget:Investigate Flaky Integration Test Timeouts\n'
 EOF
 chmod +x "$test_dir/claude-long"
 
+cat >"$test_dir/claude-too-long" <<'EOF'
+#!/usr/bin/env bash
+printf 'widget:'
+printf 'x%.0s' {1..100}
+EOF
+chmod +x "$test_dir/claude-too-long"
+
+cat >"$test_dir/claude-long-project" <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+[[ "${!#}" == *'Project name: cnb-web-services-suite'* ]]
+printf 'cnb-web-services:Investigate Flaky Integration Test Timeouts\n'
+EOF
+chmod +x "$test_dir/claude-long-project"
+
 cat >"$test_dir/claude-broken" <<'EOF'
 #!/usr/bin/env bash
-printf 'Invalid API key · Fix external API key\n'
+printf 'invalid:Invalid API key · Fix external API key\n'
 exit 1
 EOF
 chmod +x "$test_dir/claude-broken"
@@ -54,7 +73,7 @@ for arg in "$@"; do
   [[ "$prev" == "--output-last-message" ]] && out="$arg"
   prev="$arg"
 done
-printf 'Ship Codex Rename\n' >"$out"
+printf 'widget:Ship Codex Rename\n' >"$out"
 EOF
 chmod +x "$test_dir/codex"
 
@@ -91,7 +110,12 @@ assert_label "claude intent" $'w1:p1\twidget:fix-auth-token-refresh'
 
 run env HERDR_RENAME_CWD="$git_dir/subdir" \
   HERDR_RENAME_CLAUDE_BIN="$test_dir/claude-long" HERDR_RENAME_CODEX_BIN="$missing"
-assert_label "intent truncated at word boundary" $'w1:p1\twidget:investigate-flaky'
+assert_label "label can exceed old limit" $'w1:p1\twidget:investigate-flaky-integration-test-timeouts'
+
+run env HERDR_RENAME_CWD="$git_dir/subdir" \
+  HERDR_RENAME_CLAUDE_BIN="$test_dir/claude-too-long" HERDR_RENAME_CODEX_BIN="$missing"
+expected_long="widget:$(printf 'x%.0s' {1..73})"
+assert_label "label is capped at new limit" $'w1:p1\t'"$expected_long"
 
 long_dir="$test_dir/long-project"
 mkdir -p "$long_dir"
@@ -100,8 +124,8 @@ git -C "$long_dir" switch -q -c main
 git -C "$long_dir" remote add origin git@github.com:acme/cnb-web-services-suite.git
 
 run env HERDR_RENAME_CWD="$long_dir" \
-  HERDR_RENAME_CLAUDE_BIN="$test_dir/claude-long" HERDR_RENAME_CODEX_BIN="$missing"
-assert_label "long project budgets intent" $'w1:p1\tcnb-web-services-suite:investigate-flaky'
+  HERDR_RENAME_CLAUDE_BIN="$test_dir/claude-long-project" HERDR_RENAME_CODEX_BIN="$missing"
+assert_label "llm shortens long project" $'w1:p1\tcnb-web-services:investigate-flaky-integration-test-timeouts'
 
 run env HERDR_RENAME_CWD="$git_dir/subdir" HERDR_RENAME_AGENT="codex" \
   HERDR_RENAME_CLAUDE_BIN="$test_dir/claude" HERDR_RENAME_CODEX_BIN="$test_dir/codex"
