@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.13.0](https://github.com/vanducng/dotfiles/compare/v0.12.2...v0.13.0) (2026-07-30)
+
+
+### Features
+
+* **herdr:** expanded contextual pane names ([#78](https://github.com/vanducng/dotfiles/issues/78)) ([ad17188](https://github.com/vanducng/dotfiles/commit/ad171887d853ffd3c855db9bf408ab5cb3d38800))
+
 ## [0.12.2](https://github.com/vanducng/dotfiles/compare/v0.12.1...v0.12.2) (2026-07-29)
 
 
