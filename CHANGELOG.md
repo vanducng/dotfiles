@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.13.1](https://github.com/vanducng/dotfiles/compare/v0.13.0...v0.13.1) (2026-07-31)
+
+
+### Bug Fixes
+
+* **ghostty:** drop global secure-input toggle, show SKE indicator ([#80](https://github.com/vanducng/dotfiles/issues/80)) ([73e5608](https://github.com/vanducng/dotfiles/commit/73e5608014ac79624c4ad2c996be7233c133bdb7))
+
 ## [0.13.0](https://github.com/vanducng/dotfiles/compare/v0.12.2...v0.13.0) (2026-07-30)
 
 
