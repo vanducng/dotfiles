@@ -22,10 +22,11 @@ macos-option-as-alt = true
 
 # Don't auto-toggle Secure Keyboard Entry on password-prompt heuristic.
 # SKE blocks CGEventTap clients (skhd), causing skhd to abort + launchd respawn loop.
-# Manual toggle still available via the command palette or the keybind below.
+# No toggle keybind on purpose: a global hotkey once enabled SKE by accident and
+# silently killed skhd for days. Deliberate toggle lives in the command palette,
+# and the indicator stays on so any SKE holder is visible.
 macos-auto-secure-input = false
-macos-secure-input-indication = false
-keybind = global:cmd+alt+shift+s=toggle_secure_input
+macos-secure-input-indication = true
 
 # Disable default cmd+d split (let tmux handle multiplexing inside surfaces)
 keybind = cmd+d=ignore
