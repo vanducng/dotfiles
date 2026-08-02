@@ -43,6 +43,22 @@ nix flake update nixpkgs home-manager herdr
 The `flake.lock` file is committed so all machines use the same input
 revisions. Codex, Pi, and Moshi continue to use their official installers.
 
+## Remote browser
+
+The coding-agent profile stows `agent-browser-connect` from the `bin` package.
+When `BROWSER_CDP_URL` points at a Kubernetes Chrome service, run:
+
+```bash
+agent-browser-connect
+agent-browser open https://example.com
+agent-browser snapshot -i
+agent-browser close
+```
+
+The helper resolves the service to its pod IP, attaches to the persistent
+non-headless Chrome profile, and rejects accidental standalone HeadlessChrome
+sessions.
+
 ## License
 
 MIT
