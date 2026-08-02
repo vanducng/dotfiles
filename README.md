@@ -18,6 +18,31 @@ AI-native macOS development environment centered on Herdr workspaces.
 
 Full setup guide, keybindings, and workflows: **[dotfiles.vanducng.dev](https://dotfiles.vanducng.dev)**
 
+## Nix profiles
+
+The flake provides a shared Home Manager profile for macOS and Linux. The
+current Kubernetes coding-agent pod remains Ubuntu-based and should consume
+the prebuilt image rather than installing Nix at runtime.
+
+```bash
+# Check the flake and enter its portable development shell.
+nix flake check
+nix develop
+
+# First activation on macOS.
+nix run home-manager/release-26.05 -- switch --flake .#macbook
+
+# Later activations.
+home-manager switch --flake .#macbook
+home-manager switch --flake .#coding-agent
+
+# Update pinned Nix inputs deliberately.
+nix flake update nixpkgs home-manager herdr
+```
+
+The `flake.lock` file is committed so all machines use the same input
+revisions. Codex, Pi, and Moshi continue to use their official installers.
+
 ## License
 
 MIT

@@ -33,6 +33,7 @@ declare -A TOOLS=(
     ["mosh"]="optional:Roaming remote shell for Moshi"
     ["moshi"]="optional:Moshi host integration CLI"
     ["nvim"]="required:Text editor"
+    ["pi"]="required:Pi coding agent"
     ["python3"]="required:Python interpreter"
     ["rg"]="required:Ripgrep search"
     ["shellcheck"]="optional:Shell script linter"
