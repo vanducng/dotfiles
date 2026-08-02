@@ -31,6 +31,9 @@ function zvm_vi_yank() {
 [[ ! -f $HOME/.p10k.zsh ]] || source $HOME/.p10k.zsh
 
 
+# Keeps PATH free of duplicates; a later prepend of an existing entry moves it to the front.
+typeset -U path PATH
+
 export PATH="/opt/homebrew/opt/mysql-client/bin:$PATH"
 
 # Let Homebrew refresh metadata daily so cask upgrades see new releases.
@@ -66,7 +69,6 @@ LC_ALL=en_US.UTF-8
 # mise's pinned go, producing a 1.24.3-tool / 1.23.4-stdlib "compile: version" mismatch.
 export GOPATH=/Users/vanducng/go
 export PATH=$GOPATH/bin:$PATH
-export PATH="$HOME/.local/bin:$PATH"
 export PATH="$PATH:/usr/local/bin"
 export LDFLAGS="-L/usr/local/opt/zlib/lib"
 export CPPFLAGS="-I/usr/local/opt/zlib/include"
@@ -271,9 +273,6 @@ export PATH=/Users/vanducng/.opencode/bin:$PATH
 # npm global path
 export PATH="/Users/vanducng/.npm-global/bin:$PATH"
 
-# Added by dbt installer
-export PATH="$PATH:/Users/vanducng/.local/bin"
-
 # Added by Windsurf
 export PATH="/Users/vanducng/.codeium/windsurf/bin:$PATH"
 
@@ -284,7 +283,9 @@ export PATH="/Users/vanducng/.codeium/windsurf/bin:$PATH"
 # bun
 export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
-export PATH="/Users/vanducng/.claude/local:$PATH"
+
+# Must stay after the other prepends: with `typeset -U`, this is what keeps
+# ~/.local/bin ahead of .cargo/bin and mise for herdr/uv/uvx.
 export PATH="$HOME/.local/bin:$PATH"
 
 # The next line updates PATH for the Google Cloud SDK.
