@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cdp_url="${1:-${BROWSER_CDP_URL:-}}"
+if [[ -z "$cdp_url" ]]; then
+    printf 'BROWSER_CDP_URL is not set\n' >&2
+    exit 2
+fi
+
+for command_name in agent-browser python3; do
+    command -v "$command_name" >/dev/null 2>&1 || {
+        printf 'required command not found: %s\n' "$command_name" >&2
+        exit 127
+    }
+done
+
+ws_url="$(python3 - "$cdp_url" <<'PY'
+import json
+import socket
+import sys
+import urllib.parse
+import urllib.request
+
+source = urllib.parse.urlparse(sys.argv[1])
+if source.scheme not in {"http", "ws"} or not source.hostname:
+    raise SystemExit("BROWSER_CDP_URL must be an http:// or ws:// URL")
+
+port = source.port or 9222
+ip = socket.gethostbyname(source.hostname)
+request = urllib.request.Request(
+    f"http://{ip}:{port}/json/version",
+    headers={"Host": "localhost"},
+)
+with urllib.request.urlopen(request, timeout=10) as response:
+    endpoint = urllib.parse.urlparse(json.load(response)["webSocketDebuggerUrl"])
+
+print(urllib.parse.urlunparse(endpoint._replace(netloc=f"{ip}:{port}")))
+PY
+)"
+
+env -u AGENT_BROWSER_PROFILE agent-browser close >/dev/null 2>&1 || true
+env -u AGENT_BROWSER_PROFILE agent-browser connect "$ws_url"
+ua="$(env -u AGENT_BROWSER_PROFILE agent-browser eval "navigator.userAgent")"
+if [[ "$ua" == *HeadlessChrome* ]]; then
+    env -u AGENT_BROWSER_PROFILE agent-browser close >/dev/null 2>&1 || true
+    printf 'attached to the wrong browser: %s\n' "$ua" >&2
+    exit 1
+fi
+
+printf 'Connected to persistent Chrome: %s\n' "$ua"
