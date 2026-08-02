@@ -76,24 +76,11 @@ test_stow_installation() {
 test_all_tools() {
     log_info "Testing individual tool installations..."
     
-    local tools=($(cd "$PROJECT_ROOT/dotfiles" && find . -maxdepth 1 -type d -not -name "." | cut -d'/' -f2 | sort))
-    
+    local tools=()
+    mapfile -t tools < <(make --no-print-directory -s stow-folders)
+
     for tool in "${tools[@]}"; do
-        case "$OSTYPE" in
-            darwin*)
-                test_stow_installation "$tool"
-                ;;
-            linux*)
-                case "$tool" in
-                    hammerspoon|karabiner|skhd|yabai)
-                        log_info "Skipping $tool (macOS only)"
-                        ;;
-                    *)
-                        test_stow_installation "$tool"
-                        ;;
-                esac
-                ;;
-        esac
+        test_stow_installation "$tool"
     done
 }
 

@@ -45,7 +45,7 @@ detect_platform() {
 get_platform_tools() {
     local platform="$1"
     local all_tools=()
-    mapfile -t all_tools < <(cd "$PROJECT_ROOT/dotfiles" && find . -maxdepth 1 -type d -not -name "." | cut -d'/' -f2)
+    mapfile -t all_tools < <(make --no-print-directory -s -C "$PROJECT_ROOT" stow-folders)
     local excluded_tools=()
     
     # Get excluded tools for platform
