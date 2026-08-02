@@ -134,6 +134,8 @@ export default function (pi: ExtensionAPI) {
   pi.on("session_shutdown", (_event, ctx) => {
     agentRunActive = false;
     applyWorkingPresentation(ctx.ui);
+    removeTerminalInputHandler?.();
+    removeTerminalInputHandler = undefined;
   });
 
   pi.registerCommand("calm", {

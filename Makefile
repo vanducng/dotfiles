@@ -1,6 +1,7 @@
 COMMON_STOW_FOLDERS=tmux herdr pi starship bin vrapperrc yazi zathura lazygit nvim-vscode task nvim mise miu agents atuin direnv diffnav gh-dash agent-deck wtf delta git
 MACOS_STOW_FOLDERS=zsh kitty skhd yabai borders ghostty claude codex hammerspoon karabiner rift vscode launchd
-ifeq ($(shell uname -s),Darwin)
+PLATFORM ?= $(shell uname -s)
+ifneq ($(filter Darwin macos,$(PLATFORM)),)
 STOW_FOLDERS=$(COMMON_STOW_FOLDERS) $(MACOS_STOW_FOLDERS)
 else
 STOW_FOLDERS=$(COMMON_STOW_FOLDERS)

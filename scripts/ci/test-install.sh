@@ -77,7 +77,16 @@ test_all_tools() {
     log_info "Testing individual tool installations..."
     
     local tools=()
-    mapfile -t tools < <(make --no-print-directory -s stow-folders)
+    local tool_list
+    if ! tool_list="$(make --no-print-directory -s stow-folders)"; then
+        log_error "Failed to retrieve stow folders list"
+        return 0
+    fi
+    if [[ -z "$tool_list" ]]; then
+        log_error "No stow folders returned"
+        return 0
+    fi
+    mapfile -t tools <<< "$tool_list"
 
     for tool in "${tools[@]}"; do
         test_stow_installation "$tool"
