@@ -45,7 +45,16 @@ detect_platform() {
 get_platform_tools() {
     local platform="$1"
     local all_tools=()
-    mapfile -t all_tools < <(cd "$PROJECT_ROOT/dotfiles" && find . -maxdepth 1 -type d -not -name "." | cut -d'/' -f2)
+    local tool_list
+    if ! tool_list="$(make --no-print-directory -s -C "$PROJECT_ROOT" PLATFORM="$platform" stow-folders)"; then
+        log_error "Failed to retrieve stow folders for $platform"
+        return 1
+    fi
+    if [[ -z "$tool_list" ]]; then
+        log_error "No stow folders returned for $platform"
+        return 1
+    fi
+    mapfile -t all_tools <<< "$tool_list"
     local excluded_tools=()
     
     # Get excluded tools for platform

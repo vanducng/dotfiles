@@ -1,7 +1,14 @@
-STOW_FOLDERS=zsh tmux herdr kitty skhd starship yabai borders bin vrapperrc yazi zathura lazygit nvim-vscode task ghostty nvim mise miu agents claude codex atuin direnv hammerspoon karabiner diffnav gh-dash agent-deck wtf delta rift vscode launchd git
+COMMON_STOW_FOLDERS=tmux herdr pi starship bin vrapperrc yazi zathura lazygit nvim-vscode task nvim mise miu agents atuin direnv diffnav gh-dash agent-deck wtf delta git
+MACOS_STOW_FOLDERS=zsh kitty skhd yabai borders ghostty claude codex hammerspoon karabiner rift vscode launchd
+PLATFORM ?= $(shell uname -s)
+ifneq ($(filter Darwin macos,$(PLATFORM)),)
+STOW_FOLDERS=$(COMMON_STOW_FOLDERS) $(MACOS_STOW_FOLDERS)
+else
+STOW_FOLDERS=$(COMMON_STOW_FOLDERS)
+endif
 SHELL := /bin/bash
 
-.PHONY: help stow-install stow-uninstall stow-status setup-herdr test validate deps platform-test script-test
+.PHONY: help stow-folders stow-install stow-uninstall stow-status setup-herdr test validate deps platform-test script-test
 
 help:
 	@echo "Dotfiles Management"
@@ -24,6 +31,9 @@ help:
 	@echo "  make export-aliases  - Export atuin aliases"
 	@echo "  make import-aliases  - Import atuin aliases"
 	@echo "  make backup-aliases  - Backup and commit aliases"
+
+stow-folders:
+	@printf '%s\n' $(STOW_FOLDERS)
 
 stow-install:
 	@cd dotfiles && for folder in $(STOW_FOLDERS); do \
@@ -88,6 +98,7 @@ script-test:
 	@./scripts/ci/test-herdr-pane-rename.sh
 	@./scripts/ci/test-herdr-tab-renumber.sh
 	@./scripts/ci/test-droid-moshi-notify.sh
+	@./scripts/ci/test-pi-config.sh
 
 install-test:
 	@./scripts/ci/test-install.sh
