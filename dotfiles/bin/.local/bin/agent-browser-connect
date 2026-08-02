@@ -7,8 +7,12 @@ if [[ -z "$cdp_url" ]]; then
     exit 2
 fi
 
-command -v agent-browser >/dev/null
-command -v python3 >/dev/null
+for command_name in agent-browser python3; do
+    command -v "$command_name" >/dev/null 2>&1 || {
+        printf 'required command not found: %s\n' "$command_name" >&2
+        exit 127
+    }
+done
 
 ws_url="$(python3 - "$cdp_url" <<'PY'
 import json
