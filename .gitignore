@@ -58,6 +58,9 @@ Untitled.claude/settings.local.json
 
 # Claude AI project config (keep local)
 .claude/
+# The `agents` stow package ships Claude config on purpose; the blanket ignore
+# above is meant for project-local .claude/ dirs, not this one.
+!dotfiles/agents/.claude/
 plans/
 
 # Astro / Starlight docs build output
