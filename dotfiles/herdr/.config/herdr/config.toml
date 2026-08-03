@@ -50,8 +50,8 @@ description = "rename pane from session context"
 [[keys.command]]
 key = "prefix+shift+g"
 type = "shell"
-command = "gh repo view --web"
-description = "open current GitHub repository"
+command = "gh pr view --web 2>/dev/null || gh pr list --web"
+description = "open current pull request or pull request list"
 
 [[keys.command]]
 key = "prefix+shift+i"

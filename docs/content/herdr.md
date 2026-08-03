@@ -79,7 +79,7 @@ Herdr uses the same `C-x` prefix as this repository's tmux setup.
 | `Ctrl-1..9` | Switch tab |
 | `C-x w` | Workspace picker |
 | `C-x g` | Search and jump to any workspace, tab, or pane |
-| `C-x Shift-G` | Open the current GitHub repository |
+| `C-x Shift-G` | Open the current branch's pull request, or the repository's pull request list |
 | `C-x r` | Resize mode |
 | `C-x R` | Reload config |
 | `C-x ?` | Active key help |
