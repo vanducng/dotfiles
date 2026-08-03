@@ -194,7 +194,7 @@ terminal_title = [
   "project",
   "model",
 ]
-vim_mode_default = true
+vim_mode_default = false
 
 [tui.model_availability_nux]
 "gpt-5.5" = 4
