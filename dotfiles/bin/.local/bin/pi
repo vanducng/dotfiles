@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+# Run pi on the Node it was installed under, not the one mise happens to activate.
+#
+# pi ships as a global npm package whose bin is a symlink to dist/cli.js with a
+# `#!/usr/bin/env node` shebang, so it inherits whatever `node` is first in PATH.
+# In any project pinning Node < 22.19.0 (pi's declared `engines`), its bundled
+# undici crashes at import with:
+#     TypeError: webidl.util.markAsUncloneable is not a function
+# markAsUncloneable landed in Node 22, so this is a hard requirement, not a warning.
+#
+# Resolution is derived from the install itself: pi lives at
+# <node-prefix>/lib/node_modules/..., so <node-prefix>/bin/node is by definition a
+# Node that satisfied it at install time. That self-heals across pi/node upgrades —
+# nothing here is pinned to a version number.
+set -euo pipefail
+
+PKG="@earendil-works/pi-coding-agent"
+MISE_NODE_ROOT="${MISE_DATA_DIR:-$HOME/.local/share/mise}/installs/node"
+
+best_node=""
+best_cli=""
+best_major=0
+
+for cli in "$MISE_NODE_ROOT"/*/lib/node_modules/"$PKG"/dist/cli.js; do
+    [ -f "$cli" ] || continue
+    prefix="${cli%/lib/node_modules/*}"
+    node="$prefix/bin/node"
+    [ -x "$node" ] || continue
+    # Real version, not the directory name: mise aliases (20, lts-iron, ...) are
+    # symlinks, so several paths resolve to the same install.
+    major=$("$node" -p 'process.versions.node.split(".")[0]' 2>/dev/null) || continue
+    if [ "$major" -gt "$best_major" ]; then
+        best_major=$major
+        best_node=$node
+        best_cli=$cli
+    fi
+done
+
+if [ -n "$best_node" ]; then
+    exec "$best_node" "$best_cli" "$@"
+fi
+
+# No mise-installed pi: fall through to whatever else provides it, minus this
+# wrapper, so a non-mise install still works instead of erroring out here.
+self=$(cd "$(dirname "$0")" && pwd)
+PATH=$(printf '%s' "$PATH" | tr ':' '\n' | grep -vxF "$self" | paste -sd: -)
+export PATH
+command -v pi >/dev/null 2>&1 || { echo "pi: not installed" >&2; exit 127; }
+exec pi "$@"
