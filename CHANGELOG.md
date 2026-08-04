@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.14.0](https://github.com/vanducng/dotfiles/compare/v0.13.1...v0.14.0) (2026-08-04)
+
+
+### Features
+
+* **agents:** improve Codex and Herdr defaults ([a22f067](https://github.com/vanducng/dotfiles/commit/a22f067ac7d2e78a6cd40876cf93e17e6622d9e1))
+* **agents:** versioned Claude rules in dotfiles and removed stale guidance ([#87](https://github.com/vanducng/dotfiles/issues/87)) ([c664500](https://github.com/vanducng/dotfiles/commit/c664500353589de86ea720c69141ae202fdf4fec))
+* **environment:** added portable coding-agent profiles ([#82](https://github.com/vanducng/dotfiles/issues/82)) ([2fce55e](https://github.com/vanducng/dotfiles/commit/2fce55eb925f166fb69b718094e4bd88eec2dd02))
+* **herdr:** move the tab bar below terminal panes ([#90](https://github.com/vanducng/dotfiles/issues/90)) ([829717a](https://github.com/vanducng/dotfiles/commit/829717a4cbe3b65c695734e3636b7334ea930965))
+* **pi:** add CLIProxyAPI model catalog ([#86](https://github.com/vanducng/dotfiles/issues/86)) ([0af851c](https://github.com/vanducng/dotfiles/commit/0af851c35a2f604749cd6940e5bd215677ad61d3))
+
+
+### Bug Fixes
+
+* **codex:** suppress unstable feature warning ([#89](https://github.com/vanducng/dotfiles/issues/89)) ([1e60443](https://github.com/vanducng/dotfiles/commit/1e604436ff93345578d30e805b406533eabbe6b9))
+* **zsh:** dedupe PATH and drop dead entries ([#85](https://github.com/vanducng/dotfiles/issues/85)) ([1a8eff7](https://github.com/vanducng/dotfiles/commit/1a8eff76480d4b1a570f256c2ba17c493ac32b58))
+
 ## [0.13.1](https://github.com/vanducng/dotfiles/compare/v0.13.0...v0.13.1) (2026-07-31)
 
 
