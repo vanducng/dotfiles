@@ -29,6 +29,9 @@ for cli in "$MISE_NODE_ROOT"/*/lib/node_modules/"$PKG"/dist/cli.js; do
     # Real version, not the directory name: mise aliases (20, lts-iron, ...) are
     # symlinks, so several paths resolve to the same install.
     major=$("$node" -p 'process.versions.node.split(".")[0]' 2>/dev/null) || continue
+    # A non-numeric reply (stray warning, odd build) would make the arithmetic
+    # test fail and, under `set -e`, kill the wrapper — breaking pi entirely.
+    case $major in ''|*[!0-9]*) continue ;; esac
     if [ "$major" -gt "$best_major" ]; then
         best_major=$major
         best_node=$node
@@ -42,6 +45,15 @@ fi
 
 # No mise-installed pi: fall through to whatever else provides it, minus this
 # wrapper, so a non-mise install still works instead of erroring out here.
+# The guard is what actually prevents recursion — dropping our own directory from
+# PATH is not enough on its own, since a symlinked or differently-spelled entry
+# pointing at the same file would survive the filter and re-enter this script.
+if [ -n "${PI_WRAPPER_ACTIVE:-}" ]; then
+    echo "pi: not installed (no mise-managed install found)" >&2
+    exit 127
+fi
+export PI_WRAPPER_ACTIVE=1
+
 self=$(cd "$(dirname "$0")" && pwd)
 PATH=$(printf '%s' "$PATH" | tr ':' '\n' | grep -vxF "$self" | paste -sd: -)
 export PATH
