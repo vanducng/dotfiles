@@ -22,7 +22,7 @@ All application shortcuts use the `meh` key (ctrl+alt+shift) for consistency and
 ### Development Tools
 | Shortcut | Application | Description |
 |----------|-------------|-------------|
-| `meh + a` | Ghostty | Primary terminal emulator |
+| `meh + a` | Ghostty | Focus the primary terminal and move the pointer to it |
 | `meh + f` | Kitty | Secondary terminal emulator on display 2, space 15 |
 | `meh + x` | ChatGPT | AI assistant on display 2, space 16 |
 | `meh + v` | tldraw offline | Whiteboard on display 2, space 17 |

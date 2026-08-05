@@ -24,7 +24,11 @@ ctrl + alt + cmd - r : yabai --restart-service
 # -----------------------------------------------------------------------------
 # 2. App launchers (meh)
 # -----------------------------------------------------------------------------
-meh - a : open "/Applications/Ghostty.app"
+meh - a : previous=$(yabai -m config mouse_follows_focus); \
+          yabai -m config mouse_follows_focus on; \
+          id=$(yabai -m query --windows | jq -r 'map(select(.app == "Ghostty")) | first | .id // empty'); \
+          if [ -n "$id" ]; then yabai -m window "$id" --focus; else open "/Applications/Ghostty.app"; sleep 0.7; fi; \
+          yabai -m config mouse_follows_focus "$previous"
 meh - b : open "/Applications/Borumi.app"
 meh - c : yabai -m space --focus 18; open "/Applications/Claude.app"
 meh - d : yabai -m space --focus 13; open "/Applications/Arc.app"
