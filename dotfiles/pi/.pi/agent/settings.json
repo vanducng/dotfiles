@@ -1,7 +1,7 @@
 {
-  "defaultProvider": "openai-codex",
-  "defaultModel": "gpt-5.6-sol",
-  "defaultThinkingLevel": "xhigh",
+  "defaultProvider": "cliproxyapi",
+  "defaultModel": "claude-opus-5",
+  "defaultThinkingLevel": "high",
   "lastChangelogVersion": "0.83.0",
   "images": {
     "blockImages": false

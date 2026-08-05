@@ -4,6 +4,24 @@ hyper = { "cmd", "alt", "ctrl" }
 shift_hyper = { "cmd", "alt", "ctrl", "shift" }
 ctrl_cmd = { "cmd", "ctrl" }
 
+local pageScrollLines = 5
+local function scrollActiveApp(lines)
+	local app = hs.application.frontmostApplication()
+	local window = app and app:focusedWindow()
+	if not window then return end
+
+	local mousePosition = hs.mouse.absolutePosition()
+	hs.mouse.absolutePosition(window:frame().center)
+	hs.timer.usleep(10000)
+	hs.eventtap.scrollWheel({ 0, lines }, {}, "line")
+	hs.timer.usleep(10000)
+	hs.mouse.absolutePosition(mousePosition)
+end
+local function pageUp() scrollActiveApp(pageScrollLines) end
+local function pageDown() scrollActiveApp(-pageScrollLines) end
+hs.hotkey.bind({}, "pageup", pageUp, nil, pageUp)
+hs.hotkey.bind({}, "pagedown", pageDown, nil, pageDown)
+
 function reloadConfig(files)
 	doReload = false
 	for _, file in pairs(files) do
