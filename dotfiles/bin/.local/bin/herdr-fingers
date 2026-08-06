@@ -28,21 +28,27 @@ quoted_pattern="\"[^\"\\r\\n]+(?:/|\\.(?:${extensions})${location})\"|'[^'\\r\\n
 bare_pattern='(?:Makefile|Dockerfile|Justfile|Taskfile|LICENSE|README|CHANGELOG)'
 pattern="${url_pattern}|${quoted_pattern}|${path_pattern}|${file_pattern}|${bare_pattern}"
 
+# These two are called once per candidate. Capturing their output with $(...)
+# forks a subshell each time, which dominated the runtime: ~1.85ms per candidate,
+# so a dense 500-line pane spent ~950ms here versus ~30ms in ripgrep. Both are
+# pure parameter expansion, so they now publish through a global and the hot loop
+# forks nothing.
 normalize_candidate() {
-  local value="$1" previous
+  local previous
+  NORMALIZED="$1"
   while true; do
-    previous="$value"
-    value="${value%[.,;:!?\)\]\>]}"
-    [[ "$value" == "$previous" ]] && break
+    previous="$NORMALIZED"
+    NORMALIZED="${NORMALIZED%[.,;:!?\)\]\>]}"
+    [[ "$NORMALIZED" == "$previous" ]] && break
   done
-  if [[ "$value" == \"*\" || "$value" == \'*\' ]]; then
-    value="${value:1:${#value}-2}"
+  if [[ "$NORMALIZED" == \"*\" || "$NORMALIZED" == \'*\' ]]; then
+    NORMALIZED="${NORMALIZED:1:${#NORMALIZED}-2}"
   fi
-  printf '%s\n' "$value"
 }
 
 resolve_candidate() {
   local raw="$1" path root
+  RESOLVED=""
   raw="${raw%:[0-9]*:[0-9]*}"
   raw="${raw%:[0-9]*}"
   case "$raw" in
@@ -52,8 +58,9 @@ resolve_candidate() {
   esac
 
   if [[ "$raw" == /* ]]; then
-    [[ -f "$raw" || -d "$raw" ]] && printf '%s\n' "${raw%/}"
-    return
+    [[ -f "$raw" || -d "$raw" ]] || return 1
+    RESOLVED="${raw%/}"
+    return 0
   fi
 
   raw="${raw#./}"
@@ -61,8 +68,8 @@ resolve_candidate() {
     [[ -n "$root" ]] || continue
     path="$root/$raw"
     if [[ -f "$path" || -d "$path" ]]; then
-      printf '%s\n' "${path%/}"
-      return
+      RESOLVED="${path%/}"
+      return 0
     fi
   done
   return 1
@@ -100,15 +107,16 @@ if ((match_status > 1)); then
 fi
 matches="$(while IFS= read -r candidate; do
   [[ -n "$candidate" ]] || continue
-  candidate="$(normalize_candidate "$candidate")"
+  normalize_candidate "$candidate"
+  candidate="$NORMALIZED"
   [[ -n "$candidate" ]] || continue
   if [[ "$candidate" == http://* || "$candidate" == https://* ]]; then
     printf '%s\t%s\n' "$candidate" "$candidate"
     continue
   fi
-  resolved_key="$(resolve_candidate "$candidate")" || continue
-  [[ -n "$resolved_key" && "$resolved_key" != "${HOME%/}" ]] || continue
-  printf '%s\t%s\n' "$resolved_key" "$candidate"
+  resolve_candidate "$candidate" || continue
+  [[ -n "$RESOLVED" && "$RESOLVED" != "${HOME%/}" ]] || continue
+  printf '%s\t%s\n' "$RESOLVED" "$candidate"
 done <<<"$candidates" | awk -F '\t' '!seen[$1]++ { sub(/^[^\t]*\t/, ""); print }')"
 
 if [[ -z "$matches" ]]; then
