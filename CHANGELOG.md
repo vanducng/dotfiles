@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.14.1](https://github.com/vanducng/dotfiles/compare/v0.14.0...v0.14.1) (2026-08-06)
+
+
+### Bug Fixes
+
+* **pi:** ran pi on the Node it was installed under ([#91](https://github.com/vanducng/dotfiles/issues/91)) ([27415f3](https://github.com/vanducng/dotfiles/commit/27415f3a3bd111f675581bd40e82c94078e3121f))
+
+
+### Performance Improvements
+
+* **herdr-fingers:** dropped two subshell forks per candidate ([#94](https://github.com/vanducng/dotfiles/issues/94)) ([5c94f24](https://github.com/vanducng/dotfiles/commit/5c94f241405e0d005cdcafd77294dc3c2d1d0612))
+
 ## [0.14.0](https://github.com/vanducng/dotfiles/compare/v0.13.1...v0.14.0) (2026-08-04)
 
 
