@@ -125,12 +125,35 @@ deadline_tmp=""
 # Must end successfully: as an EXIT trap its status leaks into the script's own
 # exit code, and a bare `[[ -n ]]` test that fails would turn every clean run
 # into an exit 1.
+# Captures $? first and returns it: as an EXIT trap this function's status
+# becomes the script's, so a hardcoded `return 0` masks a signal death (Ctrl-C
+# reported 0), while letting it end on a failing `[[ -n ]]` test turned every
+# clean run into exit 1. Passing the incoming status through is the only form
+# that gets both right.
 cleanup_deadline_tmp() {
+  local rc=$?
   [[ -n "$deadline_tmp" ]] && rm -f "$deadline_tmp"
   deadline_tmp=""
-  return 0
+  return "$rc"
 }
-trap cleanup_deadline_tmp EXIT INT TERM
+# Clean up on signals, but re-raise so the exit status still reports the signal
+# rather than the trap's own success — a parent checking $? must still see 130
+# on Ctrl-C.
+trap cleanup_deadline_tmp EXIT
+trap 'cleanup_deadline_tmp; trap - INT; kill -INT $$' INT
+trap 'cleanup_deadline_tmp; trap - TERM; kill -TERM $$' TERM
+
+# The shell deadline exists for machines without coreutils, which are also the
+# ones most likely to ship a sleep(1) that rejects fractional seconds. If it
+# does, `sleep 0.1` fails instantly: the poll loop spins hot AND burns its whole
+# budget in microseconds, killing even a healthy 40ms read. Probe once and drop
+# to whole seconds rather than assume.
+poll_step="0.1"
+poll_per_second=10
+if ! sleep 0.1 2>/dev/null; then
+  poll_step="1"
+  poll_per_second=1
+fi
 
 read_pane_with_shell_deadline() {
   local source="$1" budget="$2" pid waited limit grace
@@ -138,7 +161,10 @@ read_pane_with_shell_deadline() {
   "$herdr_bin" pane read "$pane_id" --source "$source" --lines 500 --format text \
     >"$deadline_tmp" 2>/dev/null &
   pid=$!
-  limit=$(awk -v b="$budget" 'BEGIN { printf "%d", (b * 10) + 0.5 }')
+  # Rounded up and floored at one tick so a sub-tick budget still waits once
+  # instead of timing out before the read has any chance to finish.
+  limit=$(awk -v b="$budget" -v p="$poll_per_second" \
+    'BEGIN { n = int(b * p); if (n < b * p) n++; if (n < 1) n = 1; printf "%d", n }')
   waited=0
   while kill -0 "$pid" 2>/dev/null; do
     if ((waited >= limit)); then
@@ -146,8 +172,8 @@ read_pane_with_shell_deadline() {
       # A process that ignores SIGTERM would make the following `wait` block
       # forever — the exact hang this deadline exists to prevent — so escalate.
       grace=0
-      while kill -0 "$pid" 2>/dev/null && ((grace < 10)); do
-        sleep 0.1
+      while kill -0 "$pid" 2>/dev/null && ((grace < poll_per_second)); do
+        sleep "$poll_step"
         ((grace++))
       done
       kill -KILL "$pid" 2>/dev/null || true
@@ -162,7 +188,7 @@ read_pane_with_shell_deadline() {
       cleanup_deadline_tmp
       return 124
     fi
-    sleep 0.1
+    sleep "$poll_step"
     ((waited++))
   done
   if wait "$pid"; then
