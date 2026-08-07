@@ -90,9 +90,152 @@ copy_value() {
   fi
 }
 
-if ! pane_output="$("$herdr_bin" pane read "$pane_id" --source recent-unwrapped --lines 500 --format text)"; then
-  printf 'herdr-fingers: failed to read pane %s\n' "$pane_id" >&2
-  exit 1
+# `recent`/`recent-unwrapped` can block for ~16s on a pane hosting an idle
+# alternate-screen agent: Herdr 0.8.0 collects text history for those, and the
+# collection sits until it times out. Measured across 12 live panes, every
+# `agent=claude status=idle` pane took 15.7-15.9s while every other pane
+# (codex idle, claude working, plain shells) returned in 31-52ms.
+#
+# On the stalled panes themselves the fallback costs nothing: paired reads gave
+# visible=81 rows vs recent=80, repeatably, because rows leaving the alternate
+# screen never enter Herdr's host scrollback, so there is no extra history to
+# fetch. `visible` is still viewport-only in general, so on a pane with deep
+# scrollback it would scan less — an acceptable trade against a 16s freeze on
+# every prefix+space. Raise HERDR_FINGERS_READ_TIMEOUT to buy history back.
+#
+# Bounding the read rather than hardcoding which agents stall keeps this correct
+# if Herdr changes: the fast path simply stops timing out.
+#
+# `timeout` is not usable by bare name here: it commonly resolves to a pyenv
+# shim rather than coreutils. When no coreutils timeout exists at all (a stock
+# macOS box), fall back to a shell deadline rather than silently reverting to
+# the unbounded read this change exists to remove.
+read_timeout_bin=""
+for candidate in "${HERDR_FINGERS_TIMEOUT_BIN:-}" gtimeout /opt/homebrew/bin/gtimeout /usr/bin/timeout; do
+  [[ -n "$candidate" ]] || continue
+  if command -v "$candidate" >/dev/null 2>&1 && "$candidate" --version 2>&1 | grep -qi coreutils; then
+    read_timeout_bin="$candidate"
+    break
+  fi
+done
+
+# Kill the read once the deadline passes, mirroring coreutils' exit 124 so both
+# paths are indistinguishable to the caller.
+deadline_tmp=""
+# Captures $? first and returns it: as an EXIT trap this function's status
+# becomes the script's, so a hardcoded `return 0` masks a signal death (Ctrl-C
+# reported 0), while letting it end on a failing `[[ -n ]]` test turned every
+# clean run into exit 1. Passing the incoming status through is the only form
+# that gets both right.
+cleanup_deadline_tmp() {
+  local rc=$?
+  [[ -n "$deadline_tmp" ]] && rm -f "$deadline_tmp"
+  deadline_tmp=""
+  return "$rc"
+}
+# Clean up on signals, but re-raise so the exit status still reports the signal
+# rather than the trap's own success — a parent checking $? must still see 130
+# on Ctrl-C.
+trap cleanup_deadline_tmp EXIT
+trap 'cleanup_deadline_tmp; trap - INT; kill -INT $$' INT
+trap 'cleanup_deadline_tmp; trap - TERM; kill -TERM $$' TERM
+
+# The shell deadline exists for machines without coreutils, which are also the
+# ones most likely to ship a sleep(1) that rejects fractional seconds. If it
+# does, `sleep 0.1` fails instantly: the poll loop spins hot AND burns its whole
+# budget in microseconds, killing even a healthy 40ms read. Probe once and drop
+# to whole seconds rather than assume.
+poll_step=""
+poll_per_second=""
+ensure_poll_granularity() {
+  [[ -n "$poll_step" ]] && return 0
+  if sleep 0.1 2>/dev/null; then
+    poll_step="0.1"
+    poll_per_second=10
+  else
+    poll_step="1"
+    poll_per_second=1
+  fi
+}
+
+read_pane_with_shell_deadline() {
+  local source="$1" budget="$2" pid waited limit grace
+  ensure_poll_granularity
+  deadline_tmp="$(mktemp)" || return 1
+  "$herdr_bin" pane read "$pane_id" --source "$source" --lines 500 --format text \
+    >"$deadline_tmp" 2>/dev/null &
+  pid=$!
+  # Rounded up and floored at one tick so a sub-tick budget still waits once
+  # instead of timing out before the read has any chance to finish.
+  limit=$(awk -v b="$budget" -v p="$poll_per_second" \
+    'BEGIN { n = int(b * p); if (n < b * p) n++; if (n < 1) n = 1; printf "%d", n }')
+  waited=0
+  while kill -0 "$pid" 2>/dev/null; do
+    if ((waited >= limit)); then
+      kill -TERM "$pid" 2>/dev/null || true
+      # A process that ignores SIGTERM would make the following `wait` block
+      # forever — the exact hang this deadline exists to prevent — so escalate.
+      # Capped by the budget so a deliberately tight timeout is not silently
+      # tripled by a flat one-second grace.
+      grace=0
+      while kill -0 "$pid" 2>/dev/null && ((grace < limit)); do
+        sleep "$poll_step"
+        ((grace++))
+      done
+      kill -KILL "$pid" 2>/dev/null || true
+      wait "$pid" 2>/dev/null || true
+      # Whatever it managed to write is still worth scanning: it is strictly
+      # more than the `visible` retry would return for an alternate-screen pane.
+      if [[ -s "$deadline_tmp" ]]; then
+        cat "$deadline_tmp"
+        cleanup_deadline_tmp
+        return 0
+      fi
+      cleanup_deadline_tmp
+      return 124
+    fi
+    sleep "$poll_step"
+    ((waited++))
+  done
+  if wait "$pid" || [[ -s "$deadline_tmp" ]]; then
+    # Matches the timeout path: whatever the child managed to write is still
+    # worth scanning, even if it then failed.
+    cat "$deadline_tmp"
+    cleanup_deadline_tmp
+    return 0
+  fi
+  cleanup_deadline_tmp
+  return 1
+}
+
+read_pane() {
+  local source="$1" budget="$2"
+  if [[ -n "$read_timeout_bin" ]]; then
+    # -k is required, not optional: plain `timeout` sends TERM and then waits
+    # forever if the child ignores it, which reintroduces the hang this guards.
+    # The kill delay matches the budget so both this and the shell deadline give
+    # the same worst case, rather than one scaling and the other staying flat.
+    "$read_timeout_bin" -k "$budget" "$budget" "$herdr_bin" pane read "$pane_id" \
+      --source "$source" --lines 500 --format text
+  else
+    read_pane_with_shell_deadline "$source" "$budget"
+  fi
+}
+
+# 0.5s is ~9x the slowest healthy read measured across 14 live panes
+# (min 33ms, median 44ms, max 57ms), so a pane that is merely large still
+# finishes on the fast path while a stalled one gives up quickly.
+pane_output=""
+read_budget="${HERDR_FINGERS_READ_TIMEOUT:-0.5}"
+if ! pane_output="$(read_pane recent-unwrapped "$read_budget")"; then
+  # Includes exit 124 (timed out) and any transport error; `visible` is cheap
+  # enough to always be worth one attempt before giving up. It is bounded too:
+  # it measured 20-21ms on the panes that stall, but it reaches Herdr the same
+  # way, so an unbounded retry could hang exactly where this must not.
+  if ! pane_output="$(read_pane visible "$read_budget")"; then
+    printf 'herdr-fingers: failed to read pane %s\n' "$pane_id" >&2
+    exit 1
+  fi
 fi
 
 set +e
