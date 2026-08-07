@@ -90,9 +90,55 @@ copy_value() {
   fi
 }
 
-if ! pane_output="$("$herdr_bin" pane read "$pane_id" --source recent-unwrapped --lines 500 --format text)"; then
-  printf 'herdr-fingers: failed to read pane %s\n' "$pane_id" >&2
-  exit 1
+# `recent`/`recent-unwrapped` can block for ~16s on a pane hosting an idle
+# alternate-screen agent: Herdr 0.8.0 collects text history for those, and the
+# collection sits until it times out. Measured across 12 live panes, every
+# `agent=claude status=idle` pane took 15.7-15.9s while every other pane
+# (codex idle, claude working, plain shells) returned in 31-52ms.
+#
+# On the stalled panes themselves the fallback costs nothing: paired reads gave
+# visible=81 rows vs recent=80, repeatably, because rows leaving the alternate
+# screen never enter Herdr's host scrollback, so there is no extra history to
+# fetch. `visible` is still viewport-only in general, so on a pane with deep
+# scrollback it would scan less — an acceptable trade against a 16s freeze on
+# every prefix+space. Raise HERDR_FINGERS_READ_TIMEOUT to buy history back.
+#
+# Bounding the read rather than hardcoding which agents stall keeps this correct
+# if Herdr changes: the fast path simply stops timing out.
+#
+# `timeout` is not usable by bare name here: it commonly resolves to a pyenv
+# shim rather than coreutils.
+read_timeout_bin=""
+for candidate in "${HERDR_FINGERS_TIMEOUT_BIN:-}" gtimeout /opt/homebrew/bin/gtimeout /usr/bin/timeout; do
+  [[ -n "$candidate" ]] || continue
+  if command -v "$candidate" >/dev/null 2>&1 && "$candidate" --version 2>&1 | grep -qi coreutils; then
+    read_timeout_bin="$candidate"
+    break
+  fi
+done
+
+read_pane() {
+  local source="$1"
+  if [[ -n "$read_timeout_bin" && -n "${2:-}" ]]; then
+    "$read_timeout_bin" "$2" "$herdr_bin" pane read "$pane_id" \
+      --source "$source" --lines 500 --format text
+  else
+    "$herdr_bin" pane read "$pane_id" --source "$source" --lines 500 --format text
+  fi
+}
+
+# 0.5s is ~9x the slowest healthy read measured across 14 live panes
+# (min 33ms, median 44ms, max 57ms), so a pane that is merely large still
+# finishes on the fast path while a stalled one gives up quickly.
+pane_output=""
+read_budget="${HERDR_FINGERS_READ_TIMEOUT:-0.5}"
+if ! pane_output="$(read_pane recent-unwrapped "$read_budget")"; then
+  # Includes exit 124 (timed out) and any transport error; `visible` is cheap
+  # enough to always be worth one attempt before giving up.
+  if ! pane_output="$(read_pane visible "")"; then
+    printf 'herdr-fingers: failed to read pane %s\n' "$pane_id" >&2
+    exit 1
+  fi
 fi
 
 set +e
