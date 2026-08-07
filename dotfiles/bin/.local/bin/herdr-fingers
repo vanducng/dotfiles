@@ -201,10 +201,8 @@ read_pane_with_shell_deadline() {
 }
 
 read_pane() {
-  local source="$1" budget="${2:-}"
-  if [[ -z "$budget" ]]; then
-    "$herdr_bin" pane read "$pane_id" --source "$source" --lines 500 --format text
-  elif [[ -n "$read_timeout_bin" ]]; then
+  local source="$1" budget="$2"
+  if [[ -n "$read_timeout_bin" ]]; then
     # -k is required, not optional: plain `timeout` sends TERM and then waits
     # forever if the child ignores it, which reintroduces the hang this guards.
     "$read_timeout_bin" -k 1 "$budget" "$herdr_bin" pane read "$pane_id" \
