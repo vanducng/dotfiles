@@ -121,30 +121,56 @@ done
 
 # Kill the read once the deadline passes, mirroring coreutils' exit 124 so both
 # paths are indistinguishable to the caller.
+deadline_tmp=""
+# Must end successfully: as an EXIT trap its status leaks into the script's own
+# exit code, and a bare `[[ -n ]]` test that fails would turn every clean run
+# into an exit 1.
+cleanup_deadline_tmp() {
+  [[ -n "$deadline_tmp" ]] && rm -f "$deadline_tmp"
+  deadline_tmp=""
+  return 0
+}
+trap cleanup_deadline_tmp EXIT INT TERM
+
 read_pane_with_shell_deadline() {
-  local source="$1" budget="$2" output pid waited limit
-  output="$(mktemp)" || return 1
+  local source="$1" budget="$2" pid waited limit grace
+  deadline_tmp="$(mktemp)" || return 1
   "$herdr_bin" pane read "$pane_id" --source "$source" --lines 500 --format text \
-    >"$output" 2>/dev/null &
+    >"$deadline_tmp" 2>/dev/null &
   pid=$!
   limit=$(awk -v b="$budget" 'BEGIN { printf "%d", (b * 10) + 0.5 }')
   waited=0
   while kill -0 "$pid" 2>/dev/null; do
     if ((waited >= limit)); then
       kill -TERM "$pid" 2>/dev/null || true
+      # A process that ignores SIGTERM would make the following `wait` block
+      # forever — the exact hang this deadline exists to prevent — so escalate.
+      grace=0
+      while kill -0 "$pid" 2>/dev/null && ((grace < 10)); do
+        sleep 0.1
+        ((grace++))
+      done
+      kill -KILL "$pid" 2>/dev/null || true
       wait "$pid" 2>/dev/null || true
-      rm -f "$output"
+      # Whatever it managed to write is still worth scanning: it is strictly
+      # more than the `visible` retry would return for an alternate-screen pane.
+      if [[ -s "$deadline_tmp" ]]; then
+        cat "$deadline_tmp"
+        cleanup_deadline_tmp
+        return 0
+      fi
+      cleanup_deadline_tmp
       return 124
     fi
     sleep 0.1
     ((waited++))
   done
   if wait "$pid"; then
-    cat "$output"
-    rm -f "$output"
+    cat "$deadline_tmp"
+    cleanup_deadline_tmp
     return 0
   fi
-  rm -f "$output"
+  cleanup_deadline_tmp
   return 1
 }
 
@@ -153,7 +179,9 @@ read_pane() {
   if [[ -z "$budget" ]]; then
     "$herdr_bin" pane read "$pane_id" --source "$source" --lines 500 --format text
   elif [[ -n "$read_timeout_bin" ]]; then
-    "$read_timeout_bin" "$budget" "$herdr_bin" pane read "$pane_id" \
+    # -k is required, not optional: plain `timeout` sends TERM and then waits
+    # forever if the child ignores it, which reintroduces the hang this guards.
+    "$read_timeout_bin" -k 1 "$budget" "$herdr_bin" pane read "$pane_id" \
       --source "$source" --lines 500 --format text
   else
     read_pane_with_shell_deadline "$source" "$budget"
