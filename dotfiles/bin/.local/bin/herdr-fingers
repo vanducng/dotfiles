@@ -122,9 +122,6 @@ done
 # Kill the read once the deadline passes, mirroring coreutils' exit 124 so both
 # paths are indistinguishable to the caller.
 deadline_tmp=""
-# Must end successfully: as an EXIT trap its status leaks into the script's own
-# exit code, and a bare `[[ -n ]]` test that fails would turn every clean run
-# into an exit 1.
 # Captures $? first and returns it: as an EXIT trap this function's status
 # becomes the script's, so a hardcoded `return 0` masks a signal death (Ctrl-C
 # reported 0), while letting it end on a failing `[[ -n ]]` test turned every
@@ -148,15 +145,22 @@ trap 'cleanup_deadline_tmp; trap - TERM; kill -TERM $$' TERM
 # does, `sleep 0.1` fails instantly: the poll loop spins hot AND burns its whole
 # budget in microseconds, killing even a healthy 40ms read. Probe once and drop
 # to whole seconds rather than assume.
-poll_step="0.1"
-poll_per_second=10
-if ! sleep 0.1 2>/dev/null; then
-  poll_step="1"
-  poll_per_second=1
-fi
+poll_step=""
+poll_per_second=""
+ensure_poll_granularity() {
+  [[ -n "$poll_step" ]] && return 0
+  if sleep 0.1 2>/dev/null; then
+    poll_step="0.1"
+    poll_per_second=10
+  else
+    poll_step="1"
+    poll_per_second=1
+  fi
+}
 
 read_pane_with_shell_deadline() {
   local source="$1" budget="$2" pid waited limit grace
+  ensure_poll_granularity
   deadline_tmp="$(mktemp)" || return 1
   "$herdr_bin" pane read "$pane_id" --source "$source" --lines 500 --format text \
     >"$deadline_tmp" 2>/dev/null &
@@ -171,8 +175,10 @@ read_pane_with_shell_deadline() {
       kill -TERM "$pid" 2>/dev/null || true
       # A process that ignores SIGTERM would make the following `wait` block
       # forever — the exact hang this deadline exists to prevent — so escalate.
+      # Capped by the budget so a deliberately tight timeout is not silently
+      # tripled by a flat one-second grace.
       grace=0
-      while kill -0 "$pid" 2>/dev/null && ((grace < poll_per_second)); do
+      while kill -0 "$pid" 2>/dev/null && ((grace < limit)); do
         sleep "$poll_step"
         ((grace++))
       done
@@ -191,7 +197,9 @@ read_pane_with_shell_deadline() {
     sleep "$poll_step"
     ((waited++))
   done
-  if wait "$pid"; then
+  if wait "$pid" || [[ -s "$deadline_tmp" ]]; then
+    # Matches the timeout path: whatever the child managed to write is still
+    # worth scanning, even if it then failed.
     cat "$deadline_tmp"
     cleanup_deadline_tmp
     return 0
