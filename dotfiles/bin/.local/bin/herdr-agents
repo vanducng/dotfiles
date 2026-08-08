@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-herdr_bin="${HERDR_BIN_PATH:-$(command -v herdr || true)}"
+herdr_bin="${HERDR_BIN_PATH:-}"
+if [[ ! -x "$herdr_bin" ]]; then
+  herdr_bin="$(command -v herdr || true)"
+fi
 [[ -n "$herdr_bin" ]] || { printf 'herdr-agents: herdr is required\n' >&2; exit 1; }
 command -v jq >/dev/null 2>&1 || { printf 'herdr-agents: jq is required\n' >&2; exit 1; }
 command -v fzf >/dev/null 2>&1 || { printf 'herdr-agents: fzf is required\n' >&2; exit 1; }
