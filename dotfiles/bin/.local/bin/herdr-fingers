@@ -4,7 +4,10 @@ set -euo pipefail
 pane_id="${HERDR_ACTIVE_PANE_ID:-}"
 [[ -n "$pane_id" ]] || { printf 'herdr-fingers: no active pane\n' >&2; exit 1; }
 
-herdr_bin="${HERDR_BIN_PATH:-$(command -v herdr || true)}"
+herdr_bin="${HERDR_BIN_PATH:-}"
+if [[ ! -x "$herdr_bin" ]]; then
+  herdr_bin="$(command -v herdr || true)"
+fi
 open_path="$(command -v open-path || true)"
 [[ -n "$herdr_bin" ]] || { printf 'herdr-fingers: herdr is required\n' >&2; exit 1; }
 [[ -n "$open_path" ]] || { printf 'herdr-fingers: open-path is required\n' >&2; exit 1; }
@@ -222,6 +225,37 @@ read_pane() {
   fi
 }
 
+repair_wrapped_urls() {
+  local width="$1"
+  awk -v width="$width" '
+    function ltrim(value) {
+      sub(/^[[:space:]]+/, "", value)
+      return value
+    }
+    function partial_scheme(value) {
+      return value ~ /(^|[^[:alnum:]])(h|ht|htt|http|https|http:|https:|http:\/|https:\/)$/
+    }
+    function open_url(value, tail) {
+      if (value !~ /https?:\/\//) return 0
+      tail = value
+      sub(/^.*https?:\/\//, "", tail)
+      return tail != "" && tail !~ /[[:space:]<>")]/ && index(tail, "]") == 0
+    }
+    function flush() {
+      if (buffer != "") print buffer
+      buffer = ""
+    }
+    {
+      original = $0
+      if (buffer != "") buffer = buffer ltrim($0)
+      else buffer = $0
+      if (length(original) == width && (partial_scheme(buffer) || open_url(buffer))) next
+      flush()
+    }
+    END { flush() }
+  '
+}
+
 # 0.5s is ~9x the slowest healthy read measured across 14 live panes
 # (min 33ms, median 44ms, max 57ms), so a pane that is merely large still
 # finishes on the fast path while a stalled one gives up quickly.
@@ -236,6 +270,19 @@ if ! pane_output="$(read_pane recent-unwrapped "$read_budget")"; then
     printf 'herdr-fingers: failed to read pane %s\n' "$pane_id" >&2
     exit 1
   fi
+fi
+
+pane_width="${HERDR_FINGERS_PANE_WIDTH:-}"
+if [[ -z "$pane_width" ]] && command -v jq >/dev/null 2>&1; then
+  pane_width="$(
+    "$herdr_bin" pane layout --pane "$pane_id" 2>/dev/null |
+      jq -r --arg pane "$pane_id" \
+        '.result.layout.panes[]? | select(.pane_id == $pane) | .rect.width' |
+      sed -n '1p' || true
+  )"
+fi
+if [[ "$pane_width" =~ ^[0-9]+$ ]] && ((pane_width > 1)); then
+  pane_output="$(printf '%s\n' "$pane_output" | repair_wrapped_urls "$((pane_width - 1))")"
 fi
 
 set +e

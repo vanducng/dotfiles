@@ -60,7 +60,7 @@ command = "herdr-tab-renumber"
 description = "renumber tabs 1-based"
 
 [ui]
-agent_panel_sort = "spaces"
+agent_panel_sort = "priority"
 show_agent_labels_on_pane_borders = true
 sidebar_start_collapsed = true
 tab_bar_position = "bottom"
@@ -79,5 +79,6 @@ delivery = "terminal"
 delay_seconds = 1
 
 [experimental]
+allow_nested = true
 switch_ascii_input_source_in_prefix = true
 pane_history = true

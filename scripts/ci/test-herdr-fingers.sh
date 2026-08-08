@@ -10,6 +10,12 @@ cat >"$test_dir/herdr" <<'EOF'
 set -euo pipefail
 [[ "$*" == "pane read pane-1 --source recent-unwrapped --lines 500 --format text" ]] || exit 1
 [[ "${HERDR_FINGERS_HERDR_FAIL:-0}" == 0 ]] || exit 7
+if [[ "${HERDR_FINGERS_EXPECT_WRAPPED:-0}" == 1 ]]; then
+  printf '%s\n' \
+    '12345678901234567890123 [link](http' \
+    '         s://github.com/example/repo/issues/1206)'
+  exit 0
+fi
 printf '%s\n' \
   'Old docs: ./README.md' \
   'Old URL: https://example.com/docs).' \
@@ -27,7 +33,11 @@ cat >"$HERDR_FINGERS_CHOICES"
 [[ "${HERDR_FINGERS_FZF_STATUS:-0}" == 0 ]] || exit "$HERDR_FINGERS_FZF_STATUS"
 printf '%s\n' "$HERDR_FINGERS_TEST_ACTION"
 [[ "${HERDR_FINGERS_EMPTY_SELECTION:-0}" == 0 ]] || exit 0
-grep -m1 '^\./README.md:7$' "$HERDR_FINGERS_CHOICES"
+if [[ "${HERDR_FINGERS_EXPECT_WRAPPED:-0}" == 1 ]]; then
+  grep -m1 '^https://github.com/example/repo/issues/1206$' "$HERDR_FINGERS_CHOICES"
+else
+  grep -m1 '^\./README.md:7$' "$HERDR_FINGERS_CHOICES"
+fi
 EOF
 
 cat >"$test_dir/rg" <<'EOF'
@@ -36,7 +46,12 @@ set -euo pipefail
 if [[ "${1:-}" == "--pcre2-version" ]]; then
   exit 0
 fi
-cat >/dev/null
+input="$(cat)"
+if [[ "${HERDR_FINGERS_EXPECT_WRAPPED:-0}" == 1 ]]; then
+  grep -Fq 'https://github.com/example/repo/issues/1206' <<<"$input"
+  printf '%s\n' 'https://github.com/example/repo/issues/1206'
+  exit 0
+fi
 printf '%s\n' \
   'https://example.com/docs.' \
   '"My Project/report.md"' \
@@ -110,6 +125,20 @@ HERDR_FINGERS_TEST_ACTION="enter" \
 
 [[ "$(cat "$capture")" == "--browser ./README.md:7|$test_dir/project" ]]
 [[ "$(cat "$choices")" == $'https://example.com/docs\nMy Project/report.md\n./README.md:7\nartifacts/' ]]
+
+HERDR_FINGERS_EXPECT_WRAPPED=1 \
+HERDR_FINGERS_PANE_WIDTH=36 \
+HERDR_FINGERS_TEST_ACTION="enter" \
+  PATH="$test_dir:$PATH" \
+  HERDR_BIN_PATH="$test_dir/missing-herdr" \
+  HERDR_ACTIVE_PANE_ID="pane-1" \
+  HERDR_ACTIVE_PANE_CWD="$test_dir/project" \
+  HERDR_FINGERS_CAPTURE="$capture" \
+  HERDR_FINGERS_CHOICES="$choices" \
+  HERDR_FINGERS_CLIPBOARD_CAPTURE="$clipboard_capture" \
+  "$project_root/dotfiles/bin/.local/bin/herdr-fingers"
+[[ "$(cat "$capture")" == "--browser https://github.com/example/repo/issues/1206|$test_dir/project" ]]
+[[ "$(cat "$choices")" == "https://github.com/example/repo/issues/1206" ]]
 
 HERDR_FINGERS_TEST_ACTION="ctrl-y" \
   PATH="$test_dir:$PATH" \

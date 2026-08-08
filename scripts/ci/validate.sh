@@ -243,6 +243,12 @@ main() {
     validate_symlinks
     validate_makefile
     validate_agent_hook_commands
+
+    if grep -Eq '^map .* send_text .* \[27;' dotfiles/kitty/.config/kitty/kitty.conf; then
+        log_error "Kitty send_text escape sequences must start with \\x1b"
+    else
+        log_success "Kitty send_text escape sequences are encoded"
+    fi
     
     echo
     log_info "Validation complete!"

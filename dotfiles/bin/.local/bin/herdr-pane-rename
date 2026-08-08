@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-herdr_bin="${HERDR_BIN_PATH:-$(command -v herdr || true)}"
+herdr_bin="${HERDR_BIN_PATH:-}"
+if [[ ! -x "$herdr_bin" ]]; then
+  herdr_bin="$(command -v herdr || true)"
+fi
 [[ -n "$herdr_bin" ]] || { printf 'herdr-pane-rename: herdr is required\n' >&2; exit 1; }
 command -v git >/dev/null 2>&1 || { printf 'herdr-pane-rename: git is required\n' >&2; exit 1; }
 command -v jq >/dev/null 2>&1 || { printf 'herdr-pane-rename: jq is required\n' >&2; exit 1; }
