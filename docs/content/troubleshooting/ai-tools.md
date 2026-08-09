@@ -31,11 +31,9 @@ Only `~/.codex/config.toml` is managed by this repo. Auth files, history, SQLite
 
 ### miudb MCP
 
-Check the shared `miudb` MCP entry from each host:
+Check the `miudb` MCP command exposed by the CLI:
 
 ```bash
-codex mcp list | rg miudb
-claude mcp get miudb
 miudb describe mcp serve --output json
 ```
 

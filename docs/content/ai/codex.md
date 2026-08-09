@@ -24,28 +24,11 @@ This links `dotfiles/codex/.codex/config.toml` to `~/.codex/config.toml` and ins
 - The terminal title shows activity, project, and model.
 - Sound hooks play on approval requests and turn completion.
 - OpenAI developer docs MCP is configured as `openaiDeveloperDocs`.
-- miudb MCP is configured as `miudb` for local database inventory, schema inspection, and bounded read-only SQL.
 - Current Codex plugins for Browser, GitHub, Documents, Spreadsheets, and Presentations stay enabled.
 
 ## miudb MCP
 
 `miudb mcp serve --transport stdio` works with any stdio MCP host. It reads saved database connections from `~/.config/miu/db`, redacts secrets, and keeps `query_run` read-only by default.
-
-Codex is managed in `dotfiles/codex/.codex/config.toml`:
-
-```toml
-[mcp_servers.miudb]
-command = "miudb"
-args = ["mcp", "serve", "--transport", "stdio"]
-startup_timeout_sec = 10
-tool_timeout_sec = 60
-```
-
-Claude Code should be installed at user scope so it is available in every project:
-
-```bash
-claude mcp add --scope user --transport stdio miudb -- miudb mcp serve --transport stdio
-```
 
 Cursor uses `~/.cursor/mcp.json`. Add only this server entry to the existing `mcpServers` object:
 
@@ -83,7 +66,6 @@ Restart Codex after changing hooks. If Codex prompts to trust hooks for a worksp
 ```bash
 codex features list
 codex mcp list
-claude mcp get miudb
 miudb connections list --output json
 codex plugin list
 codex doctor --summary --ascii
