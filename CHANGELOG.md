@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.14.2](https://github.com/vanducng/dotfiles/compare/v0.14.1...v0.14.2) (2026-08-09)
+
+
+### Bug Fixes
+
+* **codex:** clean up MCP startup config ([#97](https://github.com/vanducng/dotfiles/issues/97)) ([3f18f23](https://github.com/vanducng/dotfiles/commit/3f18f23abc5720981e84c97f64d514cbf81d2246))
+
+
+### Performance Improvements
+
+* **gopass:** keep secret reads local ([c2c4a5e](https://github.com/vanducng/dotfiles/commit/c2c4a5e5eaf639517ba871742908bd54fecd48e9))
+* **herdr-fingers:** bounded the pane read so idle agent panes stop freezing ([#95](https://github.com/vanducng/dotfiles/issues/95)) ([76ae800](https://github.com/vanducng/dotfiles/commit/76ae80094589479d5981a890d61d4a1f7042ec00))
+
 ## [0.14.1](https://github.com/vanducng/dotfiles/compare/v0.14.0...v0.14.1) (2026-08-06)
 
 
