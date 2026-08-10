@@ -25,7 +25,6 @@ All application shortcuts use the `meh` key (ctrl+alt+shift) for consistency and
 | `meh + a` | Ghostty | Focus the primary terminal and move the pointer to it |
 | `meh + f` | Kitty | Secondary terminal emulator on display 2, space 15 |
 | `meh + x` | ChatGPT | AI assistant on display 2, space 16 |
-| `meh + v` | tldraw offline | Whiteboard on display 2, space 17 |
 | `meh + g` | Cursor | AI-powered code editor |
 | `meh + y` | Alter | Chat hub |
 
@@ -53,6 +52,7 @@ All application shortcuts use the `meh` key (ctrl+alt+shift) for consistency and
 | `meh + p` | Foxit PDF Reader | PDF reader |
 | `meh + o` | Preview | macOS preview app |
 | `meh + m` | superwhisper | Voice input |
+| `meh + q` | Apple Music | Music player |
 | `meh + b` | Borumi | Productivity app |
 
 ## 🪟 Window Management

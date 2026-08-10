@@ -1,8 +1,11 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "cleanupPeriodDays": 30,
+  "apiKeyHelper": "/opt/homebrew/bin/gopass show -o personal/saas/cli-proxy/code-01-api-key",
   "env": {
+    "ANTHROPIC_BASE_URL": "https://cli-proxy.dataplanelabs.com",
     "BASH_DEFAULT_TIMEOUT_MS": "600000",
+    "CLAUDE_CODE_API_KEY_HELPER_TTL_MS": "3600000",
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
   },
   "includeCoAuthoredBy": false,
@@ -48,7 +51,16 @@
   },
   "enabledPlugins": {
     "docker-mcp-toolkit@docker": false,
-    "ralph-loop@claude-plugins-official": true
+    "ralph-loop@claude-plugins-official": true,
+    "plannotator@plannotator": true
+  },
+  "extraKnownMarketplaces": {
+    "plannotator": {
+      "source": {
+        "source": "github",
+        "repo": "backnotprop/plannotator"
+      }
+    }
   },
   "alwaysThinkingEnabled": true,
   "autoUpdatesChannel": "stable",
