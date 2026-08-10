@@ -1,8 +1,8 @@
 # Managed by ~/dotfiles via GNU Stow.
 # Install with: make stow-codex
-model = "gpt-5.6-sol"
+model = "gpt-5.6-luna"
 model_provider = "cli_proxy"
-model_reasoning_effort = "xhigh"
+model_reasoning_effort = "max"
 personality = "pragmatic"
 web_search = "cached"
 approvals_reviewer = "user"
@@ -254,22 +254,30 @@ startup_timeout_sec = 30
 
 [mcp_servers.node_repl]
 args = []
-command = "/Applications/Codex.app/Contents/Resources/cua_node/bin/node_repl"
+command = "/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node_repl"
 startup_timeout_sec = 120
 
 [mcp_servers.node_repl.env]
 NODE_REPL_NATIVE_PIPE_CONNECT_TIMEOUT_MS = "1000"
-NODE_REPL_NODE_MODULE_DIRS = "/Applications/Codex.app/Contents/Resources/cua_node/lib/node_modules"
-NODE_REPL_NODE_PATH = "/Applications/Codex.app/Contents/Resources/cua_node/bin/node"
-NODE_REPL_TRUSTED_CODE_PATHS = "/Users/vanducng/.codex"
+NODE_REPL_NODE_MODULE_DIRS = "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules"
+NODE_REPL_NODE_PATH = "/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node"
+NODE_REPL_TRUSTED_CODE_PATHS = "/Users/vanducng/.codex:/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules"
 CODEX_HOME = "/Users/vanducng/.codex"
-NODE_REPL_TRUSTED_BROWSER_CLIENT_SHA256S = "72614174f4dad67a58d46a3ac759cffb45c92fa48a293af4c4ea35102ba391ba"
+NODE_REPL_TRUSTED_BROWSER_CLIENT_SHA256S = "323bc3e687e17d7e377238d9f4c69111c4d0e6219103b6316d8c52082489533b"
 BROWSER_USE_AVAILABLE_BACKENDS = "chrome,iab"
 NODE_REPL_INSTRUCTIONS_USE_CASE_BROWSER = "Control the in-app browser in conjunction with the Browser Plugin."
 NODE_REPL_INSTRUCTIONS_USE_CASE_CHROME = "Control the Chrome browser in conjunction with the Chrome Plugin. Prefer this method of controlling Chrome over alternatives (such as Computer Use) unless the user explicitly mentions an alternative."
+NODE_REPL_INSTRUCTIONS_USE_CASE_COMPUTER_USE = "Control desktop apps on macOS through Computer Use."
 BROWSER_USE_CODEX_APP_BUILD_FLAVOR = "prod"
-BROWSER_USE_CODEX_APP_VERSION = "26.608.12217"
-CODEX_CLI_PATH = "/Applications/Codex.app/Contents/Resources/codex"
+BROWSER_USE_CODEX_APP_VERSION = "26.803.41515"
+SKY_CUA_SERVICE_PATH = "/Users/vanducng/.codex/computer-use/Codex Computer Use.app"
+CODEX_CLI_PATH = "/Applications/ChatGPT.app/Contents/Resources/codex"
+
+[mcp_servers.computer-use]
+command = "./Codex Computer Use.app/Contents/SharedSupport/SkyComputerUseClient.app/Contents/MacOS/SkyComputerUseClient"
+args = ["mcp"]
+cwd = "."
+enabled = false
 
 [plugins."documents@openai-primary-runtime"]
 enabled = true
@@ -295,8 +303,11 @@ enabled = true
 [plugins."pdf@openai-primary-runtime"]
 enabled = true
 
+[plugins."visualize@openai-bundled"]
+enabled = true
+
 [marketplaces.openai-bundled]
-last_updated = "2026-06-11T11:22:01Z"
+last_updated = "2026-08-10T07:56:33Z"
 source_type = "local"
 source = "/Users/vanducng/.codex/.tmp/bundled-marketplaces/openai-bundled"
 
@@ -326,4 +337,9 @@ wire_api = "responses"
 supports_websockets = true
 env_key = "CLI_PROXY_API_KEY"
 env_key_instructions = "Export CLI_PROXY_API_KEY from gopass: gopass show -o personal/saas/cli-proxy/code-01-api-key"
+
+[shell_environment_policy.set]
+BROWSER_USE_AVAILABLE_BACKENDS = "chrome,iab"
+NODE_REPL_TRUSTED_BROWSER_CLIENT_SHA256S = "323bc3e687e17d7e377238d9f4c69111c4d0e6219103b6316d8c52082489533b"
+NODE_REPL_TRUSTED_CODE_PATHS = "/Users/vanducng/.codex:/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules"
 # base_url is sourced from CLI_PROXY_BASE_URL (https://cli-proxy.dataplanelabs.com) — keep in sync with env var
