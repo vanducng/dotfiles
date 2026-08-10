@@ -1,4 +1,4 @@
-COMMON_STOW_FOLDERS=tmux herdr pi starship bin vrapperrc yazi zathura lazygit nvim-vscode task nvim mise miu agents atuin direnv diffnav gh-dash agent-deck wtf delta git
+COMMON_STOW_FOLDERS=tmux herdr pi starship bin vrapperrc yazi zathura lazygit nvim-vscode task nvim mise miu agents atuin direnv diffnav gh-dash agent-deck wtf delta git plannotator
 MACOS_STOW_FOLDERS=zsh kitty skhd yabai borders ghostty claude codex hammerspoon karabiner rift vscode launchd gopass
 PLATFORM ?= $(shell uname -s)
 ifneq ($(filter Darwin macos,$(PLATFORM)),)

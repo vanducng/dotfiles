@@ -1,6 +1,7 @@
 # Managed by ~/dotfiles via GNU Stow.
 # Install with: make stow-codex
-model = "gpt-5.5"
+model = "gpt-5.6-sol"
+model_provider = "cli_proxy"
 model_reasoning_effort = "xhigh"
 personality = "pragmatic"
 web_search = "cached"
@@ -8,7 +9,7 @@ approvals_reviewer = "user"
 notify = ["/usr/bin/python3", "/Users/vanducng/skills/hooks/agent-notify.py", "codex"]
 approval_policy = "never"
 sandbox_mode = "danger-full-access"
-service_tier = "default"
+service_tier = "fast"
 suppress_unstable_features_warning = true
 
 [projects."/Users/vanducng/dotfiles"]
@@ -155,6 +156,12 @@ trust_level = "trusted"
 [projects."/Users/vanducng/git/personal/external/vibesmith"]
 trust_level = "trusted"
 
+[projects."/Users/vanducng/git/work/cnb/products/cnb-polaris"]
+trust_level = "trusted"
+
+[projects."/Users/vanducng/git/personal/dataplanelabs/code-review"]
+trust_level = "trusted"
+
 [features]
 apps = true
 browser_use = true
@@ -197,9 +204,42 @@ terminal_title = [
 vim_mode_default = false
 
 [tui.model_availability_nux]
-"gpt-5.5" = 4
+"gpt-5.6-sol" = 4
 
 [hooks.state]
+
+[hooks.state."/Users/vanducng/.codex/hooks.json:pre_tool_use:0:0"]
+trusted_hash = "sha256:6d7c8a69ea23d70a8e8b9a7da17a574c911719b80c41aa9103cd4d82e45ee5a4"
+
+[hooks.state."/Users/vanducng/.codex/hooks.json:pre_tool_use:1:0"]
+trusted_hash = "sha256:aa7d177cf9993e66ca04d8484e5c3a37abcef7e1cda1878684955dee48a9cac4"
+
+[hooks.state."/Users/vanducng/.codex/hooks.json:pre_tool_use:2:0"]
+trusted_hash = "sha256:bdc38690b91cf0ff65885f6bb3124e15d99770cd097463e089aa72d16399347f"
+
+[hooks.state."/Users/vanducng/.codex/hooks.json:permission_request:0:0"]
+trusted_hash = "sha256:0098edd50e5bfb494bd9c4183a750f4ca669e09bbfddb25781c3c5f5c51e8159"
+
+[hooks.state."/Users/vanducng/.codex/hooks.json:session_start:0:0"]
+trusted_hash = "sha256:cf60284bfb9853c26956ee9b39b108adc8dd676f6cfc726b52a04e6fbcb02cee"
+
+[hooks.state."/Users/vanducng/.codex/hooks.json:user_prompt_submit:0:0"]
+trusted_hash = "sha256:439974484100953b9c40f23a7083183830da5d5b86980bf8ecae12a1714fd949"
+
+[hooks.state."/Users/vanducng/.codex/hooks.json:subagent_start:0:0"]
+trusted_hash = "sha256:cbe3b619226e97209e208d8e04363e7a8b1a978955f4c55d5040895d3994f2e7"
+
+[hooks.state."/Users/vanducng/.codex/hooks.json:subagent_start:0:1"]
+trusted_hash = "sha256:04f32e1725f5b7f161ebc1beca606e7ec4943498eef8325296e32340baa1837b"
+
+[hooks.state."/Users/vanducng/.codex/hooks.json:stop:0:0"]
+trusted_hash = "sha256:45896486f9fa47f38bf9cb745702ca9c61cf4a753e9b06b55895400a1db32ee0"
+
+[hooks.state."/Users/vanducng/.codex/hooks.json:stop:1:0"]
+trusted_hash = "sha256:eb720ecc9113d8e58408e4c4629d6bdae1b2f8947d81b4dcd064b5764175e810"
+
+[hooks.state."/Users/vanducng/.codex/hooks.json:stop:2:0"]
+trusted_hash = "sha256:ad540c34743f0208c8b86b8dad5f70d07a67c7c7662a19b9d0bff7ccffe4d0ac"
 
 [notice]
 hide_full_access_warning = true
@@ -278,3 +318,12 @@ global = "cursor"
 max_threads = 4
 max_depth = 1
 job_max_runtime_seconds = 900
+
+[model_providers.cli_proxy]
+name = "CLIProxyAPI"
+base_url = "https://cli-proxy.dataplanelabs.com/v1"
+wire_api = "responses"
+supports_websockets = true
+env_key = "CLI_PROXY_API_KEY"
+env_key_instructions = "Export CLI_PROXY_API_KEY from gopass: gopass show -o personal/saas/cli-proxy/code-01-api-key"
+# base_url is sourced from CLI_PROXY_BASE_URL (https://cli-proxy.dataplanelabs.com) — keep in sync with env var
