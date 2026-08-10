@@ -1,0 +1,49 @@
+if [[ "${DIRENV_FILE:-}" != "$HOME/.envrc" ]]; then
+  source_env_if_exists "$HOME/.envrc"
+fi
+
+# mise integration for direnv
+use_mise() {
+  if command -v mise &> /dev/null; then
+    eval "$(mise activate bash)"
+    eval "$(mise hook-env -s bash)"
+  else
+    echo "Warning: mise not found"
+  fi
+}
+
+# Poetry layout for direnv - optimized: check .venv first to avoid slow poetry (1.2s) and here-doc ENOSPC
+layout_poetry() {
+    if [[ ! -f pyproject.toml ]]; then
+        log_error 'No pyproject.toml found.'
+        return 1
+    fi
+    local VENV
+    if [[ -d .venv && -f .venv/bin/python ]]; then
+        VENV="$PWD/.venv"
+    else
+        VENV=$(poetry env info --path 2>/dev/null)
+        if [[ -z $VENV || ! -d $VENV ]]; then
+            log_error "Poetry venv not found, run poetry install manually"
+            return 1
+        fi
+    fi
+    export VIRTUAL_ENV=$VENV
+    export POETRY_ACTIVE=1
+    PATH_add "$VENV/bin"
+}
+# Override path_add to avoid here-string ENOSPC (bash 5.3 here-document temp file fails on this host with 1.6G TMPDIR)
+path_add() {
+  local path i var_name="$1"
+  declare -a path_array
+  local value
+  eval "value="\${$var_name-}""
+  IFS=: read -ra path_array < <(printf '%s' "$value")
+  shift
+  for ((i = $#; i > 0; i--)); do
+    path_array=("$(expand_path "${!i}")" ${path_array[@]+"${path_array[@]}"}) 
+  done
+  path=$(IFS=:; echo "${path_array[*]}")
+  export "$var_name=$path"
+}
+
