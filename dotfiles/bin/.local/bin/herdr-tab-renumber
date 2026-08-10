@@ -25,12 +25,18 @@ if ! rows="$(jq -r '
   exit 1
 fi
 
-declare -A next_index
+current_workspace=""
+current_index=0
 renamed=0
 while IFS=$'\t' read -r tab_id workspace label; do
   [[ -n "$tab_id" ]] || continue
-  index="${next_index[$workspace]:-1}"
-  next_index[$workspace]=$((index + 1))
+  if [[ "$workspace" != "$current_workspace" ]]; then
+    current_workspace="$workspace"
+    current_index=1
+  else
+    current_index=$((current_index + 1))
+  fi
+  index="$current_index"
   # ponytail: strips a leading "<digits>-" so re-runs don't stack prefixes;
   # a genuine label like "3d-model" also loses its head — rename such tabs by hand.
   base="${label##+([0-9])-}"
