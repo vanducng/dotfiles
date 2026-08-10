@@ -83,6 +83,15 @@
             "statusMessage": "Play completion sound"
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.local/bin/plannotator",
+            "timeout": 345600
+          }
+        ]
       }
     ],
     "PermissionRequest": [

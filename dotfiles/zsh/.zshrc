@@ -349,3 +349,9 @@ claws() {
     -u AWS_USE_PATH_STYLE_ENDPOINT \
     /opt/homebrew/bin/claws "$@"
 }
+
+# >>> grok installer >>>
+export PATH="$HOME/.grok/bin:$PATH"
+fpath=(~/.grok/completions/zsh $fpath)
+autoload -Uz compinit && compinit -C
+# <<< grok installer <<<

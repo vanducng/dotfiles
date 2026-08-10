@@ -14,7 +14,7 @@ This links `dotfiles/codex/.codex/config.toml` to `~/.codex/config.toml` and ins
 
 ## Managed Settings
 
-- `model = "gpt-5.5"` with high reasoning effort and pragmatic personality.
+- `model = "gpt-5.6-sol"` (Souls) with high reasoning effort and pragmatic personality — 5.6 is default (372k context vs 272k on 5.5/5.4, latest router mapping).
 - `web_search = "cached"` for default web access with lower live-page prompt-injection exposure.
 - `/goal` is pinned on with `features.goals = true`.
 - Agent workflow features are pinned on, including multi-agent tools, hooks, shell snapshots, workspace dependencies, browser use, computer use, image generation, and plugin support.
