@@ -22,6 +22,7 @@ case "$1 $2" in
     printf 'Authorization: Bearer bearer-secret-value-12345\n'
     printf 'github_pat_%s\n' 'abcdefghijklmnopqrstuvwxyz1234567890'
     printf '%s%s\n' 'AKIA' 'ABCDEFGHIJKLMNOP'
+    printf '%s\n' 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
     printf '%s\n' '-----BEGIN PRIVATE KEY-----' 'multi-line-key-material' '-----END PRIVATE KEY-----'
     ;;
   'pane rename')
@@ -68,7 +69,9 @@ assert_prompt_absent 'abcdefghijklmnopqrstuvwxyz1234567890'
 aws_access_key_prefix='AKIA'
 aws_access_key_suffix='ABCDEFGHIJKLMNOP'
 assert_prompt_absent "${aws_access_key_prefix}${aws_access_key_suffix}"
+assert_prompt_absent "$aws_access_key_suffix"
 assert_prompt_absent 'multi-line-key-material'
+assert_prompt_absent 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
 assert_prompt_absent 'BEGIN PRIVATE KEY'
 assert_prompt_absent 'END PRIVATE KEY'
 assert_prompt_contains '80 characters or fewer'

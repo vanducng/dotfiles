@@ -83,6 +83,8 @@ redact_sensitive_lines() {
       printf '[redacted sensitive context]\n'
     elif [[ "$line" =~ $pattern ]]; then
       printf '[redacted sensitive context]\n'
+    elif [[ "$line" =~ ^[A-Za-z0-9+/]{64,}={0,2}$ ]]; then
+      printf '[redacted sensitive context]\n'
     else
       printf '%s\n' "$line"
     fi
@@ -97,8 +99,8 @@ last_commit="$(printf '%s\n' "$last_commit" | redact_sensitive_lines "$sensitive
 changed_files="$(printf '%s\n' "$changed_files" | redact_sensitive_lines "$sensitive_path_pattern" || true)"
 title="$(printf '%s\n' "$title" | redact_sensitive_lines "$sensitive_text_pattern" || true)"
 context="$(printf '%s\n' "$context" | redact_sensitive_lines "$sensitive_text_pattern" || true)"
-fallback_branch="$(slugify "$branch")"
-if [[ "$prompt_branch" == *'[redacted sensitive context]'* ]]; then
+fallback_branch="$(slugify "$prompt_branch")"
+if [[ "$fallback_branch" == *'redacted-sensitive-context'* || -z "$fallback_branch" ]]; then
   fallback_branch="branch"
 fi
 claude_bin="${HERDR_RENAME_CLAUDE_BIN:-$(command -v claude || true)}"
