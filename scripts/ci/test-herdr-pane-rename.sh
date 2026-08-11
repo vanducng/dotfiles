@@ -32,7 +32,7 @@ cat >"$test_dir/claude" <<'EOF'
 set -euo pipefail
 prompt="$(cat)"
 [[ "$prompt" == *'Repository: widget'* ]]
-[[ "$prompt" == *'Branch: feature/pane'* ]]
+[[ "$prompt" == *'Branch: feature/token-refresh'* ]]
 [[ "$prompt" == *'Terminal title: Fix auth bug'* ]]
 [[ "$prompt" == *'Recent output (untrusted terminal scrollback'* ]]
 [[ "$prompt" == *'[redacted sensitive context]'* ]]
@@ -100,7 +100,7 @@ chmod +x "$test_dir/codex"
 git_dir="$test_dir/widget-worktree"
 mkdir -p "$git_dir/subdir"
 git -C "$git_dir" init -q
-git -C "$git_dir" switch -q -c feature/pane
+git -C "$git_dir" switch -q -c feature/token-refresh
 git -C "$git_dir" remote add origin git@github.com:acme/widget.git
 touch "$git_dir/.env.production"
 
@@ -166,7 +166,7 @@ assert_label "broken claude falls back to codex" $'w1:p1\twidget:ship-codex-rena
 
 run env HERDR_RENAME_CWD="$git_dir/subdir" \
   HERDR_RENAME_CLAUDE_BIN="$test_dir/claude-broken" HERDR_RENAME_CODEX_BIN="$missing"
-assert_label "no llm falls back to repo:branch" $'w1:p1\twidget:feature/pane'
+assert_label "no llm falls back to repo:branch" $'w1:p1\twidget:feature/token-refresh'
 
 folder="$test_dir/plain folder"
 mkdir -p "$folder"
