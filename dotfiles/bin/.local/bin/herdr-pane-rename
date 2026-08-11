@@ -63,6 +63,8 @@ fi
 pane_agent="$(jq -r '.result.pane.agent // empty' <<<"$pane_json")"
 title="$(jq -r '.result.pane.terminal_title_stripped // empty' <<<"$pane_json")"
 context="$("$herdr_bin" pane read "$pane_id" --source recent-unwrapped --lines 200 2>/dev/null || true)"
+context="${context:0:12000}"
+changed_files="${changed_files:0:4000}"
 sensitive_path_pattern='(^|[^[:alnum:]])(\.env([[:alnum:]_.-]*)?|[^[:space:]]*(secret|credential|password|token)[^[:space:]]*|[^[:space:]]+\.(pem|key|p12|pfx|crt|cer)|[^[:space:]]*\.htpasswd|[^[:space:]]*id_(rsa|ecdsa|ed25519|dsa))([^[:alnum:]]|$)'
 sensitive_text_pattern='(^|[^[:alnum:]])(\.env([[:alnum:]_.-]*)?|api[_-]?(key|token)|auth[_-]?(key|token)|token[[:space:]]*[=:]|(secret|credential|password)[[:space:]_-]*(key|token|value)?[[:space:]]*[=:]|[A-Z_][A-Z0-9_]{2,}[[:space:]]*=[[:space:]]*[A-Za-z0-9:/?&=+._%~-]{12,}|"?(api[_-]?(key|token)|auth[_-]?(key|token)|secret|credential|password|token)"?[[:space:]]*:[[:space:]]*"[^"]+"|["'\''"]?(api[_-]?(key|token)|auth[_-]?(key|token)|secret|credential|password|token)["'\''"]?[[:space:]]*:[[:space:]]*["'\''"][^"'\''"]+["'\''"]|A[A-Z]{2}A[0-9A-Z]{16}|AIza[0-9A-Za-z_-]{35}|github_pat_[A-Za-z0-9_]{20,}|gh[posuhr]_[A-Za-z0-9]{36,}|glpat-[A-Za-z0-9_-]{20,}|xox[bapsrc]-[A-Za-z0-9-]+|sk_live_[A-Za-z0-9]{24,}|rk_live_[A-Za-z0-9]{24,}|pk_live_[A-Za-z0-9]{24,}|eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+|hooks\.slack\.com/services/|Bearer[[:space:]]+[A-Za-z0-9._~+/=-]{16,}|private[[:space:]]+key|[^[:space:]]+\.(pem|key))([^[:alnum:]]|$)'
 
@@ -100,8 +102,6 @@ last_commit="$(printf '%s\n' "$last_commit" | redact_sensitive_lines "$sensitive
 changed_files="$(printf '%s\n' "$changed_files" | redact_sensitive_lines "$sensitive_path_pattern" || true)"
 title="$(printf '%s\n' "$title" | redact_sensitive_lines "$sensitive_text_pattern" || true)"
 context="$(printf '%s\n' "$context" | redact_sensitive_lines "$sensitive_text_pattern" || true)"
-context="${context:0:12000}"
-changed_files="${changed_files:0:4000}"
 fallback_branch="$(slugify "$prompt_branch")"
 if [[ "$fallback_branch" == *'redacted-sensitive-context'* || -z "$fallback_branch" ]]; then
   fallback_branch="branch"
