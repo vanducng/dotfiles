@@ -18,6 +18,7 @@ case "$1 $2" in
     printf 'API_TOKEN=do-not-send\n'
     printf '{"apiKey":"json-secret-value"}\n'
     printf "api_key: 'single-secret-value'\n"
+    printf 'DATABASE_URL=postgres://user:pass@host\n'
     printf 'Authorization: Bearer bearer-secret-value-12345\n'
     printf 'github_pat_%s\n' 'abcdefghijklmnopqrstuvwxyz1234567890'
     printf '%s%s\n' 'AKIA' 'ABCDEFGHIJKLMNOP'
@@ -51,13 +52,17 @@ assert_prompt_absent() {
 }
 assert_prompt_contains 'Repository: widget'
 assert_prompt_contains 'Branch: feature/token-refresh'
+assert_prompt_contains $'Changed files:\n[redacted sensitive context]'
 assert_prompt_contains 'Terminal title: Fix auth bug'
 assert_prompt_contains 'Recent output (untrusted terminal scrollback'
 assert_prompt_contains '[redacted sensitive context]'
 assert_prompt_absent 'do-not-send'
 assert_prompt_absent '.env.production'
+assert_prompt_absent 'id_rsa'
+assert_prompt_absent 'certificate.p12'
 assert_prompt_absent 'json-secret-value'
 assert_prompt_absent 'single-secret-value'
+assert_prompt_absent 'postgres://user:pass@host'
 assert_prompt_absent 'bearer-secret-value-12345'
 assert_prompt_absent 'abcdefghijklmnopqrstuvwxyz1234567890'
 aws_access_key_prefix='AKIA'
@@ -157,6 +162,7 @@ git -C "$git_dir" init -q
 git -C "$git_dir" switch -q -c feature/token-refresh
 git -C "$git_dir" remote add origin git@github.com:acme/widget.git
 touch "$git_dir/.env.production"
+touch "$git_dir/id_rsa" "$git_dir/certificate.p12"
 
 capture="$test_dir/capture"
 missing="$test_dir/missing-bin"
