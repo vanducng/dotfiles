@@ -1,0 +1,15 @@
+{
+  "verifyAttestation": true,
+  "skipInstall": {
+    "opencode": true
+  },
+  "diffOptions": {
+    "diffStyle": "split",
+    "defaultDiffType": "since-base",
+    "hideWhitespace": true,
+    "diffIndicators": "bars",
+    "overflow": "wrap",
+    "lineBgIntensity": "subtle",
+    "lineDiffType": "word-alt"
+  }
+}
