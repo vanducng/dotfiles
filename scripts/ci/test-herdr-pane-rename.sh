@@ -18,6 +18,8 @@ case "$1 $2" in
     printf 'API_TOKEN=do-not-send\n'
     printf '{"apiKey":"json-secret-value"}\n'
     printf 'Authorization: Bearer bearer-secret-value-12345\n'
+    printf 'github_pat_%s\n' 'abcdefghijklmnopqrstuvwxyz1234567890'
+    printf '%s%s\n' 'AKIA' 'ABCDEFGHIJKLMNOP'
     printf '%s\n' '-----BEGIN PRIVATE KEY-----' 'multi-line-key-material' '-----END PRIVATE KEY-----'
     ;;
   'pane rename')
@@ -55,6 +57,8 @@ assert_prompt_absent 'do-not-send'
 assert_prompt_absent '.env.production'
 assert_prompt_absent 'json-secret-value'
 assert_prompt_absent 'bearer-secret-value-12345'
+assert_prompt_absent 'abcdefghijklmnopqrstuvwxyz1234567890'
+assert_prompt_absent 'AKIA''ABCDEFGHIJKLMNOP'
 assert_prompt_absent 'multi-line-key-material'
 assert_prompt_contains '80 characters or fewer'
 printf 'Fix Auth Token Refresh\n'
@@ -63,12 +67,14 @@ chmod +x "$test_dir/claude"
 
 cat >"$test_dir/claude-long" <<'EOF'
 #!/usr/bin/env bash
+set -euo pipefail
 printf 'Investigate Flaky Integration Test Timeouts\n'
 EOF
 chmod +x "$test_dir/claude-long"
 
 cat >"$test_dir/claude-too-long" <<'EOF'
 #!/usr/bin/env bash
+set -euo pipefail
 printf 'context-word-%.0s' {1..10}
 EOF
 chmod +x "$test_dir/claude-too-long"
@@ -87,12 +93,14 @@ chmod +x "$test_dir/claude-long-project"
 
 cat >"$test_dir/claude-legacy" <<'EOF'
 #!/usr/bin/env bash
+set -euo pipefail
 printf 'other-project:Keep Auth Flow\n'
 EOF
 chmod +x "$test_dir/claude-legacy"
 
 cat >"$test_dir/claude-ticket" <<'EOF'
 #!/usr/bin/env bash
+set -euo pipefail
 printf 'ELT-3451:Fix Lead Performance\n'
 EOF
 chmod +x "$test_dir/claude-ticket"
@@ -197,6 +205,10 @@ run env HERDR_RENAME_CWD="$git_dir/subdir" \
   HERDR_RENAME_CLAUDE_BIN="$test_dir/claude-broken" HERDR_RENAME_CODEX_BIN="$test_dir/codex"
 assert_label "broken claude falls back to codex" $'w1:p1\twidget:ship-codex-rename'
 
+run env HERDR_RENAME_CWD="$git_dir/subdir" \
+  HERDR_RENAME_CLAUDE_BIN="$test_dir/claude-broken" HERDR_RENAME_CODEX_BIN="$missing"
+assert_label "no llm falls back to slugified repo:branch" $'w1:p1\twidget:feature-token-refresh'
+
 git -C "$git_dir" branch -m feature/api-key
 
 run env HERDR_RENAME_CWD="$git_dir/subdir" \
@@ -205,7 +217,7 @@ assert_label "sensitive branch is redacted for prompts" $'w1:p1\twidget:investig
 
 run env HERDR_RENAME_CWD="$git_dir/subdir" \
   HERDR_RENAME_CLAUDE_BIN="$test_dir/claude-broken" HERDR_RENAME_CODEX_BIN="$missing"
-assert_label "no llm falls back to raw repo:branch" $'w1:p1\twidget:feature/api-key'
+assert_label "sensitive branch falls back without branch text" $'w1:p1\twidget:branch'
 
 folder="$test_dir/plain folder"
 mkdir -p "$folder"
