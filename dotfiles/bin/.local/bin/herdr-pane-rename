@@ -70,7 +70,7 @@ redact_sensitive_lines() {
   local pattern="$1" line redacting=0 restore_nocasematch=0
   local begin_pattern='^-----BEGIN [A-Za-z0-9][A-Za-z0-9 -]*-----$'
   local end_pattern='^-----END [A-Za-z0-9][A-Za-z0-9 -]*-----$'
-  local base64_pattern='^[A-Za-z0-9+/]{64,}={0,2}$'
+  local base64_pattern='^[A-Za-z0-9+/]{64,}={1,2}$'
   if ! shopt -q nocasematch; then
     shopt -s nocasematch
     restore_nocasematch=1
@@ -100,6 +100,8 @@ last_commit="$(printf '%s\n' "$last_commit" | redact_sensitive_lines "$sensitive
 changed_files="$(printf '%s\n' "$changed_files" | redact_sensitive_lines "$sensitive_path_pattern" || true)"
 title="$(printf '%s\n' "$title" | redact_sensitive_lines "$sensitive_text_pattern" || true)"
 context="$(printf '%s\n' "$context" | redact_sensitive_lines "$sensitive_text_pattern" || true)"
+context="${context:0:12000}"
+changed_files="${changed_files:0:4000}"
 fallback_branch="$(slugify "$prompt_branch")"
 if [[ "$fallback_branch" == *'redacted-sensitive-context'* || -z "$fallback_branch" ]]; then
   fallback_branch="branch"
