@@ -70,6 +70,7 @@ redact_sensitive_lines() {
   local pattern="$1" line redacting=0 restore_nocasematch=0
   local begin_pattern='^-----BEGIN [A-Za-z0-9][A-Za-z0-9 -]*-----$'
   local end_pattern='^-----END [A-Za-z0-9][A-Za-z0-9 -]*-----$'
+  local base64_pattern='^[A-Za-z0-9+/]{64,}={0,2}$'
   if ! shopt -q nocasematch; then
     shopt -s nocasematch
     restore_nocasematch=1
@@ -83,7 +84,7 @@ redact_sensitive_lines() {
       printf '[redacted sensitive context]\n'
     elif [[ "$line" =~ $pattern ]]; then
       printf '[redacted sensitive context]\n'
-    elif [[ "$line" =~ ^[A-Za-z0-9+/]{64,}={0,2}$ ]]; then
+    elif [[ "$line" =~ $base64_pattern && ! "$line" =~ ^[0-9A-Fa-f]{64,}$ ]]; then
       printf '[redacted sensitive context]\n'
     else
       printf '%s\n' "$line"
