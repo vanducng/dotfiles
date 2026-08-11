@@ -30,7 +30,7 @@ chmod +x "$test_dir/herdr"
 cat >"$test_dir/claude" <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
-prompt="${!#}"
+prompt="$(cat)"
 [[ "$prompt" == *'Repository: widget'* ]]
 [[ "$prompt" == *'Branch: feature/pane'* ]]
 [[ "$prompt" == *'Terminal title: Fix auth bug'* ]]
@@ -58,7 +58,8 @@ chmod +x "$test_dir/claude-too-long"
 cat >"$test_dir/claude-long-project" <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
-[[ "${!#}" == *'Repository: cnb-web-services-suite'* ]]
+prompt="$(cat)"
+[[ "$prompt" == *'Repository: cnb-web-services-suite'* ]]
 printf 'Investigate Flaky Integration Test Timeouts\n'
 EOF
 chmod +x "$test_dir/claude-long-project"
@@ -91,6 +92,7 @@ for arg in "$@"; do
   [[ "$prev" == "--output-last-message" ]] && out="$arg"
   prev="$arg"
 done
+cat >/dev/null
 printf 'Ship Codex Rename\n' >"$out"
 EOF
 chmod +x "$test_dir/codex"

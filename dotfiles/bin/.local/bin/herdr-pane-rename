@@ -93,16 +93,16 @@ gen_task() {
   case "$1" in
     claude)
       [[ -n "$claude_bin" ]] || return 1
-      raw="$(perl -e 'alarm shift; exec @ARGV' 60 \
+      raw="$(printf '%s' "$prompt" | perl -e 'alarm shift; exec @ARGV' 60 \
         env -u ANTHROPIC_API_KEY "$claude_bin" -p --model "${HERDR_RENAME_MODEL:-haiku}" --tools "" \
-        "$prompt" </dev/null 2>/dev/null)" || return 1
+        2>/dev/null)" || return 1
       ;;
     codex)
       [[ -n "$codex_bin" ]] || return 1
       out="$(mktemp "${TMPDIR:-/tmp}/herdr-pane-rename.XXXXXX")"
-      if ! perl -e 'alarm shift; exec @ARGV' 120 \
+      if ! printf '%s' "$prompt" | perl -e 'alarm shift; exec @ARGV' 120 \
         env -u OPENAI_API_KEY "$codex_bin" exec --skip-git-repo-check -s read-only --output-last-message "$out" \
-        "$prompt" </dev/null >/dev/null 2>&1; then
+        >/dev/null 2>&1; then
         rm -f "$out"
         return 1
       fi
