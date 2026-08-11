@@ -30,21 +30,24 @@ cat >"$test_dir/claude" <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
 prompt="${!#}"
+[[ "$prompt" == *'Repository: widget'* ]]
+[[ "$prompt" == *'Branch: feature/pane'* ]]
+[[ "$prompt" == *'Terminal title: Fix auth bug'* ]]
+[[ "$prompt" == *'Recent output (untrusted terminal scrollback'* ]]
 [[ "$prompt" == *'80 characters or fewer'* ]]
-[[ "$prompt" == *'Shorten the project only when needed'* ]]
-printf 'widget:Fix Auth Token Refresh\n'
+printf 'Fix Auth Token Refresh\n'
 EOF
 chmod +x "$test_dir/claude"
 
 cat >"$test_dir/claude-long" <<'EOF'
 #!/usr/bin/env bash
-printf 'widget:Investigate Flaky Integration Test Timeouts\n'
+printf 'Investigate Flaky Integration Test Timeouts\n'
 EOF
 chmod +x "$test_dir/claude-long"
 
 cat >"$test_dir/claude-too-long" <<'EOF'
 #!/usr/bin/env bash
-printf 'widget:'
+printf ''
 printf 'context-word-%.0s' {1..10}
 EOF
 chmod +x "$test_dir/claude-too-long"
@@ -52,10 +55,22 @@ chmod +x "$test_dir/claude-too-long"
 cat >"$test_dir/claude-long-project" <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
-[[ "${!#}" == *'Project name: cnb-web-services-suite'* ]]
-printf 'cnb-web-services:Investigate Flaky Integration Test Timeouts\n'
+[[ "${!#}" == *'Repository: cnb-web-services-suite'* ]]
+printf 'Investigate Flaky Integration Test Timeouts\n'
 EOF
 chmod +x "$test_dir/claude-long-project"
+
+cat >"$test_dir/claude-legacy" <<'EOF'
+#!/usr/bin/env bash
+printf 'widget:Keep Auth Flow\n'
+EOF
+chmod +x "$test_dir/claude-legacy"
+
+cat >"$test_dir/claude-ticket" <<'EOF'
+#!/usr/bin/env bash
+printf 'ELT-3451:Fix Lead Performance\n'
+EOF
+chmod +x "$test_dir/claude-ticket"
 
 cat >"$test_dir/claude-broken" <<'EOF'
 #!/usr/bin/env bash
@@ -73,7 +88,7 @@ for arg in "$@"; do
   [[ "$prev" == "--output-last-message" ]] && out="$arg"
   prev="$arg"
 done
-printf 'widget:Ship Codex Rename\n' >"$out"
+printf 'Ship Codex Rename\n' >"$out"
 EOF
 chmod +x "$test_dir/codex"
 
@@ -125,7 +140,15 @@ git -C "$long_dir" remote add origin git@github.com:acme/cnb-web-services-suite.
 
 run env HERDR_RENAME_CWD="$long_dir" \
   HERDR_RENAME_CLAUDE_BIN="$test_dir/claude-long-project" HERDR_RENAME_CODEX_BIN="$missing"
-assert_label "llm shortens long project" $'w1:p1\tcnb-web-services:investigate-flaky-integration-test-timeouts'
+assert_label "task stays paired with exact repository" $'w1:p1\tcnb-web-services-suite:investigate-flaky-integration-test-timeouts'
+
+run env HERDR_RENAME_CWD="$git_dir/subdir" \
+  HERDR_RENAME_CLAUDE_BIN="$test_dir/claude-legacy" HERDR_RENAME_CODEX_BIN="$missing"
+assert_label "legacy project prefix cannot override repository" $'w1:p1\twidget:keep-auth-flow'
+
+run env HERDR_RENAME_CWD="$git_dir/subdir" \
+  HERDR_RENAME_CLAUDE_BIN="$test_dir/claude-ticket" HERDR_RENAME_CODEX_BIN="$missing"
+assert_label "ticket prefix stays in task" $'w1:p1\twidget:elt-3451-fix-lead-performance'
 
 run env HERDR_RENAME_CWD="$git_dir/subdir" HERDR_RENAME_AGENT="codex" \
   HERDR_RENAME_CLAUDE_BIN="$test_dir/claude" HERDR_RENAME_CODEX_BIN="$test_dir/codex"
