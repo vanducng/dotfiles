@@ -60,8 +60,12 @@ assert_prompt_absent 'json-secret-value'
 assert_prompt_absent 'single-secret-value'
 assert_prompt_absent 'bearer-secret-value-12345'
 assert_prompt_absent 'abcdefghijklmnopqrstuvwxyz1234567890'
-assert_prompt_absent 'AKIA''ABCDEFGHIJKLMNOP'
+aws_access_key_prefix='AKIA'
+aws_access_key_suffix='ABCDEFGHIJKLMNOP'
+assert_prompt_absent "${aws_access_key_prefix}${aws_access_key_suffix}"
 assert_prompt_absent 'multi-line-key-material'
+assert_prompt_absent 'BEGIN PRIVATE KEY'
+assert_prompt_absent 'END PRIVATE KEY'
 assert_prompt_contains '80 characters or fewer'
 printf 'Fix Auth Token Refresh\n'
 EOF
@@ -106,6 +110,13 @@ set -euo pipefail
 printf 'ELT-3451:Fix Lead Performance\n'
 EOF
 chmod +x "$test_dir/claude-ticket"
+
+cat >"$test_dir/claude-colon-task" <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+printf 'refactor:split-handler\n'
+EOF
+chmod +x "$test_dir/claude-colon-task"
 
 cat >"$test_dir/claude-sensitive-branch" <<'EOF'
 #!/usr/bin/env bash
@@ -198,6 +209,10 @@ assert_label "legacy project prefix cannot override repository" $'w1:p1\twidget:
 run env HERDR_RENAME_CWD="$git_dir/subdir" \
   HERDR_RENAME_CLAUDE_BIN="$test_dir/claude-ticket" HERDR_RENAME_CODEX_BIN="$missing"
 assert_label "ticket prefix stays in task" $'w1:p1\twidget:elt-3451-fix-lead-performance'
+
+run env HERDR_RENAME_CWD="$git_dir/subdir" \
+  HERDR_RENAME_CLAUDE_BIN="$test_dir/claude-colon-task" HERDR_RENAME_CODEX_BIN="$missing"
+assert_label "lowercase colon task keeps its context" $'w1:p1\twidget:refactor-split-handler'
 
 run env HERDR_RENAME_CWD="$git_dir/subdir" HERDR_RENAME_AGENT="codex" \
   HERDR_RENAME_CLAUDE_BIN="$test_dir/claude" HERDR_RENAME_CODEX_BIN="$test_dir/codex"

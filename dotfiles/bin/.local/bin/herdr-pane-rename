@@ -138,7 +138,11 @@ gen_task() {
     if [[ "$raw_prefix_slug" == "$project_label" || "$project_label" == "$raw_prefix_slug"-* || "$raw_prefix_slug" == task || "$raw_prefix_slug" == label || "$raw_prefix_slug" == name ]]; then
       raw="$raw_task"
     elif [[ ! "$raw_prefix" =~ ^[A-Za-z][A-Za-z0-9]*-[0-9]+$ ]]; then
-      raw="$raw_task"
+      if [[ "$raw_task" =~ ^[A-Z] ]]; then
+        raw="$raw_task"
+      else
+        raw="$raw_prefix-$raw_task"
+      fi
     fi
   fi
   generated_task="$(slugify "$raw")"
@@ -163,11 +167,7 @@ fi
 if [[ -n "$task" ]]; then
   label="${project_label}:${task}"
 elif [[ -n "${root:-}" ]]; then
-  if [[ -n "$fallback_branch" ]]; then
-    label="${project_label}:${fallback_branch}"
-  else
-    label="$project_label"
-  fi
+  label="${project_label}:${fallback_branch:-branch}"
 else
   label="$project_label"
 fi
