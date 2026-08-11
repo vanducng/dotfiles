@@ -97,6 +97,18 @@ printf 'ELT-3451:Fix Lead Performance\n'
 EOF
 chmod +x "$test_dir/claude-ticket"
 
+cat >"$test_dir/claude-sensitive-branch" <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+prompt="$(cat)"
+if [[ "$prompt" != *'Branch: [redacted sensitive context]'* ]]; then
+  printf 'FAIL: sensitive branch leaked into prompt\n' >&2
+  exit 1
+fi
+printf 'Investigate API Key Rotation\n'
+EOF
+chmod +x "$test_dir/claude-sensitive-branch"
+
 cat >"$test_dir/claude-broken" <<'EOF'
 #!/usr/bin/env bash
 printf 'invalid:Invalid API key · Fix external API key\n'
@@ -185,9 +197,15 @@ run env HERDR_RENAME_CWD="$git_dir/subdir" \
   HERDR_RENAME_CLAUDE_BIN="$test_dir/claude-broken" HERDR_RENAME_CODEX_BIN="$test_dir/codex"
 assert_label "broken claude falls back to codex" $'w1:p1\twidget:ship-codex-rename'
 
+git -C "$git_dir" branch -m feature/api-key
+
+run env HERDR_RENAME_CWD="$git_dir/subdir" \
+  HERDR_RENAME_CLAUDE_BIN="$test_dir/claude-sensitive-branch" HERDR_RENAME_CODEX_BIN="$missing"
+assert_label "sensitive branch is redacted for prompts" $'w1:p1\twidget:investigate-api-key-rotation'
+
 run env HERDR_RENAME_CWD="$git_dir/subdir" \
   HERDR_RENAME_CLAUDE_BIN="$test_dir/claude-broken" HERDR_RENAME_CODEX_BIN="$missing"
-assert_label "no llm falls back to repo:branch" $'w1:p1\twidget:feature/token-refresh'
+assert_label "no llm falls back to raw repo:branch" $'w1:p1\twidget:feature/api-key'
 
 folder="$test_dir/plain folder"
 mkdir -p "$folder"
