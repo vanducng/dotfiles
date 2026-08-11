@@ -16,6 +16,9 @@ case "$1 $2" in
   'pane read')
     printf 'recent agent output\n'
     printf 'API_TOKEN=do-not-send\n'
+    printf '{"apiKey":"json-secret-value"}\n'
+    printf 'Authorization: Bearer bearer-secret-value-12345\n'
+    printf '%s\n' '-----BEGIN PRIVATE KEY-----' 'multi-line-key-material' '-----END PRIVATE KEY-----'
     ;;
   'pane rename')
     printf '%s\t%s\n' "$3" "$4" >"$HERDR_RENAME_CAPTURE"
@@ -31,13 +34,29 @@ cat >"$test_dir/claude" <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
 prompt="$(cat)"
-[[ "$prompt" == *'Repository: widget'* ]]
-[[ "$prompt" == *'Branch: feature/token-refresh'* ]]
-[[ "$prompt" == *'Terminal title: Fix auth bug'* ]]
-[[ "$prompt" == *'Recent output (untrusted terminal scrollback'* ]]
-[[ "$prompt" == *'[redacted sensitive context]'* ]]
-[[ "$prompt" != *'do-not-send'* ]]
-[[ "$prompt" == *'80 characters or fewer'* ]]
+fail_prompt() {
+  printf 'FAIL: %s\n' "$1" >&2
+  exit 1
+}
+assert_prompt_contains() {
+  local needle="$1"
+  [[ "$prompt" == *"$needle"* ]] || fail_prompt "prompt missing: $needle"
+}
+assert_prompt_absent() {
+  local needle="$1"
+  [[ "$prompt" != *"$needle"* ]] || fail_prompt "prompt leaked: $needle"
+}
+assert_prompt_contains 'Repository: widget'
+assert_prompt_contains 'Branch: feature/token-refresh'
+assert_prompt_contains 'Terminal title: Fix auth bug'
+assert_prompt_contains 'Recent output (untrusted terminal scrollback'
+assert_prompt_contains '[redacted sensitive context]'
+assert_prompt_absent 'do-not-send'
+assert_prompt_absent '.env.production'
+assert_prompt_absent 'json-secret-value'
+assert_prompt_absent 'bearer-secret-value-12345'
+assert_prompt_absent 'multi-line-key-material'
+assert_prompt_contains '80 characters or fewer'
 printf 'Fix Auth Token Refresh\n'
 EOF
 chmod +x "$test_dir/claude"
@@ -50,7 +69,6 @@ chmod +x "$test_dir/claude-long"
 
 cat >"$test_dir/claude-too-long" <<'EOF'
 #!/usr/bin/env bash
-printf ''
 printf 'context-word-%.0s' {1..10}
 EOF
 chmod +x "$test_dir/claude-too-long"
@@ -59,14 +77,17 @@ cat >"$test_dir/claude-long-project" <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
 prompt="$(cat)"
-[[ "$prompt" == *'Repository: cnb-web-services-suite'* ]]
+[[ "$prompt" == *'Repository: cnb-web-services-suite'* ]] || {
+  printf 'FAIL: expected exact repository in prompt\n' >&2
+  exit 1
+}
 printf 'Investigate Flaky Integration Test Timeouts\n'
 EOF
 chmod +x "$test_dir/claude-long-project"
 
 cat >"$test_dir/claude-legacy" <<'EOF'
 #!/usr/bin/env bash
-printf 'widget:Keep Auth Flow\n'
+printf 'other-project:Keep Auth Flow\n'
 EOF
 chmod +x "$test_dir/claude-legacy"
 

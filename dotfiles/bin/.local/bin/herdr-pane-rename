@@ -59,18 +59,25 @@ project_label="$project"
 if [[ -n "${root:-}" ]]; then
   project_label="$(slugify "$project")"
 fi
-project_slug="$(slugify "$project")"
 
 pane_agent="$(jq -r '.result.pane.agent // empty' <<<"$pane_json")"
 title="$(jq -r '.result.pane.terminal_title_stripped // empty' <<<"$pane_json")"
 context="$("$herdr_bin" pane read "$pane_id" --source recent-unwrapped --lines 200 2>/dev/null || true)"
 sensitive_path_pattern='(^|[^[:alnum:]])(\.env([[:alnum:]_.-]*)?|[^[:space:]]*(secret|credential|password|token)[^[:space:]]*|[^[:space:]]+\.(pem|key))([^[:alnum:]]|$)'
-sensitive_text_pattern='(^|[^[:alnum:]])(\.env([[:alnum:]_.-]*)?|api[_-]?(key|token)|auth[_-]?(key|token)|token[[:space:]]*[=:]|(secret|credential|password)[[:space:]_-]*(key|token|value)?[[:space:]]*[=:]|private[[:space:]]+key|[^[:space:]]+\.(pem|key))([^[:alnum:]]|$)'
+sensitive_text_pattern='(^|[^[:alnum:]])(\.env([[:alnum:]_.-]*)?|api[_-]?(key|token)|auth[_-]?(key|token)|token[[:space:]]*[=:]|(secret|credential|password)[[:space:]_-]*(key|token|value)?[[:space:]]*[=:]|"?(api[_-]?(key|token)|auth[_-]?(key|token)|secret|credential|password|token)"?[[:space:]]*:[[:space:]]*"[^"]+"|A[KS]IA[0-9A-Z]{16}|Bearer[[:space:]]+[A-Za-z0-9._~+/=-]{16,}|private[[:space:]]+key|[^[:space:]]+\.(pem|key))([^[:alnum:]]|$)'
 
 redact_sensitive_lines() {
-  local pattern="$1" line
+  local pattern="$1" line redacting=0
   while IFS= read -r line || [[ -n "$line" ]]; do
-    if printf '%s\n' "$line" | grep -qiE "$pattern"; then
+    if (( redacting )); then
+      if printf '%s\n' "$line" | grep -qE '^-----END [A-Z0-9][A-Z0-9 -]*-----$'; then
+        redacting=0
+      fi
+      printf '[redacted sensitive context]\n'
+    elif printf '%s\n' "$line" | grep -qE '^-----BEGIN [A-Z0-9][A-Z0-9 -]*-----$'; then
+      redacting=1
+      printf '[redacted sensitive context]\n'
+    elif printf '%s\n' "$line" | grep -qiE "$pattern"; then
       printf '[redacted sensitive context]\n'
     else
       printf '%s\n' "$line"
@@ -117,7 +124,9 @@ gen_task() {
     raw_prefix="${raw%%:*}"
     raw_task="${raw#*:}"
     raw_prefix_slug="$(slugify "$raw_prefix")"
-    if [[ "$raw_prefix_slug" == "$project_slug" || "$project_slug" == "$raw_prefix_slug"-* || "$raw_prefix_slug" == task || "$raw_prefix_slug" == label || "$raw_prefix_slug" == name ]]; then
+    if [[ "$raw_prefix_slug" == "$project_label" || "$project_label" == "$raw_prefix_slug"-* || "$raw_prefix_slug" == task || "$raw_prefix_slug" == label || "$raw_prefix_slug" == name ]]; then
+      raw="$raw_task"
+    elif [[ ! "$raw_prefix" =~ ^[A-Za-z][A-Za-z0-9]*-[0-9]+$ ]]; then
       raw="$raw_task"
     fi
   fi
