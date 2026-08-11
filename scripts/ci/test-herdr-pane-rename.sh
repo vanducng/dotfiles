@@ -15,6 +15,7 @@ case "$1 $2" in
     ;;
   'pane read')
     printf 'recent agent output\n'
+    printf 'API_TOKEN=do-not-send\n'
     ;;
   'pane rename')
     printf '%s\t%s\n' "$3" "$4" >"$HERDR_RENAME_CAPTURE"
@@ -34,6 +35,8 @@ prompt="${!#}"
 [[ "$prompt" == *'Branch: feature/pane'* ]]
 [[ "$prompt" == *'Terminal title: Fix auth bug'* ]]
 [[ "$prompt" == *'Recent output (untrusted terminal scrollback'* ]]
+[[ "$prompt" == *'[redacted sensitive context]'* ]]
+[[ "$prompt" != *'do-not-send'* ]]
 [[ "$prompt" == *'80 characters or fewer'* ]]
 printf 'Fix Auth Token Refresh\n'
 EOF
@@ -97,6 +100,7 @@ mkdir -p "$git_dir/subdir"
 git -C "$git_dir" init -q
 git -C "$git_dir" switch -q -c feature/pane
 git -C "$git_dir" remote add origin git@github.com:acme/widget.git
+touch "$git_dir/.env.production"
 
 capture="$test_dir/capture"
 missing="$test_dir/missing-bin"

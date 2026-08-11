@@ -64,6 +64,24 @@ project_slug="$(slugify "$project")"
 pane_agent="$(jq -r '.result.pane.agent // empty' <<<"$pane_json")"
 title="$(jq -r '.result.pane.terminal_title_stripped // empty' <<<"$pane_json")"
 context="$("$herdr_bin" pane read "$pane_id" --source recent-unwrapped --lines 200 2>/dev/null || true)"
+sensitive_pattern='(^|[^[:alnum:]])(\.env([[:alnum:]_.-]*)?|api[_-]?key|auth[_-]?token|token|secret|credential|password|private[[:space:]]+key|[^[:space:]]+\.(pem|key))([^[:alnum:]]|$)'
+
+redact_sensitive_lines() {
+  local line
+  while IFS= read -r line; do
+    if printf '%s\n' "$line" | grep -qiE "$sensitive_pattern"; then
+      printf '[redacted sensitive context]\n'
+    else
+      printf '%s\n' "$line"
+    fi
+  done
+}
+
+branch="$(printf '%s\n' "$branch" | redact_sensitive_lines)"
+last_commit="$(printf '%s\n' "$last_commit" | redact_sensitive_lines)"
+changed_files="$(printf '%s\n' "$changed_files" | redact_sensitive_lines)"
+title="$(printf '%s\n' "$title" | redact_sensitive_lines)"
+context="$(printf '%s\n' "$context" | redact_sensitive_lines)"
 claude_bin="${HERDR_RENAME_CLAUDE_BIN:-$(command -v claude || true)}"
 codex_bin="${HERDR_RENAME_CODEX_BIN:-$(command -v codex || true)}"
 
