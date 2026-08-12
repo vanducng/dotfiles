@@ -39,6 +39,14 @@ Across ALL projects, default to writing ZERO comments. Add one only when a futur
 - One short line max per comment. No multi-line preambles or docstring paragraphs.
 - Exported funcs needing GoDoc: one line, the WHY not the signature restatement.
 
+## Portable Home Paths
+
+- Never hardcode `/Users/<name>/…` or `/home/<name>/…` (or literal usernames) in managed configs, hooks, scripts, stow packages, or shared docs.
+- Prefer tool-native vars (`$CODEX_HOME`, `$GROK_HOME`, `$XDG_CONFIG_HOME`), then `~` / `$HOME`, then relative paths or runtime `expanduser`/`Path.home()`.
+- Absolute system paths are fine (`/Applications`, `/usr/bin`, `/opt/homebrew/bin`, `/etc`).
+- Before finishing config work, scan the diff for `/Users/` and `/home/` and replace personal home prefixes.
+- Full detail: `rules/portable-home-paths.md`.
+
 ## Reusable Skill Privacy
 
 - Treat every reusable skill, reference, example, test fixture, and asset as potentially publishable.
