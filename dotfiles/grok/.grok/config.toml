@@ -1,0 +1,99 @@
+# Managed by ~/dotfiles via GNU Stow.
+# Install with: make stow-grok
+# Docs: ~/.grok/docs/user-guide/05-configuration.md
+
+[cli]
+auto_update = true
+installer = "internal"
+
+[marketplace]
+default_skills_installs_purged = true
+official_marketplace_auto_installed = true
+
+[[marketplace.sources]]
+name = "xAI Official"
+git = "https://github.com/xai-org/plugin-marketplace.git"
+
+[models]
+default = "grok-4.5"
+web_search = "grok-4.5"
+
+[ui]
+permission_mode = "auto"
+max_thoughts_width = 120
+fork_secondary_model = "grok-4.5"
+yolo = false
+compact_mode = false
+simple_mode = true
+vim_mode = true
+show_thinking_blocks = true
+group_tool_verbs = true
+collapsed_edit_blocks = false
+page_flip_on_send = true
+remember_tool_approvals = true
+default_selected_permission = "always_allow_all_sessions"
+# Terminal OSC notifications: set via /settings when supported by the running
+# binary. Attention sounds and Telegram notify are wired in hooks/lifecycle.json.
+
+[features]
+telemetry = false
+feedback = true
+lsp_tools = false
+codebase_indexing = true
+two_pass_compaction = false
+remote_fetch = true
+
+[session]
+auto_compact_threshold_percent = 85
+load_envrc = true
+
+[tools]
+respect_gitignore = false
+
+[toolset.bash]
+timeout_secs = 600.0
+output_byte_limit = 20000
+
+[subagents]
+enabled = true
+
+[workflows]
+enabled = true
+
+[skills]
+# Extra skill roots beyond ~/.grok/skills and Claude/Cursor compat paths
+paths = ["~/skills"]
+
+# Prefer native ~/.grok/hooks over Claude/Cursor hook sources to avoid double-fire
+[compat.claude]
+skills = true
+rules = true
+agents = true
+mcps = true
+hooks = false
+sessions = true
+
+[compat.cursor]
+skills = true
+rules = true
+agents = true
+mcps = true
+hooks = false
+sessions = true
+
+[compat.codex]
+sessions = true
+
+# Local MCP servers (no secrets). Atlassian and other secret-bearing MCPs stay
+# on Claude/Cursor compat sources so tokens never land in this managed file.
+[mcp_servers.miudb]
+command = "miudb"
+args = ["mcp", "serve", "--transport", "stdio"]
+enabled = true
+startup_timeout_sec = 30
+
+[mcp_servers.playwright]
+command = "npx"
+args = ["-y", "@playwright/mcp@latest"]
+enabled = true
+startup_timeout_sec = 60
