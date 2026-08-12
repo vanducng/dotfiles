@@ -63,8 +63,8 @@ def normalize(data: dict) -> dict:
 
     if "tool_input" not in out and isinstance(out.get("toolInput"), dict):
         out["tool_input"] = out["toolInput"]
-    if "tool_input" not in out or not isinstance(out.get("tool_input"), dict):
-        out["tool_input"] = out.get("tool_input") if isinstance(out.get("tool_input"), dict) else {}
+    if not isinstance(out.get("tool_input"), dict):
+        out["tool_input"] = {}
 
     return out
 
@@ -72,12 +72,14 @@ def normalize(data: dict) -> dict:
 def main() -> int:
     if len(sys.argv) < 2:
         sys.stderr.write("usage: claude-compat-stdin.py <command> [args...]\n")
+        # Fail-open: Grok PreToolUse only blocks on explicit deny / exit 2.
         return 0
 
     try:
         raw = sys.stdin.read()
         data = json.loads(raw) if raw.strip() else {}
-    except Exception:
+    except Exception as exc:
+        sys.stderr.write(f"claude-compat-stdin: failed to parse stdin JSON: {exc}\n")
         data = {}
 
     if not isinstance(data, dict):
@@ -94,6 +96,7 @@ def main() -> int:
             env=env,
         )
     except FileNotFoundError as exc:
+        # Fail-open with diagnostics. Non-zero still does not block Grok tools.
         sys.stderr.write(f"claude-compat-stdin: command not found: {exc}\n")
         return 0
     except Exception as exc:

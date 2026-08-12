@@ -71,13 +71,11 @@ for needle in (
 # Sound anti-spam: no always-on Stop ding, no Notification catch-all, no double sound path
 if "attention-sound.sh" in blob:
     raise SystemExit("attention-sound.sh must not be wired (double-dings with agent-notify)")
-if 'matcher": "permission_prompt|idle_prompt|approval_required|.*"' in blob or "|.*" in blob and "Notification" in blob:
-    # allow other events to use .*; only forbid Notification catch-all
-    notif = data.get("hooks", {}).get("Notification") or []
-    for block in notif:
-        matcher = block.get("matcher") or ""
-        if matcher.endswith("|.*") or matcher == ".*":
-            raise SystemExit(f"Notification matcher too broad: {matcher!r}")
+notif = data.get("hooks", {}).get("Notification") or []
+for block in notif:
+    matcher = block.get("matcher") or ""
+    if matcher.endswith("|.*") or matcher == ".*":
+        raise SystemExit(f"Notification matcher too broad: {matcher!r}")
 print("lifecycle.json: ok")
 PY
 
@@ -106,6 +104,7 @@ print("normalized")
 with tempfile.NamedTemporaryFile("w", suffix=".py", delete=False) as fh:
     fh.write(script)
     probe = fh.name
+proc = None
 try:
     proc = subprocess.run(
         ["python3", str(adapter), "python3", probe],
@@ -117,8 +116,10 @@ try:
 finally:
     Path(probe).unlink(missing_ok=True)
 
-if proc.returncode != 0 or "normalized" not in proc.stdout:
-    raise SystemExit(f"adapter failed: rc={proc.returncode} out={proc.stdout!r} err={proc.stderr!r}")
+if proc is None or proc.returncode != 0 or "normalized" not in (proc.stdout or ""):
+    out = getattr(proc, "stdout", None)
+    err = getattr(proc, "stderr", None)
+    raise SystemExit(f"adapter failed: proc={proc!r} out={out!r} err={err!r}")
 print("claude-compat-stdin.py: ok")
 PY
 
