@@ -42,7 +42,8 @@ Across ALL projects, default to writing ZERO comments. Add one only when a futur
 ## Portable Home Paths
 
 - Never hardcode `/Users/<name>/…` or `/home/<name>/…` (or literal usernames) in managed configs, hooks, scripts, stow packages, or shared docs.
-- Prefer tool-native vars (`$CODEX_HOME`, `$GROK_HOME`, `$XDG_CONFIG_HOME`), then `~` / `$HOME`, then relative paths or runtime `expanduser`/`Path.home()`.
+- Prefer tool-native vars (`$CODEX_HOME`, `$GROK_HOME`, `$XDG_CONFIG_HOME`), then `$HOME` / `${HOME}`, then relative paths or runtime `expanduser`/`Path.home()`.
+- Do not use bare `~` for process-spawned MCP `command`/`cwd` unless the host documents tilde expansion - spawn APIs do not expand tilde. Prefer `/bin/bash -lc '…$HOME/…'` or an expanded form.
 - Absolute system paths are fine (`/Applications`, `/usr/bin`, `/opt/homebrew/bin`, `/etc`).
 - Before finishing config work, scan the diff for `/Users/` and `/home/` and replace personal home prefixes.
 - Full detail: `rules/portable-home-paths.md`.
