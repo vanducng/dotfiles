@@ -14,20 +14,21 @@ shared, stowed, committed, or reused:
 ## Prefer (in order)
 
 1. Tool-native home vars when the host expands them: `$CODEX_HOME`, `$GROK_HOME`, `$XDG_CONFIG_HOME`, …
-2. Portable home forms the host expands: `~`, `$HOME`, `${HOME}`
+2. Portable forms that are actually expanded at runtime: `$HOME` / `${HOME}` (and `~` only where the host documents tilde expansion)
 3. Relative paths from a known root (`./…`, package-local `cwd`)
 4. Runtime discovery (`os.path.expanduser("~")`, `Path.home()`, env lookup) in scripts
+
+**Spawn caveat:** process spawn APIs do **not** expand `~`. For MCP `command`/`cwd` that are exec'd without a shell, wrap with `/bin/bash -lc '…$HOME/…'` or use a form the host expands. Bare `~` in a command path is often wrong.
 
 ## Examples
 
 ```toml
 # bad
 command = "/Users/<username>/.codex/computer-use/…/SkyComputerUseClient"
-cwd = "/Users/<username>/.codex/computer-use"
 
-# good
-command = "~/.codex/computer-use/…/SkyComputerUseClient"
-cwd = "~/.codex/computer-use"
+# good (shell expands $HOME)
+command = "/bin/bash"
+args = ["-lc", "exec \"$HOME/.codex/computer-use/…/SkyComputerUseClient\" mcp"]
 ```
 
 ```bash
