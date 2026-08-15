@@ -117,6 +117,17 @@ Manual one-shot without waiting for the agent:
 "$HOME/.local/bin/set-cli-proxy-gui-env.sh"
 ```
 
+After rotating the gopass secret, refresh the GUI session value (no reboot):
+
+```bash
+"$HOME/.local/bin/set-cli-proxy-gui-env.sh" refresh
+# or clear it:
+"$HOME/.local/bin/set-cli-proxy-gui-env.sh" unset
+# launchctl unsetenv CLI_PROXY_API_KEY
+```
+
+Then fully quit and reopen ChatGPT/Codex Desktop.
+
 ## Local State
 
 Only `config.toml` and hook scripts under `~/.codex/hooks/` are repo-managed.

@@ -5,6 +5,7 @@ set -euo pipefail
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 SCRIPT="$PROJECT_ROOT/dotfiles/bin/.local/bin/set-cli-proxy-gui-env.sh"
 PLIST="$PROJECT_ROOT/dotfiles/launchd/Library/LaunchAgents/local.cli-proxy-gui-env.plist"
+HOME_PATH_RE='/Users/[a-zA-Z0-9_-]|/home/[a-zA-Z]'
 ERRORS=0
 
 pass() { echo "[OK] $1"; }
@@ -34,7 +35,12 @@ else
   else
     fail "script missing CLI_PROXY_GOPASS_PATH override"
   fi
-  if grep -Eq '/Users/|/home/[a-zA-Z]' "$SCRIPT"; then
+  if grep -q 'refresh' "$SCRIPT" && grep -q 'unsetenv CLI_PROXY_API_KEY' "$SCRIPT"; then
+    pass "script supports refresh/unset"
+  else
+    fail "script missing refresh/unset mode"
+  fi
+  if grep -Eq "$HOME_PATH_RE" "$SCRIPT"; then
     fail "script hardcodes a home path"
   else
     pass "script uses portable home paths"
@@ -52,7 +58,7 @@ else
       fail "plist plutil -lint failed"
     fi
   elif command -v python3 >/dev/null 2>&1; then
-    if python3 -c "import plistlib, pathlib; plistlib.loads(pathlib.Path(r'''$PLIST''').read_bytes())"; then
+    if python3 -c "import plistlib, sys; plistlib.loads(open(sys.argv[1], 'rb').read())" "$PLIST"; then
       pass "plist python plistlib parse"
     else
       fail "plist python parse failed"
@@ -75,15 +81,14 @@ else
   else
     fail "plist should expand via \$HOME, not a hardcoded user path"
   fi
-  if grep -Eq '/Users/[^"]|/home/[a-zA-Z]' "$PLIST"; then
+  if grep -Eq "$HOME_PATH_RE" "$PLIST"; then
     fail "plist hardcodes a home path"
   else
     pass "plist has no hardcoded home path"
   fi
 fi
 
-# launchd is macOS-only in Makefile MACOS_STOW_FOLDERS
-if grep -q 'launchd' "$PROJECT_ROOT/Makefile" && grep -Eq 'MACOS_STOW_FOLDERS=.*launchd' "$PROJECT_ROOT/Makefile"; then
+if grep -Eq 'MACOS_STOW_FOLDERS.*launchd' "$PROJECT_ROOT/Makefile"; then
   pass "launchd is in MACOS_STOW_FOLDERS"
 else
   fail "launchd missing from MACOS_STOW_FOLDERS"

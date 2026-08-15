@@ -21,6 +21,12 @@ launchctl getenv CLI_PROXY_API_KEY | wc -c
 
 If the log shows gopass failures, unlock gpg once (`gopass show personal/saas/cli-proxy/code-01-api-key`) and re-run `kickstart`.
 
+After key rotation:
+
+```bash
+"$HOME/.local/bin/set-cli-proxy-gui-env.sh" refresh
+```
+
 ### `/goal` Not Visible
 
 ```bash
