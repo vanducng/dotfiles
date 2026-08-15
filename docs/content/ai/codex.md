@@ -85,6 +85,38 @@ goals  stable  true
 
 Restart Codex after changing feature flags because TUI command availability is loaded at startup.
 
+## CLI Proxy API key (Desktop vs CLI)
+
+Custom provider `cli_proxy` reads `CLI_PROXY_API_KEY` from the **process environment** (`env_key` in `config.toml`). Codex CLI inherits your shell exports; **Codex Desktop** (ChatGPT.app launched from Dock/Spotlight) does not.
+
+macOS-only LaunchAgent `local.cli-proxy-gui-env` bridges that gap:
+
+1. Stow packages: `make stow-bin stow-launchd`
+2. Load the agent (once after install or login):
+
+```bash
+launchctl bootout "gui/$(id -u)" "$HOME/Library/LaunchAgents/local.cli-proxy-gui-env.plist" 2>/dev/null || true
+launchctl bootstrap "gui/$(id -u)" "$HOME/Library/LaunchAgents/local.cli-proxy-gui-env.plist"
+launchctl kickstart -k "gui/$(id -u)/local.cli-proxy-gui-env"
+```
+
+3. Fully quit and reopen ChatGPT/Codex Desktop.
+
+The agent runs `~/.local/bin/set-cli-proxy-gui-env.sh`, which reads the key from gopass (`personal/saas/cli-proxy/code-01-api-key` by default, overridable with `CLI_PROXY_GOPASS_PATH`) and runs `launchctl setenv CLI_PROXY_API_KEY ...`. It no-ops once the var is set, and retries every 5 minutes if gopass was locked at login.
+
+Verify:
+
+```bash
+launchctl getenv CLI_PROXY_API_KEY | wc -c   # non-zero length
+tail -5 "${XDG_STATE_HOME:-$HOME/.local/state}/cli-proxy-gui-env.log"
+```
+
+Manual one-shot without waiting for the agent:
+
+```bash
+"$HOME/.local/bin/set-cli-proxy-gui-env.sh"
+```
+
 ## Local State
 
 Only `config.toml` and hook scripts under `~/.codex/hooks/` are repo-managed.

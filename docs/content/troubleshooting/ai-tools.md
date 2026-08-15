@@ -4,6 +4,23 @@ title: "AI Tools Troubleshooting"
 
 ## Codex CLI
 
+### Desktop: `Missing environment variable: CLI_PROXY_API_KEY`
+
+Codex CLI works but Desktop fails when the key is only exported in the shell. GUI apps do not load `~/.zshrc`.
+
+macOS fix (stow-managed LaunchAgent):
+
+```bash
+make stow-bin stow-launchd
+launchctl bootout "gui/$(id -u)" "$HOME/Library/LaunchAgents/local.cli-proxy-gui-env.plist" 2>/dev/null || true
+launchctl bootstrap "gui/$(id -u)" "$HOME/Library/LaunchAgents/local.cli-proxy-gui-env.plist"
+launchctl kickstart -k "gui/$(id -u)/local.cli-proxy-gui-env"
+# Fully quit ChatGPT.app (Cmd+Q), then reopen
+launchctl getenv CLI_PROXY_API_KEY | wc -c
+```
+
+If the log shows gopass failures, unlock gpg once (`gopass show personal/saas/cli-proxy/code-01-api-key`) and re-run `kickstart`.
+
 ### `/goal` Not Visible
 
 ```bash
