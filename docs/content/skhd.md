@@ -45,7 +45,7 @@ All application shortcuts use the `meh` key (ctrl+alt+shift) for consistency and
 ### Productivity & AI Tools
 | Shortcut | Application | Description |
 |----------|-------------|-------------|
-| `meh + v` | Grok Bot | Grok desktop app |
+| `meh + v` | Grok Bot | Focus the Grok Bot window, or launch the desktop app |
 | `meh + c` | Claude | AI assistant on display 2, space 18 |
 | `meh + l` | Perplexity | AI search engine |
 | `meh + i` | Structured | Task and time management |
