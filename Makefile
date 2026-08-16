@@ -100,6 +100,7 @@ script-test:
 	@./scripts/ci/test-droid-moshi-notify.sh
 	@./scripts/ci/test-pi-config.sh
 	@./scripts/ci/test-grok-config.sh
+	@./scripts/ci/test-skhd-grok.sh
 	@./scripts/ci/test-cli-proxy-gui-env.sh
 	@./scripts/ci/test-nvim-jsonl.sh
 

@@ -144,6 +144,8 @@ yabai -m signal --add event=application_activated app="^ChatGPT$" \
     action='id=$(yabai -m query --windows | jq -r ".[] | select(.app==\"ChatGPT\") | .id" | head -1); [ -n "$id" ] && yabai -m window "$id" --focus 2>/dev/null'
 yabai -m signal --add event=application_activated app="^Claude$" \
     action='id=$(yabai -m query --windows | jq -r ".[] | select(.app==\"Claude\") | .id" | head -1); [ -n "$id" ] && yabai -m window "$id" --focus 2>/dev/null'
+yabai -m signal --add event=application_activated app="^Grok Bot$" \
+    action='id=$(yabai -m query --windows | jq -r ".[] | select(.app==\"Grok Bot\") | .id" | head -1); [ -n "$id" ] && yabai -m window "$id" --focus 2>/dev/null'
 
 yabai -m signal --add event=window_created \
     action='sleep 0.3 && yabai -m window $YABAI_WINDOW_ID --resize bottom:0:0 2>/dev/null'

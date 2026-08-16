@@ -40,7 +40,13 @@ meh - j : yabai -m space --focus 14; open "/Applications/Cliq.app"
 meh - k : open "/Applications/Slack.app"
 meh - l : open "/Applications/Perplexity.app"
 meh - m : open "/Applications/superwhisper.app"
-meh - v : open "/Applications/Grok Bot.app"
+# Focus an existing Grok Bot window (yabai often swallows plain `open` activate).
+# Launch via Launch Services so a non-/Applications install still resolves.
+meh - v : previous=$(yabai -m config mouse_follows_focus); \
+          yabai -m config mouse_follows_focus on; \
+          id=$(yabai -m query --windows | jq -r 'map(select(.app == "Grok Bot")) | first | .id // empty'); \
+          if [ -n "$id" ]; then yabai -m window "$id" --focus; else open -a "Grok Bot" || open "/Applications/Grok Bot.app"; sleep 0.7; fi; \
+          yabai -m config mouse_follows_focus "$previous"
 meh - q : open -a "Music"
 meh - p : open "/Applications/Foxit PDF Reader.app"
 meh - r : open "/Applications/Telegram.app"
