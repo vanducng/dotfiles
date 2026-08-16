@@ -11,12 +11,14 @@ AI-native macOS development environment centered on Herdr workspaces.
 - **Window Management** - Yabai + SKHD for tiling and hotkeys
 - **Terminal** - Ghostty + Herdr + Zsh with persistent agent workspaces
 - **Editor** - Neovim (AstroNvim) with LSP and AI integration
-- **AI Tools** - CodeCompanion, GitHub Copilot, Database AI
+- **AI Tools** - Codex, Grok, Claude, Pi, CodeCompanion, Supermaven, and Database AI
 - **Utilities** - Atuin, Yazi, Starship, Mise, Direnv, Karabiner, Hammerspoon
 
 ## Documentation
 
 Full setup guide, keybindings, and workflows: **[dotfiles.vanducng.dev](https://dotfiles.vanducng.dev)**
+
+Install configs with `make stow-install`, or one tool with `make stow-<tool>` (for example `make stow-grok`).
 
 ## Nix profiles
 
@@ -41,7 +43,8 @@ nix flake update nixpkgs home-manager herdr
 ```
 
 The `flake.lock` file is committed so all machines use the same input
-revisions. Codex, Pi, and Moshi continue to use their official installers.
+revisions. Codex, Grok, Pi, and Moshi binaries still use their official
+installers; this repo stows their configs.
 
 ## Remote browser
 
