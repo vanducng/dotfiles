@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.15.0](https://github.com/vanducng/dotfiles/compare/v0.14.2...v0.15.0) (2026-08-16)
+
+
+### Features
+
+* **codex:** route Codex and Pi through CLI proxy and update models ([#98](https://github.com/vanducng/dotfiles/issues/98)) ([cc98577](https://github.com/vanducng/dotfiles/commit/cc985779342813b87c53c2276ce6b1edfc9f715d))
+* **grok:** added stow-managed Grok config and lifecycle hooks ([#102](https://github.com/vanducng/dotfiles/issues/102)) ([7272d2b](https://github.com/vanducng/dotfiles/commit/7272d2b182f6c037aedfd5fe1dc06ff59c8eca7c))
+* **launchd:** set CLI_PROXY_API_KEY for macOS GUI apps ([#107](https://github.com/vanducng/dotfiles/issues/107)) ([2978eaf](https://github.com/vanducng/dotfiles/commit/2978eaff971b2db7167b64d49abfa810df0e7edb))
+* **nvim:** added JSONL pretty-print maps ([#109](https://github.com/vanducng/dotfiles/issues/109)) ([759e1ff](https://github.com/vanducng/dotfiles/commit/759e1ffc94d6a668a1074e1a065c2f521c413d73))
+* **pi:** add Grok 4.6 to CLI proxy model list ([#108](https://github.com/vanducng/dotfiles/issues/108)) ([ed548ba](https://github.com/vanducng/dotfiles/commit/ed548ba1f9e2664c56900b21f95beb66167599ab))
+* **skhd:** bind meh-v to Grok Bot ([#110](https://github.com/vanducng/dotfiles/issues/110)) ([58d6d05](https://github.com/vanducng/dotfiles/commit/58d6d056797fde35def446d62709848afd5c96dd))
+
+
+### Bug Fixes
+
+* **codex:** avoid unexpanded $HOME in direct-spawn MCP env ([#105](https://github.com/vanducng/dotfiles/issues/105)) ([13f1d78](https://github.com/vanducng/dotfiles/commit/13f1d7852250cde7c180faad763448f9aa031ebf))
+* **codex:** expand Computer Use home paths via bash and $HOME ([#104](https://github.com/vanducng/dotfiles/issues/104)) ([288f808](https://github.com/vanducng/dotfiles/commit/288f808ad3bedb512a679a514a26a2df0cf3058c))
+* **codex:** launch node_repl via portable home-expanding wrapper ([#106](https://github.com/vanducng/dotfiles/issues/106)) ([2a76081](https://github.com/vanducng/dotfiles/commit/2a76081798525929b65f57cce05843ac413ec3b9))
+* **direnv:** cache poetry venv and avoid here-doc ENOSPC on new pane ([#100](https://github.com/vanducng/dotfiles/issues/100)) ([a597d9f](https://github.com/vanducng/dotfiles/commit/a597d9f174dd6ceefdda4824fa6d8c5763f4b387))
+* **herdr:** use contextual pane names ([3212204](https://github.com/vanducng/dotfiles/commit/32122047c1426dc37e11ab1a0eab30c0d37bf1a7))
+
 ## [0.14.2](https://github.com/vanducng/dotfiles/compare/v0.14.1...v0.14.2) (2026-08-09)
 
 
