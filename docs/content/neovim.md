@@ -133,13 +133,21 @@ ln -sf ~/.dotfiles/dotfiles/nvim/.config/nvim ~/.config/nvim
 | `<leader>zx` | Exit All Zen | Exit zen mode across all tmux panes |
 | `<leader>tt` | Twilight | Toggle twilight (dim inactive code) |
 
+### JSON / JSONL
+| Shortcut | Action | Description |
+|----------|--------|-------------|
+| `<leader>jf` | Pretty-print | Current line on `.jsonl`, whole buffer on `.json`. Visual: selection. Leaves invalid JSON untouched. |
+| `<leader>jp` | Preview | Scratch split: JSONL slurped into a pretty array, JSON pretty-printed. Source file stays as-is. |
+
+Works on `json` and `jsonl` buffers. Requires `jq`. `.jsonl` uses the `json` treesitter parser for highlighting.
+
 ### Database Tools
 | Shortcut | Action | Description |
 |----------|--------|-------------|
 | `<leader>Dd` | Select Connection | Select a saved miudb connection |
 | `<leader>Dl` | List Connections | Show saved miudb connections |
 | `<leader>Dq` | Execute Query | Run current SQL buffer |
-| `<leader>j` | Execute Query | Run current SQL buffer |
+| `<leader>j` | Execute Query | Run current SQL buffer (SQL files only) |
 
 ### File Operations
 | Shortcut | Action | Description |

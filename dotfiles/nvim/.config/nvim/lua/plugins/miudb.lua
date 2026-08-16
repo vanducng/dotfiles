@@ -27,14 +27,9 @@ return {
       },
       {
         "<leader>j",
-        function()
-          if vim.bo.filetype ~= "sql" then
-            vim.notify("Not in a SQL buffer", vim.log.levels.WARN)
-            return
-          end
-          vim.cmd "MiuDBQuery"
-        end,
+        "<cmd>MiuDBQuery<cr>",
         desc = "Run SQL buffer with miudb",
+        ft = "sql",
       },
     },
   },
