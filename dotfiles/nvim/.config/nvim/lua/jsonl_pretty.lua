@@ -24,6 +24,8 @@ end
 
 function M.format_buf(bufnr, start_l, end_l)
   bufnr = bufnr or 0
+  start_l = start_l or 1
+  end_l = end_l or vim.api.nvim_buf_line_count(bufnr)
   local lines = vim.api.nvim_buf_get_lines(bufnr, start_l - 1, end_l, false)
   local out = jq({ "." }, lines)
   if not out then
@@ -37,6 +39,12 @@ function M.format()
   local bufnr = vim.api.nvim_get_current_buf()
   if vim.bo[bufnr].filetype == "jsonl" then
     local line = vim.api.nvim_win_get_cursor(0)[1]
+    local text = vim.api.nvim_buf_get_lines(bufnr, line - 1, line, false)[1] or ""
+    text = text:gsub("^%s+", "")
+    if not text:match "^[{%[]" then
+      vim.notify("cursor is not on the start of a JSONL record", vim.log.levels.WARN)
+      return false
+    end
     return M.format_buf(bufnr, line, line)
   end
   return M.format_buf(bufnr, 1, vim.api.nvim_buf_line_count(bufnr))

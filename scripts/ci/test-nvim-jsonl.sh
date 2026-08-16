@@ -12,6 +12,11 @@ for command in nvim jq; do
   fi
 done
 
+if ! nvim --headless -u NONE --cmd 'if !has("nvim-0.10") | cquit 1 | endif' +qa! >/dev/null 2>&1; then
+  printf 'error: nvim >= 0.10 is required (vim.system in jsonl_pretty.lua)\n' >&2
+  exit 1
+fi
+
 if command -v luac >/dev/null 2>&1; then
   luac -p "$module"
   luac -p "$nvim_cfg/lua/polish.lua"
@@ -22,7 +27,7 @@ if grep -q 'Format buffer as JSON (jq)' "$nvim_cfg/lua/plugins/astrocore.lua"; t
   exit 1
 fi
 
-if ! grep -q 'require("jsonl_pretty").setup()' "$nvim_cfg/lua/polish.lua"; then
+if ! grep -Eq "require[(][\"']jsonl_pretty[\"'][)][.]setup" "$nvim_cfg/lua/polish.lua"; then
   printf 'error: polish.lua does not set up jsonl_pretty\n' >&2
   exit 1
 fi
@@ -33,7 +38,7 @@ if ! grep -q 'ft = "sql"' "$nvim_cfg/lua/plugins/miudb.lua"; then
 fi
 
 nvim --headless -u NONE -i NONE -n \
-  --cmd "set rtp+=$nvim_cfg" \
+  --cmd "let &runtimepath = '$nvim_cfg' . ',' . &runtimepath" \
   -l - <<'LUA'
 local jsonl = require("jsonl_pretty")
 
@@ -61,7 +66,7 @@ assert_eq(after_line[#after_line], '{"b":2}', "later jsonl records stay compact"
 
 vim.api.nvim_buf_set_lines(src, 0, -1, false, { '{"a":1}', '{"b":2}' })
 local preview = jsonl.preview(src)
-assert_true(preview ~= nil, "preview opens")
+assert_true(type(preview) == "number" and vim.api.nvim_buf_is_valid(preview), "preview opens")
 assert_eq(vim.bo[preview].filetype, "json", "preview is json")
 assert_eq(vim.bo[preview].buftype, "nofile", "preview is scratch")
 local pretty = table.concat(vim.api.nvim_buf_get_lines(preview, 0, -1, false), "\n")
@@ -71,6 +76,13 @@ assert_eq(vim.api.nvim_buf_get_lines(src, 0, 1, false)[1], '{"a":1}', "preview d
 vim.api.nvim_buf_set_lines(src, 0, -1, false, { "not-json" })
 assert_true(jsonl.format_buf(src, 1, 1) == false, "invalid json fails")
 assert_eq(vim.api.nvim_buf_get_lines(src, 0, 1, false)[1], "not-json", "failed format leaves buffer intact")
+
+vim.api.nvim_buf_set_lines(src, 0, -1, false, { "{", '  "a": 1', "}" })
+vim.api.nvim_set_current_buf(src)
+vim.bo[src].filetype = "jsonl"
+vim.api.nvim_win_set_cursor(0, { 2, 0 })
+assert_true(jsonl.format() == false, "continuation line is not formatted")
+assert_eq(vim.api.nvim_buf_get_lines(src, 1, 2, false)[1], '  "a": 1', "continuation line left intact")
 
 local json_buf = vim.api.nvim_create_buf(false, true)
 vim.api.nvim_set_current_buf(json_buf)
