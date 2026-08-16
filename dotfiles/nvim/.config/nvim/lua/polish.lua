@@ -1,3 +1,5 @@
+require("jsonl_pretty").setup()
+
 vim.keymap.set("n", "<leader>yp", function()
   local relative_filepath = vim.fn.expand "%:."
   vim.fn.setreg("+", relative_filepath)
