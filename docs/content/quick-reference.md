@@ -61,6 +61,7 @@ tail -n 100 ~/.config/herdr/herdr-server.log
 | `<C-f>` | Project Sessionizer | `-` | File Manager |
 | `<leader>ac` | AI Chat | `<leader>aa` | AI Actions |
 | `<leader>Dd` | Database Explorer | `<leader>ff` | Find Files |
+| `<leader>jf` | Pretty-print JSON/JSONL | `<leader>jp` | Preview JSON/JSONL |
 | `<leader>gg` | Lazygit | `gd` | Go to Definition |
 
 ### AI Completion (Copilot)

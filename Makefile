@@ -101,6 +101,7 @@ script-test:
 	@./scripts/ci/test-pi-config.sh
 	@./scripts/ci/test-grok-config.sh
 	@./scripts/ci/test-cli-proxy-gui-env.sh
+	@./scripts/ci/test-nvim-jsonl.sh
 
 install-test:
 	@./scripts/ci/test-install.sh

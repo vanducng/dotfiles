@@ -317,15 +317,8 @@ return {
           desc = "Find word under cursor",
         },
 
-        -- JSON formatting with jq (works in any filetype)
-        ["<Leader>jf"] = { ":%!jq .<CR>", desc = "Format buffer as JSON (jq)" },
-
         -- setting a mapping to false will disable it
         -- ["<C-S>"] = false,
-      },
-      v = {
-        -- JSON formatting for visual selection
-        ["<Leader>jf"] = { "!jq .<CR>", desc = "Format selection as JSON (jq)" },
       },
     },
   },
