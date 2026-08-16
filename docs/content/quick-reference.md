@@ -29,6 +29,7 @@ tail -n 100 ~/.config/herdr/herdr-server.log
 | `meh + a` | Ghostty | `meh + s` | Dia |
 | `meh + f` | Kitty | `meh + g` | Cursor |
 | `meh + t` | Discord | `meh + x` | ChatGPT |
+| `meh + v` | Grok Bot | `meh + q` | Music |
 | `ctrl+shift+hjkl` | Focus Window | `cmd+shift+h/l` | Move Window |
 | `hyper + arrows` | Resize Window | `hyper + f` | Fullscreen |
 
