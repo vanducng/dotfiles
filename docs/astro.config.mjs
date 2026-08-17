@@ -55,7 +55,7 @@ export default defineConfig({
         },
         {
           label: 'AI Tools',
-          items: ['ai', 'ai/codex', 'ai/workflows', 'ai/best-practices'],
+          items: ['ai', 'ai/codex', 'ai/omdsh', 'ai/workflows', 'ai/best-practices'],
         },
         {
           label: 'Workflows',

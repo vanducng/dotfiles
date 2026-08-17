@@ -1,0 +1,194 @@
+ui-onboarding:
+  welcomeNoticeVersion: 2026-08-13.1
+agent-presets:
+  default: standard
+ui-theme:
+  preference: system
+agent-default-model:
+  provider: deepseek-official
+  model: deepseek-v4-flash
+  reasoningEffort: high
+llm-pi-ai:
+  providers:
+    zai-coding-cn:
+      apiKeyEnv: ZAI_CODING_CN_API_KEY
+      baseURL: https://api.z.ai/api/coding/paas/v4
+      models:
+        - id: glm-5.3
+          name: GLM-5.3
+        - id: glm-5.2
+          name: GLM-5.2
+          contextWindow: 1000000
+          maxTokens: 131072
+        - id: glm-5v-turbo
+          name: GLM-5V-Turbo
+          contextWindow: 200000
+          maxTokens: 131072
+    cliproxyapi:
+      displayName: CLI Proxy
+      apiKeyEnv: CLI_PROXY_API_KEY
+      api: openai-responses
+      baseURL: https://cli-proxy.dataplanelabs.com/v1
+      defaultInput: [text, image]
+      models:
+        - id: grok-4.6
+          name: Grok 4.6
+          contextWindow: 256000
+          maxTokens: 16384
+          reasoningEfforts:
+            off:
+            low: low
+            medium: medium
+            high: high
+            xhigh: xhigh
+        - id: grok-4.5
+          name: Grok 4.5
+          contextWindow: 256000
+          maxTokens: 16384
+          reasoningEfforts:
+            off:
+            low: low
+            medium: medium
+            high: high
+        - id: gpt-5.6-sol
+          name: GPT 5.6 Sol
+          contextWindow: 372000
+          maxTokens: 16384
+          reasoningEfforts:
+            off: none
+            low: low
+            medium: medium
+            high: high
+            xhigh: xhigh
+            max: max
+        - id: gpt-5.6-terra
+          name: GPT 5.6 Terra
+          contextWindow: 372000
+          maxTokens: 16384
+          reasoningEfforts:
+            off: none
+            low: low
+            medium: medium
+            high: high
+            xhigh: xhigh
+            max: max
+        - id: gpt-5.6-luna
+          name: GPT 5.6 Luna
+          contextWindow: 372000
+          maxTokens: 16384
+          reasoningEfforts:
+            off: none
+            low: low
+            medium: medium
+            high: high
+            xhigh: xhigh
+            max: max
+        - id: claude-sonnet-4-6
+          name: Claude 4.6 Sonnet
+          contextWindow: 200000
+          maxTokens: 16384
+          reasoningEfforts:
+            off:
+            low: low
+            medium: medium
+            high: high
+        - id: claude-sonnet-5
+          name: Claude Sonnet 5
+          contextWindow: 1000000
+          maxTokens: 16384
+          reasoningEfforts:
+            off:
+            low: low
+            medium: medium
+            high: high
+        - id: claude-opus-4-6
+          name: Claude 4.6 Opus
+          contextWindow: 1000000
+          maxTokens: 16384
+          reasoningEfforts:
+            off:
+            low: low
+            medium: medium
+            high: high
+        - id: claude-opus-4-7
+          name: Claude Opus 4.7
+          contextWindow: 1000000
+          maxTokens: 16384
+          reasoningEfforts:
+            off:
+            low: low
+            medium: medium
+            high: high
+            xhigh: xhigh
+            max: max
+        - id: claude-opus-4-8
+          name: Claude Opus 4.8
+          contextWindow: 1000000
+          maxTokens: 16384
+          reasoningEfforts:
+            off:
+            low: low
+            medium: medium
+            high: high
+            xhigh: xhigh
+            max: max
+        - id: claude-opus-5
+          name: Claude Opus 5
+          contextWindow: 1000000
+          maxTokens: 16384
+          reasoningEfforts:
+            off:
+            low: low
+            medium: medium
+            high: high
+            xhigh: xhigh
+            max: max
+        - id: claude-haiku-4-5-20251001
+          name: Claude 4.5 Haiku
+          contextWindow: 200000
+          maxTokens: 16384
+          reasoningEfforts:
+            off:
+            low: low
+            medium: medium
+            high: high
+        - id: gpt-5.3-codex-spark
+          name: GPT 5.3 Codex Spark
+          contextWindow: 128000
+          maxTokens: 16384
+          input: [text]
+          reasoningEfforts:
+            off: none
+            low: low
+            medium: medium
+            high: high
+        - id: gpt-5.4
+          name: GPT 5.4
+          contextWindow: 272000
+          maxTokens: 16384
+          reasoningEfforts:
+            off: none
+            low: low
+            medium: medium
+            high: high
+            xhigh: xhigh
+        - id: gpt-5.4-mini
+          name: GPT 5.4 Mini
+          contextWindow: 272000
+          maxTokens: 16384
+          reasoningEfforts:
+            off: none
+            low: low
+            medium: medium
+            high: high
+            xhigh: xhigh
+        - id: gpt-5.5
+          name: GPT 5.5
+          contextWindow: 272000
+          maxTokens: 16384
+          reasoningEfforts:
+            off: none
+            low: low
+            medium: medium
+            high: high
+            xhigh: xhigh
