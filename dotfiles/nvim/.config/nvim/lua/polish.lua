@@ -1,4 +1,9 @@
-require("jsonl_pretty").setup()
+local jsonl_ok, jsonl = pcall(require, "jsonl_pretty")
+if jsonl_ok then
+  jsonl.setup()
+else
+  vim.notify("jsonl_pretty not found; run make stow-nvim", vim.log.levels.WARN)
+end
 
 vim.keymap.set("n", "<leader>yp", function()
   local relative_filepath = vim.fn.expand "%:."
