@@ -30,6 +30,7 @@ required = [
     "apiKeyEnv: CLI_PROXY_API_KEY",
     "id: grok-4.6",
     "id: gpt-5.6-sol",
+    "id: claude-fable-5",
     "id: claude-opus-5",
     "id: gpt-5.5",
     "xhigh: xhigh",
@@ -42,6 +43,17 @@ if missing:
     raise SystemExit("missing settings markers: " + ", ".join(missing))
 if "sk-" in text or "apiKey:" in text:
     raise SystemExit("managed settings must not contain inline secrets")
+windows = {
+    "grok-4.6": ("500000", "32768"),
+    "claude-fable-5": ("1000000", "65536"),
+    "gpt-5.6-sol": ("272000", "65536"),
+    "claude-sonnet-4-6": ("1000000", "65536"),
+    "gpt-5.4-mini": ("400000", "65536"),
+}
+for model_id, (context, max_tokens) in windows.items():
+    block = text.split(f"id: {model_id}", 1)[1].split("- id:", 1)[0]
+    if f"contextWindow: {context}" not in block or f"maxTokens: {max_tokens}" not in block:
+        raise SystemExit(f"unexpected window for {model_id}")
 print("settings.yaml: ok")
 PY
 
