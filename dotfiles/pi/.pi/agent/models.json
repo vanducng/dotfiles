@@ -42,6 +42,15 @@
           "id": "grok-4.6",
           "name": "Grok 4.6",
           "reasoning": true,
+          "thinkingLevelMap": {
+            "off": null,
+            "minimal": null,
+            "low": "low",
+            "medium": "medium",
+            "high": "high",
+            "xhigh": "xhigh",
+            "max": null
+          },
           "input": [
             "text",
             "image"

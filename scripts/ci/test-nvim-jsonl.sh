@@ -5,6 +5,11 @@ project_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 nvim_cfg="$project_root/dotfiles/nvim/.config/nvim"
 module="$nvim_cfg/lua/jsonl_pretty.lua"
 
+if [[ ! -f "$module" ]]; then
+  printf 'error: stow package is missing %s\n' "$module" >&2
+  exit 1
+fi
+
 for command in nvim jq; do
   if ! command -v "$command" >/dev/null 2>&1; then
     printf 'error: %s is required to run the nvim jsonl test\n' "$command" >&2
@@ -27,8 +32,8 @@ if grep -q 'Format buffer as JSON (jq)' "$nvim_cfg/lua/plugins/astrocore.lua"; t
   exit 1
 fi
 
-if ! grep -Eq "require[(][\"']jsonl_pretty[\"'][)][.]setup" "$nvim_cfg/lua/polish.lua"; then
-  printf 'error: polish.lua does not set up jsonl_pretty\n' >&2
+if ! grep -Eq 'pcall[(]require, ["'\'']jsonl_pretty["'\''][)]' "$nvim_cfg/lua/polish.lua"; then
+  printf 'error: polish.lua must pcall-require jsonl_pretty so a missing stow link cannot crash nvim\n' >&2
   exit 1
 fi
 
@@ -108,3 +113,20 @@ assert_true(found_jf, "setup attaches jf map on already-open jsonl")
 print("nvim jsonl test: ok")
 os.exit(0)
 LUA
+
+missing_rtp="$(mktemp -d "${TMPDIR:-/tmp}/jsonl-missing-rtp.XXXXXX")"
+trap 'rm -rf -- "$missing_rtp"' EXIT
+mkdir -p "$missing_rtp/lua"
+cp "$nvim_cfg/lua/polish.lua" "$missing_rtp/lua/polish.lua"
+if ! nvim --headless -u NONE -i NONE -n \
+  --cmd "let &runtimepath = '$missing_rtp' . ',' . \$VIMRUNTIME" \
+  -c 'lua require("polish")' +qa 2>"$missing_rtp/err"; then
+  printf 'error: polish.lua crashed nvim when jsonl_pretty was absent\n' >&2
+  cat "$missing_rtp/err" >&2
+  exit 1
+fi
+if grep -q "module 'jsonl_pretty' not found" "$missing_rtp/err"; then
+  printf 'error: missing jsonl_pretty still aborted polish.lua\n' >&2
+  cat "$missing_rtp/err" >&2
+  exit 1
+fi
