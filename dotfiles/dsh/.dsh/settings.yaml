@@ -16,6 +16,8 @@ llm-pi-ai:
       models:
         - id: glm-5.3
           name: GLM-5.3
+          contextWindow: 1000000
+          maxTokens: 131072
         - id: glm-5.2
           name: GLM-5.2
           contextWindow: 1000000
@@ -33,8 +35,8 @@ llm-pi-ai:
       models:
         - id: grok-4.6
           name: Grok 4.6
-          contextWindow: 256000
-          maxTokens: 16384
+          contextWindow: 500000
+          maxTokens: 32768
           reasoningEfforts:
             off:
             low: low
@@ -43,8 +45,8 @@ llm-pi-ai:
             xhigh: xhigh
         - id: grok-4.5
           name: Grok 4.5
-          contextWindow: 256000
-          maxTokens: 16384
+          contextWindow: 500000
+          maxTokens: 32768
           reasoningEfforts:
             off:
             low: low
@@ -52,8 +54,8 @@ llm-pi-ai:
             high: high
         - id: gpt-5.6-sol
           name: GPT 5.6 Sol
-          contextWindow: 372000
-          maxTokens: 16384
+          contextWindow: 272000
+          maxTokens: 65536
           reasoningEfforts:
             off: none
             low: low
@@ -63,8 +65,8 @@ llm-pi-ai:
             max: max
         - id: gpt-5.6-terra
           name: GPT 5.6 Terra
-          contextWindow: 372000
-          maxTokens: 16384
+          contextWindow: 272000
+          maxTokens: 65536
           reasoningEfforts:
             off: none
             low: low
@@ -74,8 +76,8 @@ llm-pi-ai:
             max: max
         - id: gpt-5.6-luna
           name: GPT 5.6 Luna
-          contextWindow: 372000
-          maxTokens: 16384
+          contextWindow: 272000
+          maxTokens: 65536
           reasoningEfforts:
             off: none
             low: low
@@ -83,10 +85,21 @@ llm-pi-ai:
             high: high
             xhigh: xhigh
             max: max
+        - id: claude-fable-5
+          name: Claude Fable 5
+          contextWindow: 1000000
+          maxTokens: 65536
+          reasoningEfforts:
+            off:
+            low: low
+            medium: medium
+            high: high
+            xhigh: xhigh
+            max: max
         - id: claude-sonnet-4-6
           name: Claude 4.6 Sonnet
-          contextWindow: 200000
-          maxTokens: 16384
+          contextWindow: 1000000
+          maxTokens: 65536
           reasoningEfforts:
             off:
             low: low
@@ -95,7 +108,7 @@ llm-pi-ai:
         - id: claude-sonnet-5
           name: Claude Sonnet 5
           contextWindow: 1000000
-          maxTokens: 16384
+          maxTokens: 65536
           reasoningEfforts:
             off:
             low: low
@@ -104,7 +117,7 @@ llm-pi-ai:
         - id: claude-opus-4-6
           name: Claude 4.6 Opus
           contextWindow: 1000000
-          maxTokens: 16384
+          maxTokens: 65536
           reasoningEfforts:
             off:
             low: low
@@ -113,7 +126,7 @@ llm-pi-ai:
         - id: claude-opus-4-7
           name: Claude Opus 4.7
           contextWindow: 1000000
-          maxTokens: 16384
+          maxTokens: 65536
           reasoningEfforts:
             off:
             low: low
@@ -124,7 +137,7 @@ llm-pi-ai:
         - id: claude-opus-4-8
           name: Claude Opus 4.8
           contextWindow: 1000000
-          maxTokens: 16384
+          maxTokens: 65536
           reasoningEfforts:
             off:
             low: low
@@ -135,7 +148,7 @@ llm-pi-ai:
         - id: claude-opus-5
           name: Claude Opus 5
           contextWindow: 1000000
-          maxTokens: 16384
+          maxTokens: 65536
           reasoningEfforts:
             off:
             low: low
@@ -146,7 +159,7 @@ llm-pi-ai:
         - id: claude-haiku-4-5-20251001
           name: Claude 4.5 Haiku
           contextWindow: 200000
-          maxTokens: 16384
+          maxTokens: 32768
           reasoningEfforts:
             off:
             low: low
@@ -155,7 +168,7 @@ llm-pi-ai:
         - id: gpt-5.3-codex-spark
           name: GPT 5.3 Codex Spark
           contextWindow: 128000
-          maxTokens: 16384
+          maxTokens: 32768
           input: [text]
           reasoningEfforts:
             off: none
@@ -165,7 +178,7 @@ llm-pi-ai:
         - id: gpt-5.4
           name: GPT 5.4
           contextWindow: 272000
-          maxTokens: 16384
+          maxTokens: 65536
           reasoningEfforts:
             off: none
             low: low
@@ -174,8 +187,8 @@ llm-pi-ai:
             xhigh: xhigh
         - id: gpt-5.4-mini
           name: GPT 5.4 Mini
-          contextWindow: 272000
-          maxTokens: 16384
+          contextWindow: 400000
+          maxTokens: 65536
           reasoningEfforts:
             off: none
             low: low
@@ -185,7 +198,7 @@ llm-pi-ai:
         - id: gpt-5.5
           name: GPT 5.5
           contextWindow: 272000
-          maxTokens: 16384
+          maxTokens: 65536
           reasoningEfforts:
             off: none
             low: low
