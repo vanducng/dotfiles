@@ -3,9 +3,15 @@ set -euo pipefail
 
 project_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 settings="$project_root/dotfiles/dsh/.dsh/settings.yaml"
+agents="$project_root/dotfiles/dsh/.dsh/AGENTS.md"
 
 if [[ ! -f "$settings" ]]; then
   printf 'error: missing managed dsh settings: %s\n' "$settings" >&2
+  exit 1
+fi
+
+if [[ ! -L "$agents" ]]; then
+  printf 'error: managed dsh AGENTS.md must be a symlink: %s\n' "$agents" >&2
   exit 1
 fi
 
@@ -37,6 +43,22 @@ if missing:
 if "sk-" in text or "apiKey:" in text:
     raise SystemExit("managed settings must not contain inline secrets")
 print("settings.yaml: ok")
+PY
+
+python3 - "$agents" <<'PY'
+from pathlib import Path
+import sys
+
+link = Path(sys.argv[1])
+target = link.readlink()
+if target.as_posix() != "../../agents/AGENTS.md":
+    raise SystemExit(f"unexpected AGENTS.md target: {target}")
+if "/Users/" in str(target) or "/home/" in str(target):
+    raise SystemExit("AGENTS.md symlink must stay relative")
+text = link.read_text()
+if not text.startswith("# Global Agent Instructions"):
+    raise SystemExit("AGENTS.md does not resolve to the global agent instructions")
+print("AGENTS.md: ok")
 PY
 else
   printf 'error: python3 is required to run the dsh config test\n' >&2
