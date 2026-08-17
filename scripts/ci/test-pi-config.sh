@@ -22,9 +22,12 @@ jq -e '
 jq -e '
 	.providers.cliproxyapi.models[]
 	| select(.id == "grok-4.6")
-	| .thinkingLevelMap.xhigh == "xhigh"
-	  and .thinkingLevelMap.off == null
-	  and .thinkingLevelMap.max == null
+	| .thinkingLevelMap
+	| has("off") and has("minimal") and has("max")
+	  and .xhigh == "xhigh"
+	  and .off == null
+	  and .minimal == null
+	  and .max == null
 ' "$agent_dir/models.json" >/dev/null
 node --check "$agent_dir/extensions/terminal-status-title.js"
 PI_CODING_AGENT_DIR="$test_dir" PI_OFFLINE=1 pi --no-skills --no-prompt-templates --no-themes \
