@@ -15,10 +15,17 @@ done
 
 jq empty "$agent_dir/settings.json" "$agent_dir/models.json" "$agent_dir/themes/rose-pine-moon.json"
 jq -e '
-	.defaultProvider == "openai-codex" and
-	.defaultModel == "gpt-5.6-sol" and
+	.defaultProvider == "cliproxyapi" and
+	.defaultModel == "grok-4.6" and
 	.transport == "sse"
 ' "$agent_dir/settings.json" >/dev/null
+jq -e '
+	.providers.cliproxyapi.models[]
+	| select(.id == "grok-4.6")
+	| .thinkingLevelMap.xhigh == "xhigh"
+	  and .thinkingLevelMap.off == null
+	  and .thinkingLevelMap.max == null
+' "$agent_dir/models.json" >/dev/null
 node --check "$agent_dir/extensions/terminal-status-title.js"
 PI_CODING_AGENT_DIR="$test_dir" PI_OFFLINE=1 pi --no-skills --no-prompt-templates --no-themes \
   --extension "$agent_dir/extensions/calm/index.ts" --list-models >/dev/null
