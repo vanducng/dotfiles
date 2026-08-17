@@ -60,6 +60,22 @@ jq -e '
 	| .thinkingLevelMap
 	| .xhigh == "xhigh" and .max == null
 ' "$agent_dir/models.json" >/dev/null
+jq -e '
+	.providers.cliproxyapi.models[]
+	| select(.id == "claude-fable-5")
+	| .contextWindow == 1000000 and .maxTokens == 65536
+	  and .thinkingLevelMap.xhigh == "xhigh" and .thinkingLevelMap.max == "max"
+' "$agent_dir/models.json" >/dev/null
+jq -e '
+	.providers.cliproxyapi.models[]
+	| select(.id == "grok-4.6")
+	| .contextWindow == 500000 and .maxTokens == 32768
+' "$agent_dir/models.json" >/dev/null
+jq -e '
+	.providers.cliproxyapi.models[]
+	| select(.id == "gpt-5.6-sol")
+	| .contextWindow == 272000 and .maxTokens == 65536
+' "$agent_dir/models.json" >/dev/null
 node --check "$agent_dir/extensions/terminal-status-title.js"
 PI_CODING_AGENT_DIR="$test_dir" PI_OFFLINE=1 pi --no-skills --no-prompt-templates --no-themes \
   --extension "$agent_dir/extensions/calm/index.ts" --list-models >/dev/null
