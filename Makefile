@@ -1,4 +1,4 @@
-COMMON_STOW_FOLDERS=tmux herdr pi starship bin vrapperrc yazi zathura lazygit nvim-vscode task nvim mise miu agents atuin direnv diffnav gh-dash agent-deck wtf delta git plannotator
+COMMON_STOW_FOLDERS=tmux herdr pi starship bin vrapperrc yazi zathura lazygit nvim-vscode task nvim mise miu agents atuin direnv diffnav gh-dash agent-deck wtf delta git plannotator dsh
 MACOS_STOW_FOLDERS=zsh kitty skhd yabai borders ghostty claude codex grok hammerspoon karabiner rift vscode launchd gopass
 PLATFORM ?= $(shell uname -s)
 ifneq ($(filter Darwin macos,$(PLATFORM)),)
@@ -100,6 +100,7 @@ script-test:
 	@./scripts/ci/test-droid-moshi-notify.sh
 	@./scripts/ci/test-pi-config.sh
 	@./scripts/ci/test-grok-config.sh
+	@./scripts/ci/test-dsh-config.sh
 	@./scripts/ci/test-cli-proxy-gui-env.sh
 	@./scripts/ci/test-nvim-jsonl.sh
 

@@ -29,6 +29,31 @@ jq -e '
 	  and .minimal == null
 	  and .max == null
 ' "$agent_dir/models.json" >/dev/null
+jq -e '
+	.providers.cliproxyapi.models[]
+	| select(.id == "gpt-5.6-sol")
+	| .thinkingLevelMap
+	| .off == "none" and .xhigh == "xhigh" and .max == "max"
+' "$agent_dir/models.json" >/dev/null
+jq -e '
+	.providers.cliproxyapi.models[]
+	| select(.id == "claude-opus-4-7")
+	| .thinkingLevelMap
+	| .xhigh == "xhigh" and .max == "max"
+' "$agent_dir/models.json" >/dev/null
+
+jq -e '
+	.providers.cliproxyapi.models[]
+	| select(.id == "claude-opus-5")
+	| .thinkingLevelMap
+	| .xhigh == "xhigh" and .max == "max"
+' "$agent_dir/models.json" >/dev/null
+jq -e '
+	.providers.cliproxyapi.models[]
+	| select(.id == "gpt-5.5")
+	| .thinkingLevelMap
+	| .xhigh == "xhigh" and .max == null
+' "$agent_dir/models.json" >/dev/null
 node --check "$agent_dir/extensions/terminal-status-title.js"
 PI_CODING_AGENT_DIR="$test_dir" PI_OFFLINE=1 pi --no-skills --no-prompt-templates --no-themes \
   --extension "$agent_dir/extensions/calm/index.ts" --list-models >/dev/null
