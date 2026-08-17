@@ -20,6 +20,12 @@ jq -e '
 	.transport == "sse"
 ' "$agent_dir/settings.json" >/dev/null
 jq -e '
+	.packages
+	| index("npm:pi-web-access")
+	  and index("npm:@aliou/pi-guardrails")
+	  and index("npm:pi-subagents")
+' "$agent_dir/settings.json" >/dev/null
+jq -e '
 	.providers.cliproxyapi.models[]
 	| select(.id == "grok-4.6")
 	| .thinkingLevelMap
