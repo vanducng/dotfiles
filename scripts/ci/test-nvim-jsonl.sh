@@ -119,7 +119,7 @@ trap 'rm -rf -- "$missing_rtp"' EXIT
 mkdir -p "$missing_rtp/lua"
 cp "$nvim_cfg/lua/polish.lua" "$missing_rtp/lua/polish.lua"
 if ! nvim --headless -u NONE -i NONE -n \
-  --cmd "let &runtimepath = '$missing_rtp' . ',' . &runtimepath" \
+  --cmd "let &runtimepath = '$missing_rtp' . ',' . \$VIMRUNTIME" \
   -c 'lua require("polish")' +qa 2>"$missing_rtp/err"; then
   printf 'error: polish.lua crashed nvim when jsonl_pretty was absent\n' >&2
   cat "$missing_rtp/err" >&2
