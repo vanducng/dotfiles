@@ -2,7 +2,7 @@
 title: "oh-my-dsh"
 ---
 
-oh-my-dsh (`omdsh`) shares the official DeepSeek Harness user document at `~/.dsh/settings.yaml`. This repository manages that file with GNU Stow. Sessions, credentials, profiles, and TUI cache stay local.
+oh-my-dsh (`omdsh`) shares the official DeepSeek Harness user document at `~/.dsh/settings.yaml`. This repository manages that file with GNU Stow, along with `~/.dsh/AGENTS.md`, which points at the same global agent instructions as `~/AGENTS.md`. Sessions, credentials, profiles, and TUI cache stay local.
 
 ## Install
 
@@ -10,7 +10,7 @@ oh-my-dsh (`omdsh`) shares the official DeepSeek Harness user document at `~/.ds
 make stow-dsh
 ```
 
-This links `dotfiles/dsh/.dsh/settings.yaml` to `~/.dsh/settings.yaml`. If a real file already exists, back it up first so Stow can create the symlink.
+This links `dotfiles/dsh/.dsh/settings.yaml` to `~/.dsh/settings.yaml` and `dotfiles/dsh/.dsh/AGENTS.md` to `~/.dsh/AGENTS.md`. If a real file already exists, back it up first so Stow can create the symlink.
 
 ```bash
 mv ~/.dsh/settings.yaml ~/.dsh/settings.yaml.bak
