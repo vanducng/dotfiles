@@ -5,6 +5,11 @@ project_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 nvim_cfg="$project_root/dotfiles/nvim/.config/nvim"
 module="$nvim_cfg/lua/jsonl_pretty.lua"
 
+if [[ ! -f "$module" ]]; then
+  printf 'error: stow package is missing %s\n' "$module" >&2
+  exit 1
+fi
+
 for command in nvim jq; do
   if ! command -v "$command" >/dev/null 2>&1; then
     printf 'error: %s is required to run the nvim jsonl test\n' "$command" >&2
@@ -29,11 +34,6 @@ fi
 
 if ! grep -Eq 'pcall[(]require, ["'\'']jsonl_pretty["'\''][)]' "$nvim_cfg/lua/polish.lua"; then
   printf 'error: polish.lua must pcall-require jsonl_pretty so a missing stow link cannot crash nvim\n' >&2
-  exit 1
-fi
-
-if [[ ! -f "$module" ]]; then
-  printf 'error: stow package is missing %s\n' "$module" >&2
   exit 1
 fi
 
