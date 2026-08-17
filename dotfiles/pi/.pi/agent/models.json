@@ -9,6 +9,15 @@
           "id": "gpt-5.6-sol",
           "name": "GPT 5.6 Sol",
           "reasoning": true,
+          "thinkingLevelMap": {
+            "off": "none",
+            "minimal": null,
+            "low": "low",
+            "medium": "medium",
+            "high": "high",
+            "xhigh": "xhigh",
+            "max": "max"
+          },
           "input": [
             "text",
             "image"
@@ -20,6 +29,15 @@
           "id": "gpt-5.6-terra",
           "name": "GPT 5.6 Terra",
           "reasoning": true,
+          "thinkingLevelMap": {
+            "off": "none",
+            "minimal": null,
+            "low": "low",
+            "medium": "medium",
+            "high": "high",
+            "xhigh": "xhigh",
+            "max": "max"
+          },
           "input": [
             "text",
             "image"
@@ -31,6 +49,15 @@
           "id": "gpt-5.6-luna",
           "name": "GPT 5.6 Luna",
           "reasoning": true,
+          "thinkingLevelMap": {
+            "off": "none",
+            "minimal": null,
+            "low": "low",
+            "medium": "medium",
+            "high": "high",
+            "xhigh": "xhigh",
+            "max": "max"
+          },
           "input": [
             "text",
             "image"
@@ -172,6 +199,15 @@
           "id": "claude-opus-4-7",
           "name": "Claude Opus 4.7",
           "reasoning": true,
+          "thinkingLevelMap": {
+            "off": null,
+            "minimal": null,
+            "low": "low",
+            "medium": "medium",
+            "high": "high",
+            "xhigh": "xhigh",
+            "max": "max"
+          },
           "input": [
             "text",
             "image"
@@ -188,7 +224,16 @@
             "image"
           ],
           "contextWindow": 1000000,
-          "maxTokens": 16384
+          "maxTokens": 16384,
+          "thinkingLevelMap": {
+            "off": null,
+            "minimal": null,
+            "low": "low",
+            "medium": "medium",
+            "high": "high",
+            "xhigh": "xhigh",
+            "max": "max"
+          }
         },
         {
           "id": "claude-opus-5",
@@ -199,7 +244,16 @@
             "image"
           ],
           "contextWindow": 1000000,
-          "maxTokens": 16384
+          "maxTokens": 16384,
+          "thinkingLevelMap": {
+            "off": null,
+            "minimal": null,
+            "low": "low",
+            "medium": "medium",
+            "high": "high",
+            "xhigh": "xhigh",
+            "max": "max"
+          }
         },
         {
           "id": "claude-sonnet-4-20250514",
@@ -264,7 +318,16 @@
             "image"
           ],
           "contextWindow": 272000,
-          "maxTokens": 16384
+          "maxTokens": 16384,
+          "thinkingLevelMap": {
+            "off": "none",
+            "minimal": null,
+            "low": "low",
+            "medium": "medium",
+            "high": "high",
+            "xhigh": "xhigh",
+            "max": null
+          }
         },
         {
           "id": "gpt-5.4-mini",
@@ -275,7 +338,16 @@
             "image"
           ],
           "contextWindow": 272000,
-          "maxTokens": 16384
+          "maxTokens": 16384,
+          "thinkingLevelMap": {
+            "off": "none",
+            "minimal": null,
+            "low": "low",
+            "medium": "medium",
+            "high": "high",
+            "xhigh": "xhigh",
+            "max": null
+          }
         },
         {
           "id": "gpt-5.5",
@@ -286,7 +358,16 @@
             "image"
           ],
           "contextWindow": 272000,
-          "maxTokens": 16384
+          "maxTokens": 16384,
+          "thinkingLevelMap": {
+            "off": "none",
+            "minimal": null,
+            "low": "low",
+            "medium": "medium",
+            "high": "high",
+            "xhigh": "xhigh",
+            "max": null
+          }
         },
         {
           "id": "muse-spark-1.2-contributor",
