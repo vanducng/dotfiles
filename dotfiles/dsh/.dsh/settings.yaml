@@ -5,8 +5,8 @@ agent-presets:
 ui-theme:
   preference: system
 agent-default-model:
-  provider: deepseek-official
-  model: deepseek-v4-flash
+  provider: cliproxyapi
+  model: grok-4.6
   reasoningEffort: high
 llm-pi-ai:
   providers:
@@ -31,7 +31,7 @@ llm-pi-ai:
       apiKeyEnv: CLI_PROXY_API_KEY
       api: openai-responses
       baseURL: https://cli-proxy.dataplanelabs.com/v1
-      defaultInput: [text, image]
+      defaultInput: [ text, image ]
       models:
         - id: grok-4.6
           name: Grok 4.6
@@ -169,7 +169,7 @@ llm-pi-ai:
           name: GPT 5.3 Codex Spark
           contextWindow: 128000
           maxTokens: 32768
-          input: [text]
+          input: [ text ]
           reasoningEfforts:
             off: none
             low: low
