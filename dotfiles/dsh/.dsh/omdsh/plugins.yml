@@ -1,0 +1,28 @@
+# Out-of-tree omdsh plugins. Bare names resolve beside this file, so the
+# packages come from $DSH_HOME/omdsh/node_modules (managed by package.json
+# in this directory).
+#
+# dsh-observe exports session telemetry to Langfuse. It stays inert unless
+# LANGFUSE_PUBLIC_KEY and LANGFUSE_SECRET_KEY are present in the environment
+# (the same credentials pi-langfuse uses, exported from ~/.envrc via direnv).
+# The storage trio provides the storageDomain service dsh-observe requires
+# for its durable offline buffer.
+
+- id: storage
+  name: '@deepseek-ai/dsh-storage'
+
+- id: storage-json
+  name: '@deepseek-ai/dsh-storage-json'
+  config:
+    root: !!js "(process.env.OMDSH_HOME || process.env.DSH_HOME || process.env.HOME + '/.dsh') + '/storages'"
+
+- id: storage-domain
+  name: '@deepseek-ai/dsh-storage-domain'
+  config:
+    backend: json
+
+- id: dsh-observe
+  name: dsh-observe
+  config:
+    enabled: !!js "Boolean(process.env.LANGFUSE_PUBLIC_KEY && process.env.LANGFUSE_SECRET_KEY)"
+    langfuse: !!js "process.env.LANGFUSE_PUBLIC_KEY && process.env.LANGFUSE_SECRET_KEY ? { baseUrl: process.env.LANGFUSE_BASE_URL || 'https://cloud.langfuse.com', publicKey: process.env.LANGFUSE_PUBLIC_KEY, secretKey: process.env.LANGFUSE_SECRET_KEY } : null"
