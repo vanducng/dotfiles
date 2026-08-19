@@ -1,7 +1,7 @@
 {
   "defaultProvider": "cliproxyapi",
-  "defaultModel": "grok-4.6",
-  "defaultThinkingLevel": "high",
+  "defaultModel": "claude-fable-5",
+  "defaultThinkingLevel": "xhigh",
   "lastChangelogVersion": "0.84.2",
   "images": {
     "blockImages": false
@@ -20,10 +20,10 @@
     "npm:pi-web-access",
     "npm:@ryan_nookpi/pi-extension-codex-fast-mode@0.2.6",
     "git:github.com/algal/pi-openai-server-compaction@c6d593087709e9481223dc6c6c2269b371b5e055",
-    "../../skills/hooks/pi/langfuse-trace",
     "npm:@plannotator/pi-extension",
-    "npm:@aliou/pi-guardrails",
-    "npm:pi-subagents"
+    "npm:pi-subagents",
+    "npm:pi-langfuse",
+    "npm:@calesennett/pi-codex-fast"
   ],
   "skills": [
     "-skills/backend-development",
@@ -61,5 +61,9 @@
     "-skills/web-frameworks",
     "-skills/xia"
   ],
-  "enableSkillCommands": true
+  "enableSkillCommands": true,
+  "pi-codex-fast": {
+    "enabled": true,
+    "mode": "ultrafast"
+  }
 }
