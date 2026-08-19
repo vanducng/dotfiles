@@ -11,4 +11,4 @@
   name: dsh-observe
   config:
     enabled: !!js "Boolean(process.env.LANGFUSE_PUBLIC_KEY && process.env.LANGFUSE_SECRET_KEY)"
-    langfuse: !!js "process.env.LANGFUSE_PUBLIC_KEY && process.env.LANGFUSE_SECRET_KEY ? { baseUrl: process.env.LANGFUSE_BASE_URL || 'https://cloud.langfuse.com', publicKey: process.env.LANGFUSE_PUBLIC_KEY, secretKey: process.env.LANGFUSE_SECRET_KEY } : null"
+    langfuse: !!js "process.env.LANGFUSE_PUBLIC_KEY && process.env.LANGFUSE_SECRET_KEY ? { baseUrl: process.env.LANGFUSE_BASE_URL || 'https://cloud.langfuse.com', publicKey: process.env.LANGFUSE_PUBLIC_KEY, secretKey: process.env.LANGFUSE_SECRET_KEY, release: (process.env.OMDSH_VERSION ? 'omdsh@' + process.env.OMDSH_VERSION : (function(){ try { const fs = process.getBuiltinModule('fs'); const path = process.getBuiltinModule('path'); const bin = fs.realpathSync(process.argv[1] || ''); const pkg = path.join(path.dirname(bin), '..', 'package.json'); const v = JSON.parse(fs.readFileSync(pkg, 'utf8')).version; return typeof v === 'string' && v ? 'omdsh@' + v : 'omdsh'; } catch { return 'omdsh'; } })()) } : null"
