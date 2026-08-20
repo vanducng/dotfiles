@@ -22,8 +22,8 @@ import sys
 
 text = Path(sys.argv[1]).read_text()
 required = [
-    "provider: deepseek-official",
-    "model: deepseek-v4-flash",
+    "provider: cliproxyapi",
+    "model: grok-4.6",
     "cliproxyapi:",
     "api: openai-responses",
     "baseURL: https://cli-proxy.dataplanelabs.com/v1",
