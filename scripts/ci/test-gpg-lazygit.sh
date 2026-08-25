@@ -58,6 +58,8 @@ else
     else
       fail "lazygit config yaml invalid"
     fi
+  else
+    fail "no yaml validator available (need yq or python3+pyyaml)"
   fi
 fi
 
@@ -73,13 +75,17 @@ else
   fail "check-dependencies missing pinentry-mac"
 fi
 
-if grep -E "$HOME_PATH_RE" "$ZSHRC" | grep -q 'GPG_TTY'; then
+if [[ ! -f "$ZSHRC" ]]; then
+  fail "missing $ZSHRC (home-path check)"
+elif grep -E "$HOME_PATH_RE" "$ZSHRC" | grep -q 'GPG_TTY'; then
   fail "GPG_TTY line hardcodes a home path"
 else
   pass "GPG_TTY line has no hardcoded home path"
 fi
 for file in "$GPG_AGENT_CONF" "$LAZYGIT_CONF"; do
-  if [[ -f "$file" ]] && grep -Eq "$HOME_PATH_RE" "$file"; then
+  if [[ ! -f "$file" ]]; then
+    fail "missing $file (home-path check)"
+  elif grep -Eq "$HOME_PATH_RE" "$file"; then
     fail "hardcoded home path in $file"
   else
     pass "no hardcoded home path in ${file#"$PROJECT_ROOT"/}"
