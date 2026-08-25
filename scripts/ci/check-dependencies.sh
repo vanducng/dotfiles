@@ -27,6 +27,7 @@ declare -A TOOLS=(
     ["karabiner"]="optional:Keyboard customization (macOS only)"
     ["kitty"]="optional:Terminal emulator"
     ["lazygit"]="optional:Git UI"
+    ["pinentry-mac"]="optional:GPG GUI pinentry for TUI commits (macOS only)"
     ["lua"]="optional:Lua interpreter"
     ["make"]="required:Build automation"
     ["mise"]="required:Runtime version manager"
@@ -65,7 +66,7 @@ check_command() {
     
     if [[ "$OSTYPE" != "darwin"* ]]; then
         case "$cmd" in
-            hammerspoon|karabiner|skhd|yabai)
+            hammerspoon|karabiner|skhd|yabai|pinentry-mac)
                 echo -e "${BLUE}[SKIP]${NC} $cmd - $desc (macOS only)"
                 return
                 ;;
