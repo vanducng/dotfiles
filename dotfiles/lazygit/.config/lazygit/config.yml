@@ -1,7 +1,7 @@
 git:
-  paging:
-    colorArg: always
-    pager: delta --paging=never --line-numbers
+  diffRenderers:
+    - colorArg: always
+      command: delta --paging=never --line-numbers
 gui:
   language: "en"
   theme:
@@ -34,26 +34,25 @@ customCommands:
   - key: "<c-f>"
     command: "ruff check --fix --select I,W291,W292,W293,Q000 $(git diff --cached --name-only|tr '\n' ' ') --unsafe-fixes && ruff format --line-length 120 $(git diff --cached --name-only|tr '\n' ' ')"
     context: "global"
-
   - key: "D"
     command: "git diff | diffnav"
     context: "files"
-    subprocess: true
     description: "Open unstaged diff in diffnav"
+    output: terminal
   - key: "D"
     command: "git show {{.SelectedLocalCommit.Sha}} | diffnav"
     context: "commits"
-    subprocess: true
     description: "Open commit diff in diffnav"
+    output: terminal
   - key: "D"
     command: "git diff {{.SelectedLocalBranch.Name}}...HEAD | diffnav"
-    context: "localBranches"
-    subprocess: true
+    output: terminal
     description: "Open PR-style diff (branch...HEAD) in diffnav"
+    context: "localBranches"
   - key: "<c-d>"
     context: "global"
-    subprocess: true
     description: "PR-style diff vs target branch (fzf picker)"
+    output: terminal
     command: >-
       bash -c '
       BRANCH=$(git for-each-ref --sort=-committerdate
@@ -65,8 +64,8 @@ customCommands:
       '
   - key: "<c-b>"
     context: "global"
-    subprocess: true
     description: "PR-style diff vs origin's default branch (auto)"
+    output: terminal
     command: >-
       bash -c '
       BASE=$(git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null
@@ -76,6 +75,6 @@ customCommands:
       '
   - key: "<c-e>"
     context: "global"
-    subprocess: true
     description: "PR-style diff vs dev"
     command: "git diff dev...HEAD | diffnav"
+    output: terminal
