@@ -1,0 +1,7 @@
+{
+  "name": "omdsh-user-plugins",
+  "private": true,
+  "dependencies": {
+    "dsh-observe": "0.1.1"
+  }
+}
