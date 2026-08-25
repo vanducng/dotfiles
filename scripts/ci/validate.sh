@@ -235,7 +235,8 @@ main() {
     
     log_info "Validating shell scripts..."
     while IFS= read -r -d '' file; do
-        if [[ -x "$file" ]] || [[ "$file" =~ \.(sh|bash|zsh)$ ]] || head -1 "$file" | grep -q '^#!/'; then
+        shebang=$(head -c 256 "$file" 2>/dev/null | tr -d '\000' | head -1 || true)
+        if [[ "$file" =~ \.(sh|bash|zsh)$ ]] || [[ "$shebang" =~ ^\#!.*(/|[[:space:]])(sh|bash|dash|ksh|zsh|fish)([[:space:]]|$) ]]; then
             validate_shell "$file"
         fi
     done < <(find dotfiles scripts -type f -print0)
