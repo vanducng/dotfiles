@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.16.0](https://github.com/vanducng/dotfiles/compare/v0.15.0...v0.16.0) (2026-08-25)
+
+
+### Features
+
+* **ai:** add Claude Fable 5 and align cliproxy windows ([#118](https://github.com/vanducng/dotfiles/issues/118)) ([8e1fca6](https://github.com/vanducng/dotfiles/commit/8e1fca6c7e1a058dec14a8a4f42873d2ecbd2185))
+* **ai:** cliproxy reasoning levels and stow-managed dsh settings ([#115](https://github.com/vanducng/dotfiles/issues/115)) ([0960f43](https://github.com/vanducng/dotfiles/commit/0960f43486f284afbf03f1a38ffb73ee0709a57a))
+* **dsh:** export omdsh session telemetry to Langfuse via dsh-observe ([a54f644](https://github.com/vanducng/dotfiles/commit/a54f6447fcd263037ca4af1bccd7270538f855c0))
+* **dsh:** stamp Langfuse release from the running omdsh version ([8504d8b](https://github.com/vanducng/dotfiles/commit/8504d8b4d32d608a2bf62d3181f9ad98dc577eb3))
+* **dsh:** symlink global AGENTS.md into ~/.dsh ([#117](https://github.com/vanducng/dotfiles/issues/117)) ([a165f68](https://github.com/vanducng/dotfiles/commit/a165f68a7f78e2b71c4637391e492da809cb0ffd))
+* **pi:** add subagents and guardrails packages ([#116](https://github.com/vanducng/dotfiles/issues/116)) ([e1afda3](https://github.com/vanducng/dotfiles/commit/e1afda351513072e88196d35b2d4fc1e0f3b4c68))
+* **pi:** exposed grok-4.6 xhigh thinking level ([#113](https://github.com/vanducng/dotfiles/issues/113)) ([a0f072b](https://github.com/vanducng/dotfiles/commit/a0f072b91514bc5e64fca23f8feea6c1b139e25a))
+
+
+### Bug Fixes
+
+* **git:** made lazygit GPG commits work from a TUI ([#121](https://github.com/vanducng/dotfiles/issues/121)) ([e41d984](https://github.com/vanducng/dotfiles/commit/e41d9841d72a83e891fda2c8a85e1c319a6aab94))
+
 ## [0.15.0](https://github.com/vanducng/dotfiles/compare/v0.14.2...v0.15.0) (2026-08-16)
 
 
