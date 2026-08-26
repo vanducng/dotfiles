@@ -17,7 +17,15 @@ pass() { echo "OK: $*"; }
 [[ -f "$ROOT/dotfiles/git/.config/git/work-bhcoe.gitconfig" ]] && pass "work-bhcoe.gitconfig exists" || fail "missing work-bhcoe.gitconfig"
 
 bash -n "$ROOT/scripts/linux-deps.sh" && pass "linux-deps.sh parses" || fail "linux-deps.sh syntax"
+bash -n "$ROOT/scripts/linux-desktop.sh" && pass "linux-desktop.sh parses" || fail "linux-desktop.sh syntax"
+bash -n "$ROOT/scripts/linux-gnome-keys.sh" && pass "linux-gnome-keys.sh parses" || fail "linux-gnome-keys.sh syntax"
 bash -n "$ROOT/dotfiles/shell-linux/.config/shell/linux.sh" && pass "linux.sh parses" || fail "linux.sh syntax"
+bash -n "$ROOT/dotfiles/sway/.config/sway/scripts/focus-or-launch" && pass "focus-or-launch parses" || fail "focus-or-launch syntax"
+if python3 -c "import ast, pathlib; ast.parse(pathlib.Path('$ROOT/dotfiles/sway/.config/sway/scripts/autotile').read_text())"; then
+  pass "autotile python"
+else
+  fail "autotile python"
+fi
 
 if grep -vE '^[[:space:]]*#' "$ROOT/dotfiles/mise/.config/mise/conf.d/linux.toml" | grep -q 'aqua:tmux/tmux'; then
   fail "linux.toml still uses aqua:tmux/tmux (not in aqua registry)"
@@ -76,6 +84,9 @@ echo "$folders" | grep -qx git && pass "Linux stow includes git" || fail "Linux 
 echo "$folders" | grep -qx claude && pass "Linux stow includes claude" || fail "Linux stow missing claude"
 echo "$folders" | grep -qx kitty && pass "Linux stow includes kitty" || fail "Linux stow missing kitty"
 echo "$folders" | grep -qx shell-linux && pass "Linux stow includes shell-linux" || fail "Linux stow missing shell-linux"
+echo "$folders" | grep -qx sway && pass "Linux stow includes sway" || fail "Linux stow missing sway"
+echo "$folders" | grep -qx ghostty && pass "Linux stow includes ghostty" || fail "Linux stow missing ghostty"
+echo "$folders" | grep -qx waybar && pass "Linux stow includes waybar" || fail "Linux stow missing waybar"
 if echo "$folders" | grep -qx yabai; then fail "Linux stow includes yabai"; else pass "Linux stow excludes yabai"; fi
 if echo "$folders" | grep -qx skhd; then fail "Linux stow includes skhd"; else pass "Linux stow excludes skhd"; fi
 if echo "$folders" | grep -qx karabiner; then fail "Linux stow includes karabiner"; else pass "Linux stow excludes karabiner"; fi
@@ -88,6 +99,22 @@ if grep -q 'linux-deps' "$ROOT/Makefile"; then
   pass "Makefile has linux-deps target"
 else
   fail "Makefile missing linux-deps"
+fi
+if grep -q 'linux-desktop' "$ROOT/Makefile"; then
+  pass "Makefile has linux-desktop target"
+else
+  fail "Makefile missing linux-desktop"
+fi
+swaycfg="$ROOT/dotfiles/sway/.config/sway/config"
+if grep -q 'xkb_options caps:hyper' "$swaycfg" && grep -q 'bindsym \$meh+a' "$swaycfg" && grep -q 'bindsym \$alt+1' "$swaycfg"; then
+  pass "sway config maps caps hyper, meh launchers, alt workspaces"
+else
+  fail "sway config missing skhd-equivalent binds"
+fi
+if grep -q 'keybind = super+s>v=' "$ROOT/dotfiles/ghostty/.config/ghostty/config"; then
+  pass "ghostty has Linux super+s split leader"
+else
+  fail "ghostty missing Linux super+s binds"
 fi
 
 if [[ $FAIL -ne 0 ]]; then

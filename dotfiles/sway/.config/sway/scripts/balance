@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+# Approximate yabai `space --balance`: equalize split containers on this workspace.
+set -euo pipefail
+swaymsg -t get_tree >/dev/null
+# sway 1.7 has no native equalize; walk splits and resize to even.
+python3 - <<'PY'
+import json, subprocess
+
+def sway(*a):
+    return subprocess.check_output(["swaymsg", *a], text=True)
+
+def walk(node):
+    kids = [c for c in node.get("nodes", []) if c.get("type") in {"con", "workspace"} or c.get("nodes")]
+    tiled = [c for c in node.get("nodes", []) if c.get("type") == "con" and not c.get("floating")]
+    layout = node.get("layout")
+    if layout in {"splith", "splitv"} and len(tiled) >= 2:
+        axis = "width" if layout == "splith" else "height"
+        # even percent each
+        pct = 100 // len(tiled)
+        for child in tiled[:-1]:
+            subprocess.call(["swaymsg", f"[con_id={child['id']}] resize set {axis} {pct} ppt"])
+    for child in node.get("nodes", []):
+        walk(child)
+
+tree = json.loads(sway("-t", "get_tree"))
+for output in tree.get("nodes", []):
+    for ws in output.get("nodes", []):
+        if ws.get("type") == "workspace" and ws.get("focused"):
+            walk(ws)
+            break
+        for vis in ws.get("nodes", []):
+            if vis.get("type") == "workspace" and vis.get("visible"):
+                walk(vis)
+PY

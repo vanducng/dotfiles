@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+# Focus a window by app_id or WM_CLASS, else launch the first available command.
+# Usage: focus-or-launch <id> <cmd> [fallback-cmd...]
+set -euo pipefail
+
+if [[ $# -lt 2 ]]; then
+  echo "usage: focus-or-launch <app_id_or_class> <command> [fallback...]" >&2
+  exit 2
+fi
+
+id="$1"
+shift
+
+tree=""
+if command -v swaymsg >/dev/null 2>&1; then
+  tree="$(swaymsg -t get_tree 2>/dev/null || true)"
+fi
+
+if [[ -n "$tree" ]]; then
+  if command -v jq >/dev/null 2>&1; then
+    if jq -e --arg id "$id" '
+      .. | objects | select(
+        (.app_id? // "") == $id
+        or (.window_properties.class? // "") == $id
+        or (.window_properties.instance? // "") == $id
+        or ((.name? // "") | test($id; "i"))
+      ) | .id
+    ' >/dev/null 2>&1 <<<"$tree"; then
+      swaymsg "[app_id=\"${id}\"] focus" >/dev/null 2>&1 \
+        || swaymsg "[class=\"${id}\"] focus" >/dev/null 2>&1 \
+        || true
+      exit 0
+    fi
+  elif grep -Fq "\"app_id\": \"${id}\"" <<<"$tree" \
+    || grep -Fq "\"class\": \"${id}\"" <<<"$tree"; then
+    swaymsg "[app_id=\"${id}\"] focus" >/dev/null 2>&1 \
+      || swaymsg "[class=\"${id}\"] focus" >/dev/null 2>&1 \
+      || true
+    exit 0
+  fi
+fi
+
+for cmd in "$@"; do
+  if command -v "$cmd" >/dev/null 2>&1; then
+    exec "$cmd"
+  fi
+done
+
+command -v notify-send >/dev/null 2>&1 && notify-send "sway" "not installed: $*"
+exit 1

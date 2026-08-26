@@ -1,0 +1,6 @@
+[Desktop Entry]
+Name=Sway
+Comment=i3-compatible Wayland compositor (yabai/skhd Linux)
+Exec=start-sway
+Type=Application
+DesktopNames=sway

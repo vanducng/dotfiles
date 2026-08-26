@@ -1,4 +1,6 @@
 font-size = 13
+font-family = JetBrainsMono Nerd Font Mono
+font-family = Hasklug Nerd Font Mono
 font-thicken = true
 minimum-contrast = 1.1
 cursor-style = bar
@@ -14,11 +16,13 @@ window-decoration = false
 macos-window-shadow = false
 background-blur-radius = 0
 mouse-hide-while-typing = true
-theme = duskfox
+theme = Duskfox
 macos-titlebar-style = tabs
 
 shell-integration = none
 macos-option-as-alt = true
+# Linux: Super is Cmd. gtk-single-instance keeps meh-a focusing one process.
+gtk-single-instance = true
 
 # Don't auto-toggle Secure Keyboard Entry on password-prompt heuristic.
 # SKE blocks CGEventTap clients (skhd), causing skhd to abort + launchd respawn loop.
@@ -28,22 +32,32 @@ macos-option-as-alt = true
 macos-auto-secure-input = false
 macos-secure-input-indication = true
 
-# Disable default cmd+d split (let tmux handle multiplexing inside surfaces)
+# Disable default cmd/super+d split (let tmux handle multiplexing inside surfaces)
 keybind = cmd+d=ignore
 keybind = cmd+shift+d=ignore
+keybind = super+d=ignore
+keybind = super+shift+d=ignore
 
 # Tmux-style split panes for Ghostty (matches ~/.tmux.conf mnemonics)
-# Leader: cmd+s (avoids conflict with tmux prefix ctrl+x and macOS shortcuts).
-# Press cmd+s, release, then the next key. Same flow as tmux prefix.
+# Leader: cmd+s on macOS, super+s on Linux. Press leader, release, then the next key.
 # Splits: v = top/bottom, m = left/right (matches tmux bindings)
 keybind = cmd+s>v=new_split:down
 keybind = cmd+s>m=new_split:right
+keybind = super+s>v=new_split:down
+keybind = super+s>m=new_split:right
 # Pane navigation: h/j/k/l (matches tmux bindings)
 keybind = cmd+s>h=goto_split:left
 keybind = cmd+s>j=goto_split:down
 keybind = cmd+s>k=goto_split:up
 keybind = cmd+s>l=goto_split:right
+keybind = super+s>h=goto_split:left
+keybind = super+s>j=goto_split:down
+keybind = super+s>k=goto_split:up
+keybind = super+s>l=goto_split:right
 # Zoom / close / equalize
 keybind = cmd+s>z=toggle_split_zoom
 keybind = cmd+s>x=close_surface
 keybind = cmd+s>e=equalize_splits
+keybind = super+s>z=toggle_split_zoom
+keybind = super+s>x=close_surface
+keybind = super+s>e=equalize_splits

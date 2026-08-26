@@ -1,0 +1,17 @@
+;; Optional. Caps tap = Escape, hold = Hyper (ctrl+alt+super+shift).
+;; Needs /dev/uinput (udev rule + input group). Not started by default.
+;;   sudo usermod -aG input $USER
+;;   echo 'KERNEL=="uinput", MODE="0660", GROUP="input", OPTIONS+="static_node=uinput"' | sudo tee /etc/udev/rules.d/99-uinput.rules
+;;   kanata --cfg ~/.config/kanata/kanata.kbd
+
+(defcfg
+  process-unmapped-keys yes
+)
+
+(defsrc
+  caps
+)
+
+(deflayer base
+  (tap-hold 200 200 esc (multi lctl lalt lmet lsft))
+)

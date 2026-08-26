@@ -1,0 +1,76 @@
+#!/usr/bin/env python3
+"""BSP-ish autotiling for sway (yabai layout=bsp stand-in). Stdlib only."""
+from __future__ import annotations
+
+import json
+import subprocess
+import sys
+
+
+def swaymsg(*args: str) -> str:
+    return subprocess.check_output(["swaymsg", *args], text=True)
+
+
+def focused_container(node: dict) -> dict | None:
+    if node.get("focused"):
+        return node
+    for key in ("nodes", "floating_nodes"):
+        for child in node.get(key, []):
+            found = focused_container(child)
+            if found is not None:
+                return found
+    return None
+
+
+def parent_of_focused(node: dict, parent: dict | None = None) -> dict | None:
+    if node.get("focused"):
+        return parent
+    for key in ("nodes", "floating_nodes"):
+        for child in node.get(key, []):
+            found = parent_of_focused(child, node)
+            if found is not None:
+                return found
+    return None
+
+
+def maybe_split() -> None:
+    tree = json.loads(swaymsg("-t", "get_tree"))
+    focused = focused_container(tree)
+    if not focused or focused.get("type") != "con":
+        return
+    if focused.get("fullscreen_mode"):
+        return
+    rect = focused.get("rect") or {}
+    width, height = int(rect.get("width") or 0), int(rect.get("height") or 0)
+    if width <= 0 or height <= 0:
+        return
+    parent = parent_of_focused(tree)
+    layout = (parent or {}).get("layout")
+    want = "splith" if width >= height else "splitv"
+    current = "splith" if layout == "splith" else "splitv" if layout == "splitv" else None
+    if current != want:
+        swaymsg(want)
+
+
+def main() -> int:
+    proc = subprocess.Popen(
+        ["swaymsg", "-m", "-t", "subscribe", '["window"]'],
+        stdout=subprocess.PIPE,
+        text=True,
+    )
+    assert proc.stdout is not None
+    for line in proc.stdout:
+        try:
+            event = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if event.get("change") in {"new", "focus"}:
+            try:
+                maybe_split()
+            except subprocess.CalledProcessError:
+                continue
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
