@@ -23,6 +23,13 @@ elif command -v mise >/dev/null 2>&1; then
 fi
 unset _vd_shell
 
+# Keep ~/.local/bin ahead of mise shims so the stowed `pi` wrapper (and
+# herdr/tmux) win over npm bins that mise node prepends.
+export PATH="${HOME}/.local/bin:${PATH}"
+
+export CLI_PROXY_BASE_URL="${CLI_PROXY_BASE_URL:-https://cli-proxy.dataplanelabs.com}"
+# API key: export CLI_PROXY_API_KEY, or `gopass show -o personal/saas/cli-proxy/code-01-api-key`
+
 # rustup writes this file; it is a no-op until cargo exists.
 # shellcheck disable=SC1091
 [ -f "${HOME}/.cargo/env" ] && . "${HOME}/.cargo/env"
