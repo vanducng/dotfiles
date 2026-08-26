@@ -46,6 +46,22 @@
 	path = ~/.config/git/work-bhcoe.gitconfig
 [includeIf "gitdir:~/src/bhcoe/"]
 	path = ~/.config/git/work-bhcoe.gitconfig
+[includeIf "gitdir:**/dpl/code/careernowbrands/"]
+	path = ~/.config/git/work.gitconfig
+[includeIf "gitdir:**/dpl/code/crashchat/"]
+	path = ~/.config/git/work-crashchat.gitconfig
+[includeIf "gitdir:**/dpl/code/ab-spectrum/"]
+	path = ~/.config/git/work-ab-spectrum.gitconfig
+[includeIf "gitdir:**/dpl/code/bhcoe/"]
+	path = ~/.config/git/work-bhcoe.gitconfig
+[includeIf "gitdir:~/lab/code/careernowbrands/"]
+	path = ~/.config/git/work.gitconfig
+[includeIf "gitdir:~/lab/code/ab-spectrum/"]
+	path = ~/.config/git/work-ab-spectrum.gitconfig
+[includeIf "gitdir:~/lab/code/bhcoe/"]
+	path = ~/.config/git/work-bhcoe.gitconfig
+[includeIf "gitdir:~/lab/code/crashchat/"]
+	path = ~/.config/git/work-crashchat.gitconfig
 
 [core]
 	editor = nvim

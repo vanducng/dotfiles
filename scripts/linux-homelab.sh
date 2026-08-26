@@ -1,0 +1,331 @@
+#!/usr/bin/env bash
+# User-space homelab bootstrap (no sudo). Idempotent.
+# Disks via udisks, never-sleep, sshd :2222, layout, clone last-30d repos,
+# docker-compose binary. Full docker/sshd:22/tailscale: sudo linux-homelab-root.sh
+set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+export PATH="${HOME}/.local/bin:${HOME}/.local/share/mise/shims:${PATH}"
+. "${REPO_ROOT}/dotfiles/homelab/.config/homelab/layout.env"
+
+log() { printf 'homelab: %s\n' "$*"; }
+have() { command -v "$1" >/dev/null 2>&1; }
+
+NVME_MNT="/media/ubuntu/${NVME_UUID}"
+HDDA_MNT="/media/ubuntu/Volume A"
+HDDB_MNT="/media/ubuntu/Volume B"
+
+ensure_disks() {
+  bash "${HOME}/.config/homelab/mount-disks" 2>/dev/null \
+    || bash "${REPO_ROOT}/dotfiles/homelab/.config/homelab/mount-disks"
+  [[ -d "$NVME_MNT" && -d "$HDDA_MNT" && -d "$HDDB_MNT" ]] || {
+    echo "homelab: disks not mounted" >&2
+    return 1
+  }
+}
+
+mk_lab_dirs() {
+  mkdir -p \
+    "${NVME_MNT}/dpl/code/"{personal,dataplanelabs,careernowbrands,ab-spectrum,bhcoe,crashchat,nextlevelbuilder} \
+    "${NVME_MNT}/dpl/docker" \
+    "${NVME_MNT}/dpl/agents" \
+    "${NVME_MNT}/dpl/cache" \
+    "${NVME_MNT}/dpl/tmp" \
+    "${HDDA_MNT}/dpl/"{datasets,media,incoming} \
+    "${HDDB_MNT}/dpl/"{lab,snapshots} \
+    "${HOME}/mnt" "${HOME}/.local/bin"
+  cat >"${NVME_MNT}/dpl/README.md" <<'EOF'
+# dpl homelab (hot SSD)
+
+| Path | Role |
+|---|---|
+| `code/` | git clones (orgs below) |
+| `docker/` | Docker data-root (after sudo linux-homelab-root.sh) |
+| `agents/` | herdr / coding-agent worktrees |
+| `cache/` | bulky tool caches |
+| `tmp/` | scratch |
+
+OS disk stays configs (`~/.dotfiles`, `~/.config`). HDDs: `~/archive` (Volume A), `~/backup` (Volume B).
+`chia-temp/` on this volume is pre-existing — leave it.
+EOF
+}
+
+replace_link() {
+  # ln -sfn into an existing directory nests the link; replace the node instead.
+  local target="$1" link="$2"
+  if [[ -L "$link" || -f "$link" ]]; then
+    rm -f "$link"
+  elif [[ -d "$link" ]]; then
+    rmdir "$link" 2>/dev/null || return 1
+  fi
+  ln -sfn "$target" "$link"
+}
+
+link_home() {
+  mkdir -p "${HOME}/work" "${HOME}/git/work" "${HOME}/src"
+  ln -sfn "${NVME_MNT}/dpl" "${HOME}/lab"
+  ln -sfn "${NVME_MNT}/dpl/code" "${HOME}/code"
+  ln -sfn "${HDDA_MNT}/dpl" "${HOME}/archive"
+  ln -sfn "${HDDB_MNT}/dpl" "${HOME}/backup"
+  ln -sfn "${NVME_MNT}" "${HOME}/mnt/nvme"
+  ln -sfn "${HDDA_MNT}" "${HOME}/mnt/hdd-a"
+  ln -sfn "${HDDB_MNT}" "${HOME}/mnt/hdd-b"
+
+  replace_link "${NVME_MNT}/dpl/code/careernowbrands" "${HOME}/work/cnb"
+  replace_link "${NVME_MNT}/dpl/code/crashchat" "${HOME}/work/crashchat"
+  replace_link "${NVME_MNT}/dpl/code/ab-spectrum" "${HOME}/work/ab-spectrum"
+  replace_link "${NVME_MNT}/dpl/code/bhcoe" "${HOME}/work/bhcoe"
+  replace_link "${NVME_MNT}/dpl/code/dataplanelabs" "${HOME}/work/dpl"
+  replace_link "${NVME_MNT}/dpl/code/nextlevelbuilder" "${HOME}/work/nlb"
+  replace_link "${NVME_MNT}/dpl/code/personal" "${HOME}/work/personal"
+
+  ln -sfn "${HOME}/work/cnb" "${HOME}/git/work/cnb"
+  ln -sfn "${HOME}/work/crashchat" "${HOME}/git/work/crashchat"
+  ln -sfn "${HOME}/work/ab-spectrum" "${HOME}/git/work/ab-spectrum"
+  ln -sfn "${HOME}/work/bhcoe" "${HOME}/git/work/bhcoe"
+  ln -sfn "${HOME}/work/cnb" "${HOME}/src/careernowbrands"
+  ln -sfn "${HOME}/work/crashchat" "${HOME}/src/crashchat"
+  ln -sfn "${HOME}/work/ab-spectrum" "${HOME}/src/ab-spectrum"
+  ln -sfn "${HOME}/work/bhcoe" "${HOME}/src/bhcoe"
+  ln -sfn "${NVME_MNT}/dpl/code/dataplanelabs" "${HOME}/src/dataplanelabs"
+  ln -sfn "${NVME_MNT}/dpl/code/personal" "${HOME}/src/personal"
+  ln -sfn "${NVME_MNT}/dpl/code/nextlevelbuilder" "${HOME}/src/nextlevelbuilder"
+}
+
+relocate_existing() {
+  local src dest
+  # Move previously cloned trees off the OS disk if they are still real dirs.
+  for pair in \
+    "${HOME}/work/ab-spectrum:${NVME_MNT}/dpl/code/ab-spectrum" \
+    "${HOME}/work/bhcoe:${NVME_MNT}/dpl/code/bhcoe" \
+    "${HOME}/work/crashchat:${NVME_MNT}/dpl/code/crashchat" \
+    "${HOME}/work/cnb:${NVME_MNT}/dpl/code/careernowbrands"; do
+    src="${pair%%:*}"
+    dest="${pair##*:}"
+    if [[ -d "$src" && ! -L "$src" ]]; then
+      mkdir -p "$dest"
+      shopt -s dotglob nullglob
+      for item in "$src"/*; do
+        base="$(basename "$item")"
+        if [[ ! -e "$dest/$base" ]]; then
+          mv "$item" "$dest/"
+        fi
+      done
+      shopt -u dotglob nullglob
+      rmdir "$src" 2>/dev/null || rm -rf "$src"
+    fi
+  done
+}
+
+never_sleep() {
+  if have gsettings; then
+    gsettings set org.gnome.settings-daemon.plugins.power sleep-inactive-ac-type 'nothing' || true
+    gsettings set org.gnome.settings-daemon.plugins.power sleep-inactive-battery-type 'nothing' || true
+    gsettings set org.gnome.settings-daemon.plugins.power sleep-inactive-ac-timeout 0 || true
+    gsettings set org.gnome.desktop.session idle-delay 0 || true
+    gsettings set org.gnome.desktop.screensaver lock-enabled false || true
+    gsettings set org.gnome.desktop.screensaver idle-activation-enabled false || true
+  fi
+}
+
+install_user_sshd() {
+  local prefix="${HOME}/.local/opt/openssh"
+  if [[ ! -x "${prefix}/usr/sbin/sshd" ]]; then
+    log "extracting openssh-server for user sshd :2222"
+    local tmp
+    tmp="$(mktemp -d)"
+    (
+      cd "$tmp"
+      apt-get download openssh-server openssh-sftp-server
+      mkdir -p "$prefix"
+      for deb in *.deb; do dpkg-deb -x "$deb" "$prefix"; done
+    )
+    rm -rf "$tmp"
+  fi
+  mkdir -p "${HOME}/.config/sshd"
+  if [[ ! -f "${HOME}/.config/sshd/ssh_host_ed25519_key" ]]; then
+    ssh-keygen -t ed25519 -f "${HOME}/.config/sshd/ssh_host_ed25519_key" -N "" -C "dpl-sshd-host"
+  fi
+  # config is stowed; copy if not present
+  if [[ ! -e "${HOME}/.config/sshd/sshd_config" ]]; then
+    cp "${REPO_ROOT}/dotfiles/homelab/.config/sshd/sshd_config" "${HOME}/.config/sshd/sshd_config"
+  fi
+  mkdir -p "${HOME}/.ssh"
+  chmod 700 "${HOME}/.ssh"
+  touch "${HOME}/.ssh/authorized_keys"
+  chmod 600 "${HOME}/.ssh/authorized_keys"
+}
+
+install_compose() {
+  if have docker-compose || docker compose version >/dev/null 2>&1; then
+    log "compose present"
+    return 0
+  fi
+  local ver=v2.29.7
+  log "installing docker compose ${ver} binary"
+  curl -fsSL "https://github.com/docker/compose/releases/download/${ver}/docker-compose-linux-x86_64" \
+    -o "${HOME}/.local/bin/docker-compose"
+  chmod +x "${HOME}/.local/bin/docker-compose"
+}
+
+install_lazygit_link() {
+  if [[ -x "${HOME}/.local/share/mise/shims/lazygit" && ! -e "${HOME}/.local/bin/lazygit" ]]; then
+    ln -sfn "${HOME}/.local/share/mise/shims/lazygit" "${HOME}/.local/bin/lazygit"
+  fi
+}
+
+enable_units() {
+  systemctl --user daemon-reload
+  systemctl --user enable --now homelab-disks.service
+  systemctl --user enable --now homelab-nosleep.service
+  if [[ -x "${HOME}/.local/opt/openssh/usr/sbin/sshd" ]]; then
+    systemctl --user enable --now sshd-user.service || true
+  fi
+  # already installed last session
+  systemctl --user enable herdr-server.service 2>/dev/null || true
+  systemctl --user enable moshi-hook.service 2>/dev/null || true
+  mkdir -p "${HOME}/.config/systemd/user/herdr-server.service.d"
+  cat >"${HOME}/.config/systemd/user/herdr-server.service.d/restart.conf" <<'EOF'
+[Service]
+Restart=always
+RestartSec=3
+EOF
+  systemctl --user daemon-reload
+  systemctl --user restart herdr-server.service 2>/dev/null || true
+}
+
+nm_static_hint() {
+  # Persist the current address as manual DHCP-less config (applies next connect).
+  local con="Wired connection 1"
+  nmcli con show "$con" >/dev/null 2>&1 || return 0
+  nmcli con modify "$con" ipv4.method manual \
+    ipv4.addresses 192.168.1.193/24 \
+    ipv4.gateway 192.168.1.1 \
+    ipv4.dns "192.168.1.1 1.1.1.1" || true
+  log "NetworkManager $con set to 192.168.1.193/24 (takes effect on next connection/reboot)"
+}
+
+clone_one() {
+  local url="$1" dest="$2"
+  if [[ -d "$dest/.git" ]]; then
+    log "skip exists $dest"
+    return 0
+  fi
+  log "clone $url -> $dest"
+  GIT_LFS_SKIP_SMUDGE=1 git clone "$url" "$dest" || log "FAIL clone $url"
+}
+
+clone_recent() {
+  # org/path pairs: last 30 days as of 2026-08-26, minus already-home clones (dotfiles, skills).
+  local root="${NVME_MNT}/dpl/code"
+  local jobs=0
+  clone_jobs() { # url dest
+    clone_one "$1" "$2" &
+    jobs=$((jobs + 1))
+    if (( jobs >= 4 )); then
+      wait
+      jobs=0
+    fi
+  }
+
+  # personal (skip dotfiles/skills — live in $HOME)
+  clone_jobs git@github.com:vanducng/miu-cr.git            "$root/personal/miu-cr"
+  clone_jobs git@github.com:vanducng/pass.git               "$root/personal/pass"
+  clone_jobs git@github.com:vanducng/vd-cli.git             "$root/personal/vd-cli"
+  clone_jobs git@github.com:vanducng/oh-my-dsh.git          "$root/personal/oh-my-dsh"
+  clone_jobs git@github.com:vanducng/vanducng-dev.git       "$root/personal/vanducng-dev"
+  clone_jobs git@github.com:vanducng/infra-template.git     "$root/personal/infra-template"
+  clone_jobs git@github.com:vanducng/miu-db.git             "$root/personal/miu-db"
+  clone_jobs git@github.com:vanducng/udacimak.git           "$root/personal/udacimak"
+  clone_jobs git@github.com:vanducng/seo.git                "$root/personal/seo"
+  clone_jobs git@github.com:vanducng/braze-cli.git          "$root/personal/braze-cli"
+  clone_jobs git@github.com:vanducng/smartsheet-cli.git     "$root/personal/smartsheet-cli"
+  clone_jobs git@github.com:vanducng/voice-agent-cli.git    "$root/personal/voice-agent-cli"
+  clone_jobs git@github.com:vanducng/jira-cli.git           "$root/personal/jira-cli"
+
+  clone_jobs git@github.com:dataplanelabs/infra.git         "$root/dataplanelabs/infra"
+  clone_jobs git@github.com:dataplanelabs/annhien.git       "$root/dataplanelabs/annhien"
+  clone_jobs git@github.com:dataplanelabs/goclaw-config.git "$root/dataplanelabs/goclaw-config"
+  clone_jobs git@github.com:dataplanelabs/goclaw.git        "$root/dataplanelabs/goclaw"
+  clone_jobs git@github.com:dataplanelabs/code-review.git   "$root/dataplanelabs/code-review"
+
+  clone_jobs git@github.com:careernowbrands/cnb-infra.git              "$root/careernowbrands/cnb-infra"
+  clone_jobs git@github.com:careernowbrands/cnb-web-services.git       "$root/careernowbrands/cnb-web-services"
+  clone_jobs git@github.com:careernowbrands/cnb-ds-astro.git           "$root/careernowbrands/cnb-ds-astro"
+  clone_jobs git@github.com:careernowbrands/cnb-rocket-marketingtool.git "$root/careernowbrands/cnb-rocket-marketingtool"
+  clone_jobs git@github.com:careernowbrands/cdljobnow-bp.git           "$root/careernowbrands/cdljobnow-bp"
+  clone_jobs git@github.com:careernowbrands/cnb-polaris.git            "$root/careernowbrands/cnb-polaris"
+  clone_jobs git@github.com:careernowbrands/cnb-core.git               "$root/careernowbrands/cnb-core"
+  clone_jobs git@github.com:careernowbrands/cnb-qa-automation.git      "$root/careernowbrands/cnb-qa-automation"
+  clone_jobs git@github.com:careernowbrands/cnb-rover.git              "$root/careernowbrands/cnb-rover"
+  clone_jobs git@github.com:careernowbrands/cnb-ds-dbt-order-form.git  "$root/careernowbrands/cnb-ds-dbt-order-form"
+  clone_jobs git@github.com:careernowbrands/csn-schoolsnow.git         "$root/careernowbrands/csn-schoolsnow"
+  clone_jobs git@github.com:careernowbrands/csn-api.git                "$root/careernowbrands/csn-api"
+  clone_jobs git@github.com:careernowbrands/cnb-driverwave.git         "$root/careernowbrands/cnb-driverwave"
+  clone_jobs git@github.com:careernowbrands/niche-career-now.git       "$root/careernowbrands/niche-career-now"
+  clone_jobs git@github.com:careernowbrands/csn-ops.git                "$root/careernowbrands/csn-ops"
+  clone_jobs git@github.com:careernowbrands/truck-warrior.git          "$root/careernowbrands/truck-warrior"
+  clone_jobs git@github.com:careernowbrands/cnb-ds-infra.git           "$root/careernowbrands/cnb-ds-infra"
+  clone_jobs git@github.com:careernowbrands/cnb-ds-datahub.git         "$root/careernowbrands/cnb-ds-datahub"
+  clone_jobs git@github.com:careernowbrands/it-ops-scripts.git         "$root/careernowbrands/it-ops-scripts"
+  clone_jobs git@github.com:careernowbrands/cnb-meilisearch.git        "$root/careernowbrands/cnb-meilisearch"
+
+  clone_jobs git@github.com:AB-Spectrum/data-platform.git "$root/ab-spectrum/data-platform"
+  clone_jobs git@github.com:AB-Spectrum/infra.git         "$root/ab-spectrum/infra"
+  clone_jobs git@github.com:AB-Spectrum/tobycli.git       "$root/ab-spectrum/tobycli"
+
+  clone_jobs git@github.com:BHCOE/harmony.git    "$root/bhcoe/harmony"
+  clone_jobs git@github.com:BHCOE/jade-infra.git "$root/bhcoe/jade-infra"
+
+  clone_jobs git@github.com:CrashChat-ai/mio.git           "$root/crashchat/mio"
+  clone_jobs git@github.com:CrashChat-ai/channel-pulse.git "$root/crashchat/channel-pulse"
+  clone_jobs git@github.com:CrashChat-ai/crashvault.git    "$root/crashchat/crashvault"
+  clone_jobs git@github.com:CrashChat-ai/crashchat-infra.git "$root/crashchat/infra"
+
+  clone_jobs git@github.com:nextlevelbuilder/dewee.git              "$root/nextlevelbuilder/dewee"
+  clone_jobs git@github.com:nextlevelbuilder/agentwiki.git          "$root/nextlevelbuilder/agentwiki"
+  clone_jobs git@github.com:nextlevelbuilder/ui-ux-pro-max-skill.git "$root/nextlevelbuilder/ui-ux-pro-max-skill"
+  clone_jobs git@github.com:nextlevelbuilder/goclaw.git             "$root/nextlevelbuilder/goclaw"
+  clone_jobs git@github.com:nextlevelbuilder/goclaw-docs.git        "$root/nextlevelbuilder/goclaw-docs"
+  clone_jobs git@github.com:nextlevelbuilder/agentbrain-cli.git     "$root/nextlevelbuilder/agentbrain-cli"
+  clone_jobs git@github.com:nextlevelbuilder/builder-hub-system.git "$root/nextlevelbuilder/builder-hub-system"
+
+  wait
+}
+
+stow_homelab() {
+  if have stow; then
+    (cd "${REPO_ROOT}/dotfiles" && stow --no-folding -D -t "${HOME}" homelab 2>/dev/null || true
+      stow --no-folding -t "${HOME}" homelab)
+  fi
+  chmod +x "${HOME}/.config/homelab/mount-disks" 2>/dev/null || true
+}
+
+main() {
+  mkdir -p "${HOME}/.local/bin" "${HOME}/.config/sshd"
+  stow_homelab
+  ensure_disks
+  mk_lab_dirs
+  relocate_existing
+  link_home
+  never_sleep
+  install_user_sshd
+  install_compose
+  install_lazygit_link
+  enable_units
+  nm_static_hint
+  if [[ "${SKIP_CLONE:-0}" != 1 ]]; then
+    clone_recent
+  else
+    log "SKIP_CLONE=1 — not cloning"
+  fi
+  log "done"
+  log "  hot SSD:  ${HOME}/lab  -> ${NVME_MNT}/dpl"
+  log "  archive:  ${HOME}/archive"
+  log "  backup:   ${HOME}/backup"
+  log "  ssh user: $(hostname -I | awk '{print $1}'):2222  (sshd :22 needs sudo linux-homelab-root.sh)"
+  log "  never-sleep user inhibit on; system sleep mask needs that same sudo script"
+  log "  docker engine needs: sudo -E ${REPO_ROOT}/scripts/linux-homelab-root.sh"
+}
+
+main "$@"

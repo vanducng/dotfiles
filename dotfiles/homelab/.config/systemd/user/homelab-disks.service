@@ -1,0 +1,13 @@
+[Unit]
+Description=Mount homelab NVMe/HDD via udisks
+After=graphical-session-pre.target
+DefaultDependencies=no
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=%h/.config/homelab/mount-disks
+TimeoutStartSec=120
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# Mount extra disks via udisks (no sudo). Idempotent: already-mounted is OK.
+set -u
+mount_one() {
+  local dev="$1"
+  if findmnt -n -S "$dev" >/dev/null 2>&1; then
+    return 0
+  fi
+  udisksctl mount -b "$dev" >/dev/null
+}
+
+mount_one /dev/disk/by-uuid/3aaf62c7-54e7-4e19-a588-c9f9f20deb0a
+mount_one /dev/disk/by-uuid/529001a1-d4bd-4930-9053-7ab4875e856d
+mount_one /dev/disk/by-uuid/fcf77474-1737-4790-9a14-8ee58cc45870

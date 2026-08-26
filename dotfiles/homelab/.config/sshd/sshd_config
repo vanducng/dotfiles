@@ -1,0 +1,20 @@
+# Unprivileged sshd. Listen on 2222 until root installs openssh-server on :22.
+Port 2222
+ListenAddress 0.0.0.0
+ListenAddress ::
+HostKey /home/ubuntu/.config/sshd/ssh_host_ed25519_key
+PidFile /home/ubuntu/.config/sshd/sshd.pid
+AuthorizedKeysFile .ssh/authorized_keys
+PasswordAuthentication no
+KbdInteractiveAuthentication no
+ChallengeResponseAuthentication no
+PubkeyAuthentication yes
+PermitRootLogin no
+UsePAM no
+X11Forwarding no
+PrintMotd no
+AcceptEnv LANG LC_*
+AllowTcpForwarding yes
+ClientAliveInterval 30
+ClientAliveCountMax 3
+Subsystem sftp /home/ubuntu/.local/opt/openssh/usr/lib/openssh/sftp-server
