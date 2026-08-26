@@ -1,0 +1,52 @@
+# Copy to ~/.gitconfig (do not commit the copy). Personal default + company gitdir.
+#
+#   cp ~/.config/git/gitconfig.linux.example ~/.gitconfig
+#   # then edit name/email if needed
+#
+# Company clones belong under ~/src/careernowbrands/ or ~/work/.
+
+[user]
+	name = Duc Nguyen
+	email = me@vanducng.dev
+	useConfigOnly = true
+
+[includeIf "gitdir:~/src/careernowbrands/"]
+	path = ~/.config/git/work.gitconfig
+[includeIf "gitdir:~/work/"]
+	path = ~/.config/git/work.gitconfig
+[includeIf "gitdir:**/careernowbrands/"]
+	path = ~/.config/git/work.gitconfig
+
+[core]
+	editor = nvim
+	excludesfile = ~/.gitignore_global
+	autocrlf = input
+
+[init]
+	defaultBranch = main
+
+[pull]
+	rebase = true
+
+[push]
+	autoSetupRemote = true
+	default = simple
+
+[fetch]
+	prune = true
+
+[rebase]
+	autoStash = true
+
+[color]
+	ui = auto
+
+[diff]
+	algorithm = histogram
+	colorMoved = default
+
+[merge]
+	conflictstyle = zdiff3
+
+[include]
+	path = ~/.config/git/delta.gitconfig

@@ -1,0 +1,34 @@
+# Linux CLI tools for a sudo-free bootstrap (Ubuntu 22.04+).
+# Learned on host `dpl`:
+# - `aqua:tmux/tmux` is not in the aqua registry — use mise core `tmux`
+# - `git-delta` is not a mise registry name — use `aqua:dandavison/delta`
+# - `python = "3"` in the shared config can resolve to 3.14; pin 3.12 here
+
+[tools]
+python = "3.12"
+node = "22"
+go = "1.23.4"
+lua = "5.4"
+tmux = "latest"
+usage = "latest"
+"aqua:neovim/neovim" = "latest"
+"aqua:BurntSushi/ripgrep" = "latest"
+"aqua:sharkdp/fd" = "latest"
+"aqua:jqlang/jq" = "latest"
+"aqua:starship/starship" = "latest"
+"aqua:jesseduffield/lazygit" = "latest"
+"aqua:dandavison/delta" = "latest"
+"aqua:direnv/direnv" = "latest"
+"aqua:atuinsh/atuin" = "latest"
+"aqua:ajeetdsouza/zoxide" = "latest"
+"aqua:FiloSottile/age" = "latest"
+"aqua:cli/cli" = "latest"
+"aqua:sxyazi/yazi" = "latest"
+"aqua:mikefarah/yq" = "latest"
+"aqua:koalaman/shellcheck" = "latest"
+"aqua:sharkdp/bat" = "latest"
+"aqua:eza-community/eza" = "latest"
+"aqua:junegunn/fzf" = "latest"
+"aqua:hashicorp/vault" = "latest"
+"aqua:LuaLS/lua-language-server" = "latest"
+"github:ogulcancelik/herdr" = "latest"

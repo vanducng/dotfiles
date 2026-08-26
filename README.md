@@ -20,6 +20,19 @@ Full setup guide, keybindings, and workflows: **[dotfiles.vanducng.dev](https://
 
 Install configs with `make stow-install`, or one tool with `make stow-<tool>` (for example `make stow-grok`).
 
+### Linux (Ubuntu 22.04+)
+
+User-space bootstrap — no sudo, no Homebrew, no Nix at runtime:
+
+```bash
+git clone https://github.com/vanducng/dotfiles.git ~/.dotfiles
+cd ~/.dotfiles
+make bootstrap-linux
+# add to ~/.bashrc:  source ~/.config/shell/linux.sh
+```
+
+Full Linux notes (optional apt packages, git identity, Grok opt-in): [installation guide](https://dotfiles.vanducng.dev/installation/).
+
 ## Nix profiles
 
 The flake provides a shared Home Manager profile for macOS and Linux. The

@@ -7,17 +7,48 @@ Complete step-by-step installation guide for the development environment.
 ## 📋 Prerequisites
 
 ### System Requirements
-- **macOS**: 12.0 (Monterey) or later
-- **Homebrew**: Package manager for macOS
+- **macOS**: 12.0 (Monterey) or later (Homebrew + Ghostty/Kitty)
+- **Linux**: Ubuntu 22.04+ (user-space bootstrap; sudo optional)
 - **Git**: Version control system
-- **Terminal**: Terminal emulator (Ghostty, Kitty, or built-in Terminal)
+- **Terminal**: Ghostty or Kitty on macOS; Kitty (user-space) on Linux
 
 ### Hardware Requirements
 - **RAM**: 8GB minimum, 16GB recommended
 - **Storage**: 10GB free space for tools and configurations
-- **CPU**: Intel or Apple Silicon Mac
+- **CPU**: Intel, Apple Silicon, or x86_64 Linux
 
-## 🛠️ Step 1: Install Homebrew
+## Linux (Ubuntu 22.04+)
+
+This path does **not** use Homebrew, Nix, or sudo. It installs CLIs into `~/.local` and `mise`, then stows portable configs.
+
+Failures already baked in: `aqua:tmux/tmux` is not in the aqua registry (use mise `tmux`); `git-delta` is not a mise tool name (use `aqua:dandavison/delta`); do not auto-stow `grok` over a live Grok TUI `~/.grok/` tree.
+
+```bash
+git clone https://github.com/vanducng/dotfiles.git ~/.dotfiles
+cd ~/.dotfiles
+make bootstrap-linux
+```
+
+Add this to `~/.bashrc` (do not replace the distro file):
+
+```bash
+# ~/.config/shell/linux.sh is stowed by the shell-linux package
+[[ -f ~/.config/shell/linux.sh ]] && source ~/.config/shell/linux.sh
+```
+
+Copy the git identity template (not committed as `~/.gitconfig`):
+
+```bash
+cp ~/.config/git/gitconfig.linux.example ~/.gitconfig
+# default email: me@vanducng.dev
+# company clones: ~/src/careernowbrands/ or ~/work/ → duc@careernowbrands.com
+```
+
+Optional (needs sudo): `mosh`, `zathura`, `taskwarrior`, and `chsh -s` to zsh. Grok config: `make stow-grok` is opt-in after backing up `~/.grok/auth.json`.
+
+Then continue from [Step 5](#-step-5-install-dotfiles) if you only needed the Linux extras above — `make bootstrap-linux` already ran `stow-install`.
+
+## 🛠️ Step 1: Install Homebrew (macOS)
 
 ```bash
 # Install Homebrew

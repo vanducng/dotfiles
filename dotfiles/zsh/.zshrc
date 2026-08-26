@@ -8,6 +8,12 @@ fi
 export EDITOR=nvim
 export VISUAL="$EDITOR"
 export GPG_TTY="${GPG_TTY:-$(tty 2>/dev/null)}"
+
+# Portable Linux env (stowed from shell-linux). Darwin keeps Homebrew paths below.
+if [[ "$(uname -s)" != Darwin ]] && [[ -f "${XDG_CONFIG_HOME:-$HOME/.config}/shell/linux.sh" ]]; then
+  # shellcheck disable=SC1090
+  source "${XDG_CONFIG_HOME:-$HOME/.config}/shell/linux.sh"
+fi
 export ZSH="$HOME/.oh-my-zsh"
 ZSH_THEME="powerlevel10k/powerlevel10k" 
 ZVM_VI_INSERT_ESCAPE_BINDKEY=jk

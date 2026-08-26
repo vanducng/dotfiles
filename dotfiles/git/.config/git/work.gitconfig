@@ -1,0 +1,6 @@
+# CareerNow Brands / company identity.
+# Applied via includeIf gitdir from ~/.gitconfig (see gitconfig.linux.example).
+# Git 2.34 on Ubuntu 22.04 does not reliably honor hasconfig:remote.*.url.
+
+[user]
+	email = duc@careernowbrands.com
