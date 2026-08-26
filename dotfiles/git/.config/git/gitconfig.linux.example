@@ -46,7 +46,7 @@
 	colorMoved = default
 
 [merge]
-	conflictstyle = zdiff3
+	conflictstyle = diff3
 
 [include]
 	path = ~/.config/git/delta.gitconfig
