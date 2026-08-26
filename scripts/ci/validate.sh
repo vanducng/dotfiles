@@ -44,6 +44,11 @@ validate_json() {
 
 validate_yaml() {
     local file="$1"
+    # omdsh plugin manifests use custom !!js tags; not portable YAML 1.1.
+    if grep -qE '^[^#]*!!js' "$file" 2>/dev/null; then
+        log_warning "Skipping YAML with !!js tags: $file"
+        return
+    fi
     if command -v yq >/dev/null 2>&1; then
         if yq eval '.' "$file" >/dev/null 2>&1; then
             log_success "Valid YAML: $file"
@@ -169,6 +174,7 @@ validate_agent_hook_commands() {
     local output
     if output=$(python3 - dotfiles/codex/.codex/hooks.json dotfiles/claude/.claude/settings.json dotfiles/agents/.factory/hooks.json 2>&1 <<'PY'
 import json
+import os
 import pathlib
 import shlex
 import sys
@@ -190,7 +196,16 @@ for name in sys.argv[1:]:
                     continue
                 if not executable.startswith("/"):
                     errors.append(f"{path}: {event}: PATH-dependent command: {command}")
-                elif not pathlib.Path(executable).exists():
+                    continue
+                darwin_only = (
+                    executable.startswith("/opt/homebrew/")
+                    or executable.startswith("/usr/local/opt/")
+                    or executable.startswith("/Users/")
+                    or executable in {"/usr/bin/afplay", "/usr/bin/pbcopy", "/usr/bin/pbpaste"}
+                )
+                if darwin_only and os.uname().sysname != "Darwin":
+                    continue
+                if not pathlib.Path(executable).exists():
                     errors.append(f"{path}: {event}: missing executable: {executable}")
 
 if errors:

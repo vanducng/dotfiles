@@ -62,6 +62,7 @@ Untitled.claude/settings.local.json
 # above is meant for project-local .claude/ dirs, not this one.
 !dotfiles/agents/.claude/
 plans/
+.workbench/
 
 # Astro / Starlight docs build output
 node_modules/
