@@ -1,0 +1,6 @@
+# Jade Health (formerly BHCOE) identity.
+# Commits on BHCOE/harmony and jade-infra use the CareerNow address.
+# Clone roots: ~/work/bhcoe/, ~/git/work/bhcoe/
+
+[user]
+	email = duc@careernowbrands.com

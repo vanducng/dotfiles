@@ -1,0 +1,6 @@
+# CrashChat.ai identity.
+# Recent commits on CrashChat-ai/mio and crashchat-core use the personal address.
+# Clone roots: ~/work/crashchat/, ~/git/work/crashchat/
+
+[user]
+	email = me@vanducng.dev

@@ -12,6 +12,9 @@ pass() { echo "OK: $*"; }
 [[ -f "$ROOT/dotfiles/mise/.config/mise/conf.d/linux.toml" ]] && pass "linux.toml exists" || fail "missing linux.toml"
 [[ -f "$ROOT/dotfiles/shell-linux/.config/shell/linux.sh" ]] && pass "linux.sh exists" || fail "missing linux.sh"
 [[ -f "$ROOT/dotfiles/git/.config/git/work.gitconfig" ]] && pass "work.gitconfig exists" || fail "missing work.gitconfig"
+[[ -f "$ROOT/dotfiles/git/.config/git/work-crashchat.gitconfig" ]] && pass "work-crashchat.gitconfig exists" || fail "missing work-crashchat.gitconfig"
+[[ -f "$ROOT/dotfiles/git/.config/git/work-ab-spectrum.gitconfig" ]] && pass "work-ab-spectrum.gitconfig exists" || fail "missing work-ab-spectrum.gitconfig"
+[[ -f "$ROOT/dotfiles/git/.config/git/work-bhcoe.gitconfig" ]] && pass "work-bhcoe.gitconfig exists" || fail "missing work-bhcoe.gitconfig"
 
 bash -n "$ROOT/scripts/linux-deps.sh" && pass "linux-deps.sh parses" || fail "linux-deps.sh syntax"
 bash -n "$ROOT/dotfiles/shell-linux/.config/shell/linux.sh" && pass "linux.sh parses" || fail "linux.sh syntax"
@@ -35,9 +38,35 @@ else
 fi
 
 if grep -q 'duc@careernowbrands.com' "$ROOT/dotfiles/git/.config/git/work.gitconfig"; then
-  pass "work.gitconfig has company email"
+  pass "work.gitconfig has CareerNow email"
 else
-  fail "work.gitconfig missing company email"
+  fail "work.gitconfig missing CareerNow email"
+fi
+if grep -q 'me@vanducng.dev' "$ROOT/dotfiles/git/.config/git/work-crashchat.gitconfig"; then
+  pass "work-crashchat.gitconfig has personal email"
+else
+  fail "work-crashchat.gitconfig missing personal email"
+fi
+if grep -q 'duc@yds.services' "$ROOT/dotfiles/git/.config/git/work-ab-spectrum.gitconfig"; then
+  pass "work-ab-spectrum.gitconfig has YDS email"
+else
+  fail "work-ab-spectrum.gitconfig missing YDS email"
+fi
+if grep -q 'duc@careernowbrands.com' "$ROOT/dotfiles/git/.config/git/work-bhcoe.gitconfig"; then
+  pass "work-bhcoe.gitconfig has CareerNow email"
+else
+  fail "work-bhcoe.gitconfig missing CareerNow email"
+fi
+example="$ROOT/dotfiles/git/.config/git/gitconfig.linux.example"
+if grep -q 'gitdir:~/work/crashchat/' "$example" && grep -q 'gitdir:~/work/ab-spectrum/' "$example" && grep -q 'gitdir:~/work/bhcoe/' "$example"; then
+  pass "gitconfig.linux.example has per-company includeIf"
+else
+  fail "gitconfig.linux.example missing per-company includeIf"
+fi
+if grep -qE 'includeIf "gitdir:~/work/"' "$example"; then
+  fail "gitconfig.linux.example still has catch-all ~/work/ includeIf"
+else
+  pass "gitconfig.linux.example has no catch-all ~/work/ includeIf"
 fi
 
 folders="$(make --no-print-directory -s -C "$ROOT" PLATFORM=Linux stow-folders)"

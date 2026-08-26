@@ -1,9 +1,16 @@
-# Copy to ~/.gitconfig (do not commit the copy). Personal default + company gitdir.
+# Copy to ~/.gitconfig (do not commit the copy). Personal default + per-company gitdir.
 #
 #   cp ~/.config/git/gitconfig.linux.example ~/.gitconfig
 #   # then edit name/email if needed
 #
-# Company clones belong under ~/src/careernowbrands/ or ~/work/.
+# Clone roots (tmux sessionizer uses ~/work/<company>):
+#   personal default          → me@vanducng.dev
+#   ~/work/cnb                → duc@careernowbrands.com
+#   ~/work/crashchat          → me@vanducng.dev
+#   ~/work/ab-spectrum        → duc@yds.services
+#   ~/work/bhcoe              → duc@careernowbrands.com
+# macOS also uses ~/git/work/<company>. Do not use a catch-all ~/work/ includeIf
+# (it would stamp CareerNow onto every client). Git 2.34: gitdir only, no URL match.
 
 [user]
 	name = Duc Nguyen
@@ -12,10 +19,33 @@
 
 [includeIf "gitdir:~/src/careernowbrands/"]
 	path = ~/.config/git/work.gitconfig
-[includeIf "gitdir:~/work/"]
+[includeIf "gitdir:~/work/cnb/"]
+	path = ~/.config/git/work.gitconfig
+[includeIf "gitdir:~/git/work/cnb/"]
 	path = ~/.config/git/work.gitconfig
 [includeIf "gitdir:**/careernowbrands/"]
 	path = ~/.config/git/work.gitconfig
+
+[includeIf "gitdir:~/work/crashchat/"]
+	path = ~/.config/git/work-crashchat.gitconfig
+[includeIf "gitdir:~/git/work/crashchat/"]
+	path = ~/.config/git/work-crashchat.gitconfig
+[includeIf "gitdir:~/src/crashchat/"]
+	path = ~/.config/git/work-crashchat.gitconfig
+
+[includeIf "gitdir:~/work/ab-spectrum/"]
+	path = ~/.config/git/work-ab-spectrum.gitconfig
+[includeIf "gitdir:~/git/work/ab-spectrum/"]
+	path = ~/.config/git/work-ab-spectrum.gitconfig
+[includeIf "gitdir:~/src/ab-spectrum/"]
+	path = ~/.config/git/work-ab-spectrum.gitconfig
+
+[includeIf "gitdir:~/work/bhcoe/"]
+	path = ~/.config/git/work-bhcoe.gitconfig
+[includeIf "gitdir:~/git/work/bhcoe/"]
+	path = ~/.config/git/work-bhcoe.gitconfig
+[includeIf "gitdir:~/src/bhcoe/"]
+	path = ~/.config/git/work-bhcoe.gitconfig
 
 [core]
 	editor = nvim
