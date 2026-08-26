@@ -40,7 +40,7 @@ export default defineConfig({
         { label: 'Overview', link: '/' },
         {
           label: 'Getting Started',
-          items: ['installation', 'quick-reference'],
+          items: ['installation', 'linux-desktop', 'quick-reference'],
         },
         {
           label: 'Core Tools',

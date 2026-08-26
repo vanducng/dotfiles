@@ -49,6 +49,8 @@ cp ~/.config/git/gitconfig.linux.example ~/.gitconfig
 
 Optional (needs sudo): `mosh`, `zathura`, `taskwarrior`, and `chsh -s` to zsh. Grok config: `make stow-grok` is opt-in after backing up `~/.grok/auth.json`.
 
+Desktop (Sway = i3 on Wayland, Ghostty, same skhd/Karabiner keys): `make linux-desktop`. Details in [Linux desktop](/linux-desktop).
+
 Then continue from [Step 5](#-step-5-install-dotfiles) if you only needed the Linux extras above — `make bootstrap-linux` already ran `stow-install`.
 
 ## 🛠️ Step 1: Install Homebrew (macOS)

@@ -1,0 +1,21 @@
+#!/usr/bin/env sh
+# Launch sway with user-space prefix (deb extract) if system sway is absent.
+# Nested smoke test: WLR_BACKENDS=wayland start-sway
+set -eu
+
+export XDG_CURRENT_DESKTOP="${XDG_CURRENT_DESKTOP:-sway}"
+export XDG_SESSION_TYPE="${XDG_SESSION_TYPE:-wayland}"
+export XDG_SESSION_DESKTOP="${XDG_SESSION_DESKTOP:-sway}"
+
+PREFIX="${HOME}/.local/opt/wm"
+if [ -x "${PREFIX}/usr/bin/sway" ]; then
+  export PATH="${PREFIX}/usr/bin:${PATH}"
+  export LD_LIBRARY_PATH="${PREFIX}/usr/lib/x86_64-linux-gnu:${PREFIX}/usr/lib:${LD_LIBRARY_PATH:-}"
+  export XDG_DATA_DIRS="${PREFIX}/usr/share:${HOME}/.local/share:${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
+fi
+
+# RTX 2070 is on nouveau here. If you later install proprietary nvidia:
+#   export WLR_NO_HARDWARE_CURSORS=1
+#   export WLR_RENDERER=gles2
+
+exec sway "$@"

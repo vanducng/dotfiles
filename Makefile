@@ -2,7 +2,7 @@ COMMON_STOW_FOLDERS=tmux herdr pi starship bin vrapperrc yazi zathura lazygit nv
 MACOS_STOW_FOLDERS=zsh kitty skhd yabai borders ghostty claude codex grok cursor hammerspoon karabiner rift vscode launchd gopass
 # Portable extras for Linux. Do not auto-stow `grok`: the Grok TUI installer owns ~/.grok.
 # Opt in with `make stow-grok` after backing up auth.json / sessions.
-LINUX_STOW_EXTRAS=kitty claude codex cursor gopass shell-linux
+LINUX_STOW_EXTRAS=kitty claude codex cursor gopass shell-linux ghostty sway waybar wofi mako kanata
 ALL_STOW_FOLDERS=$(sort $(COMMON_STOW_FOLDERS) $(MACOS_STOW_FOLDERS) $(LINUX_STOW_EXTRAS))
 PLATFORM ?= $(shell uname -s)
 ifneq ($(filter Darwin macos,$(PLATFORM)),)
@@ -12,7 +12,7 @@ STOW_FOLDERS=$(COMMON_STOW_FOLDERS) $(LINUX_STOW_EXTRAS)
 endif
 SHELL := /bin/bash
 
-.PHONY: help stow-folders stow-install stow-uninstall stow-status setup-herdr test validate deps platform-test script-test linux-deps bootstrap-linux
+.PHONY: help stow-folders stow-install stow-uninstall stow-status setup-herdr test validate deps platform-test script-test linux-deps linux-desktop bootstrap-linux
 
 help:
 	@echo "Dotfiles Management"
@@ -24,6 +24,7 @@ help:
 	@echo "  make stow-<tool>     - Install specific tool"
 	@echo "  make unstow-<tool>   - Remove specific tool"
 	@echo "  make linux-deps      - User-space Linux CLI bootstrap (no sudo)"
+	@echo "  make linux-desktop   - Sway/Ghostty/waybar desktop (sudo optional)"
 	@echo "  make bootstrap-linux - linux-deps + stow-install"
 	@echo "  make setup-herdr     - Install Herdr's Droid integration"
 	@echo ""
@@ -80,6 +81,9 @@ $(foreach tool,$(ALL_STOW_FOLDERS),$(eval $(call make-stow-target,$(tool))))
 
 linux-deps:
 	@./scripts/linux-deps.sh
+
+linux-desktop:
+	@./scripts/linux-desktop.sh
 
 bootstrap-linux: linux-deps stow-install
 	@echo "Linux bootstrap complete. source ~/.config/shell/linux.sh"
