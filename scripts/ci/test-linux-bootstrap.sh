@@ -19,6 +19,18 @@ pass() { echo "OK: $*"; }
 bash -n "$ROOT/scripts/linux-deps.sh" && pass "linux-deps.sh parses" || fail "linux-deps.sh syntax"
 bash -n "$ROOT/scripts/linux-desktop.sh" && pass "linux-desktop.sh parses" || fail "linux-desktop.sh syntax"
 bash -n "$ROOT/scripts/linux-homelab.sh" && pass "linux-homelab.sh parses" || fail "linux-homelab.sh syntax"
+bash -n "$ROOT/scripts/pi-home-layout.sh" && pass "pi-home-layout.sh parses" || fail "pi-home-layout.sh syntax"
+bash -n "$ROOT/dotfiles/homelab/.config/homelab/relocate-stores" && pass "relocate-stores parses" || fail "relocate-stores syntax"
+relocate_stores="$ROOT/dotfiles/homelab/.config/homelab/relocate-stores"
+if grep -qE 'relocate "\$\{HOME\}/\.pi"' "$relocate_stores"; then
+  fail "relocate-stores still relocates whole ~/.pi"
+elif grep -q '.pi/agent/npm' "$relocate_stores" \
+  && grep -q '.pi/agent/sessions' "$relocate_stores" \
+  && grep -q '.pi/agent/git' "$relocate_stores"; then
+  pass "relocate-stores nests pi npm/sessions/git"
+else
+  fail "relocate-stores missing nested pi runtime dirs"
+fi
 bash -n "$ROOT/scripts/linux-homelab-root.sh" && pass "linux-homelab-root.sh parses" || fail "linux-homelab-root.sh syntax"
 bash -n "$ROOT/dotfiles/bin/.local/bin/dpl-remote" && pass "dpl-remote parses" || fail "dpl-remote syntax"
 bash -n "$ROOT/dotfiles/homelab/.config/homelab/cdp-chrome" && pass "cdp-chrome parses" || fail "cdp-chrome syntax"

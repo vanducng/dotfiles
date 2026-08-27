@@ -1,6 +1,6 @@
 {
   "defaultProvider": "cliproxyapi",
-  "defaultModel": "claude-fable-5",
+  "defaultModel": "grok-4.6",
   "defaultThinkingLevel": "xhigh",
   "lastChangelogVersion": "0.84.2",
   "images": {
