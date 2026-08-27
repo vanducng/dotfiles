@@ -4,12 +4,12 @@
 #   # then edit name/email if needed
 #
 # Clone root is ~/work/git/<org> (970 mounted at /media/ubuntu/work).
-#   personal default               → me@vanducng.dev
-#   ~/work/git/cnb                 → duc@careernowbrands.com
-#   ~/work/git/crashchat           → me@vanducng.dev
-#   ~/work/git/ab-spectrum         → duc@yds.services
-#   ~/work/git/bhcoe               → duc@careernowbrands.com
-# Do not use a catch-all ~/work/ includeIf (it would stamp CareerNow onto every client).
+#   personal default               → personal git identity
+#   ~/work/git/cnb                 → CNB work identity
+#   ~/work/git/crashchat           → personal git identity
+#   ~/work/git/ab-spectrum         → ABS work identity
+#   ~/work/git/bhcoe               → CNB work identity
+# Do not use a catch-all ~/work/ includeIf (it would stamp one client onto every other).
 # Git 2.34: gitdir is canonicalized to /media/ubuntu/work/git/<org>/.
 
 [user]

@@ -20,6 +20,45 @@ bash -n "$ROOT/scripts/linux-deps.sh" && pass "linux-deps.sh parses" || fail "li
 bash -n "$ROOT/scripts/linux-desktop.sh" && pass "linux-desktop.sh parses" || fail "linux-desktop.sh syntax"
 bash -n "$ROOT/scripts/linux-homelab.sh" && pass "linux-homelab.sh parses" || fail "linux-homelab.sh syntax"
 bash -n "$ROOT/scripts/linux-homelab-root.sh" && pass "linux-homelab-root.sh parses" || fail "linux-homelab-root.sh syntax"
+bash -n "$ROOT/dotfiles/bin/.local/bin/dpl-remote" && pass "dpl-remote parses" || fail "dpl-remote syntax"
+bash -n "$ROOT/dotfiles/homelab/.config/homelab/cdp-chrome" && pass "cdp-chrome parses" || fail "cdp-chrome syntax"
+bash -n "$ROOT/dotfiles/homelab/.config/homelab/install-chrome" && pass "install-chrome parses" || fail "install-chrome syntax"
+bash -n "$ROOT/dotfiles/homelab/.config/homelab/install-tailscale" && pass "install-tailscale parses" || fail "install-tailscale syntax"
+[[ -f "$ROOT/dotfiles/homelab/.config/systemd/user/homelab-cdp.service" ]] && pass "homelab-cdp.service exists" || fail "missing homelab-cdp.service"
+[[ -f "$ROOT/dotfiles/homelab/.config/systemd/user/homelab-tailscale.service" ]] && pass "homelab-tailscale.service exists" || fail "missing homelab-tailscale.service"
+[[ -f "$ROOT/dotfiles/homelab/.config/homelab/REMOTE.md" ]] && pass "REMOTE.md exists" || fail "missing REMOTE.md"
+remote_cli="$ROOT/dotfiles/bin/.local/bin/dpl-remote"
+mac_config="$(WAN6_IP=2001:db8::10 LAN_IP=192.0.2.10 bash "$remote_cli" mac-config)"
+shell_block="$(printf '%s\n' "$mac_config" | awk '/^Host dpl dpl-v6 dpl-ts$/{capture=1; next} /^Host dpl$/{capture=0} capture')"
+if grep -q 'remote-debugging-address=' "$ROOT/dotfiles/homelab/.config/homelab/cdp-chrome" \
+  && grep -q 'CDP_ADDR:-127.0.0.1' "$ROOT/dotfiles/homelab/.config/homelab/cdp-chrome" \
+  && grep -q '^Host dpl-ts-tunnel$' <<<"$mac_config" \
+  && grep -q 'LocalForward 127.0.0.1:9222 127.0.0.1:9222' <<<"$mac_config" \
+  && ! grep -q 'LocalForward' <<<"$shell_block"; then
+  pass "CDP is loopback-only with dedicated SSH tunnel aliases"
+else
+  fail "CDP must bind loopback and use dedicated SSH tunnel aliases"
+fi
+if grep -q 'XDG_RUNTIME_DIR=' "$remote_cli" \
+  && grep -q 'DBUS_SESSION_BUS_ADDRESS=' "$remote_cli"; then
+  pass "dpl-remote initializes the user systemd bus over SSH"
+else
+  fail "dpl-remote must initialize the user systemd bus over SSH"
+fi
+sshd_config="$ROOT/dotfiles/homelab/.config/sshd/sshd_config"
+if grep -q '^PermitUserEnvironment yes$' "$sshd_config" \
+  && ! grep -qE '^SetEnv PATH=.*(/Users/|/home/)' "$sshd_config" \
+  && grep -q '\.ssh/environment' "$ROOT/scripts/linux-homelab.sh"; then
+  pass "user SSH PATH is generated from HOME at install time"
+else
+  fail "user SSH PATH must be generated from HOME at install time"
+fi
+if grep -qE 'serve --bg --tcp' "$ROOT/dotfiles/bin/.local/bin/dpl-remote" \
+  && grep -qi 'not using Funnel' "$ROOT/dotfiles/bin/.local/bin/dpl-remote"; then
+  pass "internet path is Tailscale serve, not Funnel"
+else
+  fail "dpl-remote must serve on the tailnet without Funnel"
+fi
 bash -n "$ROOT/scripts/linux-gnome-keys.sh" && pass "linux-gnome-keys.sh parses" || fail "linux-gnome-keys.sh syntax"
 bash -n "$ROOT/dotfiles/shell-linux/.config/shell/linux.sh" && pass "linux.sh parses" || fail "linux.sh syntax"
 bash -n "$ROOT/dotfiles/sway/.config/sway/scripts/focus-or-launch" && pass "focus-or-launch parses" || fail "focus-or-launch syntax"
@@ -47,25 +86,25 @@ else
   pass "linux.sh has no macOS-only paths"
 fi
 
-if grep -q 'duc@careernowbrands.com' "$ROOT/dotfiles/git/.config/git/work.gitconfig"; then
-  pass "work.gitconfig has CareerNow email"
+if grep -E '^[[:space:]]*email[[:space:]]*=' \
+  "$ROOT/dotfiles/git/.config/git/work.gitconfig" \
+  "$ROOT/dotfiles/git/.config/git/work-bhcoe.gitconfig" \
+  "$ROOT/dotfiles/git/.config/git/work-ab-spectrum.gitconfig"; then
+  fail "tracked work gitconfigs must not set user.email (use *.local.gitconfig)"
 else
-  fail "work.gitconfig missing CareerNow email"
+  pass "tracked work gitconfigs do not set user.email"
+fi
+if grep -q 'work.local.gitconfig' "$ROOT/dotfiles/git/.config/git/work.gitconfig" \
+  && grep -q 'work-bhcoe.local.gitconfig' "$ROOT/dotfiles/git/.config/git/work-bhcoe.gitconfig" \
+  && grep -q 'work-ab-spectrum.local.gitconfig' "$ROOT/dotfiles/git/.config/git/work-ab-spectrum.gitconfig"; then
+  pass "work gitconfigs include machine-local overlays"
+else
+  fail "work gitconfigs missing machine-local overlay includes"
 fi
 if grep -q 'me@vanducng.dev' "$ROOT/dotfiles/git/.config/git/work-crashchat.gitconfig"; then
   pass "work-crashchat.gitconfig has personal email"
 else
   fail "work-crashchat.gitconfig missing personal email"
-fi
-if grep -q 'duc@yds.services' "$ROOT/dotfiles/git/.config/git/work-ab-spectrum.gitconfig"; then
-  pass "work-ab-spectrum.gitconfig has YDS email"
-else
-  fail "work-ab-spectrum.gitconfig missing YDS email"
-fi
-if grep -q 'duc@careernowbrands.com' "$ROOT/dotfiles/git/.config/git/work-bhcoe.gitconfig"; then
-  pass "work-bhcoe.gitconfig has CareerNow email"
-else
-  fail "work-bhcoe.gitconfig missing CareerNow email"
 fi
 example="$ROOT/dotfiles/git/.config/git/gitconfig.linux.example"
 if grep -q 'gitdir:~/work/git/crashchat/' "$example" && grep -q 'gitdir:~/work/git/ab-spectrum/' "$example" && grep -q 'gitdir:~/work/git/bhcoe/' "$example"; then

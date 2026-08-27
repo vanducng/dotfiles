@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+# Headed Chrome with CDP bound to loopback only. Used by homelab-cdp.service.
+# Agents on other machines attach through SSH LocalForward or Tailscale serve,
+# never through a WAN-exposed 9222.
+set -euo pipefail
+
+CHROME="${BROWSER_PROFILE_CHROME:-${HOME}/.local/opt/google-chrome/google-chrome}"
+USER_DATA="${CDP_USER_DATA_DIR:-${HOME}/work/store/chrome-cdp}"
+PORT="${CDP_PORT:-9222}"
+ADDR="${CDP_ADDR:-127.0.0.1}"
+
+if [[ ! -x "$CHROME" ]]; then
+  echo "cdp-chrome: chrome missing at $CHROME (run: ~/.config/homelab/install-chrome)" >&2
+  exit 1
+fi
+
+mkdir -p "$USER_DATA"
+chmod 700 "$USER_DATA"
+
+# Drop stale SingletonLock from a crash so Chrome will start again.
+if [[ -L "${USER_DATA}/SingletonLock" || -e "${USER_DATA}/SingletonLock" ]]; then
+  target="$(readlink "${USER_DATA}/SingletonLock" 2>/dev/null || true)"
+  stale_pid="${target##*-}"
+  if [[ ! "$stale_pid" =~ ^[0-9]+$ ]] || ! kill -0 "$stale_pid" 2>/dev/null; then
+    rm -f "${USER_DATA}/SingletonLock" "${USER_DATA}/SingletonCookie" "${USER_DATA}/SingletonSocket"
+  fi
+fi
+
+# chrome-sandbox in the extracted tree is not root-owned, so --no-sandbox.
+# --remote-debugging-address keeps DevTools off the LAN/WAN.
+# --remote-allow-origins=* is required for attach via an SSH tunnel.
+exec "$CHROME" \
+  --user-data-dir="$USER_DATA" \
+  --remote-debugging-port="$PORT" \
+  --remote-debugging-address="$ADDR" \
+  --remote-allow-origins='*' \
+  --no-first-run \
+  --no-default-browser-check \
+  --disable-features=ChromeWhatsNewUI \
+  --ozone-platform-hint=auto \
+  --no-sandbox \
+  --disable-gpu-sandbox \
+  --disable-dev-shm-usage \
+  about:blank

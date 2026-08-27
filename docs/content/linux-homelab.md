@@ -35,3 +35,16 @@ That installs sshd `:22`, docker (data-root on NVMe), tailscale, fstab, and mask
 LAN IP: `192.168.1.193` (set as NetworkManager manual). Reserve it on the router.
 
 GDM already auto-logs in `ubuntu`; linger is on so `herdr-server` and `moshi-hook` come back after reboot.
+
+## Remote (SSH, screen, CDP, internet)
+
+User-space, no sudo:
+
+| What | Where | How |
+|---|---|---|
+| SSH | `:2222` pubkey | `ssh -p 2222 ubuntu@192.168.1.193` |
+| Screen | GNOME RDP `:3389` | Microsoft Remote Desktop on the LAN, or `127.0.0.1:13389` via SSH forward |
+| Chrome CDP | `127.0.0.1:9222` only | `ssh dpl` then `agent-browser connect 9222` on the Mac |
+| Off-LAN | Tailscale userspace | `dpl-remote up` (login URL), install Tailscale on Mac/phone |
+
+Do **not** port-forward `3389` or `9222`. IPv4 WAN is NAT; IPv6 may already reach `:2222` if the ISP leaves inbound open. Details: `~/.config/homelab/REMOTE.md` and `dpl-remote status`.

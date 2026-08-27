@@ -2,8 +2,7 @@
 Port 2222
 ListenAddress 0.0.0.0
 ListenAddress ::
-HostKey /home/ubuntu/.config/sshd/ssh_host_ed25519_key
-PidFile /home/ubuntu/.config/sshd/sshd.pid
+# HostKey/PidFile: passed on the sshd-user.service command line (%h is systemd home).
 AuthorizedKeysFile .ssh/authorized_keys
 PasswordAuthentication no
 KbdInteractiveAuthentication no
@@ -13,8 +12,9 @@ PermitRootLogin no
 UsePAM no
 X11Forwarding no
 PrintMotd no
-AcceptEnv LANG LC_*
+AcceptEnv LANG LC_* COLORTERM TERM
+PermitUserEnvironment yes
 AllowTcpForwarding yes
 ClientAliveInterval 30
 ClientAliveCountMax 3
-Subsystem sftp /home/ubuntu/.local/opt/openssh/usr/lib/openssh/sftp-server
+Subsystem sftp internal-sftp

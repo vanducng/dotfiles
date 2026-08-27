@@ -59,10 +59,10 @@ usermod -aG docker "$TARGET_USER"
 # data-root on NVMe if present
 if [[ -d /media/ubuntu/work/docker/data ]]; then
   mkdir -p /etc/docker
+  # Docker 24+ has no "tmp-dir" daemon.json key (that broke dockerd 29 on dpl).
   cat >/etc/docker/daemon.json <<'EOF'
 {
   "data-root": "/media/ubuntu/work/docker/data",
-  "tmp-dir": "/media/ubuntu/work/docker/tmp",
   "log-driver": "json-file",
   "log-opts": {
     "max-size": "10m",
@@ -75,11 +75,36 @@ EOF
 fi
 
 # --- tailscale (inbound mesh SSH; prefer this over exposing :22 to the internet) ---
-if ! command -v tailscale >/dev/null; then
+# User-space daemon (homelab-tailscale.service) may already be running; stop it
+# so the kernel TUN unit owns the node instead of two daemons racing.
+if [[ -n "$TARGET_HOME" ]]; then
+  sudo -u "$TARGET_USER" XDG_RUNTIME_DIR="/run/user/$(id -u "$TARGET_USER")" \
+    systemctl --user disable --now homelab-tailscale.service 2>/dev/null || true
+fi
+if ! command -v tailscale >/dev/null || [[ ! -x /usr/sbin/tailscaled && ! -x /usr/bin/tailscaled ]]; then
   curl -fsSL https://tailscale.com/install.sh | sh
 fi
 systemctl enable --now tailscaled || true
 echo "Tailscale installed. As ${TARGET_USER} run: sudo tailscale up --ssh --hostname=dpl"
+
+# --- persistent tun for user-space CNB OpenVPN (no sudo on each connect) ---
+cat >/etc/systemd/system/cnb-tun.service <<EOF
+[Unit]
+Description=Persistent tun cnb0 for user-space CNB OpenVPN
+After=network-pre.target
+Before=network.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/bin/sh -c 'ip link show cnb0 >/dev/null 2>&1 || ip tuntap add mode tun user ${TARGET_USER} group ${TARGET_USER} name cnb0'
+ExecStart=/sbin/ip link set cnb0 up
+
+[Install]
+WantedBy=multi-user.target
+EOF
+systemctl daemon-reload
+systemctl enable --now cnb-tun.service || true
 
 # --- moshi PATH ---
 loginctl enable-linger "$TARGET_USER"

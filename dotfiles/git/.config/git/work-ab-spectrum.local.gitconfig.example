@@ -1,0 +1,3 @@
+# Copy to ~/.config/git/work-ab-spectrum.local.gitconfig (gitignored). Do not commit.
+[user]
+	email = YOUR_ABS_WORK_EMAIL

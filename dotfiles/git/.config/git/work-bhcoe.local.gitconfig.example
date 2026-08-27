@@ -1,0 +1,3 @@
+# Copy to ~/.config/git/work-bhcoe.local.gitconfig (gitignored). Do not commit.
+[user]
+	email = YOUR_CNB_WORK_EMAIL

@@ -1,0 +1,20 @@
+[Unit]
+Description=Bring Tailscale up and publish SSH/RDP/CDP on the tailnet
+After=homelab-tailscale.service network-online.target
+Requires=homelab-tailscale.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+Environment=PATH=%h/.local/bin:%h/.local/opt/tailscale:/usr/bin:/bin
+Environment=TS_SOCK=%h/.local/state/tailscale/tailscaled.sock
+Environment=SSH_PORT=2222
+Environment=RDP_PORT=3389
+Environment=CDP_PORT=9222
+ExecStartPre=/bin/sh -c 'for i in $(seq 1 60); do [ -S "$TS_SOCK" ] && exit 0; sleep 0.5; done; echo "homelab-tailscale-up: socket missing"; exit 1'
+ExecStart=/bin/sh -c '%h/.local/opt/tailscale/tailscale --socket="$TS_SOCK" up --hostname=dpl --accept-dns=false --ssh --timeout=120s && %h/.local/opt/tailscale/tailscale --socket="$TS_SOCK" serve --bg --tcp "$SSH_PORT" "tcp://127.0.0.1:$SSH_PORT" && %h/.local/opt/tailscale/tailscale --socket="$TS_SOCK" serve --bg --tcp "$RDP_PORT" "tcp://127.0.0.1:$RDP_PORT" && %h/.local/opt/tailscale/tailscale --socket="$TS_SOCK" serve --bg --tcp "$CDP_PORT" "tcp://127.0.0.1:$CDP_PORT"'
+ExecStop=/bin/sh -c '%h/.local/opt/tailscale/tailscale --socket="$TS_SOCK" serve --tcp=2222 off 2>/dev/null; %h/.local/opt/tailscale/tailscale --socket="$TS_SOCK" serve --tcp=3389 off 2>/dev/null; %h/.local/opt/tailscale/tailscale --socket="$TS_SOCK" serve --tcp=9222 off 2>/dev/null; true'
+
+[Install]
+WantedBy=default.target

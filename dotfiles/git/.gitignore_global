@@ -2,4 +2,7 @@ tmp_code_*
 .worktrees/
 .workbench/
 
+# work mailboxes — never commit these overlays
+.config/git/*.local.gitconfig
+
 **/.claude/settings.local.json

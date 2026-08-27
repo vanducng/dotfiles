@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # User-space homelab bootstrap (no sudo). Idempotent.
-# Disks via udisks, never-sleep, sshd :2222, layout, clone last-30d repos,
-# docker-compose binary. Full docker/sshd:22/tailscale: sudo linux-homelab-root.sh
+# Disks via udisks, never-sleep, sshd :2222, Chrome CDP :9222, Tailscale
+# userspace, layout, clone last-30d repos, docker-compose binary.
+# Full docker/sshd:22/kernel tailscale: sudo linux-homelab-root.sh
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -26,6 +27,7 @@ mk_lab_dirs() {
   mkdir -p \
     "${GIT_ROOT}/"{personal,dpl,cnb,ab-spectrum,bhcoe,crashchat,nlb} \
     "${NVME_MNT}/docker/"{data,tmp} \
+    "${NVME_MNT}/store"/{mise,cargo,go,npm,npm-global,cache,opt,cursor-agent,claude,pi,fonts} \
     "${NVME_MNT}/worktrees" \
     "${NVME_MNT}/agents" \
     "${NVME_MNT}/cache" \
@@ -36,18 +38,15 @@ mk_lab_dirs() {
   cat >"${NVME_MNT}/README.md" <<'EOF'
 # /media/ubuntu/work (Samsung 970 EVO Plus 2TB)
 
-Git: `~/work/git/<org>`. Docker: `~/work/docker/data`.
+Git: `~/work/git/<org>`. Docker: `~/work/docker/data`. Tool stores: `~/work/store`.
 
 | Path | Role |
 |---|---|
-| `git/cnb` | CareerNow |
-| `git/crashchat` | CrashChat.ai |
-| `git/ab-spectrum` | AB-Spectrum |
-| `git/bhcoe` | BHCOE / Jade |
-| `git/dpl` | DataPlaneLabs |
-| `git/nlb` | nextlevelbuilder |
-| `git/personal` | vanducng |
+| `git/<org>` | clones |
 | `docker/data` | images, volumes, json-logs |
+| `store/` | mise, cargo, go, npm, caches, Cursor/Claude opt |
+| `worktrees` | git worktrees |
+| `tmp` | large compile scratch |
 EOF
 }
 
@@ -135,6 +134,9 @@ install_user_sshd() {
   chmod 700 "${HOME}/.ssh"
   touch "${HOME}/.ssh/authorized_keys"
   chmod 600 "${HOME}/.ssh/authorized_keys"
+  printf 'PATH=%s/.local/bin:%s/.local/share/mise/shims:/usr/bin:/bin\n' "$HOME" "$HOME" \
+    >"${HOME}/.ssh/environment"
+  chmod 600 "${HOME}/.ssh/environment"
 }
 
 install_compose() {
@@ -153,6 +155,16 @@ install_lazygit_link() {
   if [[ -x "${HOME}/.local/share/mise/shims/lazygit" && ! -e "${HOME}/.local/bin/lazygit" ]]; then
     ln -sfn "${HOME}/.local/share/mise/shims/lazygit" "${HOME}/.local/bin/lazygit"
   fi
+}
+
+install_remote() {
+  # Chrome CDP + userspace Tailscale. Login (`dpl-remote up`) is interactive.
+  bash "${HOME}/.config/homelab/install-chrome" \
+    || bash "${REPO_ROOT}/dotfiles/homelab/.config/homelab/install-chrome"
+  bash "${HOME}/.config/homelab/install-tailscale" \
+    || bash "${REPO_ROOT}/dotfiles/homelab/.config/homelab/install-tailscale"
+  mkdir -p "${STORE_ROOT}/chrome-cdp" "${STORE_ROOT}/chrome-profiles"
+  chmod 700 "${STORE_ROOT}/chrome-cdp" "${STORE_ROOT}/chrome-profiles" 2>/dev/null || true
 }
 
 enable_units() {
@@ -181,6 +193,13 @@ EOF
   # the unit — systemd unlinks a stowed ~/.config/systemd/user/*.service.
   rm -f "${HOME}/.config/systemd/user/default.target.wants/cnb-openvpn.service"
   log "cnb-openvpn on-demand — cnb-openvpn start|stop|status (gopass cnb/vpn/pfsense-main)"
+  if [[ -x "${HOME}/.local/opt/tailscale/tailscaled" ]]; then
+    systemctl --user enable --now homelab-tailscale.service || true
+    systemctl --user enable --now homelab-tailscale-up.service || true
+  fi
+  if [[ -x "${HOME}/.local/opt/google-chrome/google-chrome" ]]; then
+    systemctl --user enable --now homelab-cdp.service || true
+  fi
 }
 
 nm_static_hint() {
@@ -287,7 +306,12 @@ stow_homelab() {
     (cd "${REPO_ROOT}/dotfiles" && stow --no-folding -D -t "${HOME}" homelab 2>/dev/null || true
       stow --no-folding -t "${HOME}" homelab)
   fi
-  chmod +x "${HOME}/.config/homelab/mount-disks" 2>/dev/null || true
+  chmod +x "${HOME}/.config/homelab/mount-disks" \
+    "${HOME}/.config/homelab/relocate-stores" \
+    "${HOME}/.config/homelab/install-chrome" \
+    "${HOME}/.config/homelab/install-tailscale" \
+    "${HOME}/.config/homelab/cdp-chrome" \
+    "${HOME}/.local/bin/dpl-remote" 2>/dev/null || true
 }
 
 main() {
@@ -295,12 +319,15 @@ main() {
   stow_homelab
   ensure_disks
   mk_lab_dirs
+  bash "${HOME}/.config/homelab/relocate-stores" 2>/dev/null \
+    || bash "${REPO_ROOT}/dotfiles/homelab/.config/homelab/relocate-stores"
   relocate_existing
   link_home
   never_sleep
   install_user_sshd
   install_compose
   install_lazygit_link
+  install_remote
   enable_units
   nm_static_hint
   if [[ "${SKIP_CLONE:-0}" != 1 ]]; then
@@ -314,6 +341,9 @@ main() {
   log "  archive:  ${HOME}/archive"
   log "  backup:   ${HOME}/backup"
   log "  ssh user: $(hostname -I | awk '{print $1}'):2222  (sshd :22 needs sudo linux-homelab-root.sh)"
+  log "  rdp:      $(hostname -I | awk '{print $1}'):3389  (GNOME; tunnel via ssh LocalForward 13389)"
+  log "  cdp:      127.0.0.1:9222 (headed Chrome; attach through ssh/Tailscale, not the WAN)"
+  log "  internet: dpl-remote up   # Tailscale login URL, then serve SSH/RDP/CDP on the tailnet"
   log "  never-sleep user inhibit on; system sleep mask needs that same sudo script"
   log "  docker engine needs: sudo -E ${REPO_ROOT}/scripts/linux-homelab-root.sh"
 }
