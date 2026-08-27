@@ -9,6 +9,6 @@ mount_one() {
   udisksctl mount -b "$dev" >/dev/null
 }
 
-mount_one /dev/disk/by-uuid/3aaf62c7-54e7-4e19-a588-c9f9f20deb0a
+mount_one /dev/disk/by-uuid/4f37efa3-18d4-46a7-b60a-e37919b636cc
 mount_one /dev/disk/by-uuid/529001a1-d4bd-4930-9053-7ab4875e856d
 mount_one /dev/disk/by-uuid/fcf77474-1737-4790-9a14-8ee58cc45870

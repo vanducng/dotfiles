@@ -11,9 +11,7 @@ export PATH="${HOME}/.local/bin:${HOME}/.local/share/mise/shims:${PATH}"
 log() { printf 'homelab: %s\n' "$*"; }
 have() { command -v "$1" >/dev/null 2>&1; }
 
-NVME_MNT="/media/ubuntu/${NVME_UUID}"
-HDDA_MNT="/media/ubuntu/Volume A"
-HDDB_MNT="/media/ubuntu/Volume B"
+# NVME_MNT / GIT_ROOT / DOCKER_ROOT come from layout.env
 
 ensure_disks() {
   bash "${HOME}/.config/homelab/mount-disks" 2>/dev/null \
@@ -26,27 +24,27 @@ ensure_disks() {
 
 mk_lab_dirs() {
   mkdir -p \
-    "${NVME_MNT}/dpl/code/"{personal,dataplanelabs,careernowbrands,ab-spectrum,bhcoe,crashchat,nextlevelbuilder} \
-    "${NVME_MNT}/dpl/docker" \
-    "${NVME_MNT}/dpl/agents" \
-    "${NVME_MNT}/dpl/cache" \
-    "${NVME_MNT}/dpl/tmp" \
+    "${GIT_ROOT}/"{personal,dataplanelabs,careernowbrands,ab-spectrum,bhcoe,crashchat,nextlevelbuilder} \
+    "${NVME_MNT}/docker/"{data,tmp} \
+    "${NVME_MNT}/worktrees" \
+    "${NVME_MNT}/agents" \
+    "${NVME_MNT}/cache" \
+    "${NVME_MNT}/tmp" \
     "${HDDA_MNT}/dpl/"{datasets,media,incoming} \
     "${HDDB_MNT}/dpl/"{lab,snapshots} \
     "${HOME}/mnt" "${HOME}/.local/bin"
-  cat >"${NVME_MNT}/dpl/README.md" <<'EOF'
-# dpl homelab (hot SSD)
+  ln -sfn git "${NVME_MNT}/code"
+  cat >"${NVME_MNT}/README.md" <<'EOF'
+# dpl-work (Samsung 970 EVO Plus 2TB)
 
 | Path | Role |
 |---|---|
-| `code/` | git clones (orgs below) |
-| `docker/` | Docker data-root (after sudo linux-homelab-root.sh) |
-| `agents/` | herdr / coding-agent worktrees |
-| `cache/` | bulky tool caches |
-| `tmp/` | scratch |
+| `git/<org>/` | clone roots (`~/work/{cnb,crashchat,...}`) |
+| `worktrees/` | extra worktree park |
+| `docker/data/` | Docker data-root (images, volumes, container json-logs) |
+| `cache/` `agents/` `tmp/` | scratch |
 
-OS disk stays configs (`~/.dotfiles`, `~/.config`). HDDs: `~/archive` (Volume A), `~/backup` (Volume B).
-`chia-temp/` on this volume is pre-existing — leave it.
+OS disk stays configs. HDDs: `~/archive` (A), `~/backup` (B).
 EOF
 }
 
@@ -63,21 +61,21 @@ replace_link() {
 
 link_home() {
   mkdir -p "${HOME}/work" "${HOME}/git/work" "${HOME}/src"
-  ln -sfn "${NVME_MNT}/dpl" "${HOME}/lab"
-  ln -sfn "${NVME_MNT}/dpl/code" "${HOME}/code"
+  ln -sfn "${NVME_MNT}" "${HOME}/lab"
+  ln -sfn "${GIT_ROOT}" "${HOME}/code"
   ln -sfn "${HDDA_MNT}/dpl" "${HOME}/archive"
   ln -sfn "${HDDB_MNT}/dpl" "${HOME}/backup"
   ln -sfn "${NVME_MNT}" "${HOME}/mnt/nvme"
   ln -sfn "${HDDA_MNT}" "${HOME}/mnt/hdd-a"
   ln -sfn "${HDDB_MNT}" "${HOME}/mnt/hdd-b"
 
-  replace_link "${NVME_MNT}/dpl/code/careernowbrands" "${HOME}/work/cnb"
-  replace_link "${NVME_MNT}/dpl/code/crashchat" "${HOME}/work/crashchat"
-  replace_link "${NVME_MNT}/dpl/code/ab-spectrum" "${HOME}/work/ab-spectrum"
-  replace_link "${NVME_MNT}/dpl/code/bhcoe" "${HOME}/work/bhcoe"
-  replace_link "${NVME_MNT}/dpl/code/dataplanelabs" "${HOME}/work/dpl"
-  replace_link "${NVME_MNT}/dpl/code/nextlevelbuilder" "${HOME}/work/nlb"
-  replace_link "${NVME_MNT}/dpl/code/personal" "${HOME}/work/personal"
+  replace_link "${GIT_ROOT}/careernowbrands" "${HOME}/work/cnb"
+  replace_link "${GIT_ROOT}/crashchat" "${HOME}/work/crashchat"
+  replace_link "${GIT_ROOT}/ab-spectrum" "${HOME}/work/ab-spectrum"
+  replace_link "${GIT_ROOT}/bhcoe" "${HOME}/work/bhcoe"
+  replace_link "${GIT_ROOT}/dataplanelabs" "${HOME}/work/dpl"
+  replace_link "${GIT_ROOT}/nextlevelbuilder" "${HOME}/work/nlb"
+  replace_link "${GIT_ROOT}/personal" "${HOME}/work/personal"
 
   ln -sfn "${HOME}/work/cnb" "${HOME}/git/work/cnb"
   ln -sfn "${HOME}/work/crashchat" "${HOME}/git/work/crashchat"
@@ -87,19 +85,19 @@ link_home() {
   ln -sfn "${HOME}/work/crashchat" "${HOME}/src/crashchat"
   ln -sfn "${HOME}/work/ab-spectrum" "${HOME}/src/ab-spectrum"
   ln -sfn "${HOME}/work/bhcoe" "${HOME}/src/bhcoe"
-  ln -sfn "${NVME_MNT}/dpl/code/dataplanelabs" "${HOME}/src/dataplanelabs"
-  ln -sfn "${NVME_MNT}/dpl/code/personal" "${HOME}/src/personal"
-  ln -sfn "${NVME_MNT}/dpl/code/nextlevelbuilder" "${HOME}/src/nextlevelbuilder"
+  ln -sfn "${GIT_ROOT}/dataplanelabs" "${HOME}/src/dataplanelabs"
+  ln -sfn "${GIT_ROOT}/personal" "${HOME}/src/personal"
+  ln -sfn "${GIT_ROOT}/nextlevelbuilder" "${HOME}/src/nextlevelbuilder"
 }
 
 relocate_existing() {
   local src dest
   # Move previously cloned trees off the OS disk if they are still real dirs.
   for pair in \
-    "${HOME}/work/ab-spectrum:${NVME_MNT}/dpl/code/ab-spectrum" \
-    "${HOME}/work/bhcoe:${NVME_MNT}/dpl/code/bhcoe" \
-    "${HOME}/work/crashchat:${NVME_MNT}/dpl/code/crashchat" \
-    "${HOME}/work/cnb:${NVME_MNT}/dpl/code/careernowbrands"; do
+    "${HOME}/work/ab-spectrum:${GIT_ROOT}/ab-spectrum" \
+    "${HOME}/work/bhcoe:${GIT_ROOT}/bhcoe" \
+    "${HOME}/work/crashchat:${GIT_ROOT}/crashchat" \
+    "${HOME}/work/cnb:${GIT_ROOT}/careernowbrands"; do
     src="${pair%%:*}"
     dest="${pair##*:}"
     if [[ -d "$src" && ! -L "$src" ]]; then
@@ -217,7 +215,7 @@ clone_one() {
 
 clone_recent() {
   # org/path pairs: last 30 days as of 2026-08-26, minus already-home clones (dotfiles, skills).
-  local root="${NVME_MNT}/dpl/code"
+  local root="${GIT_ROOT}"
   local jobs=0
   clone_jobs() { # url dest
     clone_one "$1" "$2" &
@@ -320,7 +318,7 @@ main() {
     log "SKIP_CLONE=1 — not cloning"
   fi
   log "done"
-  log "  hot SSD:  ${HOME}/lab  -> ${NVME_MNT}/dpl"
+  log "  hot SSD:  ${HOME}/lab  -> ${NVME_MNT} (git + docker/data)"
   log "  archive:  ${HOME}/archive"
   log "  backup:   ${HOME}/backup"
   log "  ssh user: $(hostname -I | awk '{print $1}'):2222  (sshd :22 needs sudo linux-homelab-root.sh)"
