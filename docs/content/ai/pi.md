@@ -7,6 +7,36 @@ stowed to `~/.pi/agent/settings.json`, so the default provider/model, theme, and
 `packages` list (extensions) are all reproducible. Sessions, auth, and installed
 package artifacts stay local.
 
+## Home layout
+
+`~/.pi` itself must be a **real directory** under `$HOME`. Do not replace it with a
+symlink onto `~/work/store/pi` (or any other volume). That breaks two things:
+
+1. Stow writes relative links for the theme and extensions. Those resolve from the
+   real path of `~/.pi`, so a store symlink makes `rose-pine-moon` dangle and pi
+   falls back to the dark theme.
+2. Running `pi` from `$HOME` makes pi-subagents treat `~/.pi/subagents/schedules` as
+   the project schedule root. If that path realpaths outside `$HOME`, the extension
+   crashes on startup (`Project schedule root ... resolves outside the real project`).
+
+`make stow-install` and `make stow-pi` run `scripts/pi-home-layout.sh` on Linux and
+macOS. The script is idempotent: a fresh home gets a real `~/.pi`, a wholesale
+`~/.pi` symlink is unwrapped, and a second run is a no-op besides restow. It never
+creates a runtime store. Nested `npm` / `sessions` / `git` links are added only when
+the old symlink target already holds them, when `$HOME/work/store/pi` already has
+that runtime, or when `PI_STORE` is set. On Linux, `relocate-stores` also moves only
+those children onto the 970; it must not symlink the whole `~/.pi` tree.
+
+```bash
+make stow-pi
+# or, with an explicit runtime store:
+PI_STORE="$HOME/work/store/pi" make stow-pi
+```
+
+Schedules are stored under `~/.local/share/pi-subagents/schedules` via the stowed
+`extensions/subagent/config.json` (`scheduledRuns.storeRoot`), so a relocated `~/.pi`
+cannot take the extension down even if someone runs `pi` from `$HOME`.
+
 ## Install
 
 ```bash
