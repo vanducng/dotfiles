@@ -16,14 +16,14 @@ done
 jq empty "$agent_dir/settings.json" "$agent_dir/models.json" "$agent_dir/themes/rose-pine-moon.json"
 jq -e '
 	.defaultProvider == "cliproxyapi" and
-	.defaultModel == "grok-4.6" and
+	.defaultModel == "claude-fable-5" and
 	.transport == "sse"
 ' "$agent_dir/settings.json" >/dev/null
 jq -e '
 	.packages
 	| index("npm:pi-web-access")
-	  and index("npm:@aliou/pi-guardrails")
 	  and index("npm:pi-subagents")
+	  and index("npm:pi-langfuse")
 ' "$agent_dir/settings.json" >/dev/null
 jq -e '
 	.providers.cliproxyapi.models[]
