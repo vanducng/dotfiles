@@ -40,11 +40,11 @@ Copy the git identity template (not committed as `~/.gitconfig`):
 
 ```bash
 cp ~/.config/git/gitconfig.linux.example ~/.gitconfig
-# default email: me@vanducng.dev
-# ~/work/git/cnb         → duc@careernowbrands.com
-# ~/work/git/crashchat   → me@vanducng.dev
-# ~/work/git/ab-spectrum → duc@yds.services
-# ~/work/git/bhcoe       → duc@careernowbrands.com
+# default: personal git identity
+# ~/work/git/cnb         → CNB work identity
+# ~/work/git/crashchat   → personal git identity
+# ~/work/git/ab-spectrum → ABS work identity
+# ~/work/git/bhcoe       → CNB work identity
 ```
 
 Optional (needs sudo): `mosh`, `zathura`, `taskwarrior`, and `chsh -s` to zsh. Grok config: `make stow-grok` is opt-in after backing up `~/.grok/auth.json`.

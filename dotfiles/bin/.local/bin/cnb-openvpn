@@ -30,6 +30,7 @@ CNB pfSense OpenVPN — on-demand user daemon + gopass-backed profile.
   cnb-openvpn restore            write ~/.config/openvpn/cnb-main from gopass
   cnb-openvpn auth               refresh ~/.config/openvpn/cnb.auth from gopass
   cnb-openvpn set-auth           stdin: username then password -> gopass + auth file
+  cnb-openvpn set-password       stdin: password only (username already in gopass)
   cnb-openvpn prepare-tun        create persistent tun cnb0 (one sudo)
   cnb-openvpn run                foreground client (systemd ExecStart)
 
@@ -233,6 +234,23 @@ cmd_set_auth() {
   cmd_auth
 }
 
+cmd_set_password() {
+  have_gopass || { echo "cnb-openvpn: gopass not on PATH" >&2; return 1; }
+  local pass
+  IFS= read -r pass
+  if [[ -z "$pass" ]]; then
+    echo "cnb-openvpn: set-password expects password on stdin" >&2
+    return 1
+  fi
+  gopass_has "${GOPASS_NS}/username" || {
+    echo "cnb-openvpn: username missing; use set-auth (username then password)" >&2
+    return 1
+  }
+  printf '%s' "$pass" | gopass --nosync insert -f "${GOPASS_NS}/password"
+  gopass sync >/dev/null
+  cmd_auth
+}
+
 cmd_run() {
   local conf
   conf="$(conf_dir)"
@@ -344,6 +362,7 @@ case "$cmd" in
   restore) cmd_restore "$@" ;;
   auth) cmd_auth "$@" ;;
   set-auth) cmd_set_auth "$@" ;;
+  set-password) cmd_set_password "$@" ;;
   prepare-tun) cmd_prepare_tun "$@" ;;
   run) cmd_run "$@" ;;
   -h|--help|help) usage ;;
