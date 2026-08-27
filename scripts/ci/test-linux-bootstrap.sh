@@ -47,25 +47,25 @@ else
   pass "linux.sh has no macOS-only paths"
 fi
 
-if grep -q 'me@acme.example' "$ROOT/dotfiles/git/.config/git/work.gitconfig"; then
-  pass "work.gitconfig has Acme email"
+if grep -E '^[[:space:]]*email[[:space:]]*=' \
+  "$ROOT/dotfiles/git/.config/git/work.gitconfig" \
+  "$ROOT/dotfiles/git/.config/git/work-umbrella.gitconfig" \
+  "$ROOT/dotfiles/git/.config/git/work-globex.gitconfig"; then
+  fail "tracked work gitconfigs must not set user.email (use *.local.gitconfig)"
 else
-  fail "work.gitconfig missing Acme email"
+  pass "tracked work gitconfigs do not set user.email"
+fi
+if grep -q 'work.local.gitconfig' "$ROOT/dotfiles/git/.config/git/work.gitconfig" \
+  && grep -q 'work-umbrella.local.gitconfig' "$ROOT/dotfiles/git/.config/git/work-umbrella.gitconfig" \
+  && grep -q 'work-globex.local.gitconfig' "$ROOT/dotfiles/git/.config/git/work-globex.gitconfig"; then
+  pass "work gitconfigs include machine-local overlays"
+else
+  fail "work gitconfigs missing machine-local overlay includes"
 fi
 if grep -q 'me@vanducng.dev' "$ROOT/dotfiles/git/.config/git/work-initech.gitconfig"; then
   pass "work-initech.gitconfig has personal email"
 else
   fail "work-initech.gitconfig missing personal email"
-fi
-if grep -q 'me@globex.example' "$ROOT/dotfiles/git/.config/git/work-globex.gitconfig"; then
-  pass "work-globex.gitconfig has YDS email"
-else
-  fail "work-globex.gitconfig missing YDS email"
-fi
-if grep -q 'me@acme.example' "$ROOT/dotfiles/git/.config/git/work-umbrella.gitconfig"; then
-  pass "work-umbrella.gitconfig has Acme email"
-else
-  fail "work-umbrella.gitconfig missing Acme email"
 fi
 example="$ROOT/dotfiles/git/.config/git/gitconfig.linux.example"
 if grep -q 'gitdir:~/work/git/initech/' "$example" && grep -q 'gitdir:~/work/git/globex/' "$example" && grep -q 'gitdir:~/work/git/umbrella/' "$example"; then
