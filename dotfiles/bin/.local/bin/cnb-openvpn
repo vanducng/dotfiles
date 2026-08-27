@@ -1,24 +1,329 @@
-#!/bin/sh
-# CNB pfSense OpenVPN client (user-space). Prefers the MAIN profile that is
-# actually connected on the Mac (OpenVPN Connect 1719231711903 / utun4),
-# falls back to the older Tunnelblick cert-based "CNB VPN Server 1" tree.
-set -eu
+#!/usr/bin/env bash
+# CNB pfSense OpenVPN — on-demand user daemon + gopass-backed profile.
+#
+#   cnb-openvpn start|stop|restart|status
+#   cnb-openvpn enable|disable     persist on login / stay manual
+#   cnb-openvpn store              save profile + username into gopass
+#   cnb-openvpn restore            write ~/.config/openvpn/cnb-main from gopass
+#   cnb-openvpn auth               refresh ~/.config/openvpn/cnb.auth from gopass
+#   cnb-openvpn set-auth           stdin: username\\npassword  -> gopass + auth file
+#   cnb-openvpn run                foreground client (systemd ExecStart)
+set -euo pipefail
+
 MAIN="${HOME}/.config/openvpn/cnb-main"
 LEGACY="${HOME}/.config/openvpn/cnb"
 AUTH="${HOME}/.config/openvpn/cnb.auth"
 BIN="${HOME}/.local/opt/openvpn/usr/sbin/openvpn"
+UNIT="cnb-openvpn.service"
+GOPASS_NS="${CNB_VPN_GOPASS:-cnb/vpn/pfsense-main}"
+export PATH="${HOME}/.local/bin:${HOME}/.local/share/mise/shims:/usr/bin:/bin:${PATH}"
+export PASSWORD_STORE_DIR="${PASSWORD_STORE_DIR:-${HOME}/work/git/personal/pass}"
 export LD_LIBRARY_PATH="${HOME}/.local/opt/openvpn/usr/lib/x86_64-linux-gnu${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 
-if [ -f "${MAIN}/client.conf" ]; then
-  CONF="$MAIN"
-else
-  CONF="$LEGACY"
-fi
+usage() {
+  cat <<EOF
+CNB pfSense OpenVPN — on-demand user daemon + gopass-backed profile.
 
-if [ ! -s "$AUTH" ] || [ "$(grep -cve '^[[:space:]]*$' "$AUTH" || true)" -lt 2 ]; then
-  echo "cnb-openvpn: missing $AUTH (line1 username, line2 password)" >&2
-  echo "cnb-openvpn: MAIN username is duc@careernowbrands.com (OpenVPN Connect)." >&2
-  echo "cnb-openvpn: run cnb-openvpn-pull-auth-from-mac.sh ON THE MAC (GUI keychain)." >&2
-  exit 1
-fi
-exec "$BIN" --cd "$CONF" --config "$CONF/client.conf" --auth-user-pass "$AUTH" --auth-nocache --verb 3
+  cnb-openvpn start|stop|restart|status
+  cnb-openvpn enable|disable     persist on login / stay manual
+  cnb-openvpn store              save profile + username into gopass
+  cnb-openvpn restore            write ~/.config/openvpn/cnb-main from gopass
+  cnb-openvpn auth               refresh ~/.config/openvpn/cnb.auth from gopass
+  cnb-openvpn set-auth           stdin: username then password -> gopass + auth file
+  cnb-openvpn run                foreground client (systemd ExecStart)
+
+gopass: ${GOPASS_NS}/{username,password,ovpn}
+EOF
+}
+
+have_gopass() { command -v gopass >/dev/null 2>&1; }
+
+gopass_has() {
+  have_gopass || return 1
+  gopass --nosync ls --flat 2>/dev/null | grep -Fxq "$1"
+}
+
+conf_dir() {
+  if [[ -f "${MAIN}/client.conf" ]]; then
+    printf '%s' "$MAIN"
+  else
+    printf '%s' "$LEGACY"
+  fi
+}
+
+cmd_store() {
+  have_gopass || { echo "cnb-openvpn: gopass not on PATH" >&2; return 1; }
+  mkdir -p "$MAIN"
+  local tmp
+  tmp="$(mktemp)"
+  python3 - "$MAIN" "$tmp" <<'PY'
+from pathlib import Path
+import sys
+main, out = Path(sys.argv[1]), Path(sys.argv[2])
+ca = (main / "ca.crt").read_text()
+ta = (main / "ta.key").read_text()
+out.write_text(
+    "\n".join(
+        [
+            "# CNB pfSense MAIN (OpenVPN Connect 1719231711903)",
+            "# username: duc@careernowbrands.com  (gopass cnb/vpn/pfsense-main/username)",
+            "dev tun",
+            "persist-tun",
+            "persist-key",
+            "data-ciphers AES-128-GCM",
+            "data-ciphers-fallback AES-128-GCM",
+            "auth SHA256",
+            "tls-client",
+            "client",
+            "resolv-retry infinite",
+            "nobind",
+            "remote-cert-tls server",
+            "explicit-exit-notify",
+            "remote-random",
+            "remote 143.59.6.146 1201 udp4",
+            "remote 143.59.6.146 1202 udp4",
+            "remote 143.59.6.146 1203 udp4",
+            "remote 99.95.109.161 1201 udp4",
+            "remote 99.95.109.161 1202 udp4",
+            "remote 99.95.109.161 1203 udp4",
+            "remote 207.98.177.126 1201 udp4",
+            "remote 207.98.177.126 1202 udp4",
+            "remote 207.98.177.126 1203 udp4",
+            "auth-user-pass",
+            "setenv CLIENT_CERT 0",
+            "verb 3",
+            "<ca>",
+            ca.rstrip(),
+            "</ca>",
+            "key-direction 1",
+            "<tls-auth>",
+            ta.rstrip(),
+            "</tls-auth>",
+            "",
+        ]
+    )
+)
+PY
+  gopass --nosync rm -f "${GOPASS_NS}/ovpn" 2>/dev/null || true
+  gopass --nosync cat "${GOPASS_NS}/ovpn" <"$tmp"
+  rm -f "$tmp"
+  printf '%s' "duc@careernowbrands.com" | gopass --nosync insert -f "${GOPASS_NS}/username"
+
+  local legacy_src="${HOME}/.config/openvpn/from-mac/connect/1668194320662.ovpn"
+  if [[ -f "$legacy_src" ]]; then
+    gopass --nosync rm -f "cnb/vpn/pfsense-legacy/ovpn" 2>/dev/null || true
+    gopass --nosync cat "cnb/vpn/pfsense-legacy/ovpn" <"$legacy_src"
+    printf '%s' "Duc" | gopass --nosync insert -f "cnb/vpn/pfsense-legacy/username"
+  fi
+
+  if [[ -s "$AUTH" ]] && [[ "$(grep -cve '^[[:space:]]*$' "$AUTH" || true)" -ge 2 ]]; then
+    # existing auth file: line1 user, line2 password — store password only
+    awk 'NF{n++; if(n==2){printf "%s",$0; exit}}' "$AUTH" \
+      | gopass --nosync insert -f "${GOPASS_NS}/password"
+  fi
+
+  echo "cnb-openvpn: stored ${GOPASS_NS}/{username,ovpn} in gopass"
+  gopass_has "${GOPASS_NS}/password" \
+    && echo "cnb-openvpn: password present" \
+    || echo "cnb-openvpn: password not in store yet — run cnb-openvpn-pull-auth-from-mac.sh on the Mac, or: cnb-openvpn set-auth"
+  gopass sync >/dev/null
+}
+
+cmd_restore() {
+  have_gopass || { echo "cnb-openvpn: gopass not on PATH" >&2; return 1; }
+  gopass_has "${GOPASS_NS}/ovpn" || { echo "cnb-openvpn: missing ${GOPASS_NS}/ovpn — run: cnb-openvpn store" >&2; return 1; }
+  mkdir -p "$MAIN"
+  chmod 700 "$MAIN"
+  local tmp
+  tmp="$(mktemp)"
+  gopass --nosync cat "${GOPASS_NS}/ovpn" >"$tmp"
+  python3 - "$tmp" "$MAIN" <<'PY'
+from pathlib import Path
+import sys
+ovpn, dest = Path(sys.argv[1]).read_text(), Path(sys.argv[2])
+
+def block(tag: str, text: str) -> str:
+    start, end = f"<{tag}>", f"</{tag}>"
+    i, j = text.find(start), text.find(end)
+    if i < 0 or j < 0:
+        raise SystemExit(f"missing {tag} block")
+    return text[i + len(start) : j].strip() + "\n"
+
+(dest / "ca.crt").write_text(block("ca", ovpn))
+(dest / "ta.key").write_text(block("tls-auth", ovpn))
+conf = """# restored from gopass cnb/vpn/pfsense-main/ovpn
+dev tun
+persist-tun
+persist-key
+data-ciphers AES-128-GCM
+data-ciphers-fallback AES-128-GCM
+auth SHA256
+tls-client
+client
+resolv-retry infinite
+nobind
+remote-cert-tls server
+explicit-exit-notify
+remote-random
+remote 143.59.6.146 1201 udp4
+remote 143.59.6.146 1202 udp4
+remote 143.59.6.146 1203 udp4
+remote 99.95.109.161 1201 udp4
+remote 99.95.109.161 1202 udp4
+remote 99.95.109.161 1203 udp4
+remote 207.98.177.126 1201 udp4
+remote 207.98.177.126 1202 udp4
+remote 207.98.177.126 1203 udp4
+auth-user-pass {auth}
+ca ca.crt
+tls-auth ta.key 1
+setenv CLIENT_CERT 0
+script-security 2
+verb 3
+log-append {dest}/openvpn.log
+writepid {dest}/openvpn.pid
+""".format(auth=str(Path.home() / ".config/openvpn/cnb.auth"), dest=dest)
+(dest / "client.conf").write_text(conf)
+for p in dest.iterdir():
+    p.chmod(0o600)
+PY
+  rm -f "$tmp"
+  echo "cnb-openvpn: restored $MAIN from gopass"
+}
+
+cmd_auth() {
+  mkdir -p "$(dirname "$AUTH")"
+  local user="" pass=""
+  if gopass_has "${GOPASS_NS}/username"; then
+    user="$(gopass --nosync show -o "${GOPASS_NS}/username")"
+  fi
+  if gopass_has "${GOPASS_NS}/password"; then
+    pass="$(gopass --nosync show -o "${GOPASS_NS}/password")"
+  fi
+  if [[ -z "$user" || -z "$pass" ]]; then
+    if [[ -s "$AUTH" ]] && [[ "$(grep -cve '^[[:space:]]*$' "$AUTH" || true)" -ge 2 ]]; then
+      echo "cnb-openvpn: using existing $AUTH"
+      return 0
+    fi
+    echo "cnb-openvpn: no VPN password in gopass (${GOPASS_NS}/password)" >&2
+    echo "cnb-openvpn: on the Mac run ~/.local/bin/cnb-openvpn-pull-auth-from-mac.sh" >&2
+    echo "cnb-openvpn: or: printf 'user\\npass\\n' | cnb-openvpn set-auth" >&2
+    return 1
+  fi
+  umask 077
+  printf '%s\n%s\n' "$user" "$pass" >"$AUTH"
+  chmod 600 "$AUTH"
+  echo "cnb-openvpn: wrote $AUTH from gopass"
+}
+
+cmd_set_auth() {
+  have_gopass || { echo "cnb-openvpn: gopass not on PATH" >&2; return 1; }
+  local user pass
+  IFS= read -r user
+  IFS= read -r pass
+  if [[ -z "$user" || -z "$pass" ]]; then
+    echo "cnb-openvpn: set-auth expects username then password on stdin" >&2
+    return 1
+  fi
+  printf '%s' "$user" | gopass --nosync insert -f "${GOPASS_NS}/username"
+  printf '%s' "$pass" | gopass --nosync insert -f "${GOPASS_NS}/password"
+  gopass sync >/dev/null
+  cmd_auth
+}
+
+cmd_run() {
+  local conf
+  conf="$(conf_dir)"
+  if [[ ! -f "${conf}/client.conf" ]]; then
+    echo "cnb-openvpn: missing ${conf}/client.conf — try: cnb-openvpn restore" >&2
+    return 1
+  fi
+  if [[ ! -s "$AUTH" ]] || [[ "$(grep -cve '^[[:space:]]*$' "$AUTH" || true)" -lt 2 ]]; then
+    cmd_auth || return 1
+  fi
+  exec "$BIN" --cd "$conf" --config "$conf/client.conf" --auth-user-pass "$AUTH" --auth-nocache --verb 3
+}
+
+cmd_start() {
+  cmd_auth || return 1
+  systemctl --user start "$UNIT"
+  echo "cnb-openvpn: started (on-demand). stop with: cnb-openvpn stop"
+  systemctl --user --no-pager --full status "$UNIT" | head -n 12 || true
+}
+
+cmd_stop() {
+  systemctl --user stop "$UNIT" 2>/dev/null || true
+  echo "cnb-openvpn: stopped"
+}
+
+cmd_restart() {
+  cmd_auth || return 1
+  systemctl --user restart "$UNIT"
+  echo "cnb-openvpn: restarted"
+}
+
+cmd_status() {
+  local enabled active
+  if [[ -L "${HOME}/.config/systemd/user/default.target.wants/${UNIT}" ]]; then
+    enabled="autostart"
+  else
+    enabled="manual"
+  fi
+  active="$(systemctl --user is-active "$UNIT" 2>/dev/null || true)"
+  [[ -n "$active" ]] || active="inactive"
+  echo "unit:     $enabled / $active"
+  echo "profile:  $(conf_dir)"
+  echo "gopass:   ${GOPASS_NS}"
+  if gopass_has "${GOPASS_NS}/ovpn"; then echo "  ovpn:      yes"; else echo "  ovpn:      no"; fi
+  if gopass_has "${GOPASS_NS}/username"; then echo "  username:  yes"; else echo "  username:  no"; fi
+  if gopass_has "${GOPASS_NS}/password"; then echo "  password:  yes"; else echo "  password:  no"; fi
+  if [[ -s "$AUTH" ]] && [[ "$(grep -cve '^[[:space:]]*$' "$AUTH" || true)" -ge 2 ]]; then
+    echo "auth file: present ($AUTH)"
+  else
+    echo "auth file: missing"
+  fi
+  if ip -br link 2>/dev/null | grep -q '^tun'; then
+    ip -br link | grep '^tun' || true
+  else
+    echo "tun:      down"
+  fi
+}
+
+cmd_enable() {
+  # Do not `systemctl disable` this unit: systemd treats a stow symlink as a
+  # linked unit and disable unlinks ~/.config/systemd/user/cnb-openvpn.service.
+  mkdir -p "${HOME}/.config/systemd/user/default.target.wants"
+  ln -sfn "${HOME}/.config/systemd/user/${UNIT}" \
+    "${HOME}/.config/systemd/user/default.target.wants/${UNIT}"
+  systemctl --user daemon-reload
+  echo "cnb-openvpn: will auto-start on login. still start now with: cnb-openvpn start"
+}
+
+cmd_disable() {
+  systemctl --user stop "$UNIT" 2>/dev/null || true
+  rm -f "${HOME}/.config/systemd/user/default.target.wants/${UNIT}"
+  systemctl --user daemon-reload
+  echo "cnb-openvpn: autostart off; start/stop remain: cnb-openvpn start|stop"
+}
+
+cmd="${1:-status}"
+shift || true
+case "$cmd" in
+  start) cmd_start "$@" ;;
+  stop) cmd_stop "$@" ;;
+  restart) cmd_restart "$@" ;;
+  status) cmd_status "$@" ;;
+  enable) cmd_enable "$@" ;;
+  disable) cmd_disable "$@" ;;
+  store) cmd_store "$@" ;;
+  restore) cmd_restore "$@" ;;
+  auth) cmd_auth "$@" ;;
+  set-auth) cmd_set_auth "$@" ;;
+  run) cmd_run "$@" ;;
+  -h|--help|help) usage ;;
+  *)
+    echo "cnb-openvpn: unknown command: $cmd" >&2
+    usage >&2
+    exit 2
+    ;;
+esac

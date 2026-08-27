@@ -1,11 +1,14 @@
 [Unit]
-Description=CNB OpenVPN (pfSense MAIN / OpenVPN Connect + Tunnelblick fallback)
+Description=CNB OpenVPN (pfSense MAIN) — start/stop with cnb-openvpn
 After=network-online.target homelab-disks.service
 Wants=network-online.target
 
 [Service]
 Type=simple
-ExecStart=%h/.local/bin/cnb-openvpn
+Environment=PATH=%h/.local/bin:%h/.local/share/mise/shims:/usr/bin:/bin
+Environment=PASSWORD_STORE_DIR=%h/work/git/personal/pass
+Environment=GNUPGHOME=%h/.gnupg
+ExecStart=%h/.local/bin/cnb-openvpn run
 Restart=on-failure
 RestartSec=10
 

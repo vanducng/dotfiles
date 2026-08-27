@@ -177,12 +177,10 @@ EOF
   if [[ -f "${HOME}/.config/systemd/user/cnb-bastion-jump.service" ]]; then
     systemctl --user enable --now cnb-bastion-jump.service 2>/dev/null || true
   fi
-  if [[ -s "${HOME}/.config/openvpn/cnb.auth" ]] && [[ "$(grep -cve '^[[:space:]]*$' "${HOME}/.config/openvpn/cnb.auth" || true)" -ge 2 ]]; then
-    systemctl --user enable --now cnb-openvpn.service 2>/dev/null || true
-  else
-    systemctl --user disable --now cnb-openvpn.service 2>/dev/null || true
-    log "cnb-openvpn idle — need ~/.config/openvpn/cnb.auth (run cnb-openvpn-pull-auth-from-mac.sh on the Mac)"
-  fi
+  # CNB OpenVPN is on-demand (cnb-openvpn start|stop). Never `systemctl disable`
+  # the unit — systemd unlinks a stowed ~/.config/systemd/user/*.service.
+  rm -f "${HOME}/.config/systemd/user/default.target.wants/cnb-openvpn.service"
+  log "cnb-openvpn on-demand — cnb-openvpn start|stop|status (gopass cnb/vpn/pfsense-main)"
 }
 
 nm_static_hint() {
