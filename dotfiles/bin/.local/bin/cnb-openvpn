@@ -30,6 +30,7 @@ CNB pfSense OpenVPN — on-demand user daemon + gopass-backed profile.
   cnb-openvpn restore            write ~/.config/openvpn/cnb-main from gopass
   cnb-openvpn auth               refresh ~/.config/openvpn/cnb.auth from gopass
   cnb-openvpn set-auth           stdin: username then password -> gopass + auth file
+  cnb-openvpn prepare-tun        create persistent tun cnb0 (one sudo)
   cnb-openvpn run                foreground client (systemd ExecStart)
 
 gopass: ${GOPASS_NS}/{username,password,ovpn}
@@ -65,9 +66,9 @@ ta = (main / "ta.key").read_text()
 out.write_text(
     "\n".join(
         [
-            "# CNB pfSense MAIN (OpenVPN Connect 1719231711903)",
-            "# username: duc@careernowbrands.com  (gopass cnb/vpn/pfsense-main/username)",
-            "dev tun",
+            "# CNB pfSense MAIN (gopass cnb/vpn/pfsense-main)",
+            "dev cnb0",
+            'pull-filter ignore "block-outside-dns"',
             "persist-tun",
             "persist-key",
             "data-ciphers AES-128-GCM",
@@ -107,7 +108,7 @@ PY
   gopass --nosync rm -f "${GOPASS_NS}/ovpn" 2>/dev/null || true
   gopass --nosync cat "${GOPASS_NS}/ovpn" <"$tmp"
   rm -f "$tmp"
-  printf '%s' "duc@careernowbrands.com" | gopass --nosync insert -f "${GOPASS_NS}/username"
+  # username/password are set via set-auth; do not clobber them here.
 
   local legacy_src="${HOME}/.config/openvpn/from-mac/connect/1668194320662.ovpn"
   if [[ -f "$legacy_src" ]]; then
@@ -152,7 +153,8 @@ def block(tag: str, text: str) -> str:
 (dest / "ca.crt").write_text(block("ca", ovpn))
 (dest / "ta.key").write_text(block("tls-auth", ovpn))
 conf = """# restored from gopass cnb/vpn/pfsense-main/ovpn
-dev tun
+dev cnb0
+pull-filter ignore "block-outside-dns"
 persist-tun
 persist-key
 data-ciphers AES-128-GCM
@@ -244,8 +246,31 @@ cmd_run() {
   exec "$BIN" --cd "$conf" --config "$conf/client.conf" --auth-user-pass "$AUTH" --auth-nocache --verb 3
 }
 
+cmd_prepare_tun() {
+  if ip link show cnb0 >/dev/null 2>&1; then
+    echo "cnb-openvpn: tun cnb0 already present"
+    return 0
+  fi
+  local user
+  user="$(id -un)"
+  echo "cnb-openvpn: creating persistent tun cnb0 (needs sudo once)"
+  if sudo -n true 2>/dev/null; then
+    sudo -n ip tuntap add mode tun user "$user" group "$user" name cnb0
+    sudo -n ip link set cnb0 up
+  else
+    echo "run once:" >&2
+    echo "  sudo ip tuntap add mode tun user $user group $user name cnb0 && sudo ip link set cnb0 up" >&2
+    echo "or: sudo -E $HOME/.dotfiles/scripts/linux-homelab-root.sh" >&2
+    return 1
+  fi
+  ip link show cnb0 >/dev/null
+}
+
 cmd_start() {
   cmd_auth || return 1
+  if ! ip link show cnb0 >/dev/null 2>&1; then
+    cmd_prepare_tun || return 1
+  fi
   systemctl --user start "$UNIT"
   echo "cnb-openvpn: started (on-demand). stop with: cnb-openvpn stop"
   systemctl --user --no-pager --full status "$UNIT" | head -n 12 || true
@@ -282,10 +307,10 @@ cmd_status() {
   else
     echo "auth file: missing"
   fi
-  if ip -br link 2>/dev/null | grep -q '^tun'; then
-    ip -br link | grep '^tun' || true
+  if ip link show cnb0 >/dev/null 2>&1; then
+    echo "tun:      $(ip -br addr show cnb0 2>/dev/null | awk '{print $1,$3}')"
   else
-    echo "tun:      down"
+    echo "tun:      missing (cnb-openvpn prepare-tun)"
   fi
 }
 
@@ -319,6 +344,7 @@ case "$cmd" in
   restore) cmd_restore "$@" ;;
   auth) cmd_auth "$@" ;;
   set-auth) cmd_set_auth "$@" ;;
+  prepare-tun) cmd_prepare_tun "$@" ;;
   run) cmd_run "$@" ;;
   -h|--help|help) usage ;;
   *)
