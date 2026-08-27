@@ -26,6 +26,7 @@ mk_lab_dirs() {
   mkdir -p \
     "${GIT_ROOT}/"{personal,dpl,cnb,ab-spectrum,bhcoe,crashchat,nlb} \
     "${NVME_MNT}/docker/"{data,tmp} \
+    "${NVME_MNT}/store"/{mise,cargo,go,npm,npm-global,cache,opt,cursor-agent,claude,pi,fonts} \
     "${NVME_MNT}/worktrees" \
     "${NVME_MNT}/agents" \
     "${NVME_MNT}/cache" \
@@ -36,18 +37,15 @@ mk_lab_dirs() {
   cat >"${NVME_MNT}/README.md" <<'EOF'
 # /media/ubuntu/work (Samsung 970 EVO Plus 2TB)
 
-Git: `~/work/git/<org>`. Docker: `~/work/docker/data`.
+Git: `~/work/git/<org>`. Docker: `~/work/docker/data`. Tool stores: `~/work/store`.
 
 | Path | Role |
 |---|---|
-| `git/cnb` | CareerNow |
-| `git/crashchat` | CrashChat.ai |
-| `git/ab-spectrum` | AB-Spectrum |
-| `git/bhcoe` | BHCOE / Jade |
-| `git/dpl` | DataPlaneLabs |
-| `git/nlb` | nextlevelbuilder |
-| `git/personal` | vanducng |
+| `git/<org>` | clones |
 | `docker/data` | images, volumes, json-logs |
+| `store/` | mise, cargo, go, npm, caches, Cursor/Claude opt |
+| `worktrees` | git worktrees |
+| `tmp` | large compile scratch |
 EOF
 }
 
@@ -287,7 +285,8 @@ stow_homelab() {
     (cd "${REPO_ROOT}/dotfiles" && stow --no-folding -D -t "${HOME}" homelab 2>/dev/null || true
       stow --no-folding -t "${HOME}" homelab)
   fi
-  chmod +x "${HOME}/.config/homelab/mount-disks" 2>/dev/null || true
+  chmod +x "${HOME}/.config/homelab/mount-disks" \
+    "${HOME}/.config/homelab/relocate-stores" 2>/dev/null || true
 }
 
 main() {
@@ -295,6 +294,8 @@ main() {
   stow_homelab
   ensure_disks
   mk_lab_dirs
+  bash "${HOME}/.config/homelab/relocate-stores" 2>/dev/null \
+    || bash "${REPO_ROOT}/dotfiles/homelab/.config/homelab/relocate-stores"
   relocate_existing
   link_home
   never_sleep

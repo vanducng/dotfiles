@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+# Move bulky user stores off the OS disk onto the 970 (label=work).
+# Idempotent: already-linked paths are left alone. No sudo.
+set -euo pipefail
+
+WORK="${HOME}/work"
+STORE="${WORK}/store"
+
+if [[ ! -d "$WORK" ]]; then
+  echo "relocate-stores: $WORK missing (is the 970 mounted?)" >&2
+  exit 1
+fi
+
+mkdir -p \
+  "$STORE"/{mise,cargo,go,npm,npm-global,cache,opt,cursor-agent,claude,pi,fonts} \
+  "${WORK}/docker/"{data,tmp} \
+  "${WORK}/tmp" \
+  "${WORK}/worktrees" \
+  "${WORK}/agents"
+
+# src → dest on the NVMe. src becomes a symlink.
+relocate() {
+  local src="$1" dest="$2"
+  mkdir -p "$(dirname "$dest")" "$(dirname "$src")"
+  if [[ -L "$src" ]]; then
+    local cur
+    cur="$(readlink -f "$src" 2>/dev/null || true)"
+    local want
+    want="$(readlink -f "$dest" 2>/dev/null || echo "$dest")"
+    if [[ "$cur" == "$want" ]]; then
+      return 0
+    fi
+    rm -f "$src"
+  fi
+  if [[ -d "$src" ]]; then
+    mkdir -p "$dest"
+    rsync -a "$src/" "$dest/"
+    chmod -R u+w "$src" 2>/dev/null || true
+    rm -rf "$src"
+  elif [[ -e "$src" ]]; then
+    echo "relocate-stores: skip non-dir $src" >&2
+    return 0
+  else
+    mkdir -p "$dest"
+  fi
+  ln -sfn "$dest" "$src"
+}
+
+relocate "${HOME}/.local/share/mise" "${STORE}/mise"
+relocate "${HOME}/.local/share/cursor-agent" "${STORE}/cursor-agent"
+relocate "${HOME}/.local/share/claude" "${STORE}/claude"
+relocate "${HOME}/.local/share/fonts" "${STORE}/fonts"
+relocate "${HOME}/.local/opt" "${STORE}/opt"
+relocate "${HOME}/.cargo" "${STORE}/cargo"
+relocate "${HOME}/go" "${STORE}/go"
+relocate "${HOME}/.npm" "${STORE}/npm"
+relocate "${HOME}/.npm-global" "${STORE}/npm-global"
+relocate "${HOME}/.cache" "${STORE}/cache"
+relocate "${HOME}/.pi" "${STORE}/pi"
+
+# Keep GOPATH/CARGO_HOME pointing at the original paths (now symlinks).
+# Docker engine data-root is ${WORK}/docker/data (see linux-homelab-root.sh).

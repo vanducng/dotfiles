@@ -7,6 +7,13 @@ export EDITOR="${EDITOR:-nvim}"
 export VISUAL="${VISUAL:-$EDITOR}"
 export GPG_TTY="${GPG_TTY:-$(tty 2>/dev/null || true)}"
 export NPM_CONFIG_PREFIX="${NPM_CONFIG_PREFIX:-$HOME/.npm-global}"
+# Bulky stores live on the 970 (`~/work` → /media/ubuntu/work).
+export TMPDIR="${TMPDIR:-$HOME/work/tmp}"
+export GOPATH="${GOPATH:-$HOME/go}"
+export GOMODCACHE="${GOMODCACHE:-$HOME/go/pkg/mod}"
+export CARGO_HOME="${CARGO_HOME:-$HOME/.cargo}"
+export NPM_CONFIG_CACHE="${NPM_CONFIG_CACHE:-$HOME/.npm}"
+export MISE_DATA_DIR="${MISE_DATA_DIR:-$HOME/.local/share/mise}"
 export STARSHIP_CONFIG="${STARSHIP_CONFIG:-$HOME/.config/starship/starship.toml}"
 export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
 
