@@ -63,6 +63,7 @@ cmd_install() {
   chmod 700 "${HOME}/work/store/chrome-cdp" "${HOME}/work/store/chrome-profiles" 2>/dev/null || true
   systemctl --user daemon-reload
   systemctl --user enable --now homelab-tailscale.service
+  systemctl --user enable --now homelab-tailscale-up.service
   systemctl --user enable --now homelab-cdp.service
   echo "dpl-remote: binaries + units on. Next: dpl-remote up  (opens a Tailscale login URL)"
 }

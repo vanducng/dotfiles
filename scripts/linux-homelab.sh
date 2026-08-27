@@ -192,6 +192,7 @@ EOF
   log "cnb-openvpn on-demand — cnb-openvpn start|stop|status (gopass cnb/vpn/pfsense-main)"
   if [[ -x "${HOME}/.local/opt/tailscale/tailscaled" ]]; then
     systemctl --user enable --now homelab-tailscale.service || true
+    systemctl --user enable --now homelab-tailscale-up.service || true
   fi
   if [[ -x "${HOME}/.local/opt/google-chrome/google-chrome" ]]; then
     systemctl --user enable --now homelab-cdp.service || true

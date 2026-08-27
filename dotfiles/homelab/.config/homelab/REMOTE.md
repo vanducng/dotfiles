@@ -155,15 +155,45 @@ Keep **3389** and **9222** closed.
 
 ---
 
-## 5. Phone (Moshi)
+## 5. Phone (Moshi + Herdr + tmux)
 
-LAN:
+Install **Moshi** from the App Store / Play Store. This host already has:
+
+- `moshi-hook` 0.3.5 daemon (`moshi-hook.service`, linger)
+- `herdr` 0.8.2 headless server (`herdr-server.service`)
+- `tmux` 3.7c + TPM plugins (catppuccin, tmux-fingers)
+- `mosh-server` on the SSH PATH (user-space, UDP 60000–61000)
+
+### Easy Pair (SSH/Mosh from the phone)
+
+On dpl (prints a QR; expires in a few minutes; anyone who scans it gets SSH):
 
 ```bash
 moshi-hook host setup --name dpl --host 192.168.1.193 --port 2222 --user ubuntu --force
 ```
 
-Off-LAN: `--host` = Tailscale MagicDNS name or the IPv6 above, after login.
+In Moshi: **Easy Pair** → scan the QR (or open the `moshi://host/setup?...` link on the phone).
+After that, Moshi opens a shell / tmux / Herdr session picker.
+
+Off-LAN, re-run setup with `--host <tailscale-magicdns-or-ipv6>` after `dpl-remote up`.
+Do **not** port-forward the mosh UDP range to the WAN; use Tailscale or IPv6 instead.
+
+### Agent hooks (inbox / approvals)
+
+Separate from Easy Pair. In Moshi: **Settings → Agent Hooks**, copy the token:
+
+```bash
+moshi-hook pair --token <token>
+moshi-hook install
+moshi-hook status
+```
+
+Hooks are already installed for claude, codex, cursor, grok, pi.
+
+### Herdr from the phone
+
+`herdr-server` is always on. After SSH/Mosh connects, Moshi can attach to the
+default Herdr session. Integrations current: pi, droid, claude, codex, cursor, grok.
 
 ---
 
@@ -184,7 +214,8 @@ Units (user systemd, linger=yes):
 - `sshd-user.service` — OpenSSH `:2222`
 - `gnome-remote-desktop.service` — RDP `:3389`
 - `homelab-cdp.service` — headed Chrome CDP
-- `homelab-tailscale.service` — userspace Tailscale
+- `homelab-tailscale.service` — userspace Tailscale daemon
+- `homelab-tailscale-up.service` — auto `tailscale up` + serve :2222/:3389/:9222 on boot
 - `homelab-nosleep.service` / `homelab-disks.service`
 
 ---
