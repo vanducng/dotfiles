@@ -68,7 +68,7 @@ else
   fail "work-umbrella.gitconfig missing Acme email"
 fi
 example="$ROOT/dotfiles/git/.config/git/gitconfig.linux.example"
-if grep -q 'gitdir:~/work/initech/' "$example" && grep -q 'gitdir:~/work/globex/' "$example" && grep -q 'gitdir:~/work/umbrella/' "$example"; then
+if grep -q 'gitdir:~/work/git/initech/' "$example" && grep -q 'gitdir:~/work/git/globex/' "$example" && grep -q 'gitdir:~/work/git/umbrella/' "$example"; then
   pass "gitconfig.linux.example has per-company includeIf"
 else
   fail "gitconfig.linux.example missing per-company includeIf"
