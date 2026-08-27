@@ -56,9 +56,14 @@ stow-install:
 	done
 
 stow-uninstall stow-clean:
-	@cd dotfiles && for folder in $(STOW_FOLDERS); do \
-		echo "Unstowing $$folder"; \
-		stow -t $(HOME) -D $$folder 2>/dev/null || true; \
+	@for folder in $(STOW_FOLDERS); do \
+		if [ "$$folder" = pi ]; then \
+			echo "Unstowing pi (home layout)"; \
+			./scripts/pi-home-layout.sh --uninstall; \
+		else \
+			echo "Unstowing $$folder"; \
+			(cd dotfiles && stow -t $(HOME) -D $$folder 2>/dev/null || true); \
+		fi; \
 	done
 
 stow-status:
@@ -90,8 +95,8 @@ stow-pi:
 	@./scripts/pi-home-layout.sh
 
 unstow-pi:
-	@echo "Unstowing pi..."
-	@cd dotfiles && stow -t $(HOME) -D pi 2>/dev/null || true
+	@echo "Unstowing pi (home layout)..."
+	@./scripts/pi-home-layout.sh --uninstall
 
 linux-deps:
 	@./scripts/linux-deps.sh

@@ -12,6 +12,7 @@ PI_HOME="${HOME}/.pi"
 STORE=""
 UNWRAPPED=0
 MAY_MIGRATE=0
+MODE="install"
 
 log() { printf 'pi-home-layout: %s\n' "$*"; }
 
@@ -31,8 +32,38 @@ infer_store() {
   fi
 }
 
+if [[ "${1:-}" == "--uninstall" ]]; then
+  MODE="uninstall"
+elif [[ -n "${1:-}" ]]; then
+  die "unknown argument: $1"
+fi
+
 if ! command -v stow >/dev/null 2>&1; then
   die "stow is required"
+fi
+if ! command -v python3 >/dev/null 2>&1; then
+  die "python3 is required"
+fi
+
+uninstall_pi() {
+  (
+    cd "${REPO_ROOT}/dotfiles"
+    stow -t "${HOME}" -D pi 2>/dev/null || true
+  )
+  local name dest
+  for name in npm sessions git; do
+    dest="${PI_HOME}/agent/${name}"
+    if [[ -L "$dest" ]]; then
+      rm "$dest"
+      log "removed store link ~/.pi/agent/${name}"
+    fi
+  done
+  log "ok (stow files and store links removed; ~/.pi left in place)"
+}
+
+if [[ "$MODE" == "uninstall" ]]; then
+  uninstall_pi
+  exit 0
 fi
 
 if [[ -L "$PI_HOME" ]]; then
@@ -44,6 +75,13 @@ if [[ -L "$PI_HOME" ]]; then
 fi
 
 if [[ -n "${PI_STORE:-}" ]]; then
+  if [[ $UNWRAPPED -eq 1 ]]; then
+    local_unwrapped="$STORE"
+    local_explicit="$(realpath_portable "$PI_STORE")"
+    if [[ "$local_unwrapped" != "$local_explicit" ]]; then
+      die "PI_STORE (${PI_STORE}) differs from unwrapped ~/.pi (${local_unwrapped})"
+    fi
+  fi
   STORE="$PI_STORE"
   MAY_MIGRATE=1
 elif [[ $UNWRAPPED -eq 0 ]]; then
@@ -51,6 +89,9 @@ elif [[ $UNWRAPPED -eq 0 ]]; then
 fi
 
 mkdir -p "$PI_HOME"
+if [[ -L "$PI_HOME" ]]; then
+  die "~/.pi is still a symlink"
+fi
 
 (
   cd "${REPO_ROOT}/dotfiles"
@@ -65,8 +106,17 @@ link_store_dir() {
   [[ -n "$STORE" ]] || return 0
   local dest="${PI_HOME}/agent/${name}"
   local src="${STORE}/agent/${name}"
+  local dest_real src_real
 
   if [[ -L "$dest" ]]; then
+    if [[ "$(readlink "$dest")" == "$src" ]]; then
+      return
+    fi
+    dest_real="$(realpath_portable "$dest" 2>/dev/null || readlink "$dest")"
+    src_real="$(realpath_portable "$src" 2>/dev/null || printf '%s' "$src")"
+    if [[ "$dest_real" != "$src_real" ]]; then
+      log "re-pointing ~/.pi/agent/${name} -> ${src}"
+    fi
     ln -sfn "$src" "$dest"
     return
   fi
@@ -75,11 +125,13 @@ link_store_dir() {
     mv "$dest" "$src"
   fi
   if [[ -d "$src" ]]; then
-    if [[ -d "$dest" && ! -L "$dest" ]]; then
-      rmdir "$dest" 2>/dev/null || {
-        log "${name} exists in \$HOME and is not empty; leaving it"
+    if [[ -e "$dest" && ! -L "$dest" ]]; then
+      if rmdir "$dest" 2>/dev/null; then
+        :
+      else
+        log "leave ~/.pi/agent/${name} in \$HOME (not a store link); store has ${src}"
         return 0
-      }
+      fi
     fi
     mkdir -p "$(dirname "$dest")"
     ln -sfn "$src" "$dest"
@@ -116,9 +168,6 @@ if [[ -n "$STORE" && -d "${STORE}/agent/skills" && ! -e "${PI_HOME}/agent/skills
 fi
 
 theme="${PI_HOME}/agent/themes/rose-pine-moon.json"
-if [[ -L "$PI_HOME" ]]; then
-  die "~/.pi is still a symlink"
-fi
 if [[ ! -e "$theme" ]]; then
   die "theme missing or dangling: ${theme}"
 fi
