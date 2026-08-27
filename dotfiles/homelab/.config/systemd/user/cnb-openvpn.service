@@ -1,5 +1,5 @@
 [Unit]
-Description=CNB OpenVPN (pfSense / Tunnelblick CNB VPN Server 1)
+Description=CNB OpenVPN (pfSense MAIN / OpenVPN Connect + Tunnelblick fallback)
 After=network-online.target homelab-disks.service
 Wants=network-online.target
 

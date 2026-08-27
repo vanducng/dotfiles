@@ -1,11 +1,24 @@
 #!/bin/sh
+# CNB pfSense OpenVPN client (user-space). Prefers the MAIN profile that is
+# actually connected on the Mac (OpenVPN Connect 1719231711903 / utun4),
+# falls back to the older Tunnelblick cert-based "CNB VPN Server 1" tree.
 set -eu
-CONF="${HOME}/.config/openvpn/cnb"
+MAIN="${HOME}/.config/openvpn/cnb-main"
+LEGACY="${HOME}/.config/openvpn/cnb"
 AUTH="${HOME}/.config/openvpn/cnb.auth"
 BIN="${HOME}/.local/opt/openvpn/usr/sbin/openvpn"
 export LD_LIBRARY_PATH="${HOME}/.local/opt/openvpn/usr/lib/x86_64-linux-gnu${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
-if [ ! -s "$AUTH" ] || [ "$(wc -l < "$AUTH")" -lt 2 ]; then
-  echo "cnb-openvpn: missing $AUTH (username then password)" >&2
+
+if [ -f "${MAIN}/client.conf" ]; then
+  CONF="$MAIN"
+else
+  CONF="$LEGACY"
+fi
+
+if [ ! -s "$AUTH" ] || [ "$(grep -cve '^[[:space:]]*$' "$AUTH" || true)" -lt 2 ]; then
+  echo "cnb-openvpn: missing $AUTH (line1 username, line2 password)" >&2
+  echo "cnb-openvpn: MAIN username is duc@careernowbrands.com (OpenVPN Connect)." >&2
+  echo "cnb-openvpn: run cnb-openvpn-pull-auth-from-mac.sh ON THE MAC (GUI keychain)." >&2
   exit 1
 fi
 exec "$BIN" --cd "$CONF" --config "$CONF/client.conf" --auth-user-pass "$AUTH" --auth-nocache --verb 3

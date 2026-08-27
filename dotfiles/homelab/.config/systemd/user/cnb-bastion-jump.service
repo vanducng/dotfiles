@@ -1,0 +1,13 @@
+[Unit]
+Description=SSH local forward to CNB bastion via Mac (until dpl OpenVPN is up)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/ssh -N -o ExitOnForwardFailure=yes -o ServerAliveInterval=30 -o ServerAliveCountMax=3 -o BatchMode=yes -L 127.0.0.1:2223:18.210.49.223:22 mac
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target
