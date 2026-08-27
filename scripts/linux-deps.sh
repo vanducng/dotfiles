@@ -31,7 +31,8 @@ install_stow() {
     log "stow already present ($(stow --version | head -1))"
     return 0
   fi
-  local ver=2.4.1 src="${HOME}/src/stow-${ver}"
+  local ver=2.4.1
+  local src="${HOME}/src/stow-${ver}"
   log "building GNU Stow ${ver} into ~/.local"
   mkdir -p "${HOME}/src"
   if [[ ! -d "$src" ]]; then
