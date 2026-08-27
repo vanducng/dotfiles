@@ -1,5 +1,5 @@
-# Autism and Behavioral Spectrum identity (via Your Data Solutions).
-# Clone roots: ~/work/ab-spectrum/, ~/git/work/ab-spectrum/
+# ABS work identity.
+# Mailbox lives in ~/.config/git/work-ab-spectrum.local.gitconfig (not tracked).
 
-[user]
-	email = duc@yds.services
+[include]
+	path = ~/.config/git/work-ab-spectrum.local.gitconfig

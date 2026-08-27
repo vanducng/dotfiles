@@ -1,7 +1,6 @@
-# CareerNow Brands identity.
-# Applied via includeIf gitdir from ~/.gitconfig (see gitconfig.linux.example).
+# CNB work identity.
+# Mailbox lives in ~/.config/git/work.local.gitconfig (not tracked).
 # Git 2.34 on Ubuntu 22.04 does not reliably honor hasconfig:remote.*.url.
-# Clone roots: ~/work/cnb/, ~/src/careernowbrands/, ~/git/work/cnb/
 
-[user]
-	email = duc@careernowbrands.com
+[include]
+	path = ~/.config/git/work.local.gitconfig

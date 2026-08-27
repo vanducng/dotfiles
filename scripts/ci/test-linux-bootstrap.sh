@@ -47,25 +47,25 @@ else
   pass "linux.sh has no macOS-only paths"
 fi
 
-if grep -q 'duc@careernowbrands.com' "$ROOT/dotfiles/git/.config/git/work.gitconfig"; then
-  pass "work.gitconfig has CareerNow email"
+if grep -E '^[[:space:]]*email[[:space:]]*=' \
+  "$ROOT/dotfiles/git/.config/git/work.gitconfig" \
+  "$ROOT/dotfiles/git/.config/git/work-bhcoe.gitconfig" \
+  "$ROOT/dotfiles/git/.config/git/work-ab-spectrum.gitconfig"; then
+  fail "tracked work gitconfigs must not set user.email (use *.local.gitconfig)"
 else
-  fail "work.gitconfig missing CareerNow email"
+  pass "tracked work gitconfigs do not set user.email"
+fi
+if grep -q 'work.local.gitconfig' "$ROOT/dotfiles/git/.config/git/work.gitconfig" \
+  && grep -q 'work-bhcoe.local.gitconfig' "$ROOT/dotfiles/git/.config/git/work-bhcoe.gitconfig" \
+  && grep -q 'work-ab-spectrum.local.gitconfig' "$ROOT/dotfiles/git/.config/git/work-ab-spectrum.gitconfig"; then
+  pass "work gitconfigs include machine-local overlays"
+else
+  fail "work gitconfigs missing machine-local overlay includes"
 fi
 if grep -q 'me@vanducng.dev' "$ROOT/dotfiles/git/.config/git/work-crashchat.gitconfig"; then
   pass "work-crashchat.gitconfig has personal email"
 else
   fail "work-crashchat.gitconfig missing personal email"
-fi
-if grep -q 'duc@yds.services' "$ROOT/dotfiles/git/.config/git/work-ab-spectrum.gitconfig"; then
-  pass "work-ab-spectrum.gitconfig has YDS email"
-else
-  fail "work-ab-spectrum.gitconfig missing YDS email"
-fi
-if grep -q 'duc@careernowbrands.com' "$ROOT/dotfiles/git/.config/git/work-bhcoe.gitconfig"; then
-  pass "work-bhcoe.gitconfig has CareerNow email"
-else
-  fail "work-bhcoe.gitconfig missing CareerNow email"
 fi
 example="$ROOT/dotfiles/git/.config/git/gitconfig.linux.example"
 if grep -q 'gitdir:~/work/git/crashchat/' "$example" && grep -q 'gitdir:~/work/git/ab-spectrum/' "$example" && grep -q 'gitdir:~/work/git/bhcoe/' "$example"; then
