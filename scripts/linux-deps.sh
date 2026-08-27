@@ -73,6 +73,44 @@ install_moshi() {
   curl -fsSL https://getmoshi.app/install.sh | sh
 }
 
+install_mosh() {
+  # User-space mosh from Ubuntu debs. Do not wrap mosh-server over itself.
+  local dest="${HOME}/.local/opt/mosh"
+  local server="${dest}/usr/bin/mosh-server"
+  if [[ -x "$server" ]] && file "$server" | grep -q ELF; then
+    log "mosh already present"
+  else
+    log "extracting mosh + libutempter0 into ${dest}"
+    local tmp
+    tmp="$(mktemp -d)"
+    (
+      cd "$tmp"
+      apt-get download mosh libutempter0
+      mkdir -p "$dest"
+      for deb in *.deb; do dpkg-deb -x "$deb" "$dest"; done
+    )
+    rm -rf "$tmp"
+  fi
+  local lib="${dest}/usr/lib/x86_64-linux-gnu"
+  cat >"${HOME}/.local/bin/mosh-server" <<EOF
+#!/bin/sh
+export LD_LIBRARY_PATH="${lib}:\${LD_LIBRARY_PATH:-}"
+exec "${dest}/usr/bin/mosh-server" "\$@"
+EOF
+  cat >"${HOME}/.local/bin/mosh-client" <<EOF
+#!/bin/sh
+export LD_LIBRARY_PATH="${lib}:\${LD_LIBRARY_PATH:-}"
+exec "${dest}/usr/bin/mosh-client" "\$@"
+EOF
+  cat >"${HOME}/.local/bin/mosh" <<EOF
+#!/bin/sh
+export PATH="${HOME}/.local/bin:\$PATH"
+export LD_LIBRARY_PATH="${lib}:\${LD_LIBRARY_PATH:-}"
+exec perl "${dest}/usr/bin/mosh" "\$@"
+EOF
+  chmod +x "${HOME}/.local/bin/mosh" "${HOME}/.local/bin/mosh-server" "${HOME}/.local/bin/mosh-client"
+}
+
 install_vd() {
   if have vd; then
     log "vd already present ($(vd --version | head -1))"
@@ -150,6 +188,7 @@ main() {
   install_rustup
   install_droid
   install_moshi
+  install_mosh
   install_vd
   install_pi
   install_kitty

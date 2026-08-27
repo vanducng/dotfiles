@@ -70,6 +70,10 @@ dist/
 .astro/
 site/
 
+# Machine-local git identity overlays (work mailboxes)
+dotfiles/git/.config/git/*.local.gitconfig
+!dotfiles/git/.config/git/*.local.gitconfig.example
+
 # Environment files
 .env
 .env.*
