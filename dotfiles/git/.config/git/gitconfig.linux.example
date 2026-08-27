@@ -3,40 +3,40 @@
 #   cp ~/.config/git/gitconfig.linux.example ~/.gitconfig
 #   # then edit name/email if needed
 #
-# Clone root is ~/work (on Linux, that is /media/ubuntu/dpl-work/work).
-#   personal default          → me@vanducng.dev
-#   ~/work/cnb                → duc@careernowbrands.com
-#   ~/work/crashchat          → me@vanducng.dev
-#   ~/work/ab-spectrum        → duc@yds.services
-#   ~/work/bhcoe              → duc@careernowbrands.com
+# Clone root is ~/work/git/<org> (Linux: /media/ubuntu/dpl-work/work/git).
+#   personal default               → me@vanducng.dev
+#   ~/work/git/cnb                 → duc@careernowbrands.com
+#   ~/work/git/crashchat           → me@vanducng.dev
+#   ~/work/git/ab-spectrum         → duc@yds.services
+#   ~/work/git/bhcoe               → duc@careernowbrands.com
 # Do not use a catch-all ~/work/ includeIf (it would stamp CareerNow onto every client).
-# Git 2.34: gitdir only; **/dpl-work/work/ is required because gitdir is canonicalized.
+# Git 2.34: gitdir is canonicalized; keep **/dpl-work/work/git/<org>/ as well.
 
 [user]
 	name = Duc Nguyen
 	email = me@vanducng.dev
 	useConfigOnly = true
 
-[includeIf "gitdir:~/work/cnb/"]
+[includeIf "gitdir:~/work/git/cnb/"]
 	path = ~/.config/git/work.gitconfig
-[includeIf "gitdir:**/dpl-work/work/cnb/"]
+[includeIf "gitdir:**/dpl-work/work/git/cnb/"]
 	path = ~/.config/git/work.gitconfig
 [includeIf "gitdir:**/careernowbrands/"]
 	path = ~/.config/git/work.gitconfig
 
-[includeIf "gitdir:~/work/crashchat/"]
+[includeIf "gitdir:~/work/git/crashchat/"]
 	path = ~/.config/git/work-crashchat.gitconfig
-[includeIf "gitdir:**/dpl-work/work/crashchat/"]
+[includeIf "gitdir:**/dpl-work/work/git/crashchat/"]
 	path = ~/.config/git/work-crashchat.gitconfig
 
-[includeIf "gitdir:~/work/ab-spectrum/"]
+[includeIf "gitdir:~/work/git/ab-spectrum/"]
 	path = ~/.config/git/work-ab-spectrum.gitconfig
-[includeIf "gitdir:**/dpl-work/work/ab-spectrum/"]
+[includeIf "gitdir:**/dpl-work/work/git/ab-spectrum/"]
 	path = ~/.config/git/work-ab-spectrum.gitconfig
 
-[includeIf "gitdir:~/work/bhcoe/"]
+[includeIf "gitdir:~/work/git/bhcoe/"]
 	path = ~/.config/git/work-bhcoe.gitconfig
-[includeIf "gitdir:**/dpl-work/work/bhcoe/"]
+[includeIf "gitdir:**/dpl-work/work/git/bhcoe/"]
 	path = ~/.config/git/work-bhcoe.gitconfig
 
 [core]

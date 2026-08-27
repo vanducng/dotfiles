@@ -68,7 +68,7 @@ else
   fail "work-bhcoe.gitconfig missing CareerNow email"
 fi
 example="$ROOT/dotfiles/git/.config/git/gitconfig.linux.example"
-if grep -q 'gitdir:~/work/crashchat/' "$example" && grep -q 'gitdir:~/work/ab-spectrum/' "$example" && grep -q 'gitdir:~/work/bhcoe/' "$example"; then
+if grep -q 'gitdir:~/work/git/crashchat/' "$example" && grep -q 'gitdir:~/work/git/ab-spectrum/' "$example" && grep -q 'gitdir:~/work/git/bhcoe/' "$example"; then
   pass "gitconfig.linux.example has per-company includeIf"
 else
   fail "gitconfig.linux.example missing per-company includeIf"

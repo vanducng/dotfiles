@@ -36,17 +36,17 @@ mk_lab_dirs() {
   cat >"${NVME_MNT}/README.md" <<'EOF'
 # dpl-work (Samsung 970 EVO Plus 2TB)
 
-Git: `~/work` (this volume's `work/`). Docker: `docker/data`.
+Git: `~/work/git/<org>`. Docker: `docker/data`.
 
 | Path | Role |
 |---|---|
-| `work/cnb` | CareerNow |
-| `work/crashchat` | CrashChat.ai |
-| `work/ab-spectrum` | AB-Spectrum |
-| `work/bhcoe` | BHCOE / Jade |
-| `work/dpl` | DataPlaneLabs |
-| `work/nlb` | nextlevelbuilder |
-| `work/personal` | vanducng |
+| `work/git/cnb` | CareerNow |
+| `work/git/crashchat` | CrashChat.ai |
+| `work/git/ab-spectrum` | AB-Spectrum |
+| `work/git/bhcoe` | BHCOE / Jade |
+| `work/git/dpl` | DataPlaneLabs |
+| `work/git/nlb` | nextlevelbuilder |
+| `work/git/personal` | vanducng |
 | `docker/data` | images, volumes, json-logs |
 EOF
 }
@@ -64,7 +64,7 @@ replace_link() {
 
 link_home() {
   mkdir -p "${HOME}/mnt"
-  replace_link "${GIT_ROOT}" "${HOME}/work"
+  replace_link "${WORK_ROOT}" "${HOME}/work"
   ln -sfn "${NVME_MNT}" "${HOME}/lab"
   ln -sfn "${HDDA_MNT}/dpl" "${HOME}/archive"
   ln -sfn "${HDDB_MNT}/dpl" "${HOME}/backup"
@@ -77,10 +77,10 @@ relocate_existing() {
   local src dest
   # Move previously cloned trees off the OS disk if they are still real dirs.
   for pair in \
-    "${HOME}/work/ab-spectrum:${GIT_ROOT}/ab-spectrum" \
-    "${HOME}/work/bhcoe:${GIT_ROOT}/bhcoe" \
-    "${HOME}/work/crashchat:${GIT_ROOT}/crashchat" \
-    "${HOME}/work/cnb:${GIT_ROOT}/cnb"; do
+    "${HOME}/work/git/ab-spectrum:${GIT_ROOT}/ab-spectrum" \
+    "${HOME}/work/git/bhcoe:${GIT_ROOT}/bhcoe" \
+    "${HOME}/work/git/crashchat:${GIT_ROOT}/crashchat" \
+    "${HOME}/work/git/cnb:${GIT_ROOT}/cnb"; do
     src="${pair%%:*}"
     dest="${pair##*:}"
     if [[ -d "$src" && ! -L "$src" ]]; then
@@ -301,7 +301,7 @@ main() {
     log "SKIP_CLONE=1 — not cloning"
   fi
   log "done"
-  log "  git:      ${HOME}/work -> ${GIT_ROOT}"
+  log "  git:      ${HOME}/work/git -> ${GIT_ROOT}"
   log "  docker:   ${DOCKER_ROOT}"
   log "  archive:  ${HOME}/archive"
   log "  backup:   ${HOME}/backup"
