@@ -20,6 +20,26 @@ bash -n "$ROOT/scripts/linux-deps.sh" && pass "linux-deps.sh parses" || fail "li
 bash -n "$ROOT/scripts/linux-desktop.sh" && pass "linux-desktop.sh parses" || fail "linux-desktop.sh syntax"
 bash -n "$ROOT/scripts/linux-homelab.sh" && pass "linux-homelab.sh parses" || fail "linux-homelab.sh syntax"
 bash -n "$ROOT/scripts/linux-homelab-root.sh" && pass "linux-homelab-root.sh parses" || fail "linux-homelab-root.sh syntax"
+bash -n "$ROOT/dotfiles/bin/.local/bin/dpl-remote" && pass "dpl-remote parses" || fail "dpl-remote syntax"
+bash -n "$ROOT/dotfiles/homelab/.config/homelab/cdp-chrome" && pass "cdp-chrome parses" || fail "cdp-chrome syntax"
+bash -n "$ROOT/dotfiles/homelab/.config/homelab/install-chrome" && pass "install-chrome parses" || fail "install-chrome syntax"
+bash -n "$ROOT/dotfiles/homelab/.config/homelab/install-tailscale" && pass "install-tailscale parses" || fail "install-tailscale syntax"
+[[ -f "$ROOT/dotfiles/homelab/.config/systemd/user/homelab-cdp.service" ]] && pass "homelab-cdp.service exists" || fail "missing homelab-cdp.service"
+[[ -f "$ROOT/dotfiles/homelab/.config/systemd/user/homelab-tailscale.service" ]] && pass "homelab-tailscale.service exists" || fail "missing homelab-tailscale.service"
+[[ -f "$ROOT/dotfiles/homelab/.config/homelab/REMOTE.md" ]] && pass "REMOTE.md exists" || fail "missing REMOTE.md"
+if grep -q 'remote-debugging-address=' "$ROOT/dotfiles/homelab/.config/homelab/cdp-chrome" \
+  && grep -q 'CDP_ADDR:-127.0.0.1' "$ROOT/dotfiles/homelab/.config/homelab/cdp-chrome" \
+  && grep -q 'LocalForward 127.0.0.1:' "$ROOT/dotfiles/bin/.local/bin/dpl-remote"; then
+  pass "CDP is loopback-only with SSH LocalForward"
+else
+  fail "CDP must bind loopback and be forwarded over SSH"
+fi
+if grep -qE 'serve --bg --tcp' "$ROOT/dotfiles/bin/.local/bin/dpl-remote" \
+  && grep -qi 'not using Funnel' "$ROOT/dotfiles/bin/.local/bin/dpl-remote"; then
+  pass "internet path is Tailscale serve, not Funnel"
+else
+  fail "dpl-remote must serve on the tailnet without Funnel"
+fi
 bash -n "$ROOT/scripts/linux-gnome-keys.sh" && pass "linux-gnome-keys.sh parses" || fail "linux-gnome-keys.sh syntax"
 bash -n "$ROOT/dotfiles/shell-linux/.config/shell/linux.sh" && pass "linux.sh parses" || fail "linux.sh syntax"
 bash -n "$ROOT/dotfiles/sway/.config/sway/scripts/focus-or-launch" && pass "focus-or-launch parses" || fail "focus-or-launch syntax"

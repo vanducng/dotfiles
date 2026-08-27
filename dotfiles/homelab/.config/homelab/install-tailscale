@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+# User-space Tailscale static binaries (no sudo, no TUN).
+# Daemon: homelab-tailscale.service (--tun=userspace-networking).
+set -euo pipefail
+
+OPT="${HOME}/.local/opt/tailscale"
+BIN="${HOME}/.local/bin"
+STATE="${HOME}/.local/state/tailscale"
+ARCH="$(uname -m)"
+case "$ARCH" in
+  x86_64) TS_ARCH=amd64 ;;
+  aarch64|arm64) TS_ARCH=arm64 ;;
+  *) echo "install-tailscale: unsupported arch $ARCH" >&2; exit 1 ;;
+esac
+
+mkdir -p "${HOME}/.local/opt" "$BIN" "$STATE"
+
+if [[ -x "${OPT}/tailscaled" && "${TAILSCALE_FORCE:-0}" != 1 ]]; then
+  echo "install-tailscale: already present ($("${OPT}/tailscale" version | head -1))"
+else
+  ver="${TAILSCALE_VERSION:-}"
+  if [[ -z "$ver" ]]; then
+    ver="$(curl -fsSL 'https://pkgs.tailscale.com/stable/?mode=json' \
+      | python3 -c 'import json,sys; print(json.load(sys.stdin)["TarballsVersion"])')"
+  fi
+  url="https://pkgs.tailscale.com/stable/tailscale_${ver}_${TS_ARCH}.tgz"
+  tmp="$(mktemp -d)"
+  trap 'rm -rf "$tmp"' EXIT
+  echo "install-tailscale: downloading $url"
+  curl -fL --retry 3 -o "${tmp}/ts.tgz" "$url"
+  mkdir -p "$OPT"
+  tar -xzf "${tmp}/ts.tgz" -C "$OPT" --strip-components=1
+  trap - EXIT
+  rm -rf "$tmp"
+fi
+
+# Wrapper so `tailscale` talks to the user daemon, not /var/run/tailscale.
+cat >"${BIN}/tailscale" <<EOF
+#!/bin/sh
+exec "${OPT}/tailscale" --socket="${STATE}/tailscaled.sock" "\$@"
+EOF
+chmod +x "${BIN}/tailscale"
+ln -sfn "${OPT}/tailscaled" "${BIN}/tailscaled"
+echo "install-tailscale: $("${OPT}/tailscale" version | head -1)"

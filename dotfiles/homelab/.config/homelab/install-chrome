@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# User-space Google Chrome (no sudo). Extract the official amd64 deb into
+# ~/.local/opt/google-chrome. chrome-sandbox cannot be setuid without root, so
+# the CDP launcher passes --no-sandbox.
+set -euo pipefail
+
+OPT="${HOME}/.local/opt/google-chrome"
+BIN="${HOME}/.local/bin"
+URL="${CHROME_DEB_URL:-https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb}"
+
+mkdir -p "${HOME}/.local/opt" "$BIN"
+
+if [[ -x "${OPT}/google-chrome" && "${CHROME_FORCE:-0}" != 1 ]]; then
+  echo "install-chrome: already present ($("${OPT}/google-chrome" --version 2>/dev/null || echo ok))"
+  ln -sfn "${OPT}/google-chrome" "${BIN}/google-chrome"
+  exit 0
+fi
+
+tmp="$(mktemp -d)"
+trap 'rm -rf "$tmp"' EXIT
+echo "install-chrome: downloading"
+curl -fL --retry 3 -o "${tmp}/chrome.deb" "$URL"
+dpkg-deb -x "${tmp}/chrome.deb" "${tmp}/root"
+rm -rf "$OPT"
+mv "${tmp}/root/opt/google/chrome" "$OPT"
+ln -sfn "${OPT}/google-chrome" "${BIN}/google-chrome"
+echo "install-chrome: $("${OPT}/google-chrome" --version)"

@@ -1,0 +1,253 @@
+#!/usr/bin/env bash
+# dpl as a remote server: SSH, screen (RDP), Chrome CDP, internet via Tailscale.
+set -euo pipefail
+
+export PATH="${HOME}/.local/bin:${PATH}"
+TS_BIN="${HOME}/.local/opt/tailscale/tailscale"
+TS_SOCK="${HOME}/.local/state/tailscale/tailscaled.sock"
+CHROME="${HOME}/.local/opt/google-chrome/google-chrome"
+CDP_PORT="${CDP_PORT:-9222}"
+SSH_PORT="${SSH_PORT:-2222}"
+RDP_PORT="${RDP_PORT:-3389}"
+LAN_IP="${LAN_IP:-192.168.1.193}"
+
+usage() {
+  cat <<'EOF'
+dpl-remote — SSH + screen + Chrome CDP, reachable off-LAN via Tailscale.
+
+  dpl-remote status          listeners, CDP, Tailscale, IPs
+  dpl-remote install         Chrome + Tailscale user binaries
+  dpl-remote cdp-start|cdp-stop|cdp-restart
+  dpl-remote up              Tailscale login URL, then serve SSH/RDP/CDP
+  dpl-remote login-url       print the Tailscale auth URL (NeedsLogin)
+  dpl-remote serve           publish :2222 :3389 :9222 on the tailnet (not the WAN)
+  dpl-remote down            log Tailscale out (keeps the daemon)
+  dpl-remote mac-config      SSH snippet for the Mac (LAN + IPv6 + Tailscale)
+
+Do not port-forward 3389 or 9222 on the router. CDP is loopback-only.
+Internet path is Tailscale (install the app on Mac/phone, same tailnet).
+IPv6 SSH on :2222 is the fallback if the ISP does not filter inbound v6.
+EOF
+}
+
+ts() {
+  [[ -x "$TS_BIN" ]] || { echo "dpl-remote: tailscale binary missing — dpl-remote install" >&2; return 1; }
+  "$TS_BIN" --socket="$TS_SOCK" "$@"
+}
+
+lan_ip() {
+  hostname -I 2>/dev/null | awk '{print $1}'
+}
+
+wan4() {
+  curl -4 -fsS --max-time 4 https://ifconfig.me 2>/dev/null || true
+}
+
+wan6() {
+  curl -6 -fsS --max-time 4 https://ifconfig.me 2>/dev/null || true
+}
+
+listening() {
+  local spec="$1"
+  ss -tln 2>/dev/null | awk '{print $4}' | grep -qE "$spec"
+}
+
+cdp_ok() {
+  curl -fsS --max-time 2 "http://127.0.0.1:${CDP_PORT}/json/version" >/dev/null 2>&1
+}
+
+cmd_install() {
+  bash "${HOME}/.config/homelab/install-chrome"
+  bash "${HOME}/.config/homelab/install-tailscale"
+  mkdir -p "${HOME}/work/store/chrome-cdp" "${HOME}/work/store/chrome-profiles"
+  chmod 700 "${HOME}/work/store/chrome-cdp" "${HOME}/work/store/chrome-profiles" 2>/dev/null || true
+  systemctl --user daemon-reload
+  systemctl --user enable --now homelab-tailscale.service
+  systemctl --user enable --now homelab-cdp.service
+  echo "dpl-remote: binaries + units on. Next: dpl-remote up  (opens a Tailscale login URL)"
+}
+
+cmd_cdp_start() {
+  systemctl --user start homelab-cdp.service
+  systemctl --user enable homelab-cdp.service >/dev/null
+}
+
+cmd_cdp_stop() {
+  systemctl --user stop homelab-cdp.service
+}
+
+cmd_cdp_restart() {
+  systemctl --user restart homelab-cdp.service
+}
+
+auth_url() {
+  ts status --json 2>/dev/null | python3 -c 'import json,sys
+try:
+    d=json.load(sys.stdin)
+except Exception:
+    sys.exit(1)
+print(d.get("AuthURL") or "")'
+}
+
+cmd_login_url() {
+  systemctl --user enable --now homelab-tailscale.service
+  local i=0 url=""
+  while [[ ! -S "$TS_SOCK" && $i -lt 20 ]]; do
+    sleep 0.5
+    i=$((i + 1))
+  done
+  url="$(auth_url || true)"
+  if [[ -z "$url" ]]; then
+    # Kick an interactive login; URL is in status even if this times out.
+    timeout 8 ts login --hostname=dpl >/dev/null 2>&1 || true
+    url="$(auth_url || true)"
+  fi
+  if [[ -n "$url" ]]; then
+    echo "$url"
+  else
+    echo "dpl-remote: no AuthURL (already logged in, or daemon down)" >&2
+    return 1
+  fi
+}
+
+cmd_up() {
+  systemctl --user enable --now homelab-tailscale.service
+  local i=0 state=""
+  while [[ ! -S "$TS_SOCK" && $i -lt 20 ]]; do
+    sleep 0.5
+    i=$((i + 1))
+  done
+  [[ -S "$TS_SOCK" ]] || { echo "dpl-remote: tailscaled socket missing" >&2; return 1; }
+  echo "dpl-remote: open this URL on the Mac/phone (same Tailscale account):"
+  cmd_login_url || true
+  echo "dpl-remote: waiting up to 3 min for the node to come online..."
+  ts up --hostname=dpl --accept-dns=false --ssh --timeout=180s
+  cmd_serve
+  ts status
+}
+
+cmd_serve() {
+  # Userspace networking has no TUN, so other tailnet nodes reach dpl only
+  # through Tailscale SSH or `tailscale serve` TCP forwards.
+  ts serve --bg --tcp "$SSH_PORT" "tcp://127.0.0.1:${SSH_PORT}"
+  ts serve --bg --tcp "$RDP_PORT" "tcp://127.0.0.1:${RDP_PORT}"
+  ts serve --bg --tcp "$CDP_PORT" "tcp://127.0.0.1:${CDP_PORT}"
+  echo "dpl-remote: tailnet serve  :${SSH_PORT} (ssh) :${RDP_PORT} (rdp) :${CDP_PORT} (cdp)"
+  echo "dpl-remote: not using Funnel — these are NOT on the public internet."
+  ts serve status || true
+}
+
+cmd_down() {
+  ts down || true
+}
+
+cmd_status() {
+  local ip4 ip6
+  ip4="$(lan_ip)"
+  ip6="$(wan6)"
+  echo "host:     $(hostname)  user: $(whoami)  linger: $(loginctl show-user "$(whoami)" -p Linger --value 2>/dev/null || echo ?)"
+  echo "LAN:      ${ip4:-?}  (ssh -p ${SSH_PORT} ubuntu@${LAN_IP})"
+  echo "WAN v4:   $(wan4)  (NAT — needs router forward of ${SSH_PORT} only, or Tailscale)"
+  echo "WAN v6:   ${ip6:-?}  (ssh -p ${SSH_PORT} ubuntu@${ip6:-<v6>})"
+  echo
+  printf 'ssh :%s     %s\n' "$SSH_PORT" "$(systemctl --user is-active sshd-user.service 2>/dev/null || echo down)"
+  printf 'rdp :%s     %s\n' "$RDP_PORT" "$(systemctl --user is-active gnome-remote-desktop.service 2>/dev/null || echo down)"
+  if cdp_ok; then
+    echo "cdp :${CDP_PORT}    up  http://127.0.0.1:${CDP_PORT}/json/version  (loopback only)"
+  else
+    echo "cdp :${CDP_PORT}    down  ($(systemctl --user is-active homelab-cdp.service 2>/dev/null || echo inactive))"
+  fi
+  echo
+  if [[ -S "$TS_SOCK" ]]; then
+    echo "tailscale daemon: $(systemctl --user is-active homelab-tailscale.service 2>/dev/null || echo socket)"
+    ts status --json 2>/dev/null | python3 -c '
+import json,sys
+try:
+    d=json.load(sys.stdin)
+except Exception:
+    sys.exit(0)
+print("tailscale self:", (d.get("Self") or {}).get("DNSName","").rstrip("."), " ".join((d.get("Self") or {}).get("TailscaleIPs") or []))
+print("tailscale backend:", d.get("BackendState"))
+url=d.get("AuthURL") or ""
+if url and d.get("BackendState") != "Running":
+    print("tailscale login:", url)
+' || ts status || true
+  else
+    echo "tailscale: not running  (dpl-remote install && dpl-remote up)"
+  fi
+  echo
+  echo "Mac: paste  dpl-remote mac-config  into ~/.ssh/config, then:"
+  echo "  ssh dpl                         # LAN"
+  echo "  ssh dpl-v6                      # internet via IPv6 if the ISP allows it"
+  echo "  ssh dpl-ts                      # internet via Tailscale after both sides are up"
+  echo "  env -u AGENT_BROWSER_PROFILE agent-browser connect ${CDP_PORT}"
+  echo "  Microsoft Remote Desktop → 127.0.0.1:13389  (after ssh dpl)"
+}
+
+cmd_mac_config() {
+  local ip6
+  ip6="$(wan6)"
+  [[ -n "$ip6" ]] || ip6="2001:ee0:4fc4:60f0::dpl"
+  cat <<EOF
+# dpl homelab — paste into ~/.ssh/config on the Mac (and phone SSH apps).
+# Forwards: local 9222 → Chrome CDP, local 13389 → GNOME RDP (screen).
+
+Host dpl
+  HostName ${LAN_IP}
+  User ubuntu
+  Port ${SSH_PORT}
+  IdentityFile ~/.ssh/id_ed25519
+  IdentitiesOnly yes
+  ServerAliveInterval 30
+  LocalForward 127.0.0.1:${CDP_PORT} 127.0.0.1:${CDP_PORT}
+  LocalForward 127.0.0.1:13389 127.0.0.1:${RDP_PORT}
+
+Host dpl-v6
+  HostName ${ip6}
+  User ubuntu
+  Port ${SSH_PORT}
+  IdentityFile ~/.ssh/id_ed25519
+  IdentitiesOnly yes
+  ServerAliveInterval 30
+  LocalForward 127.0.0.1:${CDP_PORT} 127.0.0.1:${CDP_PORT}
+  LocalForward 127.0.0.1:13389 127.0.0.1:${RDP_PORT}
+
+Host dpl-ts
+  HostName dpl
+  User ubuntu
+  Port ${SSH_PORT}
+  IdentityFile ~/.ssh/id_ed25519
+  IdentitiesOnly yes
+  ServerAliveInterval 30
+  LocalForward 127.0.0.1:${CDP_PORT} 127.0.0.1:${CDP_PORT}
+  LocalForward 127.0.0.1:13389 127.0.0.1:${RDP_PORT}
+
+# Usage:
+#   ssh dpl                  # on the LAN
+#   ssh -N dpl               # tunnels only, then CDP/RDP on localhost
+#   ssh dpl-v6               # off-LAN if IPv6 inbound is open
+#   ssh dpl-ts               # off-LAN after Tailscale on both machines
+#   env -u AGENT_BROWSER_PROFILE agent-browser connect ${CDP_PORT}
+#   Microsoft Remote Desktop / Windows App → 127.0.0.1:13389
+#   Or RDP directly to ${LAN_IP}:3389 on the LAN (creds: ~/.config/homelab/rdp.credentials on dpl)
+EOF
+}
+
+main() {
+  case "${1:-}" in
+    ""|-h|--help|help) usage ;;
+    status) cmd_status ;;
+    install) cmd_install ;;
+    cdp-start) cmd_cdp_start ;;
+    cdp-stop) cmd_cdp_stop ;;
+    cdp-restart) cmd_cdp_restart ;;
+    up) cmd_up ;;
+    login-url) cmd_login_url ;;
+    serve) cmd_serve ;;
+    down) cmd_down ;;
+    mac-config) cmd_mac_config ;;
+    *) usage >&2; exit 2 ;;
+  esac
+}
+
+main "$@"

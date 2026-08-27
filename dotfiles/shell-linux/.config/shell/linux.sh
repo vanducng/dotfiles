@@ -36,6 +36,12 @@ export PATH="${HOME}/.local/bin:${PATH}"
 
 export PASSWORD_STORE_DIR="${PASSWORD_STORE_DIR:-$HOME/work/git/personal/pass}"
 export CLI_PROXY_BASE_URL="${CLI_PROXY_BASE_URL:-https://cli-proxy.dataplanelabs.com}"
+
+# vd:browser-profile on Linux (extracted Chrome, profiles on the 970).
+if [ -x "${HOME}/.local/opt/google-chrome/google-chrome" ]; then
+  export BROWSER_PROFILE_CHROME="${BROWSER_PROFILE_CHROME:-$HOME/.local/opt/google-chrome/google-chrome}"
+fi
+export BROWSER_PROFILE_ROOT="${BROWSER_PROFILE_ROOT:-$HOME/work/store/chrome-profiles}"
 # API key: export CLI_PROXY_API_KEY, or `gopass show -o personal/saas/cli-proxy/code-01-api-key`
 
 # rustup writes this file; it is a no-op until cargo exists.

@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # User-space homelab bootstrap (no sudo). Idempotent.
-# Disks via udisks, never-sleep, sshd :2222, layout, clone last-30d repos,
-# docker-compose binary. Full docker/sshd:22/tailscale: sudo linux-homelab-root.sh
+# Disks via udisks, never-sleep, sshd :2222, Chrome CDP :9222, Tailscale
+# userspace, layout, clone last-30d repos, docker-compose binary.
+# Full docker/sshd:22/kernel tailscale: sudo linux-homelab-root.sh
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -153,6 +154,16 @@ install_lazygit_link() {
   fi
 }
 
+install_remote() {
+  # Chrome CDP + userspace Tailscale. Login (`dpl-remote up`) is interactive.
+  bash "${HOME}/.config/homelab/install-chrome" \
+    || bash "${REPO_ROOT}/dotfiles/homelab/.config/homelab/install-chrome"
+  bash "${HOME}/.config/homelab/install-tailscale" \
+    || bash "${REPO_ROOT}/dotfiles/homelab/.config/homelab/install-tailscale"
+  mkdir -p "${STORE_ROOT}/chrome-cdp" "${STORE_ROOT}/chrome-profiles"
+  chmod 700 "${STORE_ROOT}/chrome-cdp" "${STORE_ROOT}/chrome-profiles" 2>/dev/null || true
+}
+
 enable_units() {
   systemctl --user daemon-reload
   systemctl --user enable --now homelab-disks.service
@@ -179,6 +190,12 @@ EOF
   # the unit — systemd unlinks a stowed ~/.config/systemd/user/*.service.
   rm -f "${HOME}/.config/systemd/user/default.target.wants/cnb-openvpn.service"
   log "cnb-openvpn on-demand — cnb-openvpn start|stop|status (gopass cnb/vpn/pfsense-main)"
+  if [[ -x "${HOME}/.local/opt/tailscale/tailscaled" ]]; then
+    systemctl --user enable --now homelab-tailscale.service || true
+  fi
+  if [[ -x "${HOME}/.local/opt/google-chrome/google-chrome" ]]; then
+    systemctl --user enable --now homelab-cdp.service || true
+  fi
 }
 
 nm_static_hint() {
@@ -286,7 +303,11 @@ stow_homelab() {
       stow --no-folding -t "${HOME}" homelab)
   fi
   chmod +x "${HOME}/.config/homelab/mount-disks" \
-    "${HOME}/.config/homelab/relocate-stores" 2>/dev/null || true
+    "${HOME}/.config/homelab/relocate-stores" \
+    "${HOME}/.config/homelab/install-chrome" \
+    "${HOME}/.config/homelab/install-tailscale" \
+    "${HOME}/.config/homelab/cdp-chrome" \
+    "${HOME}/.local/bin/dpl-remote" 2>/dev/null || true
 }
 
 main() {
@@ -302,6 +323,7 @@ main() {
   install_user_sshd
   install_compose
   install_lazygit_link
+  install_remote
   enable_units
   nm_static_hint
   if [[ "${SKIP_CLONE:-0}" != 1 ]]; then
@@ -315,6 +337,9 @@ main() {
   log "  archive:  ${HOME}/archive"
   log "  backup:   ${HOME}/backup"
   log "  ssh user: $(hostname -I | awk '{print $1}'):2222  (sshd :22 needs sudo linux-homelab-root.sh)"
+  log "  rdp:      $(hostname -I | awk '{print $1}'):3389  (GNOME; tunnel via ssh LocalForward 13389)"
+  log "  cdp:      127.0.0.1:9222 (headed Chrome; attach through ssh/Tailscale, not the WAN)"
+  log "  internet: dpl-remote up   # Tailscale login URL, then serve SSH/RDP/CDP on the tailnet"
   log "  never-sleep user inhibit on; system sleep mask needs that same sudo script"
   log "  docker engine needs: sudo -E ${REPO_ROOT}/scripts/linux-homelab-root.sh"
 }

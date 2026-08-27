@@ -75,7 +75,13 @@ EOF
 fi
 
 # --- tailscale (inbound mesh SSH; prefer this over exposing :22 to the internet) ---
-if ! command -v tailscale >/dev/null; then
+# User-space daemon (homelab-tailscale.service) may already be running; stop it
+# so the kernel TUN unit owns the node instead of two daemons racing.
+if [[ -n "$TARGET_HOME" ]]; then
+  sudo -u "$TARGET_USER" XDG_RUNTIME_DIR="/run/user/$(id -u "$TARGET_USER")" \
+    systemctl --user disable --now homelab-tailscale.service 2>/dev/null || true
+fi
+if ! command -v tailscale >/dev/null || [[ ! -x /usr/sbin/tailscaled && ! -x /usr/bin/tailscaled ]]; then
   curl -fsSL https://tailscale.com/install.sh | sh
 fi
 systemctl enable --now tailscaled || true

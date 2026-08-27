@@ -1,0 +1,14 @@
+[Unit]
+Description=Tailscale userspace daemon (internet mesh, no sudo / no TUN)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStartPre=/bin/mkdir -p %h/.local/state/tailscale
+ExecStart=%h/.local/opt/tailscale/tailscaled --tun=userspace-networking --statedir=%h/.local/state/tailscale --socket=%h/.local/state/tailscale/tailscaled.sock --socks5-server=localhost:1055 --outbound-http-proxy-listen=localhost:1055 --port=41641
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=default.target

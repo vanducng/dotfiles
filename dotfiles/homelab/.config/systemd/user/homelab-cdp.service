@@ -1,0 +1,24 @@
+[Unit]
+Description=Headed Chrome with CDP on 127.0.0.1:9222
+After=graphical-session.target homelab-disks.service
+Wants=homelab-disks.service
+
+[Service]
+Type=simple
+Environment=DISPLAY=:0
+Environment=WAYLAND_DISPLAY=wayland-0
+Environment=XDG_SESSION_TYPE=wayland
+Environment=BROWSER_PROFILE_CHROME=%h/.local/opt/google-chrome/google-chrome
+Environment=CDP_USER_DATA_DIR=%h/work/store/chrome-cdp
+Environment=CDP_PORT=9222
+Environment=CDP_ADDR=127.0.0.1
+ExecStartPre=/bin/sh -c 'for i in $(seq 1 90); do if [ -S "${XDG_RUNTIME_DIR}/wayland-0" ] || [ -e /tmp/.X11-unix/X0 ]; then exit 0; fi; sleep 1; done; echo "homelab-cdp: no display yet"; exit 1'
+ExecStart=%h/.config/homelab/cdp-chrome
+Restart=always
+RestartSec=5
+KillMode=control-group
+TimeoutStopSec=15
+
+[Install]
+WantedBy=default.target
+WantedBy=graphical-session.target

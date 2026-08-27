@@ -12,11 +12,12 @@ if [[ ! -d "$WORK" ]]; then
 fi
 
 mkdir -p \
-  "$STORE"/{mise,cargo,go,npm,npm-global,cache,opt,cursor-agent,claude,pi,fonts} \
+  "$STORE"/{mise,cargo,go,npm,npm-global,cache,opt,cursor-agent,claude,pi,fonts,chrome-cdp,chrome-profiles} \
   "${WORK}/docker/"{data,tmp} \
   "${WORK}/tmp" \
   "${WORK}/worktrees" \
   "${WORK}/agents"
+chmod 700 "$STORE/chrome-cdp" "$STORE/chrome-profiles" 2>/dev/null || true
 
 # src → dest on the NVMe. src becomes a symlink.
 relocate() {
