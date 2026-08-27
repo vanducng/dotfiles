@@ -34,19 +34,19 @@ mk_lab_dirs() {
     "${HDDB_MNT}/dpl/"{lab,snapshots} \
     "${HOME}/mnt" "${HOME}/.local/bin"
   cat >"${NVME_MNT}/README.md" <<'EOF'
-# dpl-work (Samsung 970 EVO Plus 2TB)
+# /media/ubuntu/work (Samsung 970 EVO Plus 2TB)
 
-Git: `~/work/git/<org>`. Docker: `docker/data`.
+Git: `~/work/git/<org>`. Docker: `~/work/docker/data`.
 
 | Path | Role |
 |---|---|
-| `work/git/cnb` | CareerNow |
-| `work/git/crashchat` | CrashChat.ai |
-| `work/git/ab-spectrum` | AB-Spectrum |
-| `work/git/bhcoe` | BHCOE / Jade |
-| `work/git/dpl` | DataPlaneLabs |
-| `work/git/nlb` | nextlevelbuilder |
-| `work/git/personal` | vanducng |
+| `git/cnb` | CareerNow |
+| `git/crashchat` | CrashChat.ai |
+| `git/ab-spectrum` | AB-Spectrum |
+| `git/bhcoe` | BHCOE / Jade |
+| `git/dpl` | DataPlaneLabs |
+| `git/nlb` | nextlevelbuilder |
+| `git/personal` | vanducng |
 | `docker/data` | images, volumes, json-logs |
 EOF
 }

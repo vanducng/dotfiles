@@ -3,14 +3,14 @@
 #   cp ~/.config/git/gitconfig.linux.example ~/.gitconfig
 #   # then edit name/email if needed
 #
-# Clone root is ~/work/git/<org> (Linux: /media/ubuntu/dpl-work/work/git).
+# Clone root is ~/work/git/<org> (970 mounted at /media/ubuntu/work).
 #   personal default               → me@vanducng.dev
 #   ~/work/git/cnb                 → duc@careernowbrands.com
 #   ~/work/git/crashchat           → me@vanducng.dev
 #   ~/work/git/ab-spectrum         → duc@yds.services
 #   ~/work/git/bhcoe               → duc@careernowbrands.com
 # Do not use a catch-all ~/work/ includeIf (it would stamp CareerNow onto every client).
-# Git 2.34: gitdir is canonicalized; keep **/dpl-work/work/git/<org>/ as well.
+# Git 2.34: gitdir is canonicalized to /media/ubuntu/work/git/<org>/.
 
 [user]
 	name = Duc Nguyen
@@ -19,24 +19,24 @@
 
 [includeIf "gitdir:~/work/git/cnb/"]
 	path = ~/.config/git/work.gitconfig
-[includeIf "gitdir:**/dpl-work/work/git/cnb/"]
+[includeIf "gitdir:/media/ubuntu/work/git/cnb/"]
 	path = ~/.config/git/work.gitconfig
 [includeIf "gitdir:**/careernowbrands/"]
 	path = ~/.config/git/work.gitconfig
 
 [includeIf "gitdir:~/work/git/crashchat/"]
 	path = ~/.config/git/work-crashchat.gitconfig
-[includeIf "gitdir:**/dpl-work/work/git/crashchat/"]
+[includeIf "gitdir:/media/ubuntu/work/git/crashchat/"]
 	path = ~/.config/git/work-crashchat.gitconfig
 
 [includeIf "gitdir:~/work/git/ab-spectrum/"]
 	path = ~/.config/git/work-ab-spectrum.gitconfig
-[includeIf "gitdir:**/dpl-work/work/git/ab-spectrum/"]
+[includeIf "gitdir:/media/ubuntu/work/git/ab-spectrum/"]
 	path = ~/.config/git/work-ab-spectrum.gitconfig
 
 [includeIf "gitdir:~/work/git/bhcoe/"]
 	path = ~/.config/git/work-bhcoe.gitconfig
-[includeIf "gitdir:**/dpl-work/work/git/bhcoe/"]
+[includeIf "gitdir:/media/ubuntu/work/git/bhcoe/"]
 	path = ~/.config/git/work-bhcoe.gitconfig
 
 [core]

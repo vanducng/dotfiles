@@ -9,11 +9,11 @@ Host `dpl` is a homelab box: never-sleep, auto-login, coding-agent handoff, extr
 | Disk | Size | Use |
 |---|---|---|
 | Samsung 860 EVO (`/`) | 1 TB | OS, `$HOME` configs, dotfiles |
-| Samsung 970 EVO Plus NVMe | 2 TB | **hot** `dpl-work`: `~/work/git/<org>`, `~/lab/docker/data` |
+| Samsung 970 EVO Plus NVMe | 2 TB | **hot** `/media/ubuntu/work` (`~/work`): `git/<org>`, `docker/data` |
 | WD Volume A | 16 TB | `~/archive` datasets/media |
 | WD Volume B | 16 TB | `~/backup` snapshots of the lab |
 
-Git is `~/work/git/{cnb,crashchat,ab-spectrum,bhcoe,dpl,nlb,personal}`. Worktrees sit next to the clone (`.worktrees/`). Docker images/volumes/json-logs: `~/lab/docker/data` after the sudo root script.
+Git is `~/work/git/{cnb,crashchat,ab-spectrum,bhcoe,dpl,nlb,personal}`. Worktrees sit next to the clone (`.worktrees/`). Docker images/volumes/json-logs: `~/work/docker/data` after the sudo root script.
 
 ## User-space (no sudo)
 

@@ -45,11 +45,11 @@ fi
 # --- fstab extra disks (already formatted; do not mkfs) ---
 grep -q 4f37efa3-18d4-46a7-b60a-e37919b636cc /etc/fstab || cat >>/etc/fstab <<'EOF'
 # dpl homelab — extra disks (do not format)
-UUID=4f37efa3-18d4-46a7-b60a-e37919b636cc /media/ubuntu/dpl-work ext4 defaults,nofail,x-systemd.device-timeout=10 0 2
+UUID=4f37efa3-18d4-46a7-b60a-e37919b636cc /media/ubuntu/work ext4 defaults,nofail,x-systemd.device-timeout=10 0 2
 UUID=529001a1-d4bd-4930-9053-7ab4875e856d /media/ubuntu/Volume\040A ext4 defaults,nofail,x-systemd.device-timeout=10 0 2
 UUID=fcf77474-1737-4790-9a14-8ee58cc45870 /media/ubuntu/Volume\040B ext4 defaults,nofail,x-systemd.device-timeout=10 0 2
 EOF
-mkdir -p /media/ubuntu/dpl-work \
+mkdir -p /media/ubuntu/work \
   "/media/ubuntu/Volume A" "/media/ubuntu/Volume B"
 mount -a || true
 
@@ -57,12 +57,12 @@ mount -a || true
 systemctl enable --now docker
 usermod -aG docker "$TARGET_USER"
 # data-root on NVMe if present
-if [[ -d /media/ubuntu/dpl-work/docker/data ]]; then
+if [[ -d /media/ubuntu/work/docker/data ]]; then
   mkdir -p /etc/docker
   cat >/etc/docker/daemon.json <<'EOF'
 {
-  "data-root": "/media/ubuntu/dpl-work/docker/data",
-  "tmp-dir": "/media/ubuntu/dpl-work/docker/tmp",
+  "data-root": "/media/ubuntu/work/docker/data",
+  "tmp-dir": "/media/ubuntu/work/docker/tmp",
   "log-driver": "json-file",
   "log-opts": {
     "max-size": "10m",
