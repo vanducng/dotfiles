@@ -27,6 +27,7 @@ unset _vd_shell
 # herdr/tmux) win over npm bins that mise node prepends.
 export PATH="${HOME}/.local/bin:${PATH}"
 
+export PASSWORD_STORE_DIR="${PASSWORD_STORE_DIR:-$HOME/work/git/personal/pass}"
 export CLI_PROXY_BASE_URL="${CLI_PROXY_BASE_URL:-https://cli-proxy.dataplanelabs.com}"
 # API key: export CLI_PROXY_API_KEY, or `gopass show -o personal/saas/cli-proxy/code-01-api-key`
 
