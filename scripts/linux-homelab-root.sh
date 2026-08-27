@@ -59,10 +59,10 @@ usermod -aG docker "$TARGET_USER"
 # data-root on NVMe if present
 if [[ -d /media/ubuntu/work/docker/data ]]; then
   mkdir -p /etc/docker
+  # Docker 24+ has no "tmp-dir" daemon.json key (that broke dockerd 29 on dpl).
   cat >/etc/docker/daemon.json <<'EOF'
 {
   "data-root": "/media/ubuntu/work/docker/data",
-  "tmp-dir": "/media/ubuntu/work/docker/tmp",
   "log-driver": "json-file",
   "log-opts": {
     "max-size": "10m",

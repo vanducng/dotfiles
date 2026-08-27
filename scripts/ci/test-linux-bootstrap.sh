@@ -26,14 +26,32 @@ bash -n "$ROOT/dotfiles/homelab/.config/homelab/install-chrome" && pass "install
 bash -n "$ROOT/dotfiles/homelab/.config/homelab/install-tailscale" && pass "install-tailscale parses" || fail "install-tailscale syntax"
 [[ -f "$ROOT/dotfiles/homelab/.config/systemd/user/homelab-cdp.service" ]] && pass "homelab-cdp.service exists" || fail "missing homelab-cdp.service"
 [[ -f "$ROOT/dotfiles/homelab/.config/systemd/user/homelab-tailscale.service" ]] && pass "homelab-tailscale.service exists" || fail "missing homelab-tailscale.service"
-[[ -f "$ROOT/dotfiles/homelab/.config/systemd/user/homelab-tailscale-up.service" ]] && pass "homelab-tailscale-up.service exists" || fail "missing homelab-tailscale-up.service"
 [[ -f "$ROOT/dotfiles/homelab/.config/homelab/REMOTE.md" ]] && pass "REMOTE.md exists" || fail "missing REMOTE.md"
+remote_cli="$ROOT/dotfiles/bin/.local/bin/dpl-remote"
+mac_config="$(WAN6_IP=2001:db8::10 LAN_IP=192.0.2.10 bash "$remote_cli" mac-config)"
+shell_block="$(printf '%s\n' "$mac_config" | awk '/^Host dpl dpl-v6 dpl-ts$/{capture=1; next} /^Host dpl$/{capture=0} capture')"
 if grep -q 'remote-debugging-address=' "$ROOT/dotfiles/homelab/.config/homelab/cdp-chrome" \
   && grep -q 'CDP_ADDR:-127.0.0.1' "$ROOT/dotfiles/homelab/.config/homelab/cdp-chrome" \
-  && grep -q 'LocalForward 127.0.0.1:' "$ROOT/dotfiles/bin/.local/bin/dpl-remote"; then
-  pass "CDP is loopback-only with SSH LocalForward"
+  && grep -q '^Host dpl-ts-tunnel$' <<<"$mac_config" \
+  && grep -q 'LocalForward 127.0.0.1:9222 127.0.0.1:9222' <<<"$mac_config" \
+  && ! grep -q 'LocalForward' <<<"$shell_block"; then
+  pass "CDP is loopback-only with dedicated SSH tunnel aliases"
 else
-  fail "CDP must bind loopback and be forwarded over SSH"
+  fail "CDP must bind loopback and use dedicated SSH tunnel aliases"
+fi
+if grep -q 'XDG_RUNTIME_DIR=' "$remote_cli" \
+  && grep -q 'DBUS_SESSION_BUS_ADDRESS=' "$remote_cli"; then
+  pass "dpl-remote initializes the user systemd bus over SSH"
+else
+  fail "dpl-remote must initialize the user systemd bus over SSH"
+fi
+sshd_config="$ROOT/dotfiles/homelab/.config/sshd/sshd_config"
+if grep -q '^PermitUserEnvironment yes$' "$sshd_config" \
+  && ! grep -qE '^SetEnv PATH=.*(/Users/|/home/)' "$sshd_config" \
+  && grep -q '\.ssh/environment' "$ROOT/scripts/linux-homelab.sh"; then
+  pass "user SSH PATH is generated from HOME at install time"
+else
+  fail "user SSH PATH must be generated from HOME at install time"
 fi
 if grep -qE 'serve --bg --tcp' "$ROOT/dotfiles/bin/.local/bin/dpl-remote" \
   && grep -qi 'not using Funnel' "$ROOT/dotfiles/bin/.local/bin/dpl-remote"; then

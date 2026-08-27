@@ -134,6 +134,9 @@ install_user_sshd() {
   chmod 700 "${HOME}/.ssh"
   touch "${HOME}/.ssh/authorized_keys"
   chmod 600 "${HOME}/.ssh/authorized_keys"
+  printf 'PATH=%s/.local/bin:%s/.local/share/mise/shims:/usr/bin:/bin\n' "$HOME" "$HOME" \
+    >"${HOME}/.ssh/environment"
+  chmod 600 "${HOME}/.ssh/environment"
 }
 
 install_compose() {

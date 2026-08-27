@@ -13,7 +13,12 @@ set -euo pipefail
 MAIN="${HOME}/.config/openvpn/cnb-main"
 LEGACY="${HOME}/.config/openvpn/cnb"
 AUTH="${HOME}/.config/openvpn/cnb.auth"
-BIN="${HOME}/.local/opt/openvpn/usr/sbin/openvpn"
+# Prefer a copy on the OS disk: the 970 is mounted nosuid, so file caps there are ignored.
+if [[ -x "${HOME}/.local/libexec/openvpn" ]]; then
+  BIN="${HOME}/.local/libexec/openvpn"
+else
+  BIN="${HOME}/.local/opt/openvpn/usr/sbin/openvpn"
+fi
 UNIT="cnb-openvpn.service"
 GOPASS_NS="${CNB_VPN_GOPASS:-cnb/vpn/pfsense-main}"
 export PATH="${HOME}/.local/bin:${HOME}/.local/share/mise/shims:/usr/bin:/bin:${PATH}"
@@ -69,6 +74,7 @@ out.write_text(
         [
             "# CNB pfSense MAIN (gopass cnb/vpn/pfsense-main)",
             "dev cnb0",
+            "dev-type tun",
             'pull-filter ignore "block-outside-dns"',
             "persist-tun",
             "persist-key",

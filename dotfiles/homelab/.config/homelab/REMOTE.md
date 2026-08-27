@@ -21,7 +21,7 @@ through an SSH tunnel or Tailscale. CDP is bound to loopback only.
 WAN IPv4 is NAT (`222.253.112.200`). WAN IPv6 on this NIC (may rotate):
 
 ```
-2001:ee0:4fc4:60f0:facd:87bb:37f5:1d7f
+2001:ee0:4fc4:60f0:22d2:d132:ce3e:2e88
 ```
 
 ---
@@ -31,44 +31,56 @@ WAN IPv4 is NAT (`222.253.112.200`). WAN IPv6 on this NIC (may rotate):
 Paste this (or re-print with `dpl-remote mac-config` if IPv6 changed):
 
 ```
+Host dpl dpl-v6 dpl-ts
+  User ubuntu
+  Port 2222
+  IdentityFile ~/.ssh/id_rsa
+  IdentitiesOnly yes
+  ServerAliveInterval 30
+  ServerAliveCountMax 3
+
 Host dpl
   HostName 192.168.1.193
-  User ubuntu
-  Port 2222
-  IdentityFile ~/.ssh/id_ed25519
-  IdentitiesOnly yes
-  ServerAliveInterval 30
-  LocalForward 127.0.0.1:9222 127.0.0.1:9222
-  LocalForward 127.0.0.1:13389 127.0.0.1:3389
 
 Host dpl-v6
-  HostName 2001:ee0:4fc4:60f0:facd:87bb:37f5:1d7f
-  User ubuntu
-  Port 2222
-  IdentityFile ~/.ssh/id_ed25519
-  IdentitiesOnly yes
-  ServerAliveInterval 30
-  LocalForward 127.0.0.1:9222 127.0.0.1:9222
-  LocalForward 127.0.0.1:13389 127.0.0.1:3389
+  HostName 2001:ee0:4fc4:60f0:22d2:d132:ce3e:2e88
 
 Host dpl-ts
   HostName dpl
+
+Host dpl-tunnel dpl-v6-tunnel dpl-ts-tunnel
   User ubuntu
   Port 2222
-  IdentityFile ~/.ssh/id_ed25519
+  IdentityFile ~/.ssh/id_rsa
   IdentitiesOnly yes
   ServerAliveInterval 30
+  ServerAliveCountMax 3
+  ExitOnForwardFailure yes
+  ControlMaster auto
+  ControlPersist 10m
+  ControlPath ~/.ssh/cm-%n-%p-%r
   LocalForward 127.0.0.1:9222 127.0.0.1:9222
   LocalForward 127.0.0.1:13389 127.0.0.1:3389
+
+Host dpl-tunnel
+  HostName 192.168.1.193
+
+Host dpl-v6-tunnel
+  HostName 2001:ee0:4fc4:60f0:22d2:d132:ce3e:2e88
+
+Host dpl-ts-tunnel
+  HostName dpl
 ```
 
 Pubkey must already be in `~/.ssh/authorized_keys` on dpl (it is, from the Mac).
 
 ```bash
-ssh dpl                 # shell on the LAN
-ssh -N dpl              # keep CDP + RDP tunnels only
-ssh dpl-v6              # off-LAN if the ISP leaves inbound IPv6 open
-ssh dpl-ts              # off-LAN after Tailscale is logged in on both sides
+ssh dpl                 # LAN shell
+ssh dpl-v6              # IPv6 shell fallback
+ssh dpl-ts              # Tailscale shell
+ssh -N dpl-tunnel       # LAN CDP + RDP tunnels
+ssh -N dpl-v6-tunnel    # IPv6 CDP + RDP tunnels
+ssh -N dpl-ts-tunnel    # Tailscale CDP + RDP tunnels
 ```
 
 Cursor / VS Code Remote SSH: host `192.168.1.193`, port `2222`, user `ubuntu`.
@@ -80,7 +92,7 @@ Cursor / VS Code Remote SSH: host `192.168.1.193`, port `2222`, user `ubuntu`.
 Same GNOME session that is on the monitor (Wayland).
 
 - **On the LAN:** Microsoft Remote Desktop / Windows App → `192.168.1.193:3389`, user `ubuntu`.
-- **Anywhere, after `ssh dpl` / `dpl-v6` / `dpl-ts`:** connect to `127.0.0.1:13389`.
+- **Anywhere, after `ssh -N dpl-tunnel` / `dpl-v6-tunnel` / `dpl-ts-tunnel`:** connect to `127.0.0.1:13389`.
 
 Password lives only in `~/.config/homelab/rdp.credentials` on dpl. Do not commit it.
 
@@ -95,7 +107,7 @@ systemd user unit `homelab-cdp.service`. DevTools:
 http://127.0.0.1:9222/json/version
 ```
 
-That port is **not** on the LAN NIC. After `ssh dpl` (forwards 9222):
+That port is **not** on the LAN NIC. Start one tunnel alias, preferably `ssh -N dpl-ts-tunnel`:
 
 ```bash
 env -u AGENT_BROWSER_PROFILE agent-browser connect 9222
@@ -141,7 +153,7 @@ sudo tailscale up --ssh --hostname=dpl
 ### IPv6 fallback (no Tailscale)
 
 ```bash
-ssh -p 2222 ubuntu@2001:ee0:4fc4:60f0:facd:87bb:37f5:1d7f
+ssh -p 2222 ubuntu@2001:ee0:4fc4:60f0:22d2:d132:ce3e:2e88
 ```
 
 Confirmed listening on `[::]:2222`. Whether this works from a cafe depends on
@@ -214,8 +226,7 @@ Units (user systemd, linger=yes):
 - `sshd-user.service` — OpenSSH `:2222`
 - `gnome-remote-desktop.service` — RDP `:3389`
 - `homelab-cdp.service` — headed Chrome CDP
-- `homelab-tailscale.service` — userspace Tailscale daemon
-- `homelab-tailscale-up.service` — auto `tailscale up` + serve :2222/:3389/:9222 on boot
+- `homelab-tailscale.service` — userspace Tailscale
 - `homelab-nosleep.service` / `homelab-disks.service`
 
 ---

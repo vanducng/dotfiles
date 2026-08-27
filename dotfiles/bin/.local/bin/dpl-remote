@@ -11,6 +11,13 @@ SSH_PORT="${SSH_PORT:-2222}"
 RDP_PORT="${RDP_PORT:-3389}"
 LAN_IP="${LAN_IP:-192.168.1.193}"
 
+if [[ -z "${XDG_RUNTIME_DIR:-}" && -d "/run/user/$(id -u)" ]]; then
+  export XDG_RUNTIME_DIR="/run/user/$(id -u)"
+fi
+if [[ -z "${DBUS_SESSION_BUS_ADDRESS:-}" && -S "${XDG_RUNTIME_DIR:-}/bus" ]]; then
+  export DBUS_SESSION_BUS_ADDRESS="unix:path=${XDG_RUNTIME_DIR}/bus"
+fi
+
 usage() {
   cat <<'EOF'
 dpl-remote — SSH + screen + Chrome CDP, reachable off-LAN via Tailscale.
@@ -44,7 +51,11 @@ wan4() {
 }
 
 wan6() {
-  curl -6 -fsS --max-time 4 https://ifconfig.me 2>/dev/null || true
+  if [[ -n "${WAN6_IP:-}" ]]; then
+    printf '%s' "$WAN6_IP"
+  else
+    curl -6 -fsS --max-time 4 https://ifconfig.me 2>/dev/null || true
+  fi
 }
 
 listening() {
@@ -63,7 +74,6 @@ cmd_install() {
   chmod 700 "${HOME}/work/store/chrome-cdp" "${HOME}/work/store/chrome-profiles" 2>/dev/null || true
   systemctl --user daemon-reload
   systemctl --user enable --now homelab-tailscale.service
-  systemctl --user enable --now homelab-tailscale-up.service
   systemctl --user enable --now homelab-cdp.service
   echo "dpl-remote: binaries + units on. Next: dpl-remote up  (opens a Tailscale login URL)"
 }
@@ -178,11 +188,12 @@ if url and d.get("BackendState") != "Running":
   fi
   echo
   echo "Mac: paste  dpl-remote mac-config  into ~/.ssh/config, then:"
-  echo "  ssh dpl                         # LAN"
-  echo "  ssh dpl-v6                      # internet via IPv6 if the ISP allows it"
-  echo "  ssh dpl-ts                      # internet via Tailscale after both sides are up"
+  echo "  ssh dpl                         # LAN shell"
+  echo "  ssh dpl-v6                      # IPv6 shell fallback"
+  echo "  ssh dpl-ts                      # Tailscale shell"
+  echo "  ssh -N dpl-ts-tunnel            # CDP + RDP tunnels over Tailscale"
   echo "  env -u AGENT_BROWSER_PROFILE agent-browser connect ${CDP_PORT}"
-  echo "  Microsoft Remote Desktop → 127.0.0.1:13389  (after ssh dpl)"
+  echo "  Microsoft Remote Desktop → 127.0.0.1:13389  (after a tunnel alias)"
 }
 
 cmd_mac_config() {
@@ -190,44 +201,57 @@ cmd_mac_config() {
   ip6="$(wan6)"
   [[ -n "$ip6" ]] || ip6="2001:ee0:4fc4:60f0::dpl"
   cat <<EOF
-# dpl homelab — paste into ~/.ssh/config on the Mac (and phone SSH apps).
-# Forwards: local 9222 → Chrome CDP, local 13389 → GNOME RDP (screen).
+# dpl homelab - paste into ~/.ssh/config on the Mac and phone SSH apps.
+# Shell aliases never claim local ports. Tunnel aliases own CDP and RDP forwards.
+
+Host dpl dpl-v6 dpl-ts
+  User ubuntu
+  Port ${SSH_PORT}
+  IdentityFile ~/.ssh/id_rsa
+  IdentitiesOnly yes
+  ServerAliveInterval 30
+  ServerAliveCountMax 3
 
 Host dpl
   HostName ${LAN_IP}
-  User ubuntu
-  Port ${SSH_PORT}
-  IdentityFile ~/.ssh/id_ed25519
-  IdentitiesOnly yes
-  ServerAliveInterval 30
-  LocalForward 127.0.0.1:${CDP_PORT} 127.0.0.1:${CDP_PORT}
-  LocalForward 127.0.0.1:13389 127.0.0.1:${RDP_PORT}
 
 Host dpl-v6
   HostName ${ip6}
-  User ubuntu
-  Port ${SSH_PORT}
-  IdentityFile ~/.ssh/id_ed25519
-  IdentitiesOnly yes
-  ServerAliveInterval 30
-  LocalForward 127.0.0.1:${CDP_PORT} 127.0.0.1:${CDP_PORT}
-  LocalForward 127.0.0.1:13389 127.0.0.1:${RDP_PORT}
 
 Host dpl-ts
   HostName dpl
+
+Host dpl-tunnel dpl-v6-tunnel dpl-ts-tunnel
   User ubuntu
   Port ${SSH_PORT}
-  IdentityFile ~/.ssh/id_ed25519
+  IdentityFile ~/.ssh/id_rsa
   IdentitiesOnly yes
   ServerAliveInterval 30
+  ServerAliveCountMax 3
+  ExitOnForwardFailure yes
+  ControlMaster auto
+  ControlPersist 10m
+  ControlPath ~/.ssh/cm-%n-%p-%r
   LocalForward 127.0.0.1:${CDP_PORT} 127.0.0.1:${CDP_PORT}
   LocalForward 127.0.0.1:13389 127.0.0.1:${RDP_PORT}
 
+Host dpl-tunnel
+  HostName ${LAN_IP}
+
+Host dpl-v6-tunnel
+  HostName ${ip6}
+
+Host dpl-ts-tunnel
+  HostName dpl
+
 # Usage:
-#   ssh dpl                  # on the LAN
-#   ssh -N dpl               # tunnels only, then CDP/RDP on localhost
-#   ssh dpl-v6               # off-LAN if IPv6 inbound is open
-#   ssh dpl-ts               # off-LAN after Tailscale on both machines
+#   ssh dpl                  # LAN shell
+#   ssh dpl-v6               # IPv6 shell fallback
+#   ssh dpl-ts               # Tailscale shell
+#   ssh -N dpl-tunnel        # LAN CDP + RDP tunnels
+#   ssh -N dpl-v6-tunnel     # IPv6 CDP + RDP tunnels
+#   ssh -N dpl-ts-tunnel     # Tailscale CDP + RDP tunnels
+#   ssh -O exit dpl-ts-tunnel
 #   env -u AGENT_BROWSER_PROFILE agent-browser connect ${CDP_PORT}
 #   Microsoft Remote Desktop / Windows App → 127.0.0.1:13389
 #   Or RDP directly to ${LAN_IP}:3389 on the LAN (creds: ~/.config/homelab/rdp.credentials on dpl)
