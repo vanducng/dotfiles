@@ -44,10 +44,15 @@ stow-folders:
 	@printf '%s\n' $(STOW_FOLDERS)
 
 stow-install:
-	@cd dotfiles && for folder in $(STOW_FOLDERS); do \
-		echo "Stowing $$folder"; \
-		stow --no-folding -D -t $(HOME) $$folder 2>/dev/null || true; \
-		stow --no-folding -t $(HOME) $$folder; \
+	@for folder in $(STOW_FOLDERS); do \
+		if [ "$$folder" = pi ]; then \
+			echo "Stowing pi (home layout)"; \
+			./scripts/pi-home-layout.sh; \
+		else \
+			echo "Stowing $$folder"; \
+			(cd dotfiles && stow --no-folding -D -t $(HOME) $$folder 2>/dev/null || true; \
+			 stow --no-folding -t $(HOME) $$folder); \
+		fi; \
 	done
 
 stow-uninstall stow-clean:
@@ -78,7 +83,15 @@ unstow-$(1):
 	@cd dotfiles && stow -t $(HOME) -D $(1) 2>/dev/null || true
 endef
 
-$(foreach tool,$(ALL_STOW_FOLDERS),$(eval $(call make-stow-target,$(tool))))
+$(foreach tool,$(filter-out pi,$(ALL_STOW_FOLDERS)),$(eval $(call make-stow-target,$(tool))))
+
+stow-pi:
+	@echo "Stowing pi (home layout)..."
+	@./scripts/pi-home-layout.sh
+
+unstow-pi:
+	@echo "Unstowing pi..."
+	@cd dotfiles && stow -t $(HOME) -D pi 2>/dev/null || true
 
 linux-deps:
 	@./scripts/linux-deps.sh
@@ -119,6 +132,7 @@ script-test:
 	@./scripts/ci/test-herdr-tab-renumber.sh
 	@./scripts/ci/test-droid-moshi-notify.sh
 	@./scripts/ci/test-pi-config.sh
+	@./scripts/ci/test-pi-home-layout.sh
 	@./scripts/ci/test-cursor-config.sh
 	@./scripts/ci/test-grok-config.sh
 	@./scripts/ci/test-dsh-config.sh
