@@ -1,0 +1,11 @@
+#!/bin/sh
+set -eu
+CONF="${HOME}/.config/openvpn/cnb"
+AUTH="${HOME}/.config/openvpn/cnb.auth"
+BIN="${HOME}/.local/opt/openvpn/usr/sbin/openvpn"
+export LD_LIBRARY_PATH="${HOME}/.local/opt/openvpn/usr/lib/x86_64-linux-gnu${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+if [ ! -s "$AUTH" ] || [ "$(wc -l < "$AUTH")" -lt 2 ]; then
+  echo "cnb-openvpn: missing $AUTH (username then password)" >&2
+  exit 1
+fi
+exec "$BIN" --cd "$CONF" --config "$CONF/client.conf" --auth-user-pass "$AUTH" --auth-nocache --verb 3

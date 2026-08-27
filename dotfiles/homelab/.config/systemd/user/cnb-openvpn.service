@@ -1,0 +1,13 @@
+[Unit]
+Description=CNB OpenVPN (pfSense / Tunnelblick CNB VPN Server 1)
+After=network-online.target homelab-disks.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/cnb-openvpn
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=default.target
