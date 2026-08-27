@@ -24,7 +24,7 @@ ensure_disks() {
 
 mk_lab_dirs() {
   mkdir -p \
-    "${GIT_ROOT}/"{personal,dataplanelabs,careernowbrands,ab-spectrum,bhcoe,crashchat,nextlevelbuilder} \
+    "${GIT_ROOT}/"{personal,dpl,cnb,ab-spectrum,bhcoe,crashchat,nlb} \
     "${NVME_MNT}/docker/"{data,tmp} \
     "${NVME_MNT}/worktrees" \
     "${NVME_MNT}/agents" \
@@ -33,18 +33,21 @@ mk_lab_dirs() {
     "${HDDA_MNT}/dpl/"{datasets,media,incoming} \
     "${HDDB_MNT}/dpl/"{lab,snapshots} \
     "${HOME}/mnt" "${HOME}/.local/bin"
-  ln -sfn git "${NVME_MNT}/code"
   cat >"${NVME_MNT}/README.md" <<'EOF'
 # dpl-work (Samsung 970 EVO Plus 2TB)
 
+Git: `~/work` (this volume's `work/`). Docker: `docker/data`.
+
 | Path | Role |
 |---|---|
-| `git/<org>/` | clone roots (`~/work/{cnb,crashchat,...}`) |
-| `worktrees/` | extra worktree park |
-| `docker/data/` | Docker data-root (images, volumes, container json-logs) |
-| `cache/` `agents/` `tmp/` | scratch |
-
-OS disk stays configs. HDDs: `~/archive` (A), `~/backup` (B).
+| `work/cnb` | CareerNow |
+| `work/crashchat` | CrashChat.ai |
+| `work/ab-spectrum` | AB-Spectrum |
+| `work/bhcoe` | BHCOE / Jade |
+| `work/dpl` | DataPlaneLabs |
+| `work/nlb` | nextlevelbuilder |
+| `work/personal` | vanducng |
+| `docker/data` | images, volumes, json-logs |
 EOF
 }
 
@@ -60,34 +63,14 @@ replace_link() {
 }
 
 link_home() {
-  mkdir -p "${HOME}/work" "${HOME}/git/work" "${HOME}/src"
+  mkdir -p "${HOME}/mnt"
+  replace_link "${GIT_ROOT}" "${HOME}/work"
   ln -sfn "${NVME_MNT}" "${HOME}/lab"
-  ln -sfn "${GIT_ROOT}" "${HOME}/code"
   ln -sfn "${HDDA_MNT}/dpl" "${HOME}/archive"
   ln -sfn "${HDDB_MNT}/dpl" "${HOME}/backup"
   ln -sfn "${NVME_MNT}" "${HOME}/mnt/nvme"
   ln -sfn "${HDDA_MNT}" "${HOME}/mnt/hdd-a"
   ln -sfn "${HDDB_MNT}" "${HOME}/mnt/hdd-b"
-
-  replace_link "${GIT_ROOT}/careernowbrands" "${HOME}/work/cnb"
-  replace_link "${GIT_ROOT}/crashchat" "${HOME}/work/crashchat"
-  replace_link "${GIT_ROOT}/ab-spectrum" "${HOME}/work/ab-spectrum"
-  replace_link "${GIT_ROOT}/bhcoe" "${HOME}/work/bhcoe"
-  replace_link "${GIT_ROOT}/dataplanelabs" "${HOME}/work/dpl"
-  replace_link "${GIT_ROOT}/nextlevelbuilder" "${HOME}/work/nlb"
-  replace_link "${GIT_ROOT}/personal" "${HOME}/work/personal"
-
-  ln -sfn "${HOME}/work/cnb" "${HOME}/git/work/cnb"
-  ln -sfn "${HOME}/work/crashchat" "${HOME}/git/work/crashchat"
-  ln -sfn "${HOME}/work/ab-spectrum" "${HOME}/git/work/ab-spectrum"
-  ln -sfn "${HOME}/work/bhcoe" "${HOME}/git/work/bhcoe"
-  ln -sfn "${HOME}/work/cnb" "${HOME}/src/careernowbrands"
-  ln -sfn "${HOME}/work/crashchat" "${HOME}/src/crashchat"
-  ln -sfn "${HOME}/work/ab-spectrum" "${HOME}/src/ab-spectrum"
-  ln -sfn "${HOME}/work/bhcoe" "${HOME}/src/bhcoe"
-  ln -sfn "${GIT_ROOT}/dataplanelabs" "${HOME}/src/dataplanelabs"
-  ln -sfn "${GIT_ROOT}/personal" "${HOME}/src/personal"
-  ln -sfn "${GIT_ROOT}/nextlevelbuilder" "${HOME}/src/nextlevelbuilder"
 }
 
 relocate_existing() {
@@ -97,7 +80,7 @@ relocate_existing() {
     "${HOME}/work/ab-spectrum:${GIT_ROOT}/ab-spectrum" \
     "${HOME}/work/bhcoe:${GIT_ROOT}/bhcoe" \
     "${HOME}/work/crashchat:${GIT_ROOT}/crashchat" \
-    "${HOME}/work/cnb:${GIT_ROOT}/careernowbrands"; do
+    "${HOME}/work/cnb:${GIT_ROOT}/cnb"; do
     src="${pair%%:*}"
     dest="${pair##*:}"
     if [[ -d "$src" && ! -L "$src" ]]; then
@@ -241,32 +224,32 @@ clone_recent() {
   clone_jobs git@github.com:vanducng/voice-agent-cli.git    "$root/personal/voice-agent-cli"
   clone_jobs git@github.com:vanducng/jira-cli.git           "$root/personal/jira-cli"
 
-  clone_jobs git@github.com:dataplanelabs/infra.git         "$root/dataplanelabs/infra"
-  clone_jobs git@github.com:dataplanelabs/annhien.git       "$root/dataplanelabs/annhien"
-  clone_jobs git@github.com:dataplanelabs/goclaw-config.git "$root/dataplanelabs/goclaw-config"
-  clone_jobs git@github.com:dataplanelabs/goclaw.git        "$root/dataplanelabs/goclaw"
-  clone_jobs git@github.com:dataplanelabs/code-review.git   "$root/dataplanelabs/code-review"
+  clone_jobs git@github.com:dataplanelabs/infra.git         "$root/dpl/infra"
+  clone_jobs git@github.com:dataplanelabs/annhien.git       "$root/dpl/annhien"
+  clone_jobs git@github.com:dataplanelabs/goclaw-config.git "$root/dpl/goclaw-config"
+  clone_jobs git@github.com:dataplanelabs/goclaw.git        "$root/dpl/goclaw"
+  clone_jobs git@github.com:dataplanelabs/code-review.git   "$root/dpl/code-review"
 
-  clone_jobs git@github.com:careernowbrands/cnb-infra.git              "$root/careernowbrands/cnb-infra"
-  clone_jobs git@github.com:careernowbrands/cnb-web-services.git       "$root/careernowbrands/cnb-web-services"
-  clone_jobs git@github.com:careernowbrands/cnb-ds-astro.git           "$root/careernowbrands/cnb-ds-astro"
-  clone_jobs git@github.com:careernowbrands/cnb-rocket-marketingtool.git "$root/careernowbrands/cnb-rocket-marketingtool"
-  clone_jobs git@github.com:careernowbrands/cdljobnow-bp.git           "$root/careernowbrands/cdljobnow-bp"
-  clone_jobs git@github.com:careernowbrands/cnb-polaris.git            "$root/careernowbrands/cnb-polaris"
-  clone_jobs git@github.com:careernowbrands/cnb-core.git               "$root/careernowbrands/cnb-core"
-  clone_jobs git@github.com:careernowbrands/cnb-qa-automation.git      "$root/careernowbrands/cnb-qa-automation"
-  clone_jobs git@github.com:careernowbrands/cnb-rover.git              "$root/careernowbrands/cnb-rover"
-  clone_jobs git@github.com:careernowbrands/cnb-ds-dbt-order-form.git  "$root/careernowbrands/cnb-ds-dbt-order-form"
-  clone_jobs git@github.com:careernowbrands/csn-schoolsnow.git         "$root/careernowbrands/csn-schoolsnow"
-  clone_jobs git@github.com:careernowbrands/csn-api.git                "$root/careernowbrands/csn-api"
-  clone_jobs git@github.com:careernowbrands/cnb-driverwave.git         "$root/careernowbrands/cnb-driverwave"
-  clone_jobs git@github.com:careernowbrands/niche-career-now.git       "$root/careernowbrands/niche-career-now"
-  clone_jobs git@github.com:careernowbrands/csn-ops.git                "$root/careernowbrands/csn-ops"
-  clone_jobs git@github.com:careernowbrands/truck-warrior.git          "$root/careernowbrands/truck-warrior"
-  clone_jobs git@github.com:careernowbrands/cnb-ds-infra.git           "$root/careernowbrands/cnb-ds-infra"
-  clone_jobs git@github.com:careernowbrands/cnb-ds-datahub.git         "$root/careernowbrands/cnb-ds-datahub"
-  clone_jobs git@github.com:careernowbrands/it-ops-scripts.git         "$root/careernowbrands/it-ops-scripts"
-  clone_jobs git@github.com:careernowbrands/cnb-meilisearch.git        "$root/careernowbrands/cnb-meilisearch"
+  clone_jobs git@github.com:careernowbrands/cnb-infra.git              "$root/cnb/cnb-infra"
+  clone_jobs git@github.com:careernowbrands/cnb-web-services.git       "$root/cnb/cnb-web-services"
+  clone_jobs git@github.com:careernowbrands/cnb-ds-astro.git           "$root/cnb/cnb-ds-astro"
+  clone_jobs git@github.com:careernowbrands/cnb-rocket-marketingtool.git "$root/cnb/cnb-rocket-marketingtool"
+  clone_jobs git@github.com:careernowbrands/cdljobnow-bp.git           "$root/cnb/cdljobnow-bp"
+  clone_jobs git@github.com:careernowbrands/cnb-polaris.git            "$root/cnb/cnb-polaris"
+  clone_jobs git@github.com:careernowbrands/cnb-core.git               "$root/cnb/cnb-core"
+  clone_jobs git@github.com:careernowbrands/cnb-qa-automation.git      "$root/cnb/cnb-qa-automation"
+  clone_jobs git@github.com:careernowbrands/cnb-rover.git              "$root/cnb/cnb-rover"
+  clone_jobs git@github.com:careernowbrands/cnb-ds-dbt-order-form.git  "$root/cnb/cnb-ds-dbt-order-form"
+  clone_jobs git@github.com:careernowbrands/csn-schoolsnow.git         "$root/cnb/csn-schoolsnow"
+  clone_jobs git@github.com:careernowbrands/csn-api.git                "$root/cnb/csn-api"
+  clone_jobs git@github.com:careernowbrands/cnb-driverwave.git         "$root/cnb/cnb-driverwave"
+  clone_jobs git@github.com:careernowbrands/niche-career-now.git       "$root/cnb/niche-career-now"
+  clone_jobs git@github.com:careernowbrands/csn-ops.git                "$root/cnb/csn-ops"
+  clone_jobs git@github.com:careernowbrands/truck-warrior.git          "$root/cnb/truck-warrior"
+  clone_jobs git@github.com:careernowbrands/cnb-ds-infra.git           "$root/cnb/cnb-ds-infra"
+  clone_jobs git@github.com:careernowbrands/cnb-ds-datahub.git         "$root/cnb/cnb-ds-datahub"
+  clone_jobs git@github.com:careernowbrands/it-ops-scripts.git         "$root/cnb/it-ops-scripts"
+  clone_jobs git@github.com:careernowbrands/cnb-meilisearch.git        "$root/cnb/cnb-meilisearch"
 
   clone_jobs git@github.com:AB-Spectrum/data-platform.git "$root/ab-spectrum/data-platform"
   clone_jobs git@github.com:AB-Spectrum/infra.git         "$root/ab-spectrum/infra"
@@ -280,13 +263,13 @@ clone_recent() {
   clone_jobs git@github.com:CrashChat-ai/crashvault.git    "$root/crashchat/crashvault"
   clone_jobs git@github.com:CrashChat-ai/crashchat-infra.git "$root/crashchat/infra"
 
-  clone_jobs git@github.com:nextlevelbuilder/dewee.git              "$root/nextlevelbuilder/dewee"
-  clone_jobs git@github.com:nextlevelbuilder/agentwiki.git          "$root/nextlevelbuilder/agentwiki"
-  clone_jobs git@github.com:nextlevelbuilder/ui-ux-pro-max-skill.git "$root/nextlevelbuilder/ui-ux-pro-max-skill"
-  clone_jobs git@github.com:nextlevelbuilder/goclaw.git             "$root/nextlevelbuilder/goclaw"
-  clone_jobs git@github.com:nextlevelbuilder/goclaw-docs.git        "$root/nextlevelbuilder/goclaw-docs"
-  clone_jobs git@github.com:nextlevelbuilder/agentbrain-cli.git     "$root/nextlevelbuilder/agentbrain-cli"
-  clone_jobs git@github.com:nextlevelbuilder/builder-hub-system.git "$root/nextlevelbuilder/builder-hub-system"
+  clone_jobs git@github.com:nextlevelbuilder/dewee.git              "$root/nlb/dewee"
+  clone_jobs git@github.com:nextlevelbuilder/agentwiki.git          "$root/nlb/agentwiki"
+  clone_jobs git@github.com:nextlevelbuilder/ui-ux-pro-max-skill.git "$root/nlb/ui-ux-pro-max-skill"
+  clone_jobs git@github.com:nextlevelbuilder/goclaw.git             "$root/nlb/goclaw"
+  clone_jobs git@github.com:nextlevelbuilder/goclaw-docs.git        "$root/nlb/goclaw-docs"
+  clone_jobs git@github.com:nextlevelbuilder/agentbrain-cli.git     "$root/nlb/agentbrain-cli"
+  clone_jobs git@github.com:nextlevelbuilder/builder-hub-system.git "$root/nlb/builder-hub-system"
 
   wait
 }
@@ -318,7 +301,8 @@ main() {
     log "SKIP_CLONE=1 — not cloning"
   fi
   log "done"
-  log "  hot SSD:  ${HOME}/lab  -> ${NVME_MNT} (git + docker/data)"
+  log "  git:      ${HOME}/work -> ${GIT_ROOT}"
+  log "  docker:   ${DOCKER_ROOT}"
   log "  archive:  ${HOME}/archive"
   log "  backup:   ${HOME}/backup"
   log "  ssh user: $(hostname -I | awk '{print $1}'):2222  (sshd :22 needs sudo linux-homelab-root.sh)"
