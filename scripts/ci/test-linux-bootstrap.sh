@@ -170,6 +170,21 @@ if grep -q 'keybind = super+s>v=' "$ROOT/dotfiles/ghostty/.config/ghostty/config
 else
   fail "ghostty missing Linux super+s binds"
 fi
+ghosttycfg="$ROOT/dotfiles/ghostty/.config/ghostty/config"
+if grep -q 'keybind = shift+arrow_right=unbind' "$ghosttycfg" \
+  && grep -q 'keybind = alt+1=unbind' "$ghosttycfg" \
+  && grep -q 'keybind = alt+digit_1=unbind' "$ghosttycfg" \
+  && grep -q 'keybind = alt+digit_9=unbind' "$ghosttycfg"; then
+  pass "ghostty unbinds shift+arrows and alt+1..9 for Herdr"
+else
+  fail "ghostty missing Herdr key pass-through unbinds"
+fi
+herdrcfg="$ROOT/dotfiles/herdr/.config/herdr/config.toml"
+if grep -q 'prefix+1..9' "$herdrcfg" && grep -q 'previous_workspace' "$herdrcfg"; then
+  pass "herdr workspace keys include prefix+1..9 and previous_workspace"
+else
+  fail "herdr missing portable workspace keybinds"
+fi
 
 if [[ $FAIL -ne 0 ]]; then
   echo "test-linux-bootstrap: FAILED" >&2
