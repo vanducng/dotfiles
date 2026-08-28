@@ -173,7 +173,8 @@ fi
 ghosttycfg="$ROOT/dotfiles/ghostty/.config/ghostty/config"
 if grep -q 'keybind = shift+arrow_right=unbind' "$ghosttycfg" \
   && grep -q 'keybind = alt+1=unbind' "$ghosttycfg" \
-  && grep -q 'keybind = alt+digit_1=unbind' "$ghosttycfg"; then
+  && grep -q 'keybind = alt+digit_1=unbind' "$ghosttycfg" \
+  && grep -q 'keybind = alt+digit_9=unbind' "$ghosttycfg"; then
   pass "ghostty unbinds shift+arrows and alt+1..9 for Herdr"
 else
   fail "ghostty missing Herdr key pass-through unbinds"

@@ -60,6 +60,7 @@ keybind = alt+digit_5=unbind
 keybind = alt+digit_6=unbind
 keybind = alt+digit_7=unbind
 keybind = alt+digit_8=unbind
+keybind = alt+digit_9=unbind
 
 # Tmux-style split panes for Ghostty (matches ~/.tmux.conf mnemonics)
 # Leader: cmd+s on macOS, super+s on Linux. Press leader, release, then the next key.
