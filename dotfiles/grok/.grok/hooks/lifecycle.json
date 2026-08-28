@@ -94,25 +94,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$HOME/.claude/hooks/langfuse-trace.py\"",
-            "timeout": 30
-          },
-          {
-            "type": "command",
             "command": "python3 \"$HOME/skills/hooks/agent-notify.py\" grok stop",
             "timeout": 10
-          }
-        ]
-      }
-    ],
-    "SessionEnd": [
-      {
-        "matcher": ".*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 \"$HOME/.claude/hooks/langfuse-trace.py\"",
-            "timeout": 30
           }
         ]
       }
