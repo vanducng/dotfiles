@@ -66,8 +66,9 @@ Herdr uses the same `C-x` prefix as this repository's tmux setup.
 | `Ctrl-Alt-h/j/k/l` | Focus pane |
 | `C-x Space` | Pick a recent path or URL |
 | `C-x f` | Find an agent by `workspace.tab.pane` address |
-| `C-x Shift-Right` | Next workspace |
+| `C-x Shift-Left/Right` | Previous/next workspace |
 | `Ctrl-Alt-1..9` | Switch to workspace 1-9 |
+| `C-x 1..9` | Switch to workspace 1-9 (Linux / Moshi) |
 | `C-x Shift-Up/Down` | Previous/next agent |
 | `C-x Alt-1..9` | Focus agent 1-9 |
 | `C-x p` | Previous tab |
@@ -83,6 +84,8 @@ Herdr uses the same `C-x` prefix as this repository's tmux setup.
 | `C-x r` | Resize mode |
 | `C-x R` | Reload config |
 | `C-x ?` | Active key help |
+
+`Ctrl-Alt-1..9` is the direct chord on macOS Ghostty. On Linux, Ghostty's default `alt+1..9` tab binds and Moshi/mosh (no kitty keyboard protocol) drop that chord, so `C-x 1..9` is the portable jump. Ghostty also unbinds `shift+arrows` so `C-x Shift-Left/Right` can reach Herdr instead of adjusting a terminal selection.
 
 The picker scans the latest 500 rows of the focused pane and lists matching paths and URLs newest-first. Press `Enter` to open in the file browser, `Ctrl-Y` to copy, or `Ctrl-E` to open in the editor. External URLs open in the default browser, existing localhost viewer URLs restart the file browser when needed, and relative paths resolve from the pane's working directory. Exiting the temporary picker returns to the original pane.
 
