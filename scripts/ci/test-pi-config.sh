@@ -26,7 +26,6 @@ jq -e '
 	.packages
 	| index("npm:pi-web-access")
 	  and index("npm:pi-subagents")
-	  and index("npm:pi-langfuse")
 ' "$agent_dir/settings.json" >/dev/null
 jq -e '
 	.providers.cliproxyapi.models[]
