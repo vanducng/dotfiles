@@ -186,9 +186,13 @@ else
   fail "herdr missing portable workspace keybinds"
 fi
 kittycfg="$ROOT/dotfiles/kitty/.config/kitty/kitty.conf"
-if grep -qE '^macos_option_as_alt yes$' "$kittycfg" \
-  && grep -qE '^map ctrl\+alt\+1 send_text all \\x1b\[49;7u$' "$kittycfg" \
-  && grep -qE '^map ctrl\+alt\+9 send_text all \\x1b\[57;7u$' "$kittycfg"; then
+kitty_ok=1
+grep -qE '^macos_option_as_alt yes$' "$kittycfg" || kitty_ok=0
+for i in 1 2 3 4 5 6 7 8 9; do
+  code=$((48 + i))
+  grep -qF "map ctrl+alt+${i} send_text all \x1b[${code};7u" "$kittycfg" || kitty_ok=0
+done
+if [[ $kitty_ok -eq 1 ]]; then
   pass "kitty forwards ctrl+alt+1..9 to Herdr as CSI-u"
 else
   fail "kitty missing Herdr workspace CSI-u maps or macos_option_as_alt"
