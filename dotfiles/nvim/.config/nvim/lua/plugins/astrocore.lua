@@ -27,6 +27,7 @@ return {
         "bash", "sql",
         "typescript", "tsx", "javascript", "jsdoc",
         "c", "html", "css",
+        "graphql",
       },
       highlight = true, -- indent intentionally not enabled (matches pre-migration behavior)
       disable = { highlight = { "csv" } }, -- large-file gate handled by features.large_buf above
@@ -60,6 +61,7 @@ return {
       -- see `:h vim.filetype.add` for usage
       extension = {
         foo = "fooscript",
+        rest = "http",
       },
       filename = {
         [".foorc"] = "fooscript",

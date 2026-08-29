@@ -2,7 +2,7 @@
   "defaultProvider": "cliproxyapi",
   "defaultModel": "grok-4.6",
   "defaultThinkingLevel": "xhigh",
-  "lastChangelogVersion": "0.84.2",
+  "lastChangelogVersion": "0.84.3",
   "images": {
     "blockImages": false
   },
