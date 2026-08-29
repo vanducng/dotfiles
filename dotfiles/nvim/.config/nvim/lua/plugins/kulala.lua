@@ -40,9 +40,9 @@ return {
     require("kulala").setup(opts)
 
     -- AstroCore only auto-starts TS for nvim-treesitter installed langs; kulala_http is custom.
+    vim.treesitter.language.register("kulala_http", { "http", "rest" })
     local function highlight_http(buf)
       if not vim.api.nvim_buf_is_valid(buf) then return end
-      vim.treesitter.language.register("kulala_http", { "http", "rest" })
       pcall(vim.treesitter.start, buf, "kulala_http")
     end
 
