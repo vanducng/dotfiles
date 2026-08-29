@@ -85,7 +85,7 @@ Herdr uses the same `C-x` prefix as this repository's tmux setup.
 | `C-x R` | Reload config |
 | `C-x ?` | Active key help |
 
-`Ctrl-Alt-1..9` is the direct chord on macOS Ghostty. On Linux, Ghostty's default `alt+1..9` tab binds and Moshi/mosh (no kitty keyboard protocol) drop that chord, so `C-x 1..9` is the portable jump. Ghostty also unbinds `shift+arrows` so `C-x Shift-Left/Right` can reach Herdr instead of adjusting a terminal selection.
+`Ctrl-Alt-1..9` is the direct workspace jump on macOS Ghostty. Kitty on macOS defaults Option+digit to unicode (¡™£), so the same chord never reaches Herdr during `herdr --remote` even though `Ctrl-Alt-hjkl` and `Ctrl-1..9` work. `kitty.conf` sets `macos_option_as_alt yes` and maps `ctrl+alt+1..9` to kitty CSI-u; restart Kitty after that change. Moshi/mosh still lack the protocol, so `C-x 1..9` remains the portable jump. Ghostty unbinds `shift+arrows` so `C-x Shift-Left/Right` can reach Herdr instead of adjusting a terminal selection.
 
 The picker scans the latest 500 rows of the focused pane and lists matching paths and URLs newest-first. Press `Enter` to open in the file browser, `Ctrl-Y` to copy, or `Ctrl-E` to open in the editor. External URLs open in the default browser, existing localhost viewer URLs restart the file browser when needed, and relative paths resolve from the pane's working directory. Exiting the temporary picker returns to the original pane.
 
