@@ -43,7 +43,7 @@ command = "herdr-agents"
 description = "focus agent by address"
 
 [[keys.command]]
-key = "prefix+shift+p"
+key = "prefix+,"
 type = "shell"
 command = "herdr-pane-rename"
 description = "rename pane from session context"
