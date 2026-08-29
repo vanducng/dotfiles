@@ -31,6 +31,8 @@ assert_real_pi() {
   [[ ! -L "${home}/.pi" ]] || fail "${home}/.pi is a symlink"
   [[ -e "${home}/.pi/agent/themes/rose-pine-moon.json" ]] || fail "theme missing in ${home}"
   [[ -e "${home}/.pi/agent/extensions/subagent/config.json" ]] || fail "subagent config missing in ${home}"
+  [[ -e "${home}/.pi/agent/mcp.json" ]] || fail "mcp.json missing in ${home}"
+  [[ -e "${home}/.pi/agent/settings.json" ]] || fail "settings.json missing in ${home}"
 }
 
 workdir="$(mktemp -d "${TMPDIR:-/tmp}/pi-home-layout-test.XXXXXX")"

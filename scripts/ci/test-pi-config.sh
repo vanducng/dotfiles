@@ -13,7 +13,8 @@ for command in jq node pi; do
     fi
 done
 
-jq empty "$agent_dir/settings.json" "$agent_dir/models.json" "$agent_dir/themes/rose-pine-moon.json" \
+jq empty "$agent_dir/settings.json" "$agent_dir/models.json" "$agent_dir/mcp.json" \
+	"$agent_dir/themes/rose-pine-moon.json" \
 	"$agent_dir/extensions/subagent/config.json"
 jq -e '.scheduledRuns.storeRoot == "~/.local/share/pi-subagents/schedules"' \
 	"$agent_dir/extensions/subagent/config.json" >/dev/null
@@ -26,7 +27,14 @@ jq -e '
 	.packages
 	| index("npm:pi-web-access")
 	  and index("npm:pi-subagents")
+	  and index("npm:pi-mcp-adapter")
 ' "$agent_dir/settings.json" >/dev/null
+jq -e '
+	.mcpServers.Structured.url == "https://mcp.structured.app/mcp" and
+	.mcpServers.Structured.auth == "oauth" and
+	.mcpServers.Structured.oauth.scope == "email" and
+	(.mcpServers.Structured.oauth.clientId | not)
+' "$agent_dir/mcp.json" >/dev/null
 jq -e '
 	.providers.cliproxyapi.models[]
 	| select(.id == "grok-4.6")
