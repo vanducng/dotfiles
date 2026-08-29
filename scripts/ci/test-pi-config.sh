@@ -19,13 +19,14 @@ jq -e '.scheduledRuns.storeRoot == "~/.local/share/pi-subagents/schedules"' \
 	"$agent_dir/extensions/subagent/config.json" >/dev/null
 jq -e '
 	.defaultProvider == "cliproxyapi" and
-	.defaultModel == "grok-4.6" and
+	.defaultModel == "claude-fable-5" and
 	.transport == "sse"
 ' "$agent_dir/settings.json" >/dev/null
 jq -e '
 	.packages
 	| index("npm:pi-web-access")
 	  and index("npm:pi-subagents")
+	  and index("npm:pi-langfuse")
 ' "$agent_dir/settings.json" >/dev/null
 jq -e '
 	.providers.cliproxyapi.models[]
