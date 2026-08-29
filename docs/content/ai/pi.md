@@ -50,9 +50,78 @@ Re-running the installs is idempotent and keeps the settings entries unchanged:
 ```bash
 pi install npm:pi-web-access
 pi install npm:pi-subagents
+pi install npm:pi-mcp-adapter
 pi install npm:pi-langfuse
 # ...one per entry in the stowed "packages" list
 ```
+
+## Structured MCP
+
+Pi has no built-in MCP. The stowed package list includes `npm:pi-mcp-adapter`, which
+bridges remote MCP servers into Pi as a single `mcp` proxy tool.
+
+Structured (the daily planner) is configured in the stowed
+`dotfiles/pi/.pi/agent/mcp.json` → `~/.pi/agent/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "Structured": {
+      "url": "https://mcp.structured.app/mcp",
+      "auth": "oauth",
+      "oauth": {
+        "scope": "email",
+        "clientName": "Pi"
+      }
+    }
+  }
+}
+```
+
+OAuth uses Structured Cloud (email OTP). Tokens live in the OS credential store,
+not in this repo. `scope` must stay `email` - extra scopes fail on Structured's
+Supabase authorization server. No `clientId` is pinned: the adapter registers a
+public client at auth time (DCR). Structured does not list Pi as a first-party
+host; if DCR tokens are rejected, fall back to a documented client ID from
+[Structured's MCP setup](https://help.structured.app/en/articles/9871042) and set
+`oauth.redirectUri` to that client's exact callback.
+
+Do not import Claude Code MCP wholesale (`imports: ["claude-code"]`). That host
+file also carries secret-bearing servers.
+
+After `pi install npm:pi-mcp-adapter` and a Pi restart:
+
+```text
+/mcp-auth Structured
+/mcp
+mcp({ search: "timeline inbox task" })
+```
+
+Recurring-task tools need Structured Pro. Logout with `/mcp logout Structured`.
+
+Mac and Linux use the same files. After pulling `main`:
+
+```bash
+make stow-pi
+pi install npm:pi-mcp-adapter
+```
+
+Restart Pi, then `/mcp-auth Structured`. OAuth tokens live in the OS store, so a
+working Mac login does not travel with git. Linux must sign in again.
+
+On Linux the store is Secret Service (`libsecret`). If it is missing, or the
+session keyring is locked, `/mcp-auth` fails closed with no plaintext fallback:
+
+```bash
+# Debian/Ubuntu
+sudo apt install libsecret-1-0 gnome-keyring
+
+# Fedora
+sudo dnf install libsecret gnome-keyring
+```
+
+Unlock the keyring with a graphical login. Headless SSH/tmux sessions that
+inherited a revoked session keyring need a fresh login before auth will stick.
 
 ## Langfuse tracing
 
