@@ -185,6 +185,14 @@ if grep -q 'prefix+1..9' "$herdrcfg" && grep -q 'previous_workspace' "$herdrcfg"
 else
   fail "herdr missing portable workspace keybinds"
 fi
+kittycfg="$ROOT/dotfiles/kitty/.config/kitty/kitty.conf"
+if grep -qE '^macos_option_as_alt yes$' "$kittycfg" \
+  && grep -qE '^map ctrl\+alt\+1 send_text all \\x1b\[49;7u$' "$kittycfg" \
+  && grep -qE '^map ctrl\+alt\+9 send_text all \\x1b\[57;7u$' "$kittycfg"; then
+  pass "kitty forwards ctrl+alt+1..9 to Herdr as CSI-u"
+else
+  fail "kitty missing Herdr workspace CSI-u maps or macos_option_as_alt"
+fi
 
 if [[ $FAIL -ne 0 ]]; then
   echo "test-linux-bootstrap: FAILED" >&2
