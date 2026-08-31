@@ -58,8 +58,9 @@ install_rustup() {
 install_tree_sitter_cli() {
   # Mason's GitHub linux-x64 tree-sitter-cli needs GLIBC 2.39; compile locally instead.
   export PATH="${HOME}/.cargo/bin:${PATH}"
-  local mason_bin="${HOME}/.local/share/nvim/mason/bin/tree-sitter"
-  local mason_pkg="${HOME}/.local/share/nvim/mason/packages/tree-sitter-cli"
+  local mason_root="${XDG_DATA_HOME:-${HOME}/.local/share}/nvim/mason"
+  local mason_bin="${mason_root}/bin/tree-sitter"
+  local mason_pkg="${mason_root}/packages/tree-sitter-cli"
   if [[ -e "$mason_bin" ]] && ! "$mason_bin" --version >/dev/null 2>&1; then
     log "removing mason tree-sitter-cli (GLIBC too old for upstream linux-x64)"
     rm -rf "$mason_pkg" "$mason_bin"
@@ -72,7 +73,8 @@ install_tree_sitter_cli() {
       return 0
     fi
     log "installing tree-sitter-cli with cargo"
-    cargo install tree-sitter-cli --locked || cargo install tree-sitter-cli
+    cargo install tree-sitter-cli --locked \
+      || { log "locked install failed; retrying unlocked"; cargo install tree-sitter-cli; }
   fi
   if [[ -x "${HOME}/.cargo/bin/tree-sitter" ]]; then
     ln -sfn "${HOME}/.cargo/bin/tree-sitter" "${HOME}/.local/bin/tree-sitter"
