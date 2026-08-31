@@ -149,6 +149,25 @@ if echo "$folders" | grep -qx grok; then fail "Linux stow auto-includes grok"; e
 darwin="$(make --no-print-directory -s -C "$ROOT" PLATFORM=Darwin stow-folders)"
 echo "$darwin" | grep -qx yabai && pass "Darwin stow includes yabai" || fail "Darwin stow missing yabai"
 
+mason_lua="$ROOT/dotfiles/nvim/.config/nvim/lua/plugins/mason.lua"
+if grep -qE "['\"]tree-sitter-cli['\"]" "$mason_lua"; then
+  fail "mason.lua must not ensure_installed tree-sitter-cli (linux-x64 needs GLIBC 2.39)"
+else
+  pass "mason.lua does not mason-install tree-sitter-cli"
+fi
+if grep -q 'tree-sitter-cli' "$ROOT/dotfiles/nvim/.config/nvim/lua/lazy_setup.lua" \
+  && grep -q 'GLIBC' "$ROOT/dotfiles/nvim/.config/nvim/lua/lazy_setup.lua"; then
+  pass "lazy_setup drops a non-runnable mason tree-sitter-cli"
+else
+  fail "lazy_setup.lua missing mason tree-sitter-cli self-heal"
+fi
+if grep -q 'install_tree_sitter_cli' "$ROOT/scripts/linux-deps.sh" \
+  && grep -q 'cargo install tree-sitter-cli' "$ROOT/scripts/linux-deps.sh"; then
+  pass "linux-deps installs tree-sitter-cli via cargo"
+else
+  fail "linux-deps must cargo-install tree-sitter-cli for Ubuntu 22.04 glibc"
+fi
+
 if grep -q 'linux-deps' "$ROOT/Makefile"; then
   pass "Makefile has linux-deps target"
 else
