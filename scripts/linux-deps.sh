@@ -55,6 +55,30 @@ install_rustup() {
   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path
 }
 
+install_tree_sitter_cli() {
+  # Mason's GitHub linux-x64 tree-sitter-cli needs GLIBC 2.39; compile locally instead.
+  export PATH="${HOME}/.cargo/bin:${PATH}"
+  local mason_bin="${HOME}/.local/share/nvim/mason/bin/tree-sitter"
+  local mason_pkg="${HOME}/.local/share/nvim/mason/packages/tree-sitter-cli"
+  if [[ -e "$mason_bin" ]] && ! "$mason_bin" --version >/dev/null 2>&1; then
+    log "removing mason tree-sitter-cli (GLIBC too old for upstream linux-x64)"
+    rm -rf "$mason_pkg" "$mason_bin"
+  fi
+  if have tree-sitter && tree-sitter --version >/dev/null 2>&1; then
+    log "tree-sitter already present ($(tree-sitter --version | head -1))"
+  else
+    if ! have cargo; then
+      log "skip tree-sitter-cli (cargo missing)"
+      return 0
+    fi
+    log "installing tree-sitter-cli with cargo"
+    cargo install tree-sitter-cli --locked || cargo install tree-sitter-cli
+  fi
+  if [[ -x "${HOME}/.cargo/bin/tree-sitter" ]]; then
+    ln -sfn "${HOME}/.cargo/bin/tree-sitter" "${HOME}/.local/bin/tree-sitter"
+  fi
+}
+
 install_droid() {
   if have droid; then
     log "droid already present ($(droid --version 2>/dev/null | head -1 || echo ok))"
@@ -186,6 +210,7 @@ main() {
     eval "$(mise activate bash)"
   fi
   install_rustup
+  install_tree_sitter_cli
   install_droid
   install_moshi
   install_mosh

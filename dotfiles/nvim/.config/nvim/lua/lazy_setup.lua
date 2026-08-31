@@ -1,3 +1,12 @@
+local mason_ts = vim.fn.stdpath "data" .. "/mason/bin/tree-sitter"
+if vim.uv.fs_stat(mason_ts) then
+  vim.fn.system { mason_ts, "--version" }
+  if vim.v.shell_error ~= 0 then
+    vim.fn.delete(mason_ts)
+    vim.fn.delete(vim.fn.stdpath "data" .. "/mason/packages/tree-sitter-cli", "rf")
+  end
+end
+
 require("lazy").setup({
   {
     "AstroNvim/AstroNvim",
