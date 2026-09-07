@@ -357,6 +357,17 @@ claws() {
     /opt/homebrew/bin/claws "$@"
 }
 
+# Remote nvim/kitty can leave CSI-u key encoding on after SSH drop.
+_vd_restore_kitty_keyboard() {
+  printf '\033[<u\033[=0u' >/dev/tty 2>/dev/null || true
+}
+ssh() {
+  command ssh "$@"
+  _vd_ssh_st=$?
+  _vd_restore_kitty_keyboard
+  return "$_vd_ssh_st"
+}
+
 # >>> grok installer >>>
 export PATH="$HOME/.grok/bin:$PATH"
 fpath=(~/.grok/completions/zsh $fpath)
