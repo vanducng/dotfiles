@@ -97,6 +97,13 @@ if grep -vE '^[[:space:]]*#' "$ROOT/dotfiles/shell-linux/.config/shell/linux.sh"
 else
   pass "linux.sh has no macOS-only paths"
 fi
+if grep -q '_vd_restore_kitty_keyboard' "$ROOT/dotfiles/shell-linux/.config/shell/linux.sh" \
+  && grep -Fq '\033[<u' "$ROOT/dotfiles/shell-linux/.config/shell/linux.sh" \
+  && grep -q '^ssh()' "$ROOT/dotfiles/shell-linux/.config/shell/linux.sh"; then
+  pass "linux.sh restores kitty keyboard protocol after ssh"
+else
+  fail "linux.sh must wrap ssh and pop kitty CSI-u flags"
+fi
 
 if grep -E '^[[:space:]]*email[[:space:]]*=' \
   "$ROOT/dotfiles/git/.config/git/work.gitconfig" \
