@@ -21,16 +21,18 @@ chmod 700 "$STORE/chrome-cdp" "$STORE/chrome-profiles" 2>/dev/null || true
 
 # src → dest on the NVMe. src becomes a symlink.
 relocate() {
-  local src="$1" dest="$2"
+  local src="$1" dest="$2" src_real dest_real
   mkdir -p "$(dirname "$dest")" "$(dirname "$src")"
-  if [[ -L "$src" ]]; then
-    local cur
-    cur="$(readlink -f "$src" 2>/dev/null || true)"
-    local want
-    want="$(readlink -f "$dest" 2>/dev/null || echo "$dest")"
-    if [[ "$cur" == "$want" ]]; then
+  if [[ -e "$src" || -L "$src" ]]; then
+    src_real="$(readlink -f "$src" 2>/dev/null || true)"
+    dest_real="$(readlink -f "$dest" 2>/dev/null || echo "$dest")"
+    if [[ -n "$src_real" && "$src_real" == "$dest_real" ]]; then
+      [[ -L "$src" ]] && return 0
+      echo "relocate-stores: skip $src (same path as dest via parent symlink)" >&2
       return 0
     fi
+  fi
+  if [[ -L "$src" ]]; then
     rm -f "$src"
   fi
   if [[ -d "$src" ]]; then
@@ -57,7 +59,15 @@ relocate "${HOME}/go" "${STORE}/go"
 relocate "${HOME}/.npm" "${STORE}/npm"
 relocate "${HOME}/.npm-global" "${STORE}/npm-global"
 relocate "${HOME}/.cache" "${STORE}/cache"
-relocate "${HOME}/.pi" "${STORE}/pi"
+# Keep ~/.pi a real directory. A wholesale symlink breaks stow relative
+# links and pi-subagents schedule roots. Only bulky runtime children move.
+if [[ -L "${HOME}/.pi" ]]; then
+  echo "relocate-stores: skip pi runtime; unwrap ~/.pi with scripts/pi-home-layout.sh first" >&2
+else
+  relocate "${HOME}/.pi/agent/npm" "${STORE}/pi/agent/npm"
+  relocate "${HOME}/.pi/agent/sessions" "${STORE}/pi/agent/sessions"
+  relocate "${HOME}/.pi/agent/git" "${STORE}/pi/agent/git"
+fi
 
 # Keep GOPATH/CARGO_HOME pointing at the original paths (now symlinks).
 # Docker engine data-root is ${WORK}/docker/data (see linux-homelab-root.sh).

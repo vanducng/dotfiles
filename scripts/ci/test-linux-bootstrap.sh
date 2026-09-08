@@ -19,6 +19,18 @@ pass() { echo "OK: $*"; }
 bash -n "$ROOT/scripts/linux-deps.sh" && pass "linux-deps.sh parses" || fail "linux-deps.sh syntax"
 bash -n "$ROOT/scripts/linux-desktop.sh" && pass "linux-desktop.sh parses" || fail "linux-desktop.sh syntax"
 bash -n "$ROOT/scripts/linux-homelab.sh" && pass "linux-homelab.sh parses" || fail "linux-homelab.sh syntax"
+bash -n "$ROOT/scripts/pi-home-layout.sh" && pass "pi-home-layout.sh parses" || fail "pi-home-layout.sh syntax"
+bash -n "$ROOT/dotfiles/homelab/.config/homelab/relocate-stores" && pass "relocate-stores parses" || fail "relocate-stores syntax"
+relocate_stores="$ROOT/dotfiles/homelab/.config/homelab/relocate-stores"
+if grep -qE 'relocate "\$\{HOME\}/\.pi"' "$relocate_stores"; then
+  fail "relocate-stores still relocates whole ~/.pi"
+elif grep -q '.pi/agent/npm' "$relocate_stores" \
+  && grep -q '.pi/agent/sessions' "$relocate_stores" \
+  && grep -q '.pi/agent/git' "$relocate_stores"; then
+  pass "relocate-stores nests pi npm/sessions/git"
+else
+  fail "relocate-stores missing nested pi runtime dirs"
+fi
 bash -n "$ROOT/scripts/linux-homelab-root.sh" && pass "linux-homelab-root.sh parses" || fail "linux-homelab-root.sh syntax"
 bash -n "$ROOT/dotfiles/bin/.local/bin/dpl-remote" && pass "dpl-remote parses" || fail "dpl-remote syntax"
 bash -n "$ROOT/dotfiles/homelab/.config/homelab/cdp-chrome" && pass "cdp-chrome parses" || fail "cdp-chrome syntax"
@@ -85,6 +97,13 @@ if grep -vE '^[[:space:]]*#' "$ROOT/dotfiles/shell-linux/.config/shell/linux.sh"
 else
   pass "linux.sh has no macOS-only paths"
 fi
+if grep -q '_vd_restore_kitty_keyboard' "$ROOT/dotfiles/shell-linux/.config/shell/linux.sh" \
+  && grep -Fq '\033[<u' "$ROOT/dotfiles/shell-linux/.config/shell/linux.sh" \
+  && grep -q '^ssh()' "$ROOT/dotfiles/shell-linux/.config/shell/linux.sh"; then
+  pass "linux.sh restores kitty keyboard protocol after ssh"
+else
+  fail "linux.sh must wrap ssh and pop kitty CSI-u flags"
+fi
 
 if grep -E '^[[:space:]]*email[[:space:]]*=' \
   "$ROOT/dotfiles/git/.config/git/work.gitconfig" \
@@ -137,6 +156,25 @@ if echo "$folders" | grep -qx grok; then fail "Linux stow auto-includes grok"; e
 darwin="$(make --no-print-directory -s -C "$ROOT" PLATFORM=Darwin stow-folders)"
 echo "$darwin" | grep -qx yabai && pass "Darwin stow includes yabai" || fail "Darwin stow missing yabai"
 
+mason_lua="$ROOT/dotfiles/nvim/.config/nvim/lua/plugins/mason.lua"
+if grep -qE "['\"]tree-sitter-cli['\"]" "$mason_lua"; then
+  fail "mason.lua must not ensure_installed tree-sitter-cli (linux-x64 needs GLIBC 2.39)"
+else
+  pass "mason.lua does not mason-install tree-sitter-cli"
+fi
+if grep -q 'tree-sitter-cli' "$ROOT/dotfiles/nvim/.config/nvim/lua/lazy_setup.lua" \
+  && grep -q 'GLIBC' "$ROOT/dotfiles/nvim/.config/nvim/lua/lazy_setup.lua"; then
+  pass "lazy_setup drops a non-runnable mason tree-sitter-cli"
+else
+  fail "lazy_setup.lua missing mason tree-sitter-cli self-heal"
+fi
+if grep -q 'install_tree_sitter_cli' "$ROOT/scripts/linux-deps.sh" \
+  && grep -q 'cargo install tree-sitter-cli' "$ROOT/scripts/linux-deps.sh"; then
+  pass "linux-deps installs tree-sitter-cli via cargo"
+else
+  fail "linux-deps must cargo-install tree-sitter-cli for Ubuntu 22.04 glibc"
+fi
+
 if grep -q 'linux-deps' "$ROOT/Makefile"; then
   pass "Makefile has linux-deps target"
 else
@@ -157,6 +195,33 @@ if grep -q 'keybind = super+s>v=' "$ROOT/dotfiles/ghostty/.config/ghostty/config
   pass "ghostty has Linux super+s split leader"
 else
   fail "ghostty missing Linux super+s binds"
+fi
+ghosttycfg="$ROOT/dotfiles/ghostty/.config/ghostty/config"
+if grep -q 'keybind = shift+arrow_right=unbind' "$ghosttycfg" \
+  && grep -q 'keybind = alt+1=unbind' "$ghosttycfg" \
+  && grep -q 'keybind = alt+digit_1=unbind' "$ghosttycfg" \
+  && grep -q 'keybind = alt+digit_9=unbind' "$ghosttycfg"; then
+  pass "ghostty unbinds shift+arrows and alt+1..9 for Herdr"
+else
+  fail "ghostty missing Herdr key pass-through unbinds"
+fi
+herdrcfg="$ROOT/dotfiles/herdr/.config/herdr/config.toml"
+if grep -q 'prefix+1..9' "$herdrcfg" && grep -q 'previous_workspace' "$herdrcfg"; then
+  pass "herdr workspace keys include prefix+1..9 and previous_workspace"
+else
+  fail "herdr missing portable workspace keybinds"
+fi
+kittycfg="$ROOT/dotfiles/kitty/.config/kitty/kitty.conf"
+kitty_ok=1
+grep -qE '^macos_option_as_alt yes$' "$kittycfg" || kitty_ok=0
+for i in 1 2 3 4 5 6 7 8 9; do
+  code=$((48 + i))
+  grep -qF "map ctrl+alt+${i} send_text all \x1b[${code};7u" "$kittycfg" || kitty_ok=0
+done
+if [[ $kitty_ok -eq 1 ]]; then
+  pass "kitty forwards ctrl+alt+1..9 to Herdr as CSI-u"
+else
+  fail "kitty missing Herdr workspace CSI-u maps or macos_option_as_alt"
 fi
 
 if [[ $FAIL -ne 0 ]]; then

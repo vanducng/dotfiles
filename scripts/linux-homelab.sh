@@ -319,6 +319,9 @@ main() {
   stow_homelab
   ensure_disks
   mk_lab_dirs
+  if [[ -e "${HOME}/.pi" || -L "${HOME}/.pi" ]]; then
+    bash "${REPO_ROOT}/scripts/pi-home-layout.sh" || log "WARN: pi home layout not applied"
+  fi
   bash "${HOME}/.config/homelab/relocate-stores" 2>/dev/null \
     || bash "${REPO_ROOT}/dotfiles/homelab/.config/homelab/relocate-stores"
   relocate_existing

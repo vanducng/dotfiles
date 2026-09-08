@@ -38,7 +38,7 @@ tail -n 100 ~/.config/herdr/herdr-server.log
 |-----|--------|-----|--------|
 | `C-x + m` | Split Right | `C-x + v` | Split Down |
 | `Ctrl-Alt-hjkl` | Navigate Panes | `C-x + Space` | Pick Recent Target |
-| `C-x + Shift-Right` | Next Workspace | `Ctrl-Alt-1..9` | Switch Workspace |
+| `C-x + Shift-Left/Right` | Previous/Next Workspace | `Ctrl-Alt-1..9` / `C-x 1..9` | Switch Workspace |
 | `C-x + Shift-Up/Down` | Previous/Next Agent | `C-x + Alt-1..9` | Focus Agent |
 | `C-x + p` | Previous Tab | `C-x + a` | Last Pane |
 | `C-x + f` | Agent Address Picker | `C-x + g` | Session Navigator |

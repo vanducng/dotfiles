@@ -1,3 +1,15 @@
+local uv = vim.uv or vim.loop
+local mason_root = vim.fn.stdpath "data" .. "/mason"
+local mason_ts = mason_root .. "/bin/tree-sitter"
+if uv.fs_stat(mason_ts) then
+  local out = vim.fn.system { mason_ts, "--version" }
+  if vim.v.shell_error ~= 0 and tostring(out):find("GLIBC", 1, true) then
+    vim.notify("Removing mason tree-sitter-cli (incompatible glibc)", vim.log.levels.WARN)
+    vim.fn.delete(mason_ts)
+    vim.fn.delete(mason_root .. "/packages/tree-sitter-cli", "rf")
+  end
+end
+
 require("lazy").setup({
   {
     "AstroNvim/AstroNvim",

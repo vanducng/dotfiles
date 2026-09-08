@@ -51,7 +51,6 @@ required_events = {
     "PreToolUse",
     "SubagentStart",
     "Stop",
-    "SessionEnd",
     "Notification",
 }
 missing = sorted(required_events - set(hooks))

@@ -81,6 +81,6 @@ kanata --cfg ~/.config/kanata/kanata.kbd
 - `dotfiles/waybar/.config/waybar/`
 - `dotfiles/wofi/.config/wofi/`
 - `dotfiles/mako/.config/mako/config`
-- `dotfiles/ghostty/.config/ghostty/config` (Linux Super aliases)
+- `dotfiles/ghostty/.config/ghostty/config` (Linux Super aliases; unbinds shift+arrows and alt+1..9 so Herdr gets them)
 - `scripts/linux-desktop.sh`
 - `scripts/linux-gnome-keys.sh`

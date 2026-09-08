@@ -45,6 +45,16 @@ title: "Neovim Troubleshooting"
 :TSInstall python
 ```
 
+### `GLIBC_2.39 not found` on Linux
+
+Mason's `tree-sitter-cli` GitHub linux-x64 binary is linked against GLIBC 2.39 (Ubuntu 24.04). Ubuntu 22.04 ships GLIBC 2.35, so `:TSInstall` fails with:
+
+```
+tree-sitter: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.39' not found
+```
+
+`make linux-deps` compiles `tree-sitter-cli` with cargo against the host libc and removes the broken Mason copy. nvim also drops a non-runnable Mason binary on startup.
+
 ## Configuration Issues
 
 ### Startup Errors
