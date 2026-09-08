@@ -1,11 +1,8 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "cleanupPeriodDays": 30,
-  "apiKeyHelper": "/bin/bash -lc 'exec gopass show -o personal/saas/cli-proxy/code-01-api-key'",
   "env": {
-    "ANTHROPIC_BASE_URL": "https://cli-proxy.dataplanelabs.com",
     "BASH_DEFAULT_TIMEOUT_MS": "600000",
-    "CLAUDE_CODE_API_KEY_HELPER_TTL_MS": "3600000",
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
   },
   "includeCoAuthoredBy": false,

@@ -57,3 +57,15 @@ else
   command -v zoxide >/dev/null 2>&1 && eval "$(zoxide init bash)"
   command -v direnv >/dev/null 2>&1 && eval "$(direnv hook bash)"
 fi
+
+# Remote nvim/kitty can leave CSI-u key encoding on after SSH drop (keys become
+# [104;1:3u, Ctrl-C stops sending SIGINT). Pop + set flags 0 on the tty.
+_vd_restore_kitty_keyboard() {
+  printf '\033[<u\033[=0u' >/dev/tty 2>/dev/null || true
+}
+ssh() {
+  command ssh "$@"
+  _vd_ssh_st=$?
+  _vd_restore_kitty_keyboard
+  return "$_vd_ssh_st"
+}

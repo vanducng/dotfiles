@@ -13,7 +13,11 @@ for command in jq node pi; do
     fi
 done
 
-jq empty "$agent_dir/settings.json" "$agent_dir/models.json" "$agent_dir/themes/rose-pine-moon.json"
+jq empty "$agent_dir/settings.json" "$agent_dir/models.json" "$agent_dir/mcp.json" \
+	"$agent_dir/themes/rose-pine-moon.json" \
+	"$agent_dir/extensions/subagent/config.json"
+jq -e '.scheduledRuns.storeRoot == "~/.local/share/pi-subagents/schedules"' \
+	"$agent_dir/extensions/subagent/config.json" >/dev/null
 jq -e '
 	.defaultProvider == "cliproxyapi" and
 	.defaultModel == "claude-fable-5" and
@@ -24,7 +28,14 @@ jq -e '
 	| index("npm:pi-web-access")
 	  and index("npm:pi-subagents")
 	  and index("npm:pi-langfuse")
+	  and index("npm:pi-mcp-adapter")
 ' "$agent_dir/settings.json" >/dev/null
+jq -e '
+	.mcpServers.Structured.url == "https://mcp.structured.app/mcp" and
+	.mcpServers.Structured.auth == "oauth" and
+	.mcpServers.Structured.oauth.scope == "email" and
+	(.mcpServers.Structured.oauth.clientId | not)
+' "$agent_dir/mcp.json" >/dev/null
 jq -e '
 	.providers.cliproxyapi.models[]
 	| select(.id == "grok-4.6")
@@ -79,5 +90,18 @@ jq -e '
 node --check "$agent_dir/extensions/terminal-status-title.js"
 PI_CODING_AGENT_DIR="$test_dir" PI_OFFLINE=1 pi --no-skills --no-prompt-templates --no-themes \
   --extension "$agent_dir/extensions/calm/index.ts" --list-models >/dev/null
+
+if [[ -e "${HOME}/.pi" || -L "${HOME}/.pi" ]]; then
+	if [[ -L "${HOME}/.pi" ]]; then
+		printf 'error: ~/.pi is a symlink; keep a real directory and relocate only npm/sessions/git\n' >&2
+		exit 1
+	fi
+	live_theme="${HOME}/.pi/agent/themes/rose-pine-moon.json"
+	if [[ ! -e "$live_theme" ]]; then
+		printf 'error: live theme missing or dangling: %s\n' "$live_theme" >&2
+		exit 1
+	fi
+	jq empty "$live_theme"
+fi
 
 printf 'pi config test: ok\n'

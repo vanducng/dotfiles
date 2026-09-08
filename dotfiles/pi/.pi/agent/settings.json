@@ -1,8 +1,8 @@
 {
   "defaultProvider": "cliproxyapi",
-  "defaultModel": "claude-fable-5",
+  "defaultModel": "grok-4.6",
   "defaultThinkingLevel": "xhigh",
-  "lastChangelogVersion": "0.84.2",
+  "lastChangelogVersion": "0.84.4",
   "images": {
     "blockImages": false
   },
@@ -22,8 +22,9 @@
     "git:github.com/algal/pi-openai-server-compaction@c6d593087709e9481223dc6c6c2269b371b5e055",
     "npm:@plannotator/pi-extension",
     "npm:pi-subagents",
-    "npm:pi-langfuse",
-    "npm:@calesennett/pi-codex-fast"
+    "npm:@calesennett/pi-codex-fast",
+    "npm:pi-mcp-adapter",
+    "git:github.com/DietrichGebert/ponytail@v4.9.0"
   ],
   "skills": [
     "-skills/backend-development",
