@@ -1,7 +1,24 @@
 ---@type LazySpec
+local candidates = {
+  vim.fn.expand "~/git/personal/miu-db/ui/miu-db.nvim",
+  vim.fn.expand "~/work/git/personal/miu-db/ui/miu-db.nvim",
+}
+
+local dir
+for _, candidate in ipairs(candidates) do
+  if vim.fn.isdirectory(candidate) == 1 then
+    dir = candidate
+    break
+  end
+end
+
+if not dir then
+  return {}
+end
+
 return {
   {
-    dir = "/Users/vanducng/git/personal/miu-db/ui/miu-db.nvim",
+    dir = dir,
     name = "miu-db.nvim",
     ft = { "sql" },
     cmd = {
