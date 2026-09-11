@@ -13,6 +13,11 @@ for file in "$yazi_toml" "$theme_toml"; do
   fi
 done
 
+if ! python3 -c 'import tomllib' >/dev/null 2>&1; then
+  printf 'error: python3 with tomllib (3.11+) is required\n' >&2
+  exit 1
+fi
+
 python3 - "$yazi_toml" "$theme_toml" <<'PY'
 from pathlib import Path
 import sys

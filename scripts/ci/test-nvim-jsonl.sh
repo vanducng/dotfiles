@@ -42,7 +42,7 @@ if ! grep -q 'ft = "sql"' "$nvim_cfg/lua/plugins/miudb.lua"; then
   exit 1
 fi
 
-if grep -qE '/Users/|/home/' "$nvim_cfg/lua/plugins/miudb.lua"; then
+if grep -qE '["'"'"']/(Users|home)/' "$nvim_cfg/lua/plugins/miudb.lua"; then
   printf 'error: miudb.lua hardcodes an absolute home path\n' >&2
   exit 1
 fi
