@@ -1,5 +1,46 @@
 # Changelog
 
+## [0.17.0](https://github.com/vanducng/dotfiles/compare/v0.16.0...v0.17.0) (2026-09-11)
+
+
+### Features
+
+* **git:** add includeIf identities for crashchat, ab-spectrum, bhcoe ([7ed79b0](https://github.com/vanducng/dotfiles/commit/7ed79b0f2949d7a6ad310d7a57b6f09103289036))
+* **homelab:** auto-connect Tailscale on boot ([dd59884](https://github.com/vanducng/dotfiles/commit/dd5988480ddb402a64f836ef48b29860556802a9))
+* **linux:** add CNB OpenVPN user daemon from Mac Tunnelblick profile ([d4973d7](https://github.com/vanducng/dotfiles/commit/d4973d7744bfcf104b5d5585f0ed7815f9c8f768))
+* **linux:** add homelab layout, never-sleep, and user sshd ([23cd2c3](https://github.com/vanducng/dotfiles/commit/23cd2c350efe91c2cf191aab65ba3899a8d8d766))
+* **linux:** add remote CDP, RDP tunnels, and userspace Tailscale ([b5be98a](https://github.com/vanducng/dotfiles/commit/b5be98af8ffdaebff33acac23af5670c3da5d778))
+* **linux:** add sudo helper to enable ssh/mosh remote access ([1eb1ea7](https://github.com/vanducng/dotfiles/commit/1eb1ea7897192bcaf8101f416ba9f6c704a90203))
+* **linux:** add Sway/Ghostty desktop with skhd-equivalent keys ([6bc3ca1](https://github.com/vanducng/dotfiles/commit/6bc3ca1d69cb48ade9cfea3858b4207a2ef16835))
+* **linux:** add user-space bootstrap and portable stow set ([18df72d](https://github.com/vanducng/dotfiles/commit/18df72d2cd77b292e6bf658ee3af48451497c32d))
+* **linux:** added dpl homelab remote, CNB OpenVPN, and Tailscale ([651ad18](https://github.com/vanducng/dotfiles/commit/651ad1892c6bdc05a8fd71dabd17ef3046fc1ed7))
+* **linux:** CNB OpenVPN MAIN profile plus Mac bastion jump ([673de26](https://github.com/vanducng/dotfiles/commit/673de26e99b0d06cad6a60a089774b1894956dc2))
+* **linux:** format 970 as dpl-work for git worktrees and docker data ([838ef6b](https://github.com/vanducng/dotfiles/commit/838ef6b7e5909f4800bb01a1b69705bce89fa5ee))
+* **linux:** keep bulky tool stores on the 970 work disk ([15510d1](https://github.com/vanducng/dotfiles/commit/15510d1f8589ef3f19f6e0a050f7ad898242580d))
+* **linux:** persist tun cnb0 for user-space CNB OpenVPN ([7368c1d](https://github.com/vanducng/dotfiles/commit/7368c1d8de0433f127a2aa519893c7871a9a878c))
+* **linux:** point gopass at ~/work/git/personal/pass ([71c6f4c](https://github.com/vanducng/dotfiles/commit/71c6f4cedcda272b31f2f55b61a73dd94e432a48))
+* **linux:** store CNB VPN in gopass and start/stop on demand ([46b6bd5](https://github.com/vanducng/dotfiles/commit/46b6bd58ba4717994a4c00e7ef68439baae2cc62))
+* **pi:** add ponytail package pinned at v4.9.0 ([7f21890](https://github.com/vanducng/dotfiles/commit/7f2189036d89fabe0d209d3658280dabeead3a79))
+* **pi:** add Structured MCP via pi-mcp-adapter ([#131](https://github.com/vanducng/dotfiles/issues/131)) ([cd48994](https://github.com/vanducng/dotfiles/commit/cd48994567ad1eee71185cf4936f493a11e03aff))
+
+
+### Bug Fixes
+
+* **agents:** dropped Claude proxy billing and disabled Langfuse ([#129](https://github.com/vanducng/dotfiles/issues/129)) ([ecbd379](https://github.com/vanducng/dotfiles/commit/ecbd379a61cdaf0114f714aa4436182c0f916a56))
+* **config:** restore cross-platform dotfiles validation ([#126](https://github.com/vanducng/dotfiles/issues/126)) ([96e71af](https://github.com/vanducng/dotfiles/commit/96e71afad8c5a56f177c845d1234f9a3b3ceeaff))
+* **git:** keep work mailboxes out of the tracked repo ([40409cb](https://github.com/vanducng/dotfiles/commit/40409cb6862719cdef29dd1416f4eede20dabba6))
+* **herdr:** restored workspace switching on linux and mosh ([#128](https://github.com/vanducng/dotfiles/issues/128)) ([346e4aa](https://github.com/vanducng/dotfiles/commit/346e4aa0120ea11160538c8a949de0ab31370beb))
+* **kitty:** forwarded ctrl+alt+1..9 to herdr workspaces ([#133](https://github.com/vanducng/dotfiles/issues/133)) ([f5ac961](https://github.com/vanducng/dotfiles/commit/f5ac9612188d206c2852d4dbde9307ec7060bcb2))
+* **linux:** finish homelab docker, mosh, SSH PATH, and OpenVPN caps ([531337d](https://github.com/vanducng/dotfiles/commit/531337d58a3fa6a1dabc536bd3a4779f5f82b276))
+* **linux:** keep stowed pi wrapper ahead of mise node bins ([21ce2ed](https://github.com/vanducng/dotfiles/commit/21ce2ed537498f5fa4a35c6ca32e3dff3689a231))
+* **linux:** restored yazi, miu-db.nvim, and release-please 0.16.0 ([#136](https://github.com/vanducng/dotfiles/issues/136)) ([603acbc](https://github.com/vanducng/dotfiles/commit/603acbc6a7948b33739f6f5bf9a26af2ebbe0695))
+* **linux:** stop hardcoding work emails in VPN helpers and docs ([e719415](https://github.com/vanducng/dotfiles/commit/e7194150a9eea9109899931d7d7a164f433e16ac))
+* **linux:** use merge.conflictstyle diff3 on Ubuntu 22.04 git ([9b45b6c](https://github.com/vanducng/dotfiles/commit/9b45b6c3d66d9e26b18fa647ed4d53281b658777))
+* **nvim:** compiled tree-sitter-cli for older glibc ([#134](https://github.com/vanducng/dotfiles/issues/134)) ([1834564](https://github.com/vanducng/dotfiles/commit/18345645f114ea869f5289b970f940b421ce8318))
+* **nvim:** restored kulala HTTP syntax highlighting ([#130](https://github.com/vanducng/dotfiles/issues/130)) ([58e3dea](https://github.com/vanducng/dotfiles/commit/58e3deaeb2885f9cbd030a98a997d99cf264b613))
+* **pi:** kept ~/.pi a real directory on linux and macos stow ([#127](https://github.com/vanducng/dotfiles/issues/127)) ([6906fb4](https://github.com/vanducng/dotfiles/commit/6906fb41a771c78d15e0b24aced872854af4f77e))
+* **shell:** restore kitty keyboard protocol after ssh drop ([#135](https://github.com/vanducng/dotfiles/issues/135)) ([4b71fae](https://github.com/vanducng/dotfiles/commit/4b71fae0145c04fc226dca13bc5126bdf307e5ea))
+
 ## [0.16.0](https://github.com/vanducng/dotfiles/compare/v0.15.0...v0.16.0) (2026-08-18)
 
 
