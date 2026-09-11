@@ -146,6 +146,7 @@ script-test:
 	@./scripts/ci/test-nvim-jsonl.sh
 	@./scripts/ci/test-linux-bootstrap.sh
 	@./scripts/ci/test-yazi-config.sh
+	@./scripts/ci/test-release-manifest.sh
 
 install-test:
 	@./scripts/ci/test-install.sh
