@@ -20,7 +20,7 @@ import sys
 
 def parse(v: str) -> tuple[int, ...]:
     parts = v.strip().split(".")
-    if not parts or any(not p.isdigit() for p in parts):
+    if len(parts) != 3 or any(not p.isdigit() for p in parts):
         raise SystemExit(f"invalid semver: {v!r}")
     return tuple(int(p) for p in parts)
 
@@ -32,7 +32,7 @@ if manifest.get(".") != version:
     raise SystemExit(f"manifest {manifest.get('.')!r} != version.txt {version!r}")
 if parse(version) < parse("0.16.0"):
     raise SystemExit(f"{version} is below last GitHub release 0.16.0; occupied tags will fail CI")
-sha = config.get("last-release-sha", "")
+sha = str(config.get("last-release-sha", "")).lower()
 if len(sha) != 40 or any(c not in "0123456789abcdef" for c in sha):
     raise SystemExit("release-please-config.json needs last-release-sha on main")
 print(f"release manifest: {version} (floor 0.16.0)")
