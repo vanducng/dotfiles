@@ -4,8 +4,9 @@
 -- Custom keybindings can be defined here
 -- Example: require("relative-motions"):setup({ show_numbers = "relative" })
 
--- Enable borders
-require("full-border"):setup()
+pcall(function()
+    require("full-border"):setup()
+end)
 
 -- Capture initial directory from env var
 -- YAZI_INITIAL_DIR: set by yy shell function

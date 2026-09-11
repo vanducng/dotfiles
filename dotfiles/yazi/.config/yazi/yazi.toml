@@ -54,7 +54,7 @@ play = [
 
 [open]
 rules = [
-	{ name = "*/", use = [ "edit", "open", "reveal" ] },
+	{ url = "*/", use = [ "edit", "open", "reveal" ] },
 
 	{ mime = "text/*",  use = [ "edit", "open", "reveal" ] },
 	{ mime = "image/*", use = [ "open", "reveal" ] },
@@ -105,7 +105,7 @@ preloaders = [
 	{ mime = "application/pdf", run = "pdf" },
 ]
 previewers = [
-	{ name = "*/", run = "folder", sync = true },
+	{ url = "*/", run = "folder", sync = true },
 	# Code
 	{ mime = "text/*",                 run = "code" },
 	{ mime = "*/xml",                  run = "code" },
@@ -130,7 +130,7 @@ previewers = [
 	{ mime = "application/x-rar",           run = "archive" },
 	{ mime = "application/xz",              run = "archive" },
 	# Fallback
-	{ name = "*", run = "file" },
+	{ url = "*", run = "file" },
 ]
 
 [input]

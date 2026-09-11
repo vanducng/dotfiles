@@ -1,6 +1,7 @@
 {
   "release-type": "simple",
   "bump-minor-pre-major": true,
+  "last-release-sha": "7a05ce62a0a41c854de772939d33485f4da16593",
   "packages": {
     ".": {}
   }
