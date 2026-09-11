@@ -42,6 +42,21 @@ if ! grep -q 'ft = "sql"' "$nvim_cfg/lua/plugins/miudb.lua"; then
   exit 1
 fi
 
+if grep -qE '/Users/|/home/' "$nvim_cfg/lua/plugins/miudb.lua"; then
+  printf 'error: miudb.lua hardcodes an absolute home path\n' >&2
+  exit 1
+fi
+
+if ! grep -Fq '~/git/personal/miu-db/ui/miu-db.nvim' "$nvim_cfg/lua/plugins/miudb.lua"; then
+  printf 'error: miudb.lua missing macOS checkout candidate\n' >&2
+  exit 1
+fi
+
+if ! grep -Fq '~/work/git/personal/miu-db/ui/miu-db.nvim' "$nvim_cfg/lua/plugins/miudb.lua"; then
+  printf 'error: miudb.lua missing Linux checkout candidate\n' >&2
+  exit 1
+fi
+
 nvim --headless -u NONE -i NONE -n \
   --cmd "let &runtimepath = '$nvim_cfg' . ',' . &runtimepath" \
   -l - <<'LUA'
