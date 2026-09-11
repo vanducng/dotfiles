@@ -145,6 +145,7 @@ script-test:
 	@./scripts/ci/test-gpg-lazygit.sh
 	@./scripts/ci/test-nvim-jsonl.sh
 	@./scripts/ci/test-linux-bootstrap.sh
+	@./scripts/ci/test-yazi-config.sh
 
 install-test:
 	@./scripts/ci/test-install.sh
