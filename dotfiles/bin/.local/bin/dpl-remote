@@ -219,7 +219,7 @@ Host dpl-v6
   HostName ${ip6}
 
 Host dpl-ts
-  HostName dpl
+  HostName 100.122.213.4
 
 Host dpl-tunnel dpl-v6-tunnel dpl-ts-tunnel
   User ubuntu
@@ -242,7 +242,7 @@ Host dpl-v6-tunnel
   HostName ${ip6}
 
 Host dpl-ts-tunnel
-  HostName dpl
+  HostName 100.122.213.4
 
 # Usage:
 #   ssh dpl                  # LAN shell

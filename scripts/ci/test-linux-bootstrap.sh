@@ -32,6 +32,19 @@ else
   fail "relocate-stores missing nested pi runtime dirs"
 fi
 bash -n "$ROOT/scripts/linux-homelab-root.sh" && pass "linux-homelab-root.sh parses" || fail "linux-homelab-root.sh syntax"
+ovpn="$ROOT/dotfiles/bin/.local/bin/cnb-openvpn"
+bash -n "$ovpn" && pass "cnb-openvpn parses" || fail "cnb-openvpn syntax"
+if grep -cF 'pull-filter ignore "redirect-gateway"' "$ovpn" | grep -qx 3 \
+  && grep -q 'cmd_run' "$ovpn"; then
+  pass "cnb-openvpn ignores redirect-gateway on store, restore, and run"
+else
+  fail "cnb-openvpn must ignore redirect-gateway in store/restore/run"
+fi
+if grep -q 'insert -m -f' "$ovpn" && grep -q 'show -n' "$ovpn" && ! grep -q 'gopass --nosync cat' "$ovpn"; then
+  pass "cnb-openvpn stores ovpn as multiline text, not binary cat"
+else
+  fail "cnb-openvpn must gopass insert -m / show -n the ovpn (not cat)"
+fi
 bash -n "$ROOT/dotfiles/bin/.local/bin/dpl-remote" && pass "dpl-remote parses" || fail "dpl-remote syntax"
 bash -n "$ROOT/dotfiles/homelab/.config/homelab/cdp-chrome" && pass "cdp-chrome parses" || fail "cdp-chrome syntax"
 bash -n "$ROOT/dotfiles/homelab/.config/homelab/install-chrome" && pass "install-chrome parses" || fail "install-chrome syntax"

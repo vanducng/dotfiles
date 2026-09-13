@@ -76,6 +76,7 @@ out.write_text(
             "dev cnb0",
             "dev-type tun",
             'pull-filter ignore "block-outside-dns"',
+            'pull-filter ignore "redirect-gateway"',
             "persist-tun",
             "persist-key",
             "data-ciphers AES-128-GCM",
@@ -112,15 +113,13 @@ out.write_text(
     )
 )
 PY
-  gopass --nosync rm -f "${GOPASS_NS}/ovpn" 2>/dev/null || true
-  gopass --nosync cat "${GOPASS_NS}/ovpn" <"$tmp"
+  gopass --nosync insert -m -f "${GOPASS_NS}/ovpn" <"$tmp"
   rm -f "$tmp"
   # username/password are set via set-auth; do not clobber them here.
 
   local legacy_src="${HOME}/.config/openvpn/from-mac/connect/1668194320662.ovpn"
   if [[ -f "$legacy_src" ]]; then
-    gopass --nosync rm -f "cnb/vpn/pfsense-legacy/ovpn" 2>/dev/null || true
-    gopass --nosync cat "cnb/vpn/pfsense-legacy/ovpn" <"$legacy_src"
+    gopass --nosync insert -m -f "cnb/vpn/pfsense-legacy/ovpn" <"$legacy_src"
     printf '%s' "Duc" | gopass --nosync insert -f "cnb/vpn/pfsense-legacy/username"
   fi
 
@@ -144,7 +143,7 @@ cmd_restore() {
   chmod 700 "$MAIN"
   local tmp
   tmp="$(mktemp)"
-  gopass --nosync cat "${GOPASS_NS}/ovpn" >"$tmp"
+  gopass --nosync show -n "${GOPASS_NS}/ovpn" >"$tmp"
   python3 - "$tmp" "$MAIN" <<'PY'
 from pathlib import Path
 import sys
@@ -162,6 +161,7 @@ def block(tag: str, text: str) -> str:
 conf = """# restored from gopass cnb/vpn/pfsense-main/ovpn
 dev cnb0
 pull-filter ignore "block-outside-dns"
+pull-filter ignore "redirect-gateway"
 persist-tun
 persist-key
 data-ciphers AES-128-GCM
@@ -267,7 +267,9 @@ cmd_run() {
   if [[ ! -s "$AUTH" ]] || [[ "$(grep -cve '^[[:space:]]*$' "$AUTH" || true)" -lt 2 ]]; then
     cmd_auth || return 1
   fi
-  exec "$BIN" --cd "$conf" --config "$conf/client.conf" --auth-user-pass "$AUTH" --auth-nocache --verb 3
+  # pfSense pushes redirect-gateway def1; that blackholes IPv4 on dpl (no VPN internet, no AAAA for cliproxy). Keep the LAN default route.
+  exec "$BIN" --cd "$conf" --config "$conf/client.conf" --auth-user-pass "$AUTH" --auth-nocache --verb 3 \
+    --pull-filter ignore "redirect-gateway"
 }
 
 cmd_prepare_tun() {

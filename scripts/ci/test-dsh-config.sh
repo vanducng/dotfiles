@@ -30,7 +30,9 @@ required = [
     "apiKeyEnv: CLI_PROXY_API_KEY",
     "id: grok-4.6",
     "id: gpt-5.6-sol",
+    "id: gpt-6-astra",
     "id: claude-fable-5",
+    "id: claude-fable-5-1",
     "id: claude-opus-5",
     "id: gpt-5.5",
     "xhigh: xhigh",
@@ -46,6 +48,8 @@ if "sk-" in text or "apiKey:" in text:
 windows = {
     "grok-4.6": ("500000", "32768"),
     "claude-fable-5": ("1000000", "65536"),
+    "claude-fable-5-1": ("1000000", "65536"),
+    "gpt-6-astra": ("272000", "65536"),
     "gpt-5.6-sol": ("272000", "65536"),
     "claude-sonnet-4-6": ("1000000", "65536"),
     "gpt-5.4-mini": ("400000", "65536"),

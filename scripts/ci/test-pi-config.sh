@@ -79,6 +79,20 @@ jq -e '
 ' "$agent_dir/models.json" >/dev/null
 jq -e '
 	.providers.cliproxyapi.models[]
+	| select(.id == "gpt-6-astra")
+	| .contextWindow == 272000 and .maxTokens == 65536
+	  and .thinkingLevelMap.off == null
+	  and .thinkingLevelMap.xhigh == "xhigh" and .thinkingLevelMap.max == "max"
+' "$agent_dir/models.json" >/dev/null
+jq -e '
+	.providers.cliproxyapi.models[]
+	| select(.id == "claude-fable-5-1")
+	| .contextWindow == 1000000 and .maxTokens == 65536
+	  and .thinkingLevelMap.off == null
+	  and .thinkingLevelMap.xhigh == "xhigh" and .thinkingLevelMap.max == "max"
+' "$agent_dir/models.json" >/dev/null
+jq -e '
+	.providers.cliproxyapi.models[]
 	| select(.id == "grok-4.6")
 	| .contextWindow == 500000 and .maxTokens == 32768
 ' "$agent_dir/models.json" >/dev/null

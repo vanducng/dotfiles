@@ -1,0 +1,148 @@
+#!/usr/bin/env bash
+# Keep listed clones on origin/main (or origin/master).
+# macOS: launchd StartInterval. Linux: systemd --user timer.
+# skills/dotfiles: never discard WIP (stash, update main, apply).
+# vault: commit WIP on main, then pull --rebase and push.
+set -u
+
+PATH="${HOME}/.local/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:${PATH:-/usr/bin:/bin}"
+export PATH
+export GIT_SSH_COMMAND="${GIT_SSH_COMMAND:-ssh -o BatchMode=yes -o IdentitiesOnly=yes}"
+
+LOG_DIR="${HOME}/.local/log"
+mkdir -p "$LOG_DIR"
+LOG="${LOG_DIR}/git-sync-repos.log"
+
+ts() { date '+%Y-%m-%d %H:%M:%S'; }
+log() { printf '%s %s\n' "$(ts)" "$*" >>"$LOG"; }
+
+default_branch() {
+  local dir="$1"
+  if git -C "$dir" show-ref --verify --quiet refs/remotes/origin/main; then
+    printf '%s\n' main
+  elif git -C "$dir" show-ref --verify --quiet refs/remotes/origin/master; then
+    printf '%s\n' master
+  else
+    printf '%s\n' ''
+  fi
+}
+
+checkout_default() {
+  local dir="$1" branch="$2"
+  if git -C "$dir" show-ref --verify --quiet "refs/heads/${branch}"; then
+    git -C "$dir" checkout -q "$branch" >/dev/null 2>>"$LOG"
+  else
+    git -C "$dir" checkout -q -b "$branch" "origin/${branch}" >/dev/null 2>>"$LOG"
+  fi
+}
+
+# stdout: "stash" or "clean". nonzero if fetch/checkout/ff fails.
+on_main() {
+  local dir="$1" branch="$2" stashed=clean
+  git -C "$dir" fetch --quiet origin >/dev/null 2>>"$LOG" || return 1
+  if [[ -n "$(git -C "$dir" status --porcelain)" ]]; then
+    git -C "$dir" stash push -u -m "git-sync-repos $(ts)" >/dev/null 2>>"$LOG" || return 1
+    stashed=stash
+  fi
+  if ! checkout_default "$dir" "$branch" \
+    || ! git -C "$dir" merge --ff-only --quiet "origin/${branch}" >/dev/null 2>>"$LOG"; then
+    if [[ "$stashed" == stash ]]; then
+      git -C "$dir" stash apply --quiet >/dev/null 2>>"$LOG" || true
+      git -C "$dir" stash drop --quiet >/dev/null 2>>"$LOG" || true
+    fi
+    return 1
+  fi
+  printf '%s\n' "$stashed"
+}
+
+restore_stash() {
+  local dir="$1" name="$2" stashed="$3"
+  [[ "$stashed" == stash ]] || return 0
+  if git -C "$dir" stash apply --quiet >/dev/null 2>>"$LOG"; then
+    git -C "$dir" stash drop --quiet
+    log "ok ${name}: restored WIP"
+  else
+    git -C "$dir" reset --hard HEAD >/dev/null 2>>"$LOG" || true
+    log "warn ${name}: stash apply conflict; default branch left clean, WIP in git stash list"
+  fi
+}
+
+sync_main() {
+  local name="$1" dir="$2"
+  local branch stashed
+  if [[ ! -d "${dir}/.git" ]]; then
+    log "skip ${name}: not a git repo (${dir})"
+    return
+  fi
+  git -C "$dir" remote get-url origin >/dev/null 2>&1 || {
+    log "skip ${name}: no origin"
+    return
+  }
+  branch="$(default_branch "$dir")"
+  if [[ -z "$branch" ]]; then
+    log "skip ${name}: no origin/main or origin/master"
+    return
+  fi
+  if ! stashed="$(on_main "$dir" "$branch")"; then
+    log "fail ${name}: checkout/ff ${branch}"
+    restore_stash "$dir" "$name" stash
+    return
+  fi
+  restore_stash "$dir" "$name" "$stashed"
+  if [[ -n "$(git -C "$dir" status --porcelain)" ]]; then
+    log "ok ${name}: ${branch} updated, WIP present"
+    return
+  fi
+  if [[ -n "$(git -C "$dir" rev-list --max-count=1 "origin/${branch}..HEAD" 2>/dev/null)" ]]; then
+    if git -C "$dir" push --quiet origin "$branch"; then
+      log "ok ${name}: ${branch} pushed"
+    else
+      log "fail ${name}: push ${branch}"
+    fi
+    return
+  fi
+  log "ok ${name}: ${branch} current"
+}
+
+vault_sync() {
+  local dir="${HOME}/git/personal/vault"
+  local branch stashed
+  if [[ ! -d "${dir}/.git" ]]; then
+    log "skip vault: missing ${dir}"
+    return
+  fi
+  git -C "$dir" remote get-url origin >/dev/null 2>&1 || {
+    log "skip vault: no origin"
+    return
+  }
+  branch="$(default_branch "$dir")"
+  [[ -n "$branch" ]] || branch=main
+  if ! stashed="$(on_main "$dir" "$branch")"; then
+    log "fail vault: checkout/ff ${branch}"
+    restore_stash "$dir" "vault" stash
+    return
+  fi
+  restore_stash "$dir" "vault" "$stashed"
+  if [[ -n "$(git -C "$dir" status --porcelain)" ]]; then
+    git -C "$dir" add -A
+    if ! git -C "$dir" diff --cached --quiet; then
+      git -C "$dir" commit -m "vault backup: $(ts)" >/dev/null \
+        || { log "fail vault: commit"; return; }
+    fi
+  fi
+  if ! git -C "$dir" pull --rebase --autostash --quiet; then
+    log "fail vault: pull --rebase"
+    git -C "$dir" rebase --abort >/dev/null 2>&1 || true
+    return
+  fi
+  if git -C "$dir" push --quiet origin "$branch"; then
+    log "ok vault: ${branch} synced"
+  else
+    log "fail vault: push"
+  fi
+}
+
+sync_main skills "${HOME}/skills"
+sync_main dotfiles "${HOME}/dotfiles"
+vault_sync
+exit 0

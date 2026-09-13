@@ -66,6 +66,26 @@
           "maxTokens": 65536
         },
         {
+          "id": "gpt-6-astra",
+          "name": "GPT 6 Astra",
+          "reasoning": true,
+          "thinkingLevelMap": {
+            "off": null,
+            "minimal": null,
+            "low": "low",
+            "medium": "medium",
+            "high": "high",
+            "xhigh": "xhigh",
+            "max": "max"
+          },
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 272000,
+          "maxTokens": 65536
+        },
+        {
           "id": "grok-4.6",
           "name": "Grok 4.6",
           "reasoning": true,
@@ -132,6 +152,26 @@
         {
           "id": "claude-fable-5",
           "name": "Claude Fable 5",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 1000000,
+          "maxTokens": 65536,
+          "thinkingLevelMap": {
+            "off": null,
+            "minimal": null,
+            "low": "low",
+            "medium": "medium",
+            "high": "high",
+            "xhigh": "xhigh",
+            "max": "max"
+          }
+        },
+        {
+          "id": "claude-fable-5-1",
+          "name": "Claude Fable 5.1",
           "reasoning": true,
           "input": [
             "text",
