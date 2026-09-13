@@ -44,7 +44,7 @@ yabai -m config insert_feedback_color       0x00010101
 # yabai -m config external_bar              all:5:5
 
 # -----------------------------------------------------------------------------
-# Multi-display reconcile — keep display 1 holding the first 8 spaces
+# Multi-display reconcile — 16 spaces, display 1 holds 1-8, display 2 holds 9-16
 # Re-runs on monitor hot-plug via display_added / display_removed signals.
 # -----------------------------------------------------------------------------
 "$HOME/.config/yabai/arrange-displays.sh"
@@ -59,37 +59,44 @@ yabai -m signal --add event=display_removed \
 # -----------------------------------------------------------------------------
 yabai -m rule --add app=".*"                          sub-layer=normal
 
-# Pin apps to specific spaces (by index)
+# Pin apps to specific spaces (by index). 16 spaces: D1=1-8, D2=9-16.
+# 1 Ghostty  2 ego  3 Dia  4 Chrome+Devin  5 Cursor  6 PDF  7 Alter  8 Obsidian
+# 9 Slack  10 Telegram  11 Zalo  12 Discord+WhatsApp  13 Arc  14 Cliq  15 kitty  16 AI
 yabai -m rule --add app="^Ghostty$"                   space=1
-yabai -m rule --add app="^kitty$"                     space=15
-yabai -m rule --add app="^Codex$"                     space=16
-yabai -m rule --add app="^ChatGPT$"                   space=16
-yabai -m rule --add app="^Arc$"                       space=13
+yabai -m rule --add app="^ego lite$"                  space=2
 yabai -m rule --add app="^Dia$"                       space=3
-yabai -m rule --add app="^ego lite$"                  space=1
-yabai -m rule --add app="^Claude$"                    space=18
+yabai -m rule --add app="^Google Chrome$"             space=4
+yabai -m rule --add app="^Devin$"                     space=4
 yabai -m rule --add app="^Cursor$"                    space=5
 yabai -m rule --add app="^Preview$"                   space=6
 yabai -m rule --add app="^Foxit PDF Reader$"          space=6
 yabai -m rule --add app="^Alter$"                     space=7 manage=off
+yabai -m rule --add app="^Obsidian$"                  space=8
 yabai -m rule --add app="^Slack$"                     space=9
 yabai -m rule --add app="^Telegram$"                  space=10
 yabai -m rule --add app="^Zalo$"                      space=11
+yabai -m rule --add app="^ZaloCall$"                  manage=off
 yabai -m rule --add app="^Discord$"                   space=12
-yabai -m rule --add app="WhatsApp$"                   space=13
+yabai -m rule --add app="WhatsApp$"                   space=12
+yabai -m rule --add app="^Arc$"                       space=13
 yabai -m rule --add app="^Cliq$"                      space=14
-yabai -m rule --add app="^tldraw offline$"            space=17
+yabai -m rule --add app="^kitty$"                     space=15
+yabai -m rule --add app="^Codex$"                     space=16
+yabai -m rule --add app="^ChatGPT$"                   space=16
+yabai -m rule --add app="^Claude$"                    space=16
+yabai -m rule --add app="^Grok Bot$"                  space=16
 
 # Stacked spaces — only one window visible on top, others stacked beneath
 yabai -m space 3 --layout stack 2>/dev/null
+yabai -m space 12 --layout stack 2>/dev/null
 yabai -m space 16 --layout stack 2>/dev/null
 
 # Enforce app→space pinning for windows already open when yabai (re)starts.
 # Rules above only fire on window creation, so existing windows would otherwise
 # stay on whatever space they were on at restart. Mirror the pin rules here.
-for pin in "Ghostty:1" "ego lite:1" "kitty:15" "Codex:16" "ChatGPT:16" "Claude:18" "tldraw offline:17" "Dia:3" "Cursor:5" "Preview:6" "Foxit PDF Reader:6" "Alter:7" "Slack:9" "Telegram:10" "Zalo:11" "Discord:12" "Arc:13" "Cliq:14"; do
+for pin in "Ghostty:1" "ego lite:2" "Dia:3" "Google Chrome:4" "Devin:4" "Cursor:5" "Preview:6" "Foxit PDF Reader:6" "Alter:7" "Obsidian:8" "Slack:9" "Telegram:10" "Zalo:11" "Discord:12" "WhatsApp:12" "Arc:13" "Cliq:14" "kitty:15" "Codex:16" "ChatGPT:16" "Claude:16" "Grok Bot:16"; do
     app="${pin%:*}"; sp="${pin#*:}"
-    for id in $(yabai -m query --windows | jq -r --arg a "$app" '.[] | select(.app==$a) | .id'); do
+    for id in $(yabai -m query --windows | jq -r --arg a "$app" '.[] | select(.app == $a or (.app | endswith($a))) | .id'); do
         yabai -m window "$id" --space "$sp" 2>/dev/null
     done
 done
