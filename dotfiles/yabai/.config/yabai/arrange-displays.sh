@@ -13,7 +13,7 @@ TARGET_TOTAL=16
 
 nonzero() {
     v=${1:-0}
-    [ "$v" = "null" ] && v=0
+    { [ -z "$v" ] || [ "$v" = "null" ]; } && v=0
     echo "$v"
 }
 
@@ -27,12 +27,12 @@ displays=$(nonzero "$(yabai -m query --displays 2>/dev/null | jq 'length')")
 if [ "$displays" -ge 2 ]; then
     d1_count=$(nonzero "$(yabai -m query --spaces --display 1 2>/dev/null | jq '[.[] | select(."is-native-fullscreen"==false)] | length')")
     while [ "$d1_count" -gt "$TARGET_D1" ]; do
-        last=$(yabai -m query --spaces --display 1 | jq '[.[] | select(."is-native-fullscreen"==false)] | .[-1].index')
+        last=$(yabai -m query --spaces --display 1 2>/dev/null | jq '[.[] | select(."is-native-fullscreen"==false)] | .[-1].index')
         yabai -m space "$last" --display 2 2>/dev/null || break
         d1_count=$((d1_count - 1))
     done
     while [ "$d1_count" -lt "$TARGET_D1" ]; do
-        first=$(yabai -m query --spaces --display 2 | jq '[.[] | select(."is-native-fullscreen"==false)] | .[0].index')
+        first=$(yabai -m query --spaces --display 2 2>/dev/null | jq '[.[] | select(."is-native-fullscreen"==false)] | .[0].index')
         [ -z "$first" ] || [ "$first" = "null" ] && break
         yabai -m space "$first" --display 1 2>/dev/null || break
         d1_count=$((d1_count + 1))
@@ -40,9 +40,9 @@ if [ "$displays" -ge 2 ]; then
 fi
 
 while [ "$count" -gt "$TARGET_TOTAL" ]; do
-    last=$(yabai -m query --spaces | jq '[.[] | select(."is-native-fullscreen"==false)] | .[-1].index')
+    last=$(yabai -m query --spaces 2>/dev/null | jq '[.[] | select(."is-native-fullscreen"==false)] | .[-1].index')
     [ -z "$last" ] || [ "$last" = "null" ] && break
-    focused=$(yabai -m query --spaces --space | jq '.index')
+    focused=$(yabai -m query --spaces --space 2>/dev/null | jq '.index')
     if [ "$last" = "$focused" ]; then
         yabai -m space --focus prev 2>/dev/null || yabai -m space --focus first 2>/dev/null || break
     fi
