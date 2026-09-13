@@ -21,9 +21,9 @@ make stow-dsh
 
 - Default route stays `deepseek-official` / `deepseek-v4-flash` with high reasoning effort.
 - `cliproxyapi` is the same CLI Proxy gateway used by pi: `openai-responses` at `https://cli-proxy.dataplanelabs.com/v1`, authenticated by `CLI_PROXY_API_KEY`.
-- Daily-driver models on that gateway include `grok-4.6`, GPT 5.6 Sol/Terra/Luna, Claude Fable 5, Claude Sonnet/Opus, and Haiku.
-- Reasoning pickers follow the vendor wire set: Grok 4.6 exposes `xhigh` but not `max`; GPT 5.6 and Claude Fable 5 / Opus 4.7/4.8/5 expose both `xhigh` and `max`; GPT 5.4/5.5 expose `xhigh`; older Grok/Claude/Codex routes stop at `high`.
-- Context windows follow the vendor input limit so compaction stays truthful: Grok 4.5/4.6 at 500k, GPT 5.6/5.5/5.4 at 272k, GPT 5.4 Mini at 400k, Claude Fable/Opus/Sonnet 5 and Sonnet 4.6 at 1M, Haiku 4.5 at 200k. Output caps stay below the official max (32k or 64k) so one agent turn cannot consume the whole window.
+- Daily-driver models on that gateway include `grok-4.6`, GPT 6 Astra, GPT 5.6 Sol/Terra/Luna, Claude Fable 5.1 / Fable 5, Claude Sonnet/Opus, and Haiku.
+- Reasoning pickers follow the vendor wire set: Grok 4.6 exposes `xhigh` but not `max`; GPT 6 Astra, GPT 5.6, and Claude Fable 5.1 / Fable 5 / Opus 4.7/4.8/5 expose both `xhigh` and `max`; GPT 6 Astra and Fable cannot disable thinking; GPT 5.4/5.5 expose `xhigh`; older Grok/Claude/Codex routes stop at `high`.
+- Context windows follow the vendor input limit so compaction stays truthful: Grok 4.5/4.6 at 500k, GPT 6 Astra / 5.6 / 5.5 / 5.4 at 272k, GPT 5.4 Mini at 400k, Claude Fable 5.1 / Fable / Opus / Sonnet 5 and Sonnet 4.6 at 1M, Haiku 4.5 at 200k. Output caps stay below the official max (32k or 64k) so one agent turn cannot consume the whole window.
 - `zai-coding-cn` remains the catalog Z.AI Coding route, authenticated by `ZAI_CODING_CN_API_KEY`.
 
 Secrets stay in the environment or `~/.dsh/.credentials.yaml`. The managed file only stores `apiKeyEnv` references.

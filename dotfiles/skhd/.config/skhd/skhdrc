@@ -52,10 +52,10 @@ meh - w : open "/Applications/LibreOffice.app"
 meh - x : yabai -m space --focus 16; open "/Applications/ChatGPT.app"
 meh - y : yabai -m space --focus 7; open "alter://hub/chat/"
 meh - z : open "/Applications/Zen Browser.app"
+meh - n : open "/Applications/Obsidian.app"
 meh - o : open -a "Preview"
 # meh - 1 : open "/Applications/Firefox.app"
 # meh - 2 : open "/Applications/DBeaver.app"
-# meh - o : open "/Applications/Obsidian.app"
 
 # -----------------------------------------------------------------------------
 # 3. Window focus & warp

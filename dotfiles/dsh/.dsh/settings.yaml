@@ -85,8 +85,30 @@ llm-pi-ai:
             high: high
             xhigh: xhigh
             max: max
+        - id: gpt-6-astra
+          name: GPT 6 Astra
+          contextWindow: 272000
+          maxTokens: 65536
+          reasoningEfforts:
+            off:
+            low: low
+            medium: medium
+            high: high
+            xhigh: xhigh
+            max: max
         - id: claude-fable-5
           name: Claude Fable 5
+          contextWindow: 1000000
+          maxTokens: 65536
+          reasoningEfforts:
+            off:
+            low: low
+            medium: medium
+            high: high
+            xhigh: xhigh
+            max: max
+        - id: claude-fable-5-1
+          name: Claude Fable 5.1
           contextWindow: 1000000
           maxTokens: 65536
           reasoningEfforts:

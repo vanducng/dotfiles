@@ -32,6 +32,19 @@ else
   fail "relocate-stores missing nested pi runtime dirs"
 fi
 bash -n "$ROOT/scripts/linux-homelab-root.sh" && pass "linux-homelab-root.sh parses" || fail "linux-homelab-root.sh syntax"
+ovpn="$ROOT/dotfiles/bin/.local/bin/work-vpn"
+bash -n "$ovpn" && pass "work-vpn parses" || fail "work-vpn syntax"
+if grep -cF 'pull-filter ignore "redirect-gateway"' "$ovpn" | grep -qx 3 \
+  && grep -q 'cmd_run' "$ovpn"; then
+  pass "work-vpn ignores redirect-gateway on store, restore, and run"
+else
+  fail "work-vpn must ignore redirect-gateway in store/restore/run"
+fi
+if grep -q 'insert -m -f' "$ovpn" && grep -q 'show -n' "$ovpn" && ! grep -q 'gopass --nosync cat' "$ovpn"; then
+  pass "work-vpn stores ovpn as multiline text, not binary cat"
+else
+  fail "work-vpn must gopass insert -m / show -n the ovpn (not cat)"
+fi
 bash -n "$ROOT/dotfiles/bin/.local/bin/lab-remote" && pass "lab-remote parses" || fail "lab-remote syntax"
 bash -n "$ROOT/dotfiles/homelab/.config/homelab/cdp-chrome" && pass "cdp-chrome parses" || fail "cdp-chrome syntax"
 bash -n "$ROOT/dotfiles/homelab/.config/homelab/install-chrome" && pass "install-chrome parses" || fail "install-chrome syntax"
