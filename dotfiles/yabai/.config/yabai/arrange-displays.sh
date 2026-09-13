@@ -6,18 +6,26 @@
 # Triggered at yabai startup and on display_added / display_removed signals.
 # =============================================================================
 
+set -u
+
 TARGET_D1=8
 TARGET_TOTAL=16
 
-count=$(yabai -m query --spaces | jq '[.[] | select(."is-native-fullscreen"==false)] | length')
+nonzero() {
+    v=${1:-0}
+    [ "$v" = "null" ] && v=0
+    echo "$v"
+}
+
+count=$(nonzero "$(yabai -m query --spaces 2>/dev/null | jq '[.[] | select(."is-native-fullscreen"==false)] | length')")
 while [ "$count" -lt "$TARGET_TOTAL" ]; do
     yabai -m space --create 2>/dev/null || break
     count=$((count + 1))
 done
 
-displays=$(yabai -m query --displays | jq 'length')
+displays=$(nonzero "$(yabai -m query --displays 2>/dev/null | jq 'length')")
 if [ "$displays" -ge 2 ]; then
-    d1_count=$(yabai -m query --spaces --display 1 | jq '[.[] | select(."is-native-fullscreen"==false)] | length')
+    d1_count=$(nonzero "$(yabai -m query --spaces --display 1 2>/dev/null | jq '[.[] | select(."is-native-fullscreen"==false)] | length')")
     while [ "$d1_count" -gt "$TARGET_D1" ]; do
         last=$(yabai -m query --spaces --display 1 | jq '[.[] | select(."is-native-fullscreen"==false)] | .[-1].index')
         yabai -m space "$last" --display 2 2>/dev/null || break

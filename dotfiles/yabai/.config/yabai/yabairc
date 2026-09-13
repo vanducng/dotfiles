@@ -96,7 +96,7 @@ yabai -m space 16 --layout stack 2>/dev/null
 # stay on whatever space they were on at restart. Mirror the pin rules here.
 for pin in "Ghostty:1" "ego lite:2" "Dia:3" "Google Chrome:4" "Devin:4" "Cursor:5" "Preview:6" "Foxit PDF Reader:6" "Alter:7" "Obsidian:8" "Slack:9" "Telegram:10" "Zalo:11" "Discord:12" "WhatsApp:12" "Arc:13" "Cliq:14" "kitty:15" "Codex:16" "ChatGPT:16" "Claude:16" "Grok Bot:16"; do
     app="${pin%:*}"; sp="${pin#*:}"
-    for id in $(yabai -m query --windows | jq -r --arg a "$app" '.[] | select(.app == $a or (.app | endswith($a))) | .id'); do
+    for id in $(yabai -m query --windows | jq -r --arg a "$app" '.[] | select((.app | gsub("\u200e"; "")) == $a) | .id'); do
         yabai -m window "$id" --space "$sp" 2>/dev/null
     done
 done
