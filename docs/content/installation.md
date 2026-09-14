@@ -79,6 +79,8 @@ brew install git stow mise
 
 # Install development tools
 brew install neovim fzf ripgrep fd
+brew trust --tap dmtrkovalenko/fff 2>/dev/null || true
+brew tap dmtrKovalenko/fff && brew install fff-mcp
 
 # Install window management
 brew install yabai skhd
@@ -136,6 +138,9 @@ mise install
 
 # Verify Herdr
 mise exec -- herdr --version
+
+# FFF pi extension (fff-mcp is already on PATH from macos-deps / linux-deps)
+pi install npm:@ff-labs/pi-fff
 ```
 
 New Zsh sessions activate mise automatically. Run `mise exec -- herdr` to start Herdr immediately in the current shell.

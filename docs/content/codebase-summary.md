@@ -87,7 +87,8 @@ Duc's Digital Workspace: AI-native macOS development environment with 35 dotfile
 - **Supermaven** - Real-time code completion (Tab to accept)
 - **CodeCompanion** - Gemini API chat and inline assistance
 - **Database AI** - SQL-specific AI helpers via miudb
-- **fzf-lua** - Fuzzy finder (replaced Telescope)
+- **fff** - File finder and live grep (nvim plugin + pi extension)
+- **fzf-lua** - Fuzzy finder for git, LSP, and buffers
 - **Oil.nvim** - File explorer (replaced Neo-tree)
 
 ### Terminal Workflows

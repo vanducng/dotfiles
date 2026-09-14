@@ -18,6 +18,7 @@ declare -A TOOLS=(
     ["browse"]="optional:Browser automation CLI for vd browser/web-e2e skills (npm i -g @browserbasehq/browse-cli)"
     ["direnv"]="required:Environment management"
     ["droid"]="required:Factory Droid CLI"
+    ["fff-mcp"]="optional:FFF MCP file search server"
     ["fzf"]="required:Fuzzy finder"
     ["ghostty"]="optional:GPU-accelerated terminal"
     ["git"]="required:Version control"

@@ -15,7 +15,8 @@ done
 
 jq empty "$agent_dir/settings.json" "$agent_dir/models.json" "$agent_dir/mcp.json" \
 	"$agent_dir/themes/rose-pine-moon.json" \
-	"$agent_dir/extensions/subagent/config.json"
+	"$agent_dir/extensions/subagent/config.json" \
+	"$agent_dir/pi-fff.json"
 jq -e '.scheduledRuns.storeRoot == "~/.local/share/pi-subagents/schedules"' \
 	"$agent_dir/extensions/subagent/config.json" >/dev/null
 jq -e '
@@ -29,7 +30,9 @@ jq -e '
 	  and index("npm:pi-subagents")
 	  and index("npm:pi-langfuse")
 	  and index("npm:pi-mcp-adapter")
+	  and index("npm:@ff-labs/pi-fff")
 ' "$agent_dir/settings.json" >/dev/null
+jq -e '.mode == "override"' "$agent_dir/pi-fff.json" >/dev/null
 jq -e '
 	.mcpServers.Structured.url == "https://mcp.structured.app/mcp" and
 	.mcpServers.Structured.auth == "oauth" and
