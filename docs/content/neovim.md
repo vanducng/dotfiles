@@ -152,9 +152,11 @@ Works on `json` and `jsonl` buffers. Requires `jq`. `.jsonl` uses the `json` tre
 ### File Operations
 | Shortcut | Action | Description |
 |----------|--------|-------------|
-| `<leader>ff` | Find Files | Telescope file finder |
-| `<leader>fw` | Find Word | Search in files |
-| `<leader>fb` | Find Buffers | Open buffer list |
+| `<leader>ff` | Find Files | FFF file finder |
+| `<leader>fw` | Find Word | FFF live grep |
+| `<leader>fW` | Find word / selection | FFF grep for cword or visual selection |
+| `<leader>fF` | Find Files (hidden) | fzf-lua, includes ignored files |
+| `<leader>fb` | Find Buffers | fzf-lua buffer list |
 | `<leader>fh` | Find Help | Search help tags |
 | `<leader>fr` | Recent Files | Recently opened files |
 

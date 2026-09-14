@@ -17,6 +17,12 @@ pass() { echo "OK: $*"; }
 [[ -f "$ROOT/dotfiles/git/.config/git/work-bhcoe.gitconfig" ]] && pass "work-bhcoe.gitconfig exists" || fail "missing work-bhcoe.gitconfig"
 
 bash -n "$ROOT/scripts/linux-deps.sh" && pass "linux-deps.sh parses" || fail "linux-deps.sh syntax"
+if grep -q 'install_fff_mcp' "$ROOT/scripts/linux-deps.sh" \
+  && grep -q 'fff-mcp' "$ROOT/scripts/macos-deps.sh"; then
+  pass "fff-mcp is in linux and macos deps"
+else
+  fail "fff-mcp missing from bootstrap deps"
+fi
 bash -n "$ROOT/scripts/linux-desktop.sh" && pass "linux-desktop.sh parses" || fail "linux-desktop.sh syntax"
 bash -n "$ROOT/scripts/linux-homelab.sh" && pass "linux-homelab.sh parses" || fail "linux-homelab.sh syntax"
 bash -n "$ROOT/scripts/pi-home-layout.sh" && pass "pi-home-layout.sh parses" || fail "pi-home-layout.sh syntax"

@@ -24,7 +24,9 @@
     "npm:pi-subagents",
     "npm:@calesennett/pi-codex-fast",
     "npm:pi-mcp-adapter",
-    "git:github.com/DietrichGebert/ponytail@v4.9.0"
+    "git:github.com/DietrichGebert/ponytail@v4.9.0",
+    "npm:@earendil-works/pi-radius",
+    "npm:@ff-labs/pi-fff"
   ],
   "skills": [
     "-skills/backend-development",

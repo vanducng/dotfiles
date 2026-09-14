@@ -173,11 +173,10 @@ return {
           desc = "Open current directory in Oil",
         },
 
-        -- fzf-lua keymaps with zen mode preservation
         ["<Leader>ff"] = {
           function()
             vim.g.zen_fzf_was_active = vim.g.zen_mode_active == true
-            require("fzf-lua").files()
+            require("fff").find_files()
           end,
           desc = "Find files",
         },
@@ -191,7 +190,7 @@ return {
         ["<Leader>fw"] = {
           function()
             vim.g.zen_fzf_was_active = vim.g.zen_mode_active == true
-            require("fzf-lua").live_grep()
+            require("fff").live_grep()
           end,
           desc = "Find words",
         },
@@ -314,13 +313,22 @@ return {
         ["<Leader>fW"] = {
           function()
             vim.g.zen_fzf_was_active = vim.g.zen_mode_active == true
-            require("fzf-lua").grep_cword()
+            require("fff").live_grep_under_cursor()
           end,
           desc = "Find word under cursor",
         },
 
         -- setting a mapping to false will disable it
         -- ["<C-S>"] = false,
+      },
+      v = {
+        ["<Leader>fW"] = {
+          function()
+            vim.g.zen_fzf_was_active = vim.g.zen_mode_active == true
+            require("fff").live_grep_under_cursor()
+          end,
+          desc = "Find selection",
+        },
       },
     },
   },

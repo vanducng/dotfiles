@@ -17,6 +17,7 @@
   "csv.vim": { "branch": "master", "commit": "ab776a6266593e9e0d8643cdb7e577f81c0eab7d" },
   "dbtpal": { "branch": "main", "commit": "981eab51609362712c64e3cf3fb773fe11f859b9" },
   "dracula.nvim": { "branch": "main", "commit": "ae752c13e95fb7c5f58da4b5123cb804ea7568ee" },
+  "fff": { "branch": "main", "commit": "e208805e08550c363060d78a8a470ff86062f3d9" },
   "flash.nvim": { "branch": "main", "commit": "fcea7ff883235d9024dc41e638f164a450c14ca2" },
   "friendly-snippets": { "branch": "main", "commit": "6cd7280adead7f586db6fccbd15d2cac7e2188b9" },
   "fzf-lua": { "branch": "main", "commit": "10c19a5f08bfeed34b930a1efddda3a9a983e6e2" },

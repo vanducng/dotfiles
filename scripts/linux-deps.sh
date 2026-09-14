@@ -152,6 +152,15 @@ install_vd() {
   rm -rf "$tmp"
 }
 
+install_fff_mcp() {
+  if have fff-mcp; then
+    log "fff-mcp already present"
+    return 0
+  fi
+  log "installing fff-mcp"
+  curl -fsSL https://raw.githubusercontent.com/dmtrKovalenko/fff/main/install-mcp.sh | bash
+}
+
 install_pi() {
   if ! have npm || ! have node; then
     log "skip pi (node/npm not on PATH yet; run after mise activate)"
@@ -219,6 +228,7 @@ main() {
   install_mosh
   install_vd
   install_pi
+  install_fff_mcp
   install_kitty
   log "done. Open a new shell or: source ~/.config/shell/linux.sh"
 }

@@ -108,6 +108,7 @@ linux-homelab:
 	@./scripts/linux-homelab.sh
 
 bootstrap-linux: linux-deps stow-install
+	@if command -v pi >/dev/null 2>&1; then pi install npm:@ff-labs/pi-fff; fi
 	@echo "Linux bootstrap complete. source ~/.config/shell/linux.sh"
 
 setup-herdr:

@@ -52,8 +52,18 @@ pi install npm:pi-web-access
 pi install npm:pi-subagents
 pi install npm:pi-mcp-adapter
 pi install npm:pi-langfuse
+pi install npm:@ff-labs/pi-fff
 # ...one per entry in the stowed "packages" list
 ```
+
+Linux `make bootstrap-linux` installs `fff-mcp` and `npm:@ff-labs/pi-fff` after stow.
+macOS: `./scripts/macos-deps.sh` installs `fff-mcp`; run `pi install npm:@ff-labs/pi-fff` after `make stow-pi`.
+
+## FFF file search
+
+`npm:@ff-labs/pi-fff` replaces pi's built-in `find` / `grep` (`mode: override` in the stowed `pi-fff.json`).
+Frecency is shared with fff.nvim when those DBs already exist.
+The `fff-mcp` CLI is for other MCP clients; pi uses the native extension, not MCP.
 
 ## Structured MCP
 

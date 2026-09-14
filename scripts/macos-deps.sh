@@ -28,3 +28,6 @@ brew install neovim
 brew install fnm
 brew install tmux
 brew install rust
+brew trust --tap dmtrkovalenko/fff 2>/dev/null || true
+brew tap dmtrKovalenko/fff
+brew install fff-mcp
