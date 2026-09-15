@@ -33,33 +33,33 @@ export AGENTDECK_SUPPRESS_TMUX_WARNING=1
 # title|group|path
 SESSIONS=(
   # acme
-  "infra|acme|~/git/work/acme/acme-ds-infra"
-  "airflow|acme|~/git/work/acme/acme-ds-astro"
-  "dbt|acme|~/git/work/acme/acme-ds-dbt-order-form"
-  "data-contract|acme|~/git/work/acme/acme-data-contract"
-  "ws|acme|~/git/work/acme/acme-web-services"
+  "infra|acme|$HOME/git/work/acme/acme-ds-infra"
+  "airflow|acme|$HOME/git/work/acme/acme-ds-astro"
+  "dbt|acme|$HOME/git/work/acme/acme-ds-dbt-order-form"
+  "data-contract|acme|$HOME/git/work/acme/acme-data-contract"
+  "ws|acme|$HOME/git/work/acme/acme-web-services"
 
   # globex
-  "infra|globex|~/git/work/globex/infra"
-  "data-platform|globex|~/git/work/globex/data-platform"
+  "infra|globex|$HOME/git/work/globex/infra"
+  "data-platform|globex|$HOME/git/work/globex/data-platform"
 
   # umbrella
-  "infra|umbrella|~/git/work/umbrella/umbrella-infra"
-  "harmony|umbrella|~/git/work/umbrella/harmony"
+  "infra|umbrella|$HOME/git/work/umbrella/umbrella-infra"
+  "harmony|umbrella|$HOME/git/work/umbrella/harmony"
 
   # initech
-  "infra|initech|~/git/work/initech/infra"
-  "app|initech|~/git/work/initech/services/initech-core"
+  "infra|initech|$HOME/git/work/initech/infra"
+  "app|initech|$HOME/git/work/initech/services/initech-core"
 
   # nlb
-  "goclaw|nlb|~/git/personal/nextlevelbuilder/goclaw"
-  "gcplane|nlb|~/git/gcplane"
-  "goclaw-config|nlb|~/git/goclaw-config"
-  "goclaw-charts|nlb|~/git/goclaw-charts"
+  "goclaw|nlb|$HOME/git/personal/nextlevelbuilder/goclaw"
+  "gcplane|nlb|$HOME/git/gcplane"
+  "goclaw-config|nlb|$HOME/git/goclaw-config"
+  "goclaw-charts|nlb|$HOME/git/goclaw-charts"
 
   # lab
-  "infra|lab|~/git/infra"
-  "runner|lab|~/git/runnerclubs"
+  "infra|lab|$HOME/git/infra"
+  "runner|lab|$HOME/git/runnerclubs"
 )
 
 added=0

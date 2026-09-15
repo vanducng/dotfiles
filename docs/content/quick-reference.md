@@ -36,14 +36,15 @@ tail -n 100 ~/.config/herdr/herdr-server.log
 ### Herdr (Prefix: C-x)
 | Key | Action | Key | Action |
 |-----|--------|-----|--------|
+| `C-x + h/j/k/l` | Focus Pane | `Ctrl-Alt-hjkl` | Focus Pane (direct) |
 | `C-x + m` | Split Right | `C-x + v` | Split Down |
-| `Ctrl-Alt-hjkl` | Navigate Panes | `C-x + Space` | Pick Recent Target |
-| `C-x + Shift-Left/Right` | Previous/Next Workspace | `Ctrl-Alt-1..9` / `C-x 1..9` | Switch Workspace |
+| `C-x + 0` | Home (ws 1, tab 1, pane 1) | `C-x + a` | Last Pane |
+| `C-x + 1..9` / `Ctrl-1..9` | Switch Tab | `C-x + Shift-1..9` / `Ctrl-Alt-1..9` | Switch Workspace |
+| `C-x + Shift-Left/Right` | Previous/Next Workspace | `C-x + w` | Workspace Picker |
 | `C-x + Shift-Up/Down` | Previous/Next Agent | `C-x + Alt-1..9` | Focus Agent |
-| `C-x + p` | Previous Tab | `C-x + a` | Last Pane |
-| `C-x + f` | Agent Address Picker | `C-x + g` | Session Navigator |
-| `C-x + c` | New Tab | `C-x + Shift-T` | Rename Tab |
-| `Ctrl-1..9` | Switch Tab | `C-x + w` | Workspace Picker |
+| `C-x + p` | Previous Tab | `C-x + c` | New Tab |
+| `C-x + f` | Agent Address Picker | `C-x + g` / `C-x + Shift-M` | Session Navigator |
+| `C-x + Space` | Pick Recent Target | `C-x + Shift-T` | Rename Tab |
 | `C-x + r` | Resize Mode | `C-x + R` | Reload Config |
 | `C-x + ?` | Key Help | | |
 
