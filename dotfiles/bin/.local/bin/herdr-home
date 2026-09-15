@@ -31,8 +31,13 @@ if ! ids="$(jq -rn \
        ($workspaces.result.workspaces | length) == 0
     then error("unexpected herdr response") else
     ($workspaces.result.workspaces | min_by(.number) | .workspace_id) as $ws |
-    ($tabs.result.tabs | map(select(.workspace_id == $ws)) | min_by(.number) | .tab_id) as $tab |
-    ($panes.result.panes | map(select(.tab_id == $tab)) | min_by(.pane_id) | .pane_id) as $pane |
+    ($tabs.result.tabs | map(select(.workspace_id == $ws))) as $ws_tabs |
+    if ($ws_tabs | length) == 0 then error("no tab in workspace") else . end |
+    ($ws_tabs | min_by(.number) | .tab_id) as $tab |
+    if ($tab | type) != "string" then error("no tab in workspace") else . end |
+    ($panes.result.panes | map(select(.tab_id == $tab)) |
+      min_by(.pane_id | (capture(":p(?<n>[0-9]+)$") // {n:"0"} | .n | tonumber)) |
+      .pane_id) as $pane |
     [$ws, $tab, $pane] | @tsv
     end
   ')"
@@ -42,7 +47,7 @@ then
 fi
 
 IFS=$'\t' read -r workspace_id tab_id pane_id <<<"$ids"
-[[ -n "$workspace_id" && -n "$tab_id" ]] || {
+[[ -n "$workspace_id" && -n "$tab_id" && "$tab_id" != "null" ]] || {
   printf 'herdr-home: no workspace/tab to focus\n' >&2
   exit 1
 }

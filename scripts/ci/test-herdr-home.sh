@@ -29,6 +29,7 @@ case "$1 $2" in
     ;;
   'pane list')
     printf '%s\n' '{"result":{"panes":[
+      {"pane_id":"wA:p10","tab_id":"wA:t1"},
       {"pane_id":"wA:p2","tab_id":"wA:t1"},
       {"pane_id":"wA:p1","tab_id":"wA:t1"},
       {"pane_id":"wB:p1","tab_id":"wB:t1"}
@@ -40,7 +41,7 @@ case "$1 $2" in
   *) exit 2 ;;
 esac
 EOF
-chmod +x "$test_dir/herdr" "$project_root/dotfiles/bin/.local/bin/herdr-home"
+chmod +x "$test_dir/herdr"
 
 capture="$test_dir/focus"
 : >"$capture"
