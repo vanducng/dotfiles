@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.18.0](https://github.com/vanducng/dotfiles/compare/v0.17.0...v0.18.0) (2026-09-15)
+
+
+### Features
+
+* **pi:** stretch auto-retry to about 15 minutes ([#139](https://github.com/vanducng/dotfiles/issues/139)) ([7ad4792](https://github.com/vanducng/dotfiles/commit/7ad4792f86410f23e84244b940df1e8ee6c59f61))
+* **yabai:** pinned Obsidian, LibreOffice, and ego to dedicated spaces ([#141](https://github.com/vanducng/dotfiles/issues/141)) ([0db090f](https://github.com/vanducng/dotfiles/commit/0db090fd51cc76ec6e08ce8b83d50332e0f0fa0d))
+
 ## [0.17.0](https://github.com/vanducng/dotfiles/compare/v0.16.0...v0.17.0) (2026-09-11)
 
 
