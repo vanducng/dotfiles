@@ -39,13 +39,13 @@ trust_level = "trusted"
 [projects."/Users/vanducng/git/work/bhcoe/harmony"]
 trust_level = "trusted"
 
-[projects."/Users/vanducng/git/personal/dataplanelabs/goclaw"]
+[projects."/Users/vanducng/git/dataplanelabs/goclaw"]
 trust_level = "trusted"
 
-[projects."/Users/vanducng/git/personal/dataplanelabs/gcplane"]
+[projects."/Users/vanducng/git/dataplanelabs/gcplane"]
 trust_level = "trusted"
 
-[projects."/Users/vanducng/git/personal/dataplanelabs/goclaw-config"]
+[projects."/Users/vanducng/git/dataplanelabs/goclaw-config"]
 trust_level = "trusted"
 
 [projects."/Users/vanducng/git/personal/miu-db"]
@@ -60,7 +60,7 @@ trust_level = "trusted"
 [projects."/Users/vanducng/git/work/cnb/cnb-web-services"]
 trust_level = "trusted"
 
-[projects."/Users/vanducng/git/personal/dataplanelabs/infra"]
+[projects."/Users/vanducng/git/dataplanelabs/infra"]
 trust_level = "trusted"
 
 [projects."/Users/vanducng/git/work/cnb/products/cnb-rocket-marketingtool"]
@@ -81,7 +81,7 @@ trust_level = "trusted"
 [projects."/Users/vanducng/git/personal/pass"]
 trust_level = "trusted"
 
-[projects."/Users/vanducng/git/personal/dataplanelabs/paymint"]
+[projects."/Users/vanducng/git/dataplanelabs/paymint"]
 trust_level = "trusted"
 
 [projects."/private/tmp/claude-501/codex_imagegen_ajpzuwyy"]
@@ -114,7 +114,7 @@ trust_level = "trusted"
 [projects."/private/var/folders/3w/tzhb570n5tb7szdbsg61xkqm0000gn/T/diagram_codex_c0z1frha"]
 trust_level = "trusted"
 
-[projects."/Users/vanducng/git/personal/dataplanelabs/annhien"]
+[projects."/Users/vanducng/git/dataplanelabs/annhien"]
 trust_level = "trusted"
 
 [projects."/Users/vanducng/git/work/ab-spectrum/infra"]
@@ -159,7 +159,7 @@ trust_level = "trusted"
 [projects."/Users/vanducng/git/work/cnb/products/cnb-polaris"]
 trust_level = "trusted"
 
-[projects."/Users/vanducng/git/personal/dataplanelabs/code-review"]
+[projects."/Users/vanducng/git/dataplanelabs/code-review"]
 trust_level = "trusted"
 
 [features]
