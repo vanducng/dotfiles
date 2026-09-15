@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+herdr_bin="${HERDR_BIN_PATH:-}"
+if [[ ! -x "$herdr_bin" ]]; then
+  herdr_bin="$(command -v herdr || true)"
+fi
+[[ -n "$herdr_bin" ]] || { printf 'herdr-home: herdr is required\n' >&2; exit 1; }
+command -v jq >/dev/null 2>&1 || { printf 'herdr-home: jq is required\n' >&2; exit 1; }
+
+workspace_json="$("$herdr_bin" workspace list)" || {
+  printf 'herdr-home: failed to list workspaces\n' >&2
+  exit 1
+}
+tab_json="$("$herdr_bin" tab list)" || {
+  printf 'herdr-home: failed to list tabs\n' >&2
+  exit 1
+}
+pane_json="$("$herdr_bin" pane list)" || {
+  printf 'herdr-home: failed to list panes\n' >&2
+  exit 1
+}
+
+if ! ids="$(jq -rn \
+  --argjson workspaces "$workspace_json" \
+  --argjson tabs "$tab_json" \
+  --argjson panes "$pane_json" '
+    if ($workspaces.result.workspaces | type) != "array" or
+       ($tabs.result.tabs | type) != "array" or
+       ($panes.result.panes | type) != "array" or
+       ($workspaces.result.workspaces | length) == 0
+    then error("unexpected herdr response") else
+    ($workspaces.result.workspaces | min_by(.number) | .workspace_id) as $ws |
+    ($tabs.result.tabs | map(select(.workspace_id == $ws)) | min_by(.number) | .tab_id) as $tab |
+    ($panes.result.panes | map(select(.tab_id == $tab)) | min_by(.pane_id) | .pane_id) as $pane |
+    [$ws, $tab, $pane] | @tsv
+    end
+  ')"
+then
+  printf 'herdr-home: unexpected herdr response format\n' >&2
+  exit 1
+fi
+
+IFS=$'\t' read -r workspace_id tab_id pane_id <<<"$ids"
+[[ -n "$workspace_id" && -n "$tab_id" ]] || {
+  printf 'herdr-home: no workspace/tab to focus\n' >&2
+  exit 1
+}
+
+"$herdr_bin" workspace focus "$workspace_id" >/dev/null || {
+  printf 'herdr-home: failed to focus workspace %s\n' "$workspace_id" >&2
+  exit 1
+}
+"$herdr_bin" tab focus "$tab_id" >/dev/null || {
+  printf 'herdr-home: failed to focus tab %s\n' "$tab_id" >&2
+  exit 1
+}
+if [[ -n "$pane_id" && "$pane_id" != "null" ]]; then
+  "$herdr_bin" agent focus "$pane_id" >/dev/null 2>&1 || true
+fi
