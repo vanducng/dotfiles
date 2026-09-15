@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.19.0](https://github.com/vanducng/dotfiles/compare/v0.18.0...v0.19.0) (2026-09-15)
+
+
+### Features
+
+* **herdr:** added C-x 0 home jump and remapped prefix chords ([#142](https://github.com/vanducng/dotfiles/issues/142)) ([be0c7fb](https://github.com/vanducng/dotfiles/commit/be0c7fb088c28abecf790eccaf1d1b45f4d16b96))
+
 ## [0.18.0](https://github.com/vanducng/dotfiles/compare/v0.17.0...v0.18.0) (2026-09-15)
 
 
