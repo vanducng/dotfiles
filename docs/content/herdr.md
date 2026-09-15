@@ -56,42 +56,50 @@ make stow-herdr
 
 ## Tmux-style keys
 
-Herdr uses the same `C-x` prefix as this repository's tmux setup.
+Herdr uses the same `C-x` prefix as this repository's tmux setup. Prefix chords always work. Direct `Ctrl` / `Ctrl-Alt` chords are extras for Ghostty and Kitty.
+
+More modifiers means a bigger jump: panes, then tabs, then workspaces, then machines.
 
 | Key | Action |
 |---|---|
-| `C-x c` | New tab |
-| `C-x m` | Split right, side by side |
-| `C-x v` | Split down, stacked |
-| `Ctrl-Alt-h/j/k/l` | Focus pane |
-| `C-x Space` | Pick a recent path or URL |
-| `C-x f` | Find an agent by `workspace.tab.pane` address |
-| `C-x Shift-Left/Right` | Previous/next workspace |
-| `Ctrl-Alt-1..9` | Switch to workspace 1-9 |
-| `C-x 1..9` | Switch to workspace 1-9 (Linux / Moshi) |
-| `C-x Shift-Up/Down` | Previous/next agent |
-| `C-x Alt-1..9` | Focus agent 1-9 |
-| `C-x p` | Previous tab |
-| `C-x Shift-T` | Rename tab |
-| `C-x Shift-P` | Name pane from its active task context |
+| `C-x h/j/k/l` | Focus pane |
+| `Ctrl-Alt-h/j/k/l` | Focus pane (direct) |
+| `C-x Tab` | Next pane |
 | `C-x a` | Last pane |
 | `C-x z` | Zoom pane |
-| `C-x [` | Copy mode |
-| `Ctrl-1..9` | Switch tab |
+| `C-x m` | Split right, side by side |
+| `C-x v` | Split down, stacked |
+| `C-x ,` | Name pane from its active task context |
+| `C-x 0` | Home: first workspace, first tab, first pane |
+| `C-x 1..9` | Switch tab |
+| `Ctrl-1..9` | Switch tab (direct) |
+| `C-x n` / `C-x p` | Next / previous tab |
+| `C-x c` | New tab |
+| `C-x Shift-T` | Rename tab |
+| `C-x Shift-1..9` | Switch workspace |
+| `Ctrl-Alt-1..9` | Switch workspace (direct) |
+| `C-x Shift-Left/Right` | Previous / next workspace |
 | `C-x w` | Workspace picker |
-| `C-x g` | Search and jump to any workspace, tab, or pane |
+| `C-x g` / `C-x Shift-M` | Jump to a machine, workspace, tab, or pane |
+| `C-x Shift-Up/Down` | Previous / next agent |
+| `C-x Alt-1..9` | Focus agent 1-9 |
+| `C-x f` | Find an agent by `workspace.tab.pane` address |
+| `C-x Space` | Pick a recent path or URL |
+| `C-x [` | Copy mode |
 | `C-x Shift-G` | Open the current branch's pull request, or the repository's pull request list |
 | `C-x r` | Resize mode |
 | `C-x R` | Reload config |
 | `C-x ?` | Active key help |
 
-`Ctrl-Alt-1..9` is the direct workspace jump on macOS Ghostty. Kitty on macOS defaults Option+digit to unicode (¡™£), so the same chord never reaches Herdr during `herdr --remote` even though `Ctrl-Alt-hjkl` and `Ctrl-1..9` work. `kitty.conf` sets `macos_option_as_alt yes` and maps `ctrl+alt+1..9` to kitty CSI-u; restart Kitty after that change. Moshi/mosh still lack the protocol, so `C-x 1..9` remains the portable jump. Ghostty unbinds `shift+arrows` so `C-x Shift-Left/Right` can reach Herdr instead of adjusting a terminal selection.
+Herdr 0.9.0 has no machine key. `C-x 0` is home on the machine you are viewing: workspace 1, tab 1, first pane (the Local orchestrator when you are on Local). From another machine, `C-x g` then `Home` then `Enter` selects Local; the first navigator row is Local. `C-x Shift-Left/Right` also walks workspaces across machines. `C-x w` stays the portable workspace jump when numbered workspace chords do not reach Herdr.
+
+`Ctrl-Alt-1..9` is the direct workspace jump on macOS Ghostty. Kitty on macOS defaults Option+digit to unicode (¡™£), so the same chord never reaches Herdr during `herdr --remote` even though `Ctrl-Alt-hjkl` and `Ctrl-1..9` work. `kitty.conf` sets `macos_option_as_alt yes` and maps `ctrl+alt+1..9` to kitty CSI-u; restart Kitty after that change. Moshi/mosh still lack that protocol, so use `C-x 1..9` for tabs and `C-x w` for workspaces there. Ghostty unbinds `shift+arrows` so `C-x Shift-Left/Right` can reach Herdr instead of adjusting a terminal selection.
 
 The picker scans the latest 500 rows of the focused pane and lists matching paths and URLs newest-first. Press `Enter` to open in the file browser, `Ctrl-Y` to copy, or `Ctrl-E` to open in the editor. External URLs open in the default browser, existing localhost viewer URLs restart the file browser when needed, and relative paths resolve from the pane's working directory. Exiting the temporary picker returns to the original pane.
 
-`C-x Shift-P` names the pane `<repo>:<task>` from the pane's branch, latest commit, changed files, terminal title, and recent output using the same agent CLI the pane runs - `codex exec` for Codex panes, `claude -p` (Haiku) otherwise - so it reuses the CLI's existing subscription login and needs no API key. The repository name comes from the pane's Git remote, while the model supplies only a specific task label. Common secret-like values and key blocks are redacted before context is sent, but the filter is best-effort; do not use the action while secrets are visible in the pane. Labels may use up to 80 characters and keep the repository name stable. If the preferred CLI is missing or fails it tries the other, then falls back to `<repo>:<branch>` from the pane's Git context, or the folder name outside Git. It runs only when pressed and needs no background service.
+`C-x ,` names the pane `<repo>:<task>` from the pane's branch, latest commit, changed files, terminal title, and recent output using the same agent CLI the pane runs - `codex exec` for Codex panes, `claude -p` (Haiku) otherwise - so it reuses the CLI's existing subscription login and needs no API key. The repository name comes from the pane's Git remote, while the model supplies only a specific task label. Common secret-like values and key blocks are redacted before context is sent, but the filter is best-effort; do not use the action while secrets are visible in the pane. Labels may use up to 80 characters and keep the repository name stable. If the preferred CLI is missing or fails it tries the other, then falls back to `<repo>:<branch>` from the pane's Git context, or the folder name outside Git. It runs only when pressed and needs no background service.
 
-Use `C-x f` when the target is an agent. Each row starts with a stable address such as `1.2.30`, meaning workspace 1, tab 2, pane 30. Use `C-x g` for the native searchable tree when the target may be a shell pane. `C-x Shift-Up/Down` remains the fastest way to cycle agents without choosing a specific address.
+Use `C-x f` when the target is an agent. Each row starts with a stable address such as `1.2.30`, meaning workspace 1, tab 2, pane 30. Use `C-x g` for machines and for the native searchable tree when the target may be a shell pane. `C-x Shift-Up/Down` remains the fastest way to cycle agents without choosing a specific address.
 
 The config does not copy the tmux sessionizer. Herdr already provides workspace navigation, agent state, mouse control, copy mode, and persistent sessions.
 

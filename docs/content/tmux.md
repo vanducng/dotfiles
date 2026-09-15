@@ -130,6 +130,7 @@ The project sessionizer is a powerful FZF-based tool for quick project switching
 ~/projects
 ~/git/personal
 ~/git/work
+~/git/dataplanelabs
 ```
 
 ### Usage Examples

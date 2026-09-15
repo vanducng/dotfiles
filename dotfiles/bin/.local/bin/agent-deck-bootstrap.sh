@@ -33,33 +33,33 @@ export AGENTDECK_SUPPRESS_TMUX_WARNING=1
 # title|group|path
 SESSIONS=(
   # cnb
-  "infra|cnb|/Users/vanducng/git/work/cnb/cnb-ds-infra"
-  "airflow|cnb|/Users/vanducng/git/work/cnb/cnb-ds-astro"
-  "dbt|cnb|/Users/vanducng/git/work/cnb/cnb-ds-dbt-order-form"
-  "data-contract|cnb|/Users/vanducng/git/work/cnb/cnb-data-contract"
-  "ws|cnb|/Users/vanducng/git/work/cnb/cnb-web-services"
+  "infra|cnb|$HOME/git/work/cnb/cnb-ds-infra"
+  "airflow|cnb|$HOME/git/work/cnb/cnb-ds-astro"
+  "dbt|cnb|$HOME/git/work/cnb/cnb-ds-dbt-order-form"
+  "data-contract|cnb|$HOME/git/work/cnb/cnb-data-contract"
+  "ws|cnb|$HOME/git/work/cnb/cnb-web-services"
 
   # abs
-  "infra|abs|/Users/vanducng/git/work/ab-spectrum/infra"
-  "data-platform|abs|/Users/vanducng/git/work/ab-spectrum/data-platform"
+  "infra|abs|$HOME/git/work/ab-spectrum/infra"
+  "data-platform|abs|$HOME/git/work/ab-spectrum/data-platform"
 
   # jade
-  "infra|jade|/Users/vanducng/git/work/bhcoe/jade-infra"
-  "harmony|jade|/Users/vanducng/git/work/bhcoe/harmony"
+  "infra|jade|$HOME/git/work/bhcoe/jade-infra"
+  "harmony|jade|$HOME/git/work/bhcoe/harmony"
 
   # crashchat
-  "infra|crashchat|/Users/vanducng/git/work/crashchat/infra"
-  "app|crashchat|/Users/vanducng/git/work/crashchat/services/crashchat-core"
+  "infra|crashchat|$HOME/git/work/crashchat/infra"
+  "app|crashchat|$HOME/git/work/crashchat/services/crashchat-core"
 
   # nlb
-  "goclaw|nlb|/Users/vanducng/git/personal/nextlevelbuilder/goclaw"
-  "gcplane|nlb|/Users/vanducng/git/personal/dataplanelabs/gcplane"
-  "goclaw-config|nlb|/Users/vanducng/git/personal/dataplanelabs/goclaw-config"
-  "goclaw-charts|nlb|/Users/vanducng/git/personal/dataplanelabs/goclaw-charts"
+  "goclaw|nlb|$HOME/git/personal/nextlevelbuilder/goclaw"
+  "gcplane|nlb|$HOME/git/dataplanelabs/gcplane"
+  "goclaw-config|nlb|$HOME/git/dataplanelabs/goclaw-config"
+  "goclaw-charts|nlb|$HOME/git/dataplanelabs/goclaw-charts"
 
   # dpl
-  "infra|dpl|/Users/vanducng/git/personal/dataplanelabs/infra"
-  "runner|dpl|/Users/vanducng/git/personal/dataplanelabs/runnerclubs"
+  "infra|dpl|$HOME/git/dataplanelabs/infra"
+  "runner|dpl|$HOME/git/dataplanelabs/runnerclubs"
 )
 
 added=0
