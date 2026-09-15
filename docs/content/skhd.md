@@ -19,39 +19,64 @@ SKHD (Simple Hotkey Daemon) is a lightweight hotkey daemon for macOS that enable
 
 All application shortcuts use the `meh` key (ctrl+alt+shift) for consistency and to avoid conflicts.
 
+### Space map
+
+17 spaces. Display 1 holds 1-8, display 2 holds 9-17.
+
+| Space | Display | App |
+|-------|---------|-----|
+| 1 | 1 | Ghostty |
+| 2 | 1 | LibreOffice |
+| 3 | 1 | Dia (stack) |
+| 4 | 1 | Chrome, Devin |
+| 5 | 1 | Cursor |
+| 6 | 1 | Preview, Foxit |
+| 7 | 1 | Alter |
+| 8 | 1 | Obsidian |
+| 9 | 2 | Slack |
+| 10 | 2 | Telegram |
+| 11 | 2 | Zalo |
+| 12 | 2 | Discord, WhatsApp (stack) |
+| 13 | 2 | Arc |
+| 14 | 2 | Cliq |
+| 15 | 2 | kitty |
+| 16 | 2 | ChatGPT, Claude, Codex, Grok (stack) |
+| 17 | 2 | ego lite |
+
 ### Development Tools
 | Shortcut | Application | Description |
 |----------|-------------|-------------|
 | `meh + a` | Ghostty | Focus the primary terminal and move the pointer to it |
 | `meh + f` | Kitty | Secondary terminal emulator on display 2, space 15 |
 | `meh + x` | ChatGPT | AI assistant on display 2, space 16 |
-| `meh + g` | Cursor | AI-powered code editor |
-| `meh + y` | Alter | Chat hub |
+| `meh + g` | Cursor | AI-powered code editor on space 5 |
+| `meh + y` | Alter | Chat hub on space 7 |
 
 ### Browsers & Communication
 | Shortcut | Application | Description |
 |----------|-------------|-------------|
-| `meh + s` | Dia | Primary web browser |
-| `meh + e` | Ego | Lightweight browser on space 1 with Ghostty |
+| `meh + s` | Dia | Primary web browser on space 3 |
+| `meh + e` | Ego | Lightweight browser on display 2, space 17 |
 | `meh + d` | Arc | Browser on space 13 |
 | `meh + z` | Zen Browser | Alternative browser |
-| `meh + k` | Slack | Team communication |
-| `meh + r` | Telegram | Messaging app |
-| `meh + u` | Zalo | Messaging app |
-| `meh + t` | Discord | Community chat |
-| `meh + h` | WhatsApp | Messaging app on space 13 |
+| `meh + k` | Slack | Team communication on space 9 |
+| `meh + r` | Telegram | Messaging app on space 10 |
+| `meh + u` | Zalo | Messaging app on space 11 |
+| `meh + t` | Discord | Community chat on space 12 |
+| `meh + h` | WhatsApp | Messaging app on space 12 |
 | `meh + j` | Cliq | Team communication on space 14 |
 
 ### Productivity & AI Tools
 | Shortcut | Application | Description |
 |----------|-------------|-------------|
-| `meh + v` | Grok Bot | Grok desktop app |
-| `meh + c` | Claude | AI assistant on display 2, space 18 |
+| `meh + v` | Grok Bot | Grok desktop app on space 16 |
+| `meh + c` | Claude | AI assistant on display 2, space 16 |
 | `meh + l` | Perplexity | AI search engine |
 | `meh + i` | Structured | Task and time management |
-| `meh + w` | LibreOffice | Office suite |
-| `meh + p` | Foxit PDF Reader | PDF reader |
-| `meh + o` | Preview | macOS preview app |
+| `meh + w` | LibreOffice | Office suite on space 2 |
+| `meh + p` | Foxit PDF Reader | PDF reader on space 6 |
+| `meh + o` | Preview | macOS preview app on space 6 |
+| `meh + n` | Obsidian | Notes on space 8 |
 | `meh + m` | superwhisper | Voice input |
 | `meh + q` | Apple Music | Music player |
 | `meh + b` | Borumi | Productivity app |
