@@ -44,6 +44,7 @@ tail -n 100 ~/.config/herdr/herdr-server.log
 | `C-x + Shift-Up/Down` | Previous/Next Agent | `C-x + Alt-1..9` | Focus Agent |
 | `C-x + p` | Previous Tab | `C-x + c` | New Tab |
 | `C-x + f` | Agent Address Picker | `C-x + g` / `C-x + Shift-M` | Session Navigator |
+| `C-x + s` | Named Session Picker | `C-x + Shift-S` | Settings |
 | `C-x + Space` | Pick Recent Target | `C-x + Shift-T` | Rename Tab |
 | `C-x + r` | Resize Mode | `C-x + R` | Reload Config |
 | `C-x + ?` | Key Help | | |
@@ -248,9 +249,9 @@ git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
 
 ### Project Switch
 ```bash
-1. C-x + g          # Search Herdr sessions
-2. Type project or agent name
-3. Enter            # Focus the target
+1. C-x + g          # Search workspaces, tabs, and panes
+2. C-x + s          # Switch named Herdr session
+3. Enter            # Focus or attach
 ```
 
 ### Database Work
