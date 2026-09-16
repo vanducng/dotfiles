@@ -74,6 +74,33 @@ grep -q '^\* default  running  default' "$choices"
 [[ "$(cat "$open_capture")" == "work" ]]
 [[ ! -s "$attach" ]]
 
+if [[ "$(uname -s)" == Darwin && -d /Applications/Ghostty.app ]]; then
+  cat >"$test_dir/open" <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+env | awk -F= '/^HERDR_(ENV|SOCKET_PATH|PANE_ID|TAB_ID|WORKSPACE_ID)=/ { print $1 }' >"${HERDR_SESSIONS_OPEN_ENV:?}"
+printf '%s\n' "$@" >"${HERDR_SESSIONS_OPEN_ARGS:?}"
+EOF
+  chmod +x "$test_dir/open"
+  : >"$attach"
+  PATH="$test_dir:$PATH" \
+  HERDR_BIN_PATH="$test_dir/herdr" \
+  HERDR_ENV=1 \
+  HERDR_SOCKET_PATH="/tmp/herdr/herdr.sock" \
+  HERDR_PANE_ID="wB:p1" \
+  HERDR_TAB_ID="wB:t1" \
+  HERDR_WORKSPACE_ID="wB" \
+  HERDR_SESSIONS_CHOICES="$choices" \
+  HERDR_SESSIONS_ATTACH_CAPTURE="$attach" \
+  HERDR_SESSIONS_OPEN_ENV="$test_dir/open-env" \
+  HERDR_SESSIONS_OPEN_ARGS="$test_dir/open-args" \
+  HERDR_SESSIONS_PICK=$'\twork' \
+    "$script"
+  [[ ! -s "$test_dir/open-env" ]]
+  grep -q 'Ghostty.app' "$test_dir/open-args"
+  [[ ! -s "$attach" ]]
+fi
+
 : >"$attach"
 rm -f "$open_capture"
 PATH="$test_dir:$PATH" \
