@@ -78,8 +78,13 @@ export default function standbyStatus(pi) {
 	function start(ctx) {
 		ctxRef = ctx;
 		if (timer || !inHerdr()) return;
+		let inflight = false;
 		timer = setInterval(() => {
-			void refresh();
+			if (inflight) return;
+			inflight = true;
+			void refresh().finally(() => {
+				inflight = false;
+			});
 		}, POLL_MS);
 		timer.unref?.();
 		void refresh(ctx);

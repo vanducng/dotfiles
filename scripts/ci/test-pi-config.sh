@@ -102,8 +102,12 @@ jq -e '
 ' "$agent_dir/models.json" >/dev/null
 node --check "$agent_dir/extensions/terminal-status-title.js"
 node --check "$agent_dir/extensions/standby-status.js"
-node --input-type=module <<EOF
-import { formatLabel, parseAgentList, siblingCrews } from "file://${agent_dir}/extensions/standby-status.js";
+AGENT_DIR="$agent_dir" node --input-type=module <<'EOF'
+import { join } from "node:path";
+import { pathToFileURL } from "node:url";
+const { formatLabel, parseAgentList, siblingCrews } = await import(
+	pathToFileURL(join(process.env.AGENT_DIR, "extensions/standby-status.js")).href
+);
 const agents = parseAgentList(JSON.stringify({ result: { agents: [
   { name: "firstmate", pane_id: "wB:p1", agent_status: "idle" },
   { name: "dbt-elt-3534", pane_id: "wG:p1", agent_status: "working" },
