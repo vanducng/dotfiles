@@ -3,6 +3,8 @@ import { execFile } from "node:child_process";
 const POLL_MS = 4000;
 const STATUS_KEY = "standby";
 const ACTIVE = new Set(["working", "blocked"]);
+const SETTLED = new Set(["idle", "done"]);
+const CAPTAIN_LABELS = new Set(["firstmate:coordinator", "firstmate:launcher"]);
 
 function siblingCrews(agents, paneId) {
 	const names = [];
@@ -27,20 +29,61 @@ function parseAgentList(stdout) {
 	return data?.result?.agents ?? [];
 }
 
-function listAgents() {
+function statusMap(agents, paneId) {
+	const map = {};
+	for (const agent of agents) {
+		if (!agent || agent.pane_id === paneId) continue;
+		const key = agent.name || agent.pane_id;
+		if (!key) continue;
+		map[key] = agent.agent_status;
+	}
+	return map;
+}
+
+function crewTransitions(prev, next) {
+	const settled = [];
+	const blocked = [];
+	for (const [name, status] of Object.entries(next)) {
+		const was = prev[name];
+		if (ACTIVE.has(was) && SETTLED.has(status)) settled.push(name);
+		if (was !== "blocked" && status === "blocked") blocked.push(name);
+	}
+	return { settled, blocked };
+}
+
+function wakeMessage(settled, blocked) {
+	const bits = [];
+	if (settled.length) bits.push(`settled: ${settled.join(", ")}`);
+	if (blocked.length) bits.push(`needs attention: ${blocked.join(", ")}`);
+	if (!bits.length) return "";
+	return `Crew ${bits.join("; ")}. Inspect that pane checkpoint/result and continue. Idle UI is not success.`;
+}
+
+function parsePaneLabel(stdout) {
+	const data = JSON.parse(stdout);
+	return data?.result?.pane?.label || "";
+}
+
+function runHerdr(args) {
 	return new Promise((resolve) => {
-		execFile("herdr", ["agent", "list"], { timeout: 2000 }, (err, stdout) => {
+		execFile("herdr", args, { timeout: 2000 }, (err, stdout) => {
 			if (err || !stdout) {
-				resolve([]);
+				resolve("");
 				return;
 			}
-			try {
-				resolve(parseAgentList(stdout));
-			} catch {
-				resolve([]);
-			}
+			resolve(stdout);
 		});
 	});
+}
+
+async function listAgents() {
+	const stdout = await runHerdr(["agent", "list"]);
+	if (!stdout) return [];
+	try {
+		return parseAgentList(stdout);
+	} catch {
+		return [];
+	}
 }
 
 export default function standbyStatus(pi) {
@@ -48,6 +91,9 @@ export default function standbyStatus(pi) {
 	let last = "";
 	let timer;
 	let ctxRef;
+	let prevMap;
+	let captain = process.env.FIRSTMATE_ROLE === "captain";
+	let captainResolved = process.env.FIRSTMATE_ROLE === "captain";
 
 	function inHerdr() {
 		return process.env.HERDR_ENV === "1" && !!process.env.HERDR_PANE_ID;
@@ -65,14 +111,63 @@ export default function standbyStatus(pi) {
 		ctx.ui.setStatus(STATUS_KEY, theme.fg("accent", label));
 	}
 
+	async function resolveCaptain() {
+		if (captainResolved) return captain;
+		const stdout = await runHerdr(["pane", "get", process.env.HERDR_PANE_ID]);
+		if (stdout) {
+			try {
+				captain = CAPTAIN_LABELS.has(parsePaneLabel(stdout));
+			} catch {
+				captain = false;
+			}
+		}
+		captainResolved = true;
+		return captain;
+	}
+
+	function notifyDesktop(text) {
+		execFile(
+			"herdr",
+			["notification", "show", "Crew update", "--body", text, "--sound", "done"],
+			{ timeout: 2000 },
+			() => {},
+		);
+	}
+
+	function wake(settled, blocked) {
+		const text = wakeMessage(settled, blocked);
+		if (!text) return;
+		notifyDesktop(text);
+		try {
+			if (local === "working") {
+				pi.sendUserMessage(text, { deliverAs: "followUp" });
+			} else {
+				pi.sendUserMessage(text);
+			}
+		} catch {
+			// next poll retries only on a new transition
+		}
+	}
+
 	async function refresh(ctx = ctxRef) {
+		if (!inHerdr()) {
+			if (ctx?.hasUI) paint(ctx, "");
+			return;
+		}
+		const agents = await listAgents();
+		const paneId = process.env.HERDR_PANE_ID;
+		const nextMap = statusMap(agents, paneId);
+		if (prevMap && (await resolveCaptain())) {
+			const { settled, blocked } = crewTransitions(prevMap, nextMap);
+			if (settled.length || blocked.length) wake(settled, blocked);
+		}
+		prevMap = nextMap;
 		if (!ctx?.hasUI) return;
-		if (!inHerdr() || local === "working") {
+		if (local === "working") {
 			paint(ctx, "");
 			return;
 		}
-		const names = siblingCrews(await listAgents(), process.env.HERDR_PANE_ID);
-		paint(ctx, formatLabel(names));
+		paint(ctx, formatLabel(siblingCrews(agents, paneId)));
 	}
 
 	function start(ctx) {
@@ -98,6 +193,7 @@ export default function standbyStatus(pi) {
 		if (ctxRef?.hasUI) paint(ctxRef, "");
 		ctxRef = undefined;
 		last = "";
+		prevMap = undefined;
 	}
 
 	pi.on("session_start", async (_event, ctx) => {
@@ -136,4 +232,12 @@ export default function standbyStatus(pi) {
 	});
 }
 
-export { formatLabel, parseAgentList, siblingCrews };
+export {
+	crewTransitions,
+	formatLabel,
+	parseAgentList,
+	parsePaneLabel,
+	siblingCrews,
+	statusMap,
+	wakeMessage,
+};
