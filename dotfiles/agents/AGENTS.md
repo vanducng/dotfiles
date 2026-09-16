@@ -5,6 +5,15 @@
 - Never use the em dash character. Use plain dash "-" instead.
 - Keep status updates, PR descriptions, review summaries, tickets, and operational messages concise, factual, and action-oriented. Lead with the outcome, blocker, or next action.
 
+## Work schedule
+
+Remote. Timezone `Asia/Ho_Chi_Minh` (GMT+7).
+
+- Typical wake: 02:00-03:00.
+- Work window: 08:00 through 02:00 next day. Night is leftover or personal platform, not a second daytime.
+- US meetings land evening/night GMT+7. Protect afternoon for deep work.
+- Structured and calendars: timed blocks with gaps. Do not pack the day. Do not create recurring or subscribed tasks unless asked. Untimed follow-ups go to Structured inbox plus the vault `0 Inbox/Follow-ups.md`.
+
 ## Scope and Authority
 
 - Preserve existing user changes and stay within the named repo, branch, and task. Surface unrelated UI, lint, test, or flakiness issues separately; do not silently fix or include them without approval.
