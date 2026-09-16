@@ -43,7 +43,7 @@ EOF
 chmod +x "$test_dir/herdr" "$test_dir/fzf"
 choices="$test_dir/choices"
 attach="$test_dir/attach"
-open_capture="$test_dir/open"
+open_capture="$test_dir/open-capture"
 : >"$attach"
 
 outside=(env -u HERDR_ENV -u HERDR_SOCKET_PATH -u HERDR_PANE_ID -u HERDR_TAB_ID -u HERDR_WORKSPACE_ID)
@@ -75,15 +75,16 @@ grep -q '^\* default  running  default' "$choices"
 [[ ! -s "$attach" ]]
 
 if [[ "$(uname -s)" == Darwin && -d /Applications/Ghostty.app ]]; then
-  cat >"$test_dir/open" <<'EOF'
+  mkdir -p "$test_dir/bin"
+  cat >"$test_dir/bin/open" <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
 env | awk -F= '/^HERDR_(ENV|SOCKET_PATH|PANE_ID|TAB_ID|WORKSPACE_ID)=/ { print $1 }' >"${HERDR_SESSIONS_OPEN_ENV:?}"
 printf '%s\n' "$@" >"${HERDR_SESSIONS_OPEN_ARGS:?}"
 EOF
-  chmod +x "$test_dir/open"
+  chmod +x "$test_dir/bin/open"
   : >"$attach"
-  PATH="$test_dir:$PATH" \
+  PATH="$test_dir/bin:$test_dir:$PATH" \
   HERDR_BIN_PATH="$test_dir/herdr" \
   HERDR_ENV=1 \
   HERDR_SOCKET_PATH="/tmp/herdr/herdr.sock" \
