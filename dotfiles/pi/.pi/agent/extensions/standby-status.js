@@ -131,7 +131,7 @@ export default function standbyStatus(pi) {
 			const names = siblingCrews(await listAgents(), process.env.HERDR_PANE_ID);
 			const label = formatLabel(names);
 			ctx.ui.notify(label || "Idle. No working crews.", "info");
-			await refresh(ctx);
+			paint(ctx, label);
 		},
 	});
 }
