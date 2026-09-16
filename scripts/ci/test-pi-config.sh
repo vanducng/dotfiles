@@ -105,7 +105,7 @@ node --check "$agent_dir/extensions/standby-status.js"
 AGENT_DIR="$agent_dir" node --input-type=module <<'EOF'
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
-const { formatLabel, parseAgentList, siblingCrews } = await import(
+const { crewTransitions, formatLabel, parseAgentList, siblingCrews, wakeMessage } = await import(
 	pathToFileURL(join(process.env.AGENT_DIR, "extensions/standby-status.js")).href
 );
 const agents = parseAgentList(JSON.stringify({ result: { agents: [
@@ -116,6 +116,21 @@ const agents = parseAgentList(JSON.stringify({ result: { agents: [
 const names = siblingCrews(agents, "wB:p1");
 if (names.join(",") !== "dbt-elt-3534") throw new Error(names.join(","));
 if (formatLabel(names) !== "standby · dbt-elt-3534") throw new Error(formatLabel(names));
+const t1 = crewTransitions(
+  { a: "working", b: "blocked", c: "idle" },
+  { a: "idle", b: "done", c: "blocked" },
+);
+if (t1.settled.join(",") !== "a,b") throw new Error(t1.settled.join(","));
+if (t1.blocked.join(",") !== "c") throw new Error(t1.blocked.join(","));
+const t0 = crewTransitions({}, { a: "working" });
+if (t0.settled.length || t0.blocked.length) throw new Error("seed must not fire");
+if (wakeMessage(["dbt-elt-3534"], []) !== "Crew settled: dbt-elt-3534. Inspect that pane checkpoint/result and continue. Idle UI is not success.") {
+  throw new Error(wakeMessage(["dbt-elt-3534"], []));
+}
+if (wakeMessage([], ["x"]) !== "Crew needs attention: x. Inspect that pane checkpoint/result and continue. Idle UI is not success.") {
+  throw new Error(wakeMessage([], ["x"]));
+}
+if (wakeMessage([], []) !== "") throw new Error("empty wake");
 EOF
 PI_CODING_AGENT_DIR="$test_dir" PI_OFFLINE=1 pi --no-skills --no-prompt-templates --no-themes \
   --extension "$agent_dir/extensions/calm/index.ts" --list-models >/dev/null
