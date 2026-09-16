@@ -25,6 +25,7 @@ focus_pane_up = ["prefix+k", "ctrl+alt+k"]
 focus_pane_right = ["prefix+l", "ctrl+alt+l"]
 previous_tab = "prefix+p"
 switch_tab = ["prefix+1..9", "ctrl+1..9"]
+settings = "prefix+shift+s"
 rename_pane = ""
 last_pane = "prefix+a"
 split_vertical = "prefix+m"
@@ -66,12 +67,21 @@ type = "shell"
 command = "herdr-tab-renumber"
 description = "renumber tabs 1-based"
 
+[[keys.command]]
+key = "prefix+s"
+type = "popup"
+command = "herdr-sessions"
+description = "switch herdr session"
+width = "80%"
+height = "80%"
+
 [ui]
 agent_panel_sort = "priority"
 show_agent_labels_on_pane_borders = true
 sidebar_start_collapsed = true
 tab_bar_position = "bottom"
 
+status_indicators = "dots"
 [session]
 resume_agents_on_restore = true
 

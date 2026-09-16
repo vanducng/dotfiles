@@ -136,6 +136,7 @@ script-test:
 	@./scripts/ci/test-herdr-pane-rename.sh
 	@./scripts/ci/test-herdr-tab-renumber.sh
 	@./scripts/ci/test-herdr-home.sh
+	@./scripts/ci/test-herdr-sessions.sh
 	@./scripts/ci/test-droid-moshi-notify.sh
 	@./scripts/ci/test-pi-config.sh
 	@./scripts/ci/test-pi-home-layout.sh

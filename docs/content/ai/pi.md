@@ -7,6 +7,17 @@ stowed to `~/.pi/agent/settings.json`, so the default provider/model, theme, and
 `packages` list (extensions) are all reproducible. Sessions, auth, and installed
 package artifacts stay local.
 
+## Footer standby
+
+There is no built-in footer setting for "the captain is waiting on a crew." Pi's
+stock footer shows this session only (model, tokens, ponytail). When this pane is
+idle and another named Herdr agent is `working` or `blocked`, the stowed
+`standby-status` extension writes `standby · <crew>` into the footer. No badge
+means this session is idle and no sibling crew is running.
+
+`/standby` prints the same state. `/reload` after stow. Herdr pane titles still
+show a check when idle and a spinner when that pane is working.
+
 ## Home layout
 
 `~/.pi` itself must be a **real directory** under `$HOME`. Do not replace it with a

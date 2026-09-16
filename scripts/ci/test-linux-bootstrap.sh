@@ -224,6 +224,11 @@ if grep -q 'prefix+1..9' "$herdrcfg" && grep -q 'previous_workspace' "$herdrcfg"
 else
   fail "herdr missing portable workspace keybinds"
 fi
+if grep -q 'command = "herdr-sessions"' "$herdrcfg" && grep -q 'key = "prefix+s"' "$herdrcfg"; then
+  pass "herdr session picker is bound to prefix+s"
+else
+  fail "herdr missing herdr-sessions keybind"
+fi
 kittycfg="$ROOT/dotfiles/kitty/.config/kitty/kitty.conf"
 kitty_ok=1
 grep -qE '^macos_option_as_alt yes$' "$kittycfg" || kitty_ok=0
