@@ -15,6 +15,12 @@ idle and another named Herdr agent is `working` or `blocked`, the stowed
 `standby-status` extension writes `standby · <crew>` into the footer. No badge
 means this session is idle and no sibling crew is running.
 
+The badge is display only. On the captain pane (`FIRSTMATE_ROLE=captain`, or label
+`firstmate:coordinator` / `firstmate:launcher`) a sibling going `working`/`blocked`
+to `idle`/`done`, or newly `blocked`, also calls `pi.sendUserMessage` (as a follow-up
+if this session is streaming) and `herdr notification show --sound done`. The first
+poll seeds state and does not fire.
+
 `/standby` prints the same state. `/reload` after stow. Herdr pane titles still
 show a check when idle and a spinner when that pane is working.
 
