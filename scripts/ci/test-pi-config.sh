@@ -20,14 +20,13 @@ jq -e '.scheduledRuns.storeRoot == "~/.local/share/pi-subagents/schedules"' \
 	"$agent_dir/extensions/subagent/config.json" >/dev/null
 jq -e '
 	.defaultProvider == "cliproxyapi" and
-	.defaultModel == "claude-fable-5" and
+	.defaultModel == "grok-4.6" and
 	.transport == "sse"
 ' "$agent_dir/settings.json" >/dev/null
 jq -e '
 	.packages
 	| index("npm:pi-web-access")
-	  and index("npm:pi-subagents")
-	  and index("npm:pi-langfuse")
+	  and index("git:github.com/vanducng/pi-subagents@aa75b3353836f7868898e3bd58234d21eaff1463")
 	  and index("npm:pi-mcp-adapter")
 ' "$agent_dir/settings.json" >/dev/null
 jq -e '
@@ -102,6 +101,22 @@ jq -e '
 	| .contextWindow == 272000 and .maxTokens == 65536
 ' "$agent_dir/models.json" >/dev/null
 node --check "$agent_dir/extensions/terminal-status-title.js"
+node --check "$agent_dir/extensions/standby-status.js"
+AGENT_DIR="$agent_dir" node --input-type=module <<'EOF'
+import { join } from "node:path";
+import { pathToFileURL } from "node:url";
+const { formatLabel, parseAgentList, siblingCrews } = await import(
+	pathToFileURL(join(process.env.AGENT_DIR, "extensions/standby-status.js")).href
+);
+const agents = parseAgentList(JSON.stringify({ result: { agents: [
+  { name: "firstmate", pane_id: "wB:p1", agent_status: "idle" },
+  { name: "dbt-elt-3534", pane_id: "wG:p1", agent_status: "working" },
+  { name: "astro-elt-3534", pane_id: "wD:p1", agent_status: "idle" },
+]}}));
+const names = siblingCrews(agents, "wB:p1");
+if (names.join(",") !== "dbt-elt-3534") throw new Error(names.join(","));
+if (formatLabel(names) !== "standby · dbt-elt-3534") throw new Error(formatLabel(names));
+EOF
 PI_CODING_AGENT_DIR="$test_dir" PI_OFFLINE=1 pi --no-skills --no-prompt-templates --no-themes \
   --extension "$agent_dir/extensions/calm/index.ts" --list-models >/dev/null
 

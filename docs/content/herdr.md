@@ -80,6 +80,8 @@ More modifiers means a bigger jump: panes, then tabs, then workspaces, then mach
 | `Ctrl-Alt-1..9` | Switch workspace (direct) |
 | `C-x Shift-Left/Right` | Previous / next workspace |
 | `C-x w` | Workspace picker |
+| `C-x s` | Switch named Herdr session |
+| `C-x Shift-S` | Settings |
 | `C-x g` / `C-x Shift-M` | Jump to a machine, workspace, tab, or pane |
 | `C-x Shift-Up/Down` | Previous / next agent |
 | `C-x Alt-1..9` | Focus agent 1-9 |
@@ -101,7 +103,7 @@ The picker scans the latest 500 rows of the focused pane and lists matching path
 
 Use `C-x f` when the target is an agent. Each row starts with a stable address such as `1.2.30`, meaning workspace 1, tab 2, pane 30. Use `C-x g` for machines and for the native searchable tree when the target may be a shell pane. `C-x Shift-Up/Down` remains the fastest way to cycle agents without choosing a specific address.
 
-The config does not copy the tmux sessionizer. Herdr already provides workspace navigation, agent state, mouse control, copy mode, and persistent sessions.
+`C-x s` lists named Herdr sessions (separate servers) and attaches to one. Type a new name and press Enter to create it. From a normal shell it attaches in this terminal. From inside Herdr it opens a new Ghostty or Kitty window, because one client cannot swap servers. `C-x g` still jumps within the current session. Workspaces remain the everyday project switch; use named sessions when you want isolated sockets and runtime state.
 
 ## Reload and update
 

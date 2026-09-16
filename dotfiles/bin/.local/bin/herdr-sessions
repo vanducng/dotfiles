@@ -1,0 +1,138 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+herdr_bin="${HERDR_BIN_PATH:-}"
+if [[ ! -x "$herdr_bin" ]]; then
+  herdr_bin="$(command -v herdr || true)"
+fi
+[[ -n "$herdr_bin" ]] || { printf 'herdr-sessions: herdr is required\n' >&2; exit 1; }
+command -v jq >/dev/null 2>&1 || { printf 'herdr-sessions: jq is required\n' >&2; exit 1; }
+command -v fzf >/dev/null 2>&1 || { printf 'herdr-sessions: fzf is required\n' >&2; exit 1; }
+
+valid_session_name() {
+  [[ "$1" =~ ^[A-Za-z0-9][A-Za-z0-9._-]{0,62}$ ]]
+}
+
+trim() {
+  local value="$1"
+  value="${value#"${value%%[![:space:]]*}"}"
+  value="${value%"${value##*[![:space:]]}"}"
+  printf '%s' "$value"
+}
+
+inside_herdr=0
+if [[ "${HERDR_ENV:-}" == 1 || -n "${HERDR_SOCKET_PATH:-}" ]]; then
+  inside_herdr=1
+fi
+
+list_json="$("$herdr_bin" session list --json)" || {
+  printf 'herdr-sessions: failed to list sessions\n' >&2
+  exit 1
+}
+
+if ! rows="$(jq -r '
+    if (.sessions | type) != "array"
+    then error("unexpected herdr response") else
+    .sessions[] |
+    [
+      (.name // "" | gsub("[\\t\\r\\n]"; " ")),
+      (if .running then "running" else "stopped" end),
+      (if .default then "default" else "" end),
+      (.socket_path // "")
+    ] | @tsv
+    end
+  ' <<<"$list_json")"; then
+  printf 'herdr-sessions: unexpected herdr response format\n' >&2
+  exit 1
+fi
+
+current=""
+if [[ -n "${HERDR_SOCKET_PATH:-}" ]]; then
+  current="$(jq -r --arg sock "$HERDR_SOCKET_PATH" '
+    [.sessions[] | select(.socket_path == $sock) | .name] | first // empty
+  ' <<<"$list_json")"
+fi
+
+choices=""
+while IFS=$'\t' read -r name state default_flag _; do
+  [[ -n "$name" ]] || continue
+  mark=" "
+  [[ "$name" == "$current" ]] && mark="*"
+  extra=""
+  [[ "$default_flag" == "default" ]] && extra="  default"
+  choices+="${mark} ${name}  ${state}${extra}"$'\t'"${name}"$'\n'
+done <<<"$rows"
+
+set +e
+selection="$(printf '%s' "$choices" | fzf \
+  --print-query \
+  --layout=reverse \
+  --border=none \
+  --no-info \
+  --delimiter=$'\t' \
+  --with-nth=1 \
+  --prompt='Session > ' \
+  --header='Enter attach | type a new name and Enter to create')"
+fzf_status=$?
+set -e
+case "$fzf_status" in
+  0|1) ;;
+  130) exit 0 ;;
+  *)
+    printf 'herdr-sessions: fzf exited with code %s\n' "$fzf_status" >&2
+    exit "$fzf_status"
+    ;;
+esac
+
+query="$(printf '%s' "$selection" | sed -n '1p')"
+choice="$(printf '%s' "$selection" | sed -n '2p')"
+if [[ -n "$choice" && "$choice" == *$'\t'* ]]; then
+  name="${choice##*$'\t'}"
+else
+  name="$(trim "$query")"
+fi
+name="$(trim "$name")"
+[[ -n "$name" ]] || exit 0
+valid_session_name "$name" || {
+  printf 'herdr-sessions: invalid session name %s\n' "$name" >&2
+  exit 1
+}
+
+if [[ "$name" == "$current" ]]; then
+  exit 0
+fi
+
+open_session_client() {
+  local session_name="$1"
+  local cmd
+  cmd=$(printf 'exec %q --session %q' "$herdr_bin" "$session_name")
+  if [[ -n "${HERDR_SESSIONS_OPEN_CAPTURE:-}" ]]; then
+    printf '%s\n' "$session_name" >"$HERDR_SESSIONS_OPEN_CAPTURE"
+    return 0
+  fi
+  # ponytail: named sessions are separate servers; new window until Herdr grows switch-client.
+  if [[ "$(uname -s)" == Darwin && -d /Applications/Ghostty.app ]]; then
+    env -u HERDR_ENV -u HERDR_SOCKET_PATH -u HERDR_PANE_ID -u HERDR_TAB_ID -u HERDR_WORKSPACE_ID \
+      open -na Ghostty.app --args -e /bin/sh -c "$cmd"
+    return
+  fi
+  if command -v ghostty >/dev/null 2>&1; then
+    env -u HERDR_ENV -u HERDR_SOCKET_PATH -u HERDR_PANE_ID -u HERDR_TAB_ID -u HERDR_WORKSPACE_ID \
+      ghostty -e /bin/sh -c "$cmd" &
+    return
+  fi
+  if command -v kitty >/dev/null 2>&1; then
+    env -u HERDR_ENV -u HERDR_SOCKET_PATH -u HERDR_PANE_ID -u HERDR_TAB_ID -u HERDR_WORKSPACE_ID \
+      kitty --detach /bin/sh -c "$cmd"
+    return
+  fi
+  printf 'herdr-sessions: no terminal to open; run: %s --session %s\n' "$herdr_bin" "$session_name" >&2
+  return 1
+}
+
+if [[ "$inside_herdr" == 1 ]]; then
+  open_session_client "$name" || exit 1
+  exit 0
+fi
+
+exec "$herdr_bin" --session "$name"
