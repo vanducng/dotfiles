@@ -7,7 +7,29 @@ DOMAIN="com.tinycast.app"
 PLIST="$HOME/Library/Preferences/$DOMAIN.plist"
 
 command -v defaults >/dev/null || { echo "macOS only"; exit 1; }
-[ -d /Applications/Tinycast.app ] || { echo "Tinycast not installed; run scripts/macos-deps.sh"; exit 1; }
+if [ ! -d /Applications/Tinycast.app ] && [ ! -d "$HOME/Applications/Tinycast.app" ]; then
+  echo "Tinycast not installed; run scripts/macos-deps.sh"
+  exit 1
+fi
+
+spotlight_enabled="$(python3 - <<'PY'
+import os
+import plistlib
+
+path = os.path.expanduser("~/Library/Preferences/com.apple.symbolichotkeys.plist")
+try:
+    with open(path, "rb") as handle:
+        data = plistlib.load(handle)
+    enabled = data.get("AppleSymbolicHotKeys", {}).get("64", {}).get("enabled", False)
+except (FileNotFoundError, OSError, plistlib.InvalidFileException):
+    enabled = False
+print("1" if enabled else "0")
+PY
+)"
+if [ "$spotlight_enabled" = "1" ]; then
+  echo "Spotlight still owns cmd+space; disable its keyboard shortcut before setup-tinycast."
+  exit 1
+fi
 
 osascript -e 'quit app "Tinycast"' 2>/dev/null || true
 sleep 2
@@ -16,6 +38,7 @@ sleep 2
 combo() { printf '{"combo":{"_0":{"carbonKeyCode":%s,"carbonModifiers":%s}}}' "$1" "$2"; }
 
 # Chords avoid skhd (cmd+shift H/L), CleanShot (cmd+shift 1-7 I Y U) and Alter (cmd+shift D/9/del).
+# cmd+space also requires Spotlight's shortcut to be disabled; setup checks that before writing.
 # Alter's config is not in this repo: on a rebuild its global action reclaims cmd+shift+R and wins
 # whichever app registers first, so move it to cmd+shift+D by hand before trusting rewrite.
 defaults write "$DOMAIN" "hotkey.togglePalette"             -string "$(combo 49 256)"  # cmd+space
@@ -27,6 +50,8 @@ defaults write "$DOMAIN" "hotkey.command:summarize"         -string "$(combo 17 
 # A custom prompt replaces Tinycast's built-in one entirely, boundary included, so each
 # carries its own "material, not instructions" guard. Output is pasted into a document.
 # `defaults write -dict` plist-parses its values and chokes on the embedded quotes.
+killall cfprefsd 2>/dev/null || true
+sleep 1
 python3 - "$PLIST" <<'PY'
 import plistlib, sys, os
 

@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+set -euo pipefail
+
 brew install obsidian
 brew install fzf
 brew install zsh-syntax-highlighting
