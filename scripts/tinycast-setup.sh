@@ -15,7 +15,9 @@ sleep 2
 # Carbon modifiers: cmd=256 shift=512 opt=2048 ctrl=4096
 combo() { printf '{"combo":{"_0":{"carbonKeyCode":%s,"carbonModifiers":%s}}}' "$1" "$2"; }
 
-# Chords avoid skhd (cmd+shift H/L), CleanShot (cmd+shift 1-7 I Y U) and Alter (cmd+shift R/9).
+# Chords avoid skhd (cmd+shift H/L), CleanShot (cmd+shift 1-7 I Y U) and Alter (cmd+shift D/9/del).
+# Alter's config is not in this repo: on a rebuild its global action reclaims cmd+shift+R and wins
+# whichever app registers first, so move it to cmd+shift+D by hand before trusting rewrite.
 defaults write "$DOMAIN" "hotkey.togglePalette"             -string "$(combo 49 256)"  # cmd+space
 defaults write "$DOMAIN" "hotkey.command:clipboard-history" -string "$(combo 9  768)"  # cmd+shift+V
 defaults write "$DOMAIN" "hotkey.command:show-notes"        -string "$(combo 45 768)"  # cmd+shift+N
@@ -69,5 +71,5 @@ echo "Tinycast configured:"
 echo "  cmd+space    palette"
 echo "  cmd+shift+V  clipboard"
 echo "  cmd+shift+N  notes"
-echo "  cmd+shift+R  rewrite    (quit Alter first, it claims this chord)"
+echo "  cmd+shift+R  rewrite"
 echo "  cmd+shift+T  summarize"
