@@ -142,10 +142,15 @@ const {
 	buildEvalBody,
 	formatAnswers,
 	gatewayErrorText,
+	isGatewayKey,
 	parseState,
 } = await import(pathToFileURL(join(process.env.AGENT_DIR, "extensions/jev.js")).href);
 if (!EVAL_URL.endsWith("/v4/ai/evaluation-model")) throw new Error(EVAL_URL);
 if (MODEL_ID !== "typesafe-ai/jev") throw new Error(MODEL_ID);
+if (isGatewayKey("vck_test") !== true) throw new Error("vck accepted");
+if (isGatewayKey("YOUR_KEY") || isGatewayKey("$AI_GATEWAY_API_KEY") || isGatewayKey("")) {
+	throw new Error("placeholder accepted");
+}
 if (parseState("plain") !== "plain") throw new Error("plain state");
 if (parseState('{"a":1}').a !== 1) throw new Error("json state");
 const body = buildEvalBody({

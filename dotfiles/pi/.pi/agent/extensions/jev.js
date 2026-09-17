@@ -85,9 +85,13 @@ function agentDir() {
 	return process.env.PI_CODING_AGENT_DIR || join(homedir(), ".pi/agent");
 }
 
+function isGatewayKey(value) {
+	return typeof value === "string" && value.trim().startsWith("vck_");
+}
+
 function resolveGatewayKey() {
 	const fromEnv = process.env.AI_GATEWAY_API_KEY?.trim();
-	if (fromEnv) return fromEnv;
+	if (isGatewayKey(fromEnv)) return fromEnv;
 	const authPath = join(agentDir(), AUTH_FILE);
 	let parsed;
 	try {
@@ -96,7 +100,7 @@ function resolveGatewayKey() {
 		return "";
 	}
 	const key = parsed?.["vercel-ai-gateway"]?.key;
-	return typeof key === "string" && !key.startsWith("!") && !key.startsWith("$") ? key.trim() : "";
+	return isGatewayKey(key) ? key.trim() : "";
 }
 
 export default async function jevExtension(pi) {
@@ -225,5 +229,6 @@ export {
 	buildEvalBody,
 	formatAnswers,
 	gatewayErrorText,
+	isGatewayKey,
 	parseState,
 };
