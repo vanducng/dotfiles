@@ -32,8 +32,14 @@ brew install tmux
 brew install rust
 
 # Tinycast launcher (Raycast replacement). Apple silicon, macOS 26+.
-if ! brew trust --tap abue-ammar/tinycast \
-  || ! brew tap abue-ammar/tinycast \
-  || ! brew install --cask tinycast; then
+tinycast_install_ok=true
+if brew help trust >/dev/null 2>&1; then
+  brew trust --tap abue-ammar/tinycast || tinycast_install_ok=false
+fi
+if [ "$tinycast_install_ok" = true ]; then
+  brew tap abue-ammar/tinycast || tinycast_install_ok=false
+  brew install --cask tinycast || tinycast_install_ok=false
+fi
+if [ "$tinycast_install_ok" = false ]; then
   echo "warning: Tinycast install failed; continuing with core dependencies" >&2
 fi
