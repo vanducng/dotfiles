@@ -31,6 +31,7 @@ brew install fnm
 brew install tmux
 brew install rust
 
+# Core dependencies fail fast; Tinycast remains optional and is guarded below.
 # Tinycast launcher (Raycast replacement). Apple silicon, macOS 26+.
 tinycast_install_ok=true
 if brew help trust >/dev/null 2>&1; then

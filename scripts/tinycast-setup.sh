@@ -6,7 +6,9 @@ set -euo pipefail
 DOMAIN="com.tinycast.app"
 
 command -v defaults >/dev/null || { echo "macOS only"; exit 1; }
-trap 'status=$?; open -a Tinycast >/dev/null 2>&1 || true; exit "$status"' EXIT
+tinycast_was_running=false
+pgrep -x Tinycast >/dev/null 2>&1 && tinycast_was_running=true
+trap 'status=$?; if [ "$status" -eq 0 ] || [ "$tinycast_was_running" = true ]; then open -a Tinycast >/dev/null 2>&1 || true; fi; exit "$status"' EXIT
 if [ ! -d /Applications/Tinycast.app ] && [ ! -d "$HOME/Applications/Tinycast.app" ]; then
   echo "Tinycast not installed; run scripts/macos-deps.sh"
   exit 1
@@ -27,6 +29,7 @@ except (FileNotFoundError, OSError, plistlib.InvalidFileException):
 print("1" if enabled else "0")
 PY
 )"
+# Abort rather than silently steal cmd+space from Spotlight or input-source search.
 if [ "$spotlight_enabled" = "1" ]; then
   echo "Spotlight or input-source search still owns cmd+space; disable that keyboard shortcut before setup-tinycast."
   exit 1
