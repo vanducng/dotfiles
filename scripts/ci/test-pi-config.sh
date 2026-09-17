@@ -102,6 +102,7 @@ jq -e '
 ' "$agent_dir/models.json" >/dev/null
 node --check "$agent_dir/extensions/terminal-status-title.js"
 node --check "$agent_dir/extensions/standby-status.js"
+node --check "$agent_dir/extensions/jev.js"
 AGENT_DIR="$agent_dir" node --input-type=module <<'EOF'
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -132,8 +133,52 @@ if (wakeMessage([], ["x"]) !== "Crew needs attention: x. Inspect that pane check
 }
 if (wakeMessage([], []) !== "") throw new Error("empty wake");
 EOF
+AGENT_DIR="$agent_dir" node --input-type=module <<'EOF'
+import { join } from "node:path";
+import { pathToFileURL } from "node:url";
+const {
+	EVAL_URL,
+	MODEL_ID,
+	buildEvalBody,
+	formatAnswers,
+	gatewayErrorText,
+	parseState,
+} = await import(pathToFileURL(join(process.env.AGENT_DIR, "extensions/jev.js")).href);
+if (!EVAL_URL.endsWith("/v4/ai/evaluation-model")) throw new Error(EVAL_URL);
+if (MODEL_ID !== "typesafe-ai/jev") throw new Error(MODEL_ID);
+if (parseState("plain") !== "plain") throw new Error("plain state");
+if (parseState('{"a":1}').a !== 1) throw new Error("json state");
+const body = buildEvalBody({
+	state: "Refund issued.",
+	questions: [
+		{ id: "refunded", type: "boolean", instructions: "Was a refund issued?" },
+		{
+			id: "queue",
+			type: "choice",
+			instructions: "Which queue?",
+			options: { billing: "money", support: "other" },
+		},
+		{ id: "urgency", type: "score", instructions: "How urgent?", levels: ["low", "high"] },
+	],
+});
+if (body.questions.refunded.type !== "boolean") throw new Error("boolean map");
+if (body.questions.queue.criteria.billing !== "money") throw new Error("choice map");
+if (body.questions.urgency.criteria.length !== 2) throw new Error("score map");
+try {
+	buildEvalBody({ state: "x", questions: [{ id: "q", type: "choice", instructions: "pick" }] });
+	throw new Error("choice should fail");
+} catch (error) {
+	if (!(error instanceof Error) || !error.message.includes("options")) throw error;
+}
+const free = gatewayErrorText(403, "Free tier users do not have access to this model");
+if (!free.includes("paid Vercel AI Gateway credits")) throw new Error(free);
+const formatted = formatAnswers({ answers: { refunded: { type: "boolean", probability: 0.9 } } });
+if (!formatted.includes("0.9")) throw new Error(formatted);
+EOF
 PI_CODING_AGENT_DIR="$test_dir" PI_OFFLINE=1 pi --no-skills --no-prompt-templates --no-themes \
   --extension "$agent_dir/extensions/calm/index.ts" --list-models >/dev/null
+PI_CODING_AGENT_DIR="$test_dir" PI_OFFLINE=1 pi --no-skills --no-prompt-templates --no-themes \
+  --extension "$agent_dir/extensions/jev.js" --list-models >/dev/null
 
 if [[ -e "${HOME}/.pi" || -L "${HOME}/.pi" ]]; then
 	if [[ -L "${HOME}/.pi" ]]; then
