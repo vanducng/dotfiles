@@ -139,6 +139,7 @@ yabai -m rule --add app="^SpaceLauncher$"             manage=off
 yabai -m rule --add app="^Stats$"                     manage=off
 yabai -m rule --add app="^superwhisper$"              manage=off
 yabai -m rule --add app="^Telegram$"                  manage=off
+yabai -m rule --add app="^Tinycast$"                  manage=off
 yabai -m rule --add app="^Time Out$"                  manage=off
 yabai -m rule --add app="^Todoist$"                   manage=off
 yabai -m rule --add app="^zoom.us$"                   manage=off

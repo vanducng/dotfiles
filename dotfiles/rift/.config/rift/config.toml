@@ -349,6 +349,7 @@ app_rules = [
 	{ title_substring = "Settings", floating = true },
 	# Float common chat/launcher utilities
 	{ app_id = "com.raycast.macos", manage = false },
+	{ app_id = "com.tinycast.app", manage = false },
 	{ app_id = "com.1password.1password", floating = true },
 ]
 
