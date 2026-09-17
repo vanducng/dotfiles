@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.20.0](https://github.com/vanducng/dotfiles/compare/v0.19.0...v0.20.0) (2026-09-17)
+
+
+### Features
+
+* added pi standby badge and herdr session picker ([#144](https://github.com/vanducng/dotfiles/issues/144)) ([c9121c7](https://github.com/vanducng/dotfiles/commit/c9121c73c17fb19acf995f50c6f8c5ecb17d2451))
+* **pi:** wake captain when sibling crews settle ([#146](https://github.com/vanducng/dotfiles/issues/146)) ([0734729](https://github.com/vanducng/dotfiles/commit/07347298c20f359c0e8db855e394ffab19088a98))
+
+
+### Bug Fixes
+
+* **agents:** write coworker email like a person ([#147](https://github.com/vanducng/dotfiles/issues/147)) ([3c250bc](https://github.com/vanducng/dotfiles/commit/3c250bcee62d7910f2d3be8dec50b0ad15a3a002))
+
 ## [0.19.0](https://github.com/vanducng/dotfiles/compare/v0.18.0...v0.19.0) (2026-09-15)
 
 
