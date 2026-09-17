@@ -28,3 +28,8 @@ brew install neovim
 brew install fnm
 brew install tmux
 brew install rust
+
+# Tinycast launcher (Raycast replacement). Apple silicon, macOS 26+.
+brew trust --tap abue-ammar/tinycast
+brew tap abue-ammar/tinycast
+brew install --cask tinycast
