@@ -12,7 +12,7 @@ STOW_FOLDERS=$(COMMON_STOW_FOLDERS) $(LINUX_STOW_EXTRAS)
 endif
 SHELL := /bin/bash
 
-.PHONY: help stow-folders stow-install stow-uninstall stow-status setup-herdr test validate deps platform-test script-test linux-deps linux-desktop linux-homelab bootstrap-linux
+.PHONY: help stow-folders stow-install stow-uninstall stow-status setup-herdr setup-tinycast test validate deps platform-test script-test linux-deps linux-desktop linux-homelab bootstrap-linux
 
 help:
 	@echo "Dotfiles Management"
@@ -28,6 +28,7 @@ help:
 	@echo "  make linux-homelab   - disks, never-sleep, ssh :2222, clone hot repos"
 	@echo "  make bootstrap-linux - linux-deps + stow-install"
 	@echo "  make setup-herdr     - Install Herdr's Droid integration"
+	@echo "  make setup-tinycast  - Apply Tinycast hotkeys and Quick Action prompts"
 	@echo ""
 	@echo "Testing:"
 	@echo "  make test            - Run all tests"
@@ -109,6 +110,9 @@ linux-homelab:
 
 bootstrap-linux: linux-deps stow-install
 	@echo "Linux bootstrap complete. source ~/.config/shell/linux.sh"
+
+setup-tinycast:
+	@./scripts/tinycast-setup.sh
 
 setup-herdr:
 	@command -v herdr >/dev/null || { echo "herdr is required"; exit 1; }
