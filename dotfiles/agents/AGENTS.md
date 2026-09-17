@@ -4,6 +4,7 @@
 
 - Never use the em dash character. Use plain dash "-" instead.
 - Keep status updates, PR descriptions, review summaries, tickets, and operational messages concise, factual, and action-oriented. Lead with the outcome, blocker, or next action.
+- Outbound email and chat as Duc, to a coworker: write like him, not a runbook. Short, warm, one or two beats. Match their register. No numbered playbook in a reply unless they asked how to do it. Do not restate an attachment they already have. Ban: "No mistake.", "say the word", "which is expected", "the correct X path", "If you want me to X". If it could be a chatbot closing, cut it.
 
 ## Work schedule
 
@@ -31,6 +32,8 @@ Remote. Timezone `Asia/Ho_Chi_Minh` (GMT+7).
 
 - Ground decisions in the current repo and authoritative live state. Verify the real source, artifact, test output, runtime, data, or deployed version before declaring success.
 - When asked to ship or finish, continue through the explicitly authorized endpoint and verify the outcome. Do not stop at local edits or PR creation.
+- "hotfix", "ship", and Jira labels do not authorize merge or production deploy. Merge only when the user says merge / land it / merge anyway, or passes `--merge` / `--auto`.
+- Never `gh pr merge --admin`. Never bypass required reviews. If merge is blocked on review, stop and ask.
 - For read-only reviews, report only confirmed actionable defects ordered by severity, with exact file:line, concrete failure mode, and a one-line fix. Skip style nits and speculation.
 - Before merge or the next ship step, refresh the current head, required checks, approvals, and unresolved review threads. Address valid feedback, reply or resolve, then re-check until the authorized gate is reached.
 - When writing commit messages, NEVER auto-add your agent name as co-author.
