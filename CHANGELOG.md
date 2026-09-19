@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.21.1](https://github.com/vanducng/dotfiles/compare/v0.21.0...v0.21.1) (2026-09-19)
+
+
+### Bug Fixes
+
+* **config:** swapped app hotkeys and added Pi extension ([7e32ec5](https://github.com/vanducng/dotfiles/commit/7e32ec59789c15502730a6946e0fb24cc8c0e37d))
+* **skhd:** swap Alter and WhatsApp hotkeys ([0624443](https://github.com/vanducng/dotfiles/commit/062444353969646861e39a2abc692702a55bfdfb))
+
 ## [0.21.0](https://github.com/vanducng/dotfiles/compare/v0.20.0...v0.21.0) (2026-09-19)
 
 
