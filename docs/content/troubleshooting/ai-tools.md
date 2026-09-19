@@ -2,6 +2,27 @@
 title: "AI Tools Troubleshooting"
 ---
 
+## Cursor Agent CLI
+
+### `Failed to reach the Cursor API` (Herdr / Ghostty)
+
+Usually not Herdr itself. On this Mac, **ACME OpenVPN Connect** often pulls `redirect-gateway def1`, which installs `0/1` and `128.0/1` via the ACME tun (`10.255.248.x`). Public IPv4 (including `api2.cursor.sh`) then rides the VPN. When the tunnel flaps or blackholes internet, `agent` exits with that error.
+
+Linux already ignores redirect-gateway in `work-vpn`. On macOS:
+
+```bash
+work-vpn-mac doctor
+work-vpn-mac patch-profiles   # once per profile import
+work-vpn-mac split            # drop full-tunnel routes; keep ACME LAN
+```
+
+After every OpenVPN Connect reconnect that restores full tunnel, run `split` again (or reconnect from a patched profile). Confirm default route is Wi-Fi/`en0`, not `utun*` for `8.8.8.8`:
+
+```bash
+route -n get 8.8.8.8 | rg 'gateway|interface'
+agent status
+```
+
 ## Codex CLI
 
 ### Desktop: `Missing environment variable: CLI_PROXY_API_KEY`
