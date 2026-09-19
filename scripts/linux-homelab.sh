@@ -147,6 +147,7 @@ configure_cli_proxy_env() {
     return 0
   fi
   mkdir -p "${HOME}/.ssh" "${HOME}/.config/environment.d" "${HOME}/.config/systemd/user/herdr-server.service.d"
+  chmod 700 "${HOME}/.ssh"
   touch "${HOME}/.ssh/environment"
   sed -i '/^CLI_PROXY_API_KEY=/d' "${HOME}/.ssh/environment"
   printf 'CLI_PROXY_API_KEY=%s\n' "$key" >>"${HOME}/.ssh/environment"
