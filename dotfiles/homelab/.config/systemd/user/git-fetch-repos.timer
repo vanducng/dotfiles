@@ -1,0 +1,10 @@
+[Unit]
+Description=Every 2h fetch for curated work clones
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=2h
+Persistent=true
+
+[Install]
+WantedBy=timers.target

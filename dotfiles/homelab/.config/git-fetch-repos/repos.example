@@ -1,0 +1,8 @@
+# Allowlist for git-fetch-repos (fetch only, never merge).
+# One path per line. Absolute, ~/…, or relative to $HOME/git or $HOME/work/git.
+# Lines starting with # are ignored. Missing/empty file = no-op.
+#
+# Examples (placeholders — replace with your clones):
+# personal/<cli-tool>
+# <org>/infra
+# ~/dotfiles

@@ -62,18 +62,46 @@ bash -n "$ROOT/dotfiles/homelab/.config/homelab/install-tailscale" && pass "inst
 [[ -f "$ROOT/dotfiles/homelab/.config/systemd/user/homelab-tailscale.service" ]] && pass "homelab-tailscale.service exists" || fail "missing homelab-tailscale.service"
 [[ -f "$ROOT/dotfiles/homelab/.config/homelab/REMOTE.md" ]] && pass "REMOTE.md exists" || fail "missing REMOTE.md"
 bash -n "$ROOT/dotfiles/bin/.local/bin/git-sync-repos" && pass "git-sync-repos parses" || fail "git-sync-repos syntax"
+bash -n "$ROOT/dotfiles/bin/.local/bin/git-fetch-repos" && pass "git-fetch-repos parses" || fail "git-fetch-repos syntax"
+bash -n "$ROOT/dotfiles/bin/.local/bin/git-fetch-cwd" && pass "git-fetch-cwd parses" || fail "git-fetch-cwd syntax"
 bash -n "$ROOT/dotfiles/bin/.local/bin/ensure-home-managed-repos" && pass "ensure-home-managed-repos parses" || fail "ensure-home-managed-repos syntax"
+[[ -f "$ROOT/dotfiles/homelab/.config/systemd/user/git-fetch-repos.timer" ]] && pass "git-fetch-repos.timer exists" || fail "missing git-fetch-repos.timer"
+[[ -f "$ROOT/dotfiles/homelab/.config/systemd/user/git-fetch-repos.service" ]] && pass "git-fetch-repos.service exists" || fail "missing git-fetch-repos.service"
+[[ -f "$ROOT/dotfiles/launchd/Library/LaunchAgents/dev.vanducng.git-fetch-repos.plist" ]] && pass "git-fetch-repos launchd plist exists" || fail "missing git-fetch-repos plist"
 if grep -q 'sync_main firstmate "${HOME}/firstmate"' "$ROOT/dotfiles/bin/.local/bin/git-sync-repos" \
   && grep -q 'ensure-home-managed-repos' "$ROOT/dotfiles/bin/.local/bin/git-sync-repos" \
   && grep -q 'HOME}/firstmate' "$ROOT/dotfiles/bin/.local/bin/ensure-home-managed-repos" \
   && grep -q 'ensure-home-managed-repos' "$ROOT/scripts/linux-homelab.sh" \
   && grep -q 'git-sync-repos.timer' "$ROOT/scripts/linux-homelab.sh" \
+  && grep -q 'git-fetch-repos.timer' "$ROOT/scripts/linux-homelab.sh" \
   && grep -q 'ensure-home-repos' "$ROOT/Makefile" \
   && ! grep -q 'personal/firstmate' "$ROOT/scripts/linux-homelab.sh"; then
   pass "firstmate managed under HOME on Mac and Linux"
 else
   fail "firstmate must be ensured/synced at \$HOME/firstmate on Mac and Linux"
 fi
+# Positive checks on non-comment lines; negative checks use POSIX word edges (no GNU \\b).
+_fetch_repos_code=$(grep -vE '^[[:space:]]*#' "$ROOT/dotfiles/bin/.local/bin/git-fetch-repos" || true)
+_fetch_cwd_code=$(grep -vE '^[[:space:]]*#' "$ROOT/dotfiles/bin/.local/bin/git-fetch-cwd" || true)
+_forbidden='(^|[^[:alnum:]_])(checkout|merge|stash|pull|rebase)([^[:alnum:]_]|$)'
+if awk '
+  /uname -s.*" == Darwin/ { in_darwin=1; next }
+  in_darwin && /fi$/ { in_darwin=0 }
+  in_darwin && /git-fetch-cwd/ { found=1 }
+  END { exit found ? 0 : 1 }
+' "$ROOT/dotfiles/zsh/.zshrc" \
+  && grep -q 'git-fetch-cwd' "$ROOT/dotfiles/shell-linux/.config/shell/linux.sh" \
+  && printf '%s\n' "$_fetch_repos_code" | grep -q 'fetch --prune --quiet origin' \
+  && printf '%s\n' "$_fetch_cwd_code" | grep -q 'GIT_FETCH_CWD_TTL_SEC' \
+  && printf '%s\n' "$_fetch_repos_code" | grep -q 'ConnectTimeout=10' \
+  && ! printf '%s\n' "$_fetch_repos_code" | grep -qE "$_forbidden" \
+  && ! printf '%s\n' "$_fetch_cwd_code" | grep -qE "$_forbidden" \
+  && ! printf '%s\n' "$_fetch_repos_code" | grep -qE 'dpl/|cnb/|goclaw'; then
+  pass "git-fetch-repos is fetch-only with shell debounce hooks"
+else
+  fail "git-fetch must stay fetch-only and hook both Mac zsh and Linux shells"
+fi
+unset _fetch_repos_code _fetch_cwd_code _forbidden
 remote_cli="$ROOT/dotfiles/bin/.local/bin/dpl-remote"
 mac_config="$(WAN6_IP=2001:db8::10 LAN_IP=192.0.2.10 bash "$remote_cli" mac-config)"
 shell_block="$(printf '%s\n' "$mac_config" | awk '/^Host dpl dpl-v6 dpl-ts$/{capture=1; next} /^Host dpl$/{capture=0} capture')"

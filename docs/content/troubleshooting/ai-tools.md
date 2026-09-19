@@ -6,9 +6,11 @@ title: "AI Tools Troubleshooting"
 
 ### `Failed to reach the Cursor API` (Herdr / Ghostty)
 
-Usually not Herdr itself. On this Mac, **CNB OpenVPN Connect** often pulls `redirect-gateway def1`, which installs `0/1` and `128.0/1` via the CNB tun (`10.255.248.x`). Public IPv4 (including `api2.cursor.sh`) then rides the VPN. When the tunnel flaps or blackholes internet, `agent` exits with that error.
+Usually not Herdr itself. Two common causes on this Mac:
 
-Linux already ignores redirect-gateway in `cnb-openvpn`. On macOS:
+**1. CNB OpenVPN full-tunnel**
+
+OpenVPN Connect often pulls `redirect-gateway def1` (`0/1` + `128.0/1` via `10.255.248.x`). Public IPv4 (including `api2.cursor.sh`) then rides the VPN. When the tunnel flaps, `agent` exits with that error.
 
 ```bash
 cnb-openvpn-mac doctor
@@ -16,7 +18,18 @@ cnb-openvpn-mac patch-profiles   # once per profile import
 cnb-openvpn-mac split            # drop full-tunnel routes; keep CNB LAN
 ```
 
-After every OpenVPN Connect reconnect that restores full tunnel, run `split` again (or reconnect from a patched profile). Confirm default route is Wi-Fi/`en0`, not `utun*` for `8.8.8.8`:
+**2. Herdr panes lost macOS DNS (`scutil --dns` → "No DNS configuration available")**
+
+After VPN route changes, a long-lived Herdr server can leave pane shells unable to resolve via `getaddrinfo` while `dig` still works. Symptom in the pane: `curl: (6) Could not resolve host`. Restart the Herdr server so panes respawn with a fresh configd session:
+
+```bash
+herdr server stop
+# reattach / reopen Herdr (starts a new server)
+scutil --dns | head -5    # in the pane - must show resolvers again
+agent status
+```
+
+Confirm default route is Wi-Fi/`en0`, not `utun*` for `8.8.8.8`:
 
 ```bash
 route -n get 8.8.8.8 | rg 'gateway|interface'
