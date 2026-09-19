@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Keep listed clones on origin/main (or origin/master).
 # macOS: launchd StartInterval. Linux: systemd --user timer.
-# skills/dotfiles: never discard WIP (stash, update main, apply).
+# skills/dotfiles/firstmate: never discard WIP (stash, update main, apply).
 # vault: commit WIP on main, then pull --rebase and push.
 set -u
 
@@ -15,6 +15,18 @@ LOG="${LOG_DIR}/git-sync-repos.log"
 
 ts() { date '+%Y-%m-%d %H:%M:%S'; }
 log() { printf '%s %s\n' "$(ts)" "$*" >>"$LOG"; }
+
+# Prefer Mac layout (~/git/personal), then Linux homelab (~/work/git/personal).
+personal_repo() {
+  local name="$1" cand
+  for cand in "${HOME}/git/personal/${name}" "${HOME}/work/git/personal/${name}"; do
+    if [[ -d "${cand}/.git" ]]; then
+      printf '%s\n' "$cand"
+      return 0
+    fi
+  done
+  printf '%s\n' "${HOME}/git/personal/${name}"
+}
 
 default_branch() {
   local dir="$1"
@@ -105,7 +117,8 @@ sync_main() {
 }
 
 vault_sync() {
-  local dir="${HOME}/git/personal/vault"
+  local dir
+  dir="$(personal_repo vault)"
   local branch stashed
   if [[ ! -d "${dir}/.git" ]]; then
     log "skip vault: missing ${dir}"
@@ -144,5 +157,6 @@ vault_sync() {
 
 sync_main skills "${HOME}/skills"
 sync_main dotfiles "${HOME}/dotfiles"
+sync_main firstmate "$(personal_repo firstmate)"
 vault_sync
 exit 0
