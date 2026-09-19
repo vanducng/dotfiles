@@ -1,5 +1,5 @@
 [Unit]
-Description=Hourly git-sync for skills, dotfiles, and vault
+Description=Hourly git-sync for skills, dotfiles, firstmate, and vault
 
 [Timer]
 OnBootSec=2min
