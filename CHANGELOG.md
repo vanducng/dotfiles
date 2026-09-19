@@ -1,5 +1,36 @@
 # Changelog
 
+## [0.21.0](https://github.com/vanducng/dotfiles/compare/v0.20.0...v0.21.0) (2026-09-19)
+
+
+### Features
+
+* **cursor:** align agent CLI config and docs ([#151](https://github.com/vanducng/dotfiles/issues/151)) ([6de22ec](https://github.com/vanducng/dotfiles/commit/6de22ecf8964a67fef279ddb576bb18e6c55b468))
+* **dotfiles:** ensure firstmate on Mac and Linux from one path ([#156](https://github.com/vanducng/dotfiles/issues/156)) ([55ac2c5](https://github.com/vanducng/dotfiles/commit/55ac2c53b12cfd491723d4afb72344ba79dcef62))
+* **homelab:** add fetch-only repo refresh and on-enter debounce ([a1eb7c4](https://github.com/vanducng/dotfiles/commit/a1eb7c430b1105f0dd0d5593c79855f94dbcbee1))
+* **homelab:** added fetch-only repo refresh and on-enter debounce ([87fd69d](https://github.com/vanducng/dotfiles/commit/87fd69d8c3302caebdf6c56a15268fb164159d83))
+* **homelab:** sync firstmate into personal/ like skills ([#155](https://github.com/vanducng/dotfiles/issues/155)) ([f99930a](https://github.com/vanducng/dotfiles/commit/f99930a47e17abe6b65afdedc7a48995e5f5c7f8))
+* **mac:** add cnb-openvpn-mac split-tunnel helper ([#157](https://github.com/vanducng/dotfiles/issues/157)) ([479e37a](https://github.com/vanducng/dotfiles/commit/479e37adebdf2178feee221f3ee80e331ca94b79))
+* **op:** version 1Password CLI setup for biometric unlock ([e6ec332](https://github.com/vanducng/dotfiles/commit/e6ec33250e2f7ab3b8d09ae9c77a8b1e61f8a1c7))
+* **op:** version 1Password CLI setup for biometric unlock ([305127a](https://github.com/vanducng/dotfiles/commit/305127ab74578f9bd49fd9220f81d662700059f9))
+* **pi:** add CLIProxy model configs and environment setup ([#152](https://github.com/vanducng/dotfiles/issues/152)) ([bb70b6e](https://github.com/vanducng/dotfiles/commit/bb70b6e608bdeefadc38c236b78cb36adfc551b3))
+* **tinycast:** add Tinycast launcher cask and float rules ([e66786c](https://github.com/vanducng/dotfiles/commit/e66786c49cbcdfd8e00744cc7de18eafaaea168c))
+* **tinycast:** added launcher setup and hotkey config ([#148](https://github.com/vanducng/dotfiles/issues/148)) ([bd6b985](https://github.com/vanducng/dotfiles/commit/bd6b9851b990cd4dcb27ef0841d7bf1baf3d487d))
+* **tinycast:** script hotkeys and quick action prompts ([6a9c805](https://github.com/vanducng/dotfiles/commit/6a9c8054ac226262eea7bc25b55af7e6a36bd773))
+
+
+### Bug Fixes
+
+* **homelab:** address remaining git-fetch review nits ([ee52f54](https://github.com/vanducng/dotfiles/commit/ee52f54f3f1aec7d3ffbd2880cd68b17cfdc01de))
+* **homelab:** chmod 700 ~/.ssh in CLIProxy env setup ([#154](https://github.com/vanducng/dotfiles/issues/154)) ([45c1640](https://github.com/vanducng/dotfiles/commit/45c1640c38f51bb9ba350db383d2d57e0e8d637a))
+* **homelab:** harden git-fetch for public-repo and review nits ([89a1af0](https://github.com/vanducng/dotfiles/commit/89a1af017a0c5a91af992ff1e2ea2a90f96961b7))
+* **homelab:** keep firstmate at ~/firstmate like skills ([ec4e25d](https://github.com/vanducng/dotfiles/commit/ec4e25ddb4fff11f3c67b69b04b66be2be43123d))
+* **homelab:** make CLIProxy env setup idempotent ([#153](https://github.com/vanducng/dotfiles/issues/153)) ([9e86b43](https://github.com/vanducng/dotfiles/commit/9e86b4327487923d4661a2e9c573eda569594689))
+* **homelab:** tighten git-fetch review findings ([7daa9f0](https://github.com/vanducng/dotfiles/commit/7daa9f08cedc5a9d96b14e4839a4e378676e0838))
+* **op:** drop OP_ACCOUNT shorthand, document manual-account shadowing ([df16182](https://github.com/vanducng/dotfiles/commit/df161827486ce5089de7953d8f13edc078a22452))
+* **op:** drop OP_ACCOUNT shorthand, document manual-account shadowing ([8f6f678](https://github.com/vanducng/dotfiles/commit/8f6f67832121d252eb5e0d1cac1dd5165258e9c7))
+* **zsh:** use $HOME instead of hardcoded /Users/vanducng ([4e6241b](https://github.com/vanducng/dotfiles/commit/4e6241b8fa90a9a1af474448eff173173758fb2c))
+
 ## [0.20.0](https://github.com/vanducng/dotfiles/compare/v0.19.0...v0.20.0) (2026-09-17)
 
 
