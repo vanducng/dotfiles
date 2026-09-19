@@ -72,7 +72,7 @@ fetch_one() {
     log "skip ${name}: no origin"
     return 0
   }
-  if git -C "$dir" fetch --all --prune --quiet >/dev/null 2>>"$LOG"; then
+  if git -C "$dir" fetch --prune --quiet origin >/dev/null 2>>"$LOG"; then
     log "ok ${name}: fetched"
   else
     log "fail ${name}: fetch (${dir})"
@@ -101,12 +101,15 @@ main() {
   if mkdir "$GIT_FETCH_REPOS_LOCKDIR" 2>/dev/null; then
     trap 'rmdir "${GIT_FETCH_REPOS_LOCKDIR:-}" 2>/dev/null || true' EXIT
   else
-    local age=0
-    if [[ -d "$GIT_FETCH_REPOS_LOCKDIR" ]]; then
-      age=$(( $(date +%s) - $(stat -f %m "$GIT_FETCH_REPOS_LOCKDIR" 2>/dev/null || stat -c %Y "$GIT_FETCH_REPOS_LOCKDIR" 2>/dev/null || echo 0) ))
+    local mtime=""
+    mtime="$(stat -f %m "$GIT_FETCH_REPOS_LOCKDIR" 2>/dev/null || stat -c %Y "$GIT_FETCH_REPOS_LOCKDIR" 2>/dev/null || true)"
+    if [[ ! "$mtime" =~ ^[0-9]+$ ]]; then
+      log "skip: lock present (mtime unknown)"
+      return 0
     fi
+    local age=$(( $(date +%s) - mtime ))
     if (( age > 3600 )); then
-      rmdir "$GIT_FETCH_REPOS_LOCKDIR" 2>/dev/null || rm -rf "$GIT_FETCH_REPOS_LOCKDIR"
+      rmdir "$GIT_FETCH_REPOS_LOCKDIR" 2>/dev/null || { log "skip: stale lock not removable"; return 0; }
       mkdir "$GIT_FETCH_REPOS_LOCKDIR" 2>/dev/null || { log "skip: already running"; return 0; }
       trap 'rmdir "${GIT_FETCH_REPOS_LOCKDIR:-}" 2>/dev/null || true' EXIT
     else
