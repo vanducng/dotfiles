@@ -69,3 +69,37 @@ ssh() {
   _vd_restore_kitty_keyboard
   return "$_vd_ssh_st"
 }
+
+# Debounced fetch --prune on directory enter (never merge). See git-fetch-cwd.
+# Owned here for Linux; Darwin registers from .zshrc only (this file is not sourced there).
+_vd_git_fetch_cwd() {
+  command -v git-fetch-cwd >/dev/null 2>&1 || return 0
+  (git-fetch-cwd --quiet &) >/dev/null 2>&1
+}
+if [ -n "${ZSH_VERSION:-}" ]; then
+  case " ${chpwd_functions[*]:-} " in
+    *" _vd_git_fetch_cwd "*) ;;
+    *)
+      _vd_git_fetch_cwd_registered=0
+      if typeset -f add-zsh-hook >/dev/null 2>&1 || autoload -Uz add-zsh-hook 2>/dev/null; then
+        if add-zsh-hook chpwd _vd_git_fetch_cwd 2>/dev/null; then
+          _vd_git_fetch_cwd_registered=1
+        fi
+      fi
+      if [ "$_vd_git_fetch_cwd_registered" -eq 0 ]; then
+        chpwd_functions+=(_vd_git_fetch_cwd)
+      fi
+      unset _vd_git_fetch_cwd_registered
+      ;;
+  esac
+else
+  _vd_git_fetch_cwd_bash() {
+    [ "${_VD_GIT_FETCH_LAST_PWD:-}" = "${PWD:-}" ] && return 0
+    _VD_GIT_FETCH_LAST_PWD=${PWD:-}
+    _vd_git_fetch_cwd
+  }
+  case ";${PROMPT_COMMAND:-};" in
+    *_vd_git_fetch_cwd_bash*) ;;
+    *) PROMPT_COMMAND="_vd_git_fetch_cwd_bash${PROMPT_COMMAND:+;${PROMPT_COMMAND}}" ;;
+  esac
+fi
