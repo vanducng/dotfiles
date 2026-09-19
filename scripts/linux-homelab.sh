@@ -146,14 +146,19 @@ configure_cli_proxy_env() {
     log "WARN: CLIProxyAPI key unavailable from gopass"
     return 0
   fi
+  mkdir -p "${HOME}/.ssh" "${HOME}/.config/environment.d" "${HOME}/.config/systemd/user/herdr-server.service.d"
+  touch "${HOME}/.ssh/environment"
+  sed -i '/^CLI_PROXY_API_KEY=/d' "${HOME}/.ssh/environment"
   printf 'CLI_PROXY_API_KEY=%s\n' "$key" >>"${HOME}/.ssh/environment"
-  mkdir -p "${HOME}/.config/environment.d" "${HOME}/.config/systemd/user/herdr-server.service.d"
   printf 'CLI_PROXY_API_KEY=%s\n' "$key" >"${HOME}/.config/environment.d/cli-proxy.conf"
   chmod 600 "${HOME}/.ssh/environment" "${HOME}/.config/environment.d/cli-proxy.conf"
   cat >"${HOME}/.config/systemd/user/herdr-server.service.d/cli-proxy.conf" <<'EOF'
 [Service]
 EnvironmentFile=-%h/.config/environment.d/cli-proxy.conf
 EOF
+  if have systemctl; then
+    systemctl --user daemon-reload || true
+  fi
   unset key
 }
 
