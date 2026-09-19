@@ -50,7 +50,7 @@ All application shortcuts use the `meh` key (ctrl+alt+shift) for consistency and
 | `meh + f` | Kitty | Secondary terminal emulator on display 2, space 15 |
 | `meh + x` | ChatGPT | AI assistant on display 2, space 16 |
 | `meh + g` | Cursor | AI-powered code editor on space 5 |
-| `meh + y` | Alter | Chat hub on space 7 |
+| `meh + h` | Alter | Chat hub on space 7 |
 
 ### Browsers & Communication
 | Shortcut | Application | Description |
@@ -63,7 +63,7 @@ All application shortcuts use the `meh` key (ctrl+alt+shift) for consistency and
 | `meh + r` | Telegram | Messaging app on space 10 |
 | `meh + u` | Zalo | Messaging app on space 11 |
 | `meh + t` | Discord | Community chat on space 12 |
-| `meh + h` | WhatsApp | Messaging app on space 12 |
+| `meh + y` | WhatsApp | Messaging app on space 12 |
 | `meh + j` | Cliq | Team communication on space 14 |
 
 ### Productivity & AI Tools
