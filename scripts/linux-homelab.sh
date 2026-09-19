@@ -260,7 +260,8 @@ clone_recent() {
     fi
   }
 
-  # personal (skip dotfiles/skills — live in $HOME)
+  # personal (skip dotfiles/skills — live in $HOME; firstmate syncs via git-sync-repos)
+  clone_jobs git@github.com:vanducng/firstmate.git         "$root/personal/firstmate"
   clone_jobs git@github.com:vanducng/miu-cr.git            "$root/personal/miu-cr"
   clone_jobs git@github.com:vanducng/pass.git               "$root/personal/pass"
   clone_jobs git@github.com:vanducng/vd-cli.git             "$root/personal/vd-cli"

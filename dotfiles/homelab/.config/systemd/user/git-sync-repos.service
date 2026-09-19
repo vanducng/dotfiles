@@ -1,5 +1,5 @@
 [Unit]
-Description=Sync skills, dotfiles, and vault onto origin/main
+Description=Sync skills, dotfiles, firstmate, and vault onto origin/main
 After=network-online.target
 
 [Service]
