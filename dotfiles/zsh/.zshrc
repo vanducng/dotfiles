@@ -29,7 +29,8 @@ source <(gopass completion zsh)
 
 # 1Password CLI. Unlock comes from the desktop app (Settings > Developer >
 # Integrate with 1Password CLI), never from `op signin`, so no OP_SESSION_* here.
-export OP_ACCOUNT=my
+# No OP_ACCOUNT: shorthands only exist for CLI-added accounts, and the app
+# supplies the account once `op account forget` clears the manual entry.
 command -v op >/dev/null && { eval "$(op completion zsh)"; compdef _op op; }
 
 function zvm_vi_yank() {

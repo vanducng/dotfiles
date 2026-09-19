@@ -12,7 +12,7 @@ unlock and authorize `op` with Touch ID.
 | Piece | Where |
 |---|---|
 | `1password` + `1password-cli` casks | `scripts/macos-deps.sh` |
-| `OP_ACCOUNT`, zsh completion | `dotfiles/zsh/.zshrc` |
+| zsh completion | `dotfiles/zsh/.zshrc` |
 
 ## What cannot be versioned
 
@@ -25,6 +25,25 @@ sealed app container. There is no supported file to stow. Set them once per mach
 
 Also not versioned, and must stay that way: `~/.config/op/config` holds the
 account key, which is half of a working credential. Never commit it.
+
+## Clear the manual account first
+
+If you used `op signin` on this machine before installing the app, the CLI still
+has a manually-added account in `~/.config/op/config` with its own shorthand.
+Real operations resolve against that stale entry, find no session token, and fail
+with `account is not signed in`, while `op account list` confusingly still shows
+the account. The app integration never gets consulted.
+
+```bash
+op account forget <shorthand>
+```
+
+The account key lives in the app and your Emergency Kit, so the CLI copy is
+recoverable. Confirm the app is signed in before running it.
+
+For the same reason, do not set `OP_ACCOUNT` to a shorthand. Shorthands only
+exist for CLI-added accounts and stop resolving once the app owns the account.
+With a single account, `op` resolves it without help.
 
 ## Verify
 
