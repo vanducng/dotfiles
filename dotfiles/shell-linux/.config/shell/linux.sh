@@ -69,3 +69,26 @@ ssh() {
   _vd_restore_kitty_keyboard
   return "$_vd_ssh_st"
 }
+
+# Debounced fetch --prune on directory enter (never merge). See git-fetch-cwd.
+_vd_git_fetch_cwd() {
+  command -v git-fetch-cwd >/dev/null 2>&1 || return 0
+  (git-fetch-cwd --quiet &) >/dev/null 2>&1
+}
+if [ -n "${ZSH_VERSION:-}" ]; then
+  if typeset -f add-zsh-hook >/dev/null 2>&1 || autoload -Uz add-zsh-hook 2>/dev/null; then
+    add-zsh-hook chpwd _vd_git_fetch_cwd 2>/dev/null || true
+  else
+    chpwd_functions+=(_vd_git_fetch_cwd)
+  fi
+else
+  _vd_git_fetch_cwd_bash() {
+    [ "${_VD_GIT_FETCH_LAST_PWD:-}" = "${PWD:-}" ] && return 0
+    _VD_GIT_FETCH_LAST_PWD=${PWD:-}
+    _vd_git_fetch_cwd
+  }
+  case ";${PROMPT_COMMAND:-};" in
+    *\;_vd_git_fetch_cwd_bash\;*|*_vd_git_fetch_cwd_bash*) ;;
+    *) PROMPT_COMMAND="_vd_git_fetch_cwd_bash${PROMPT_COMMAND:+;${PROMPT_COMMAND}}" ;;
+  esac
+fi

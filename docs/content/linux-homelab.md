@@ -17,6 +17,8 @@ Git is `~/work/git/{cnb,crashchat,ab-spectrum,bhcoe,dpl,nlb,personal}`. Worktree
 
 Managed home repos (same layout as Mac): `~/dotfiles`, `~/skills`, `~/firstmate`. Hourly `git-sync-repos` keeps them on `origin/main` without discarding WIP. Vault stays at `~/git/personal/vault`.
 
+Curated work clones (CLIs, infra, goclaw, …) get a fetch-only refresh every 2h via `git-fetch-repos` (never checkout/merge). Override the list with `~/.config/git-fetch-repos/repos` (see `repos.example`). Entering a git repo also runs a debounced `git-fetch-cwd` from the shell hook.
+
 On either host, from this repo:
 
 ```bash
@@ -24,7 +26,7 @@ make ensure-home-repos   # clone/migrate ~/firstmate
 make stow-install        # also runs ensure-home-repos after stow
 ```
 
-Mac runs the sync via launchd `dev.vanducng.git-sync-repos`; Linux via `git-sync-repos.timer`. Both call `ensure-home-managed-repos` first.
+Mac: launchd `dev.vanducng.git-sync-repos` (hourly merge-safe sync) and `dev.vanducng.git-fetch-repos` (2h fetch-only). Linux: `git-sync-repos.timer` and `git-fetch-repos.timer`. Sync units call `ensure-home-managed-repos` first.
 
 ## User-space (no sudo)
 

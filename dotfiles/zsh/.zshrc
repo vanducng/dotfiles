@@ -258,8 +258,14 @@ auto_activate_venv() {
   fi
 }
 
+# Debounced fetch --prune on enter (never merge). See git-fetch-cwd.
+_vd_git_fetch_cwd() {
+  command -v git-fetch-cwd >/dev/null 2>&1 || return 0
+  (git-fetch-cwd --quiet &) >/dev/null 2>&1
+}
+
 # Hook to run on directory change
-chpwd_functions+=(auto_activate_venv)
+chpwd_functions+=(auto_activate_venv _vd_git_fetch_cwd)
 
 clear-terminal() { tput reset; zle redisplay; }
 zle -N clear-terminal

@@ -227,6 +227,9 @@ EOF
   if [[ -f "${HOME}/.config/systemd/user/git-sync-repos.timer" ]]; then
     systemctl --user enable --now git-sync-repos.timer 2>/dev/null || true
   fi
+  if [[ -f "${HOME}/.config/systemd/user/git-fetch-repos.timer" ]]; then
+    systemctl --user enable --now git-fetch-repos.timer 2>/dev/null || true
+  fi
 }
 
 nm_static_hint() {

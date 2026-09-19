@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+# Debounced fetch --prune for the current git work tree. Never merge/checkout.
+# Intended from shell chpwd / cd hooks. Safe to run in the background.
+#
+# Usage:
+#   git-fetch-cwd [--quiet] [dir]
+#
+# Debounce: GIT_FETCH_CWD_TTL_SEC (default 900). State under
+# $XDG_STATE_HOME/git-fetch-cwd/.
+set -u
+
+PATH="${HOME}/.local/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:${PATH:-/usr/bin:/bin}"
+export PATH
+export GIT_SSH_COMMAND="${GIT_SSH_COMMAND:-ssh -o BatchMode=yes -o IdentitiesOnly=yes}"
+
+QUIET=0
+DIR="${PWD:-.}"
+TTL="${GIT_FETCH_CWD_TTL_SEC:-900}"
+STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/git-fetch-cwd"
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --quiet|-q) QUIET=1; shift ;;
+    -h|--help)
+      printf 'usage: git-fetch-cwd [--quiet] [dir]\n'
+      exit 0
+      ;;
+    *) DIR="$1"; shift ;;
+  esac
+done
+
+if ! command -v git >/dev/null 2>&1; then
+  exit 0
+fi
+
+ROOT="$(git -C "$DIR" rev-parse --show-toplevel 2>/dev/null)" || exit 0
+git -C "$ROOT" remote get-url origin >/dev/null 2>&1 || exit 0
+
+mkdir -p "$STATE_DIR"
+# Stable key without putting absolute paths in shared logs.
+if command -v sha256sum >/dev/null 2>&1; then
+  KEY="$(printf '%s' "$ROOT" | sha256sum | awk '{print $1}')"
+elif command -v shasum >/dev/null 2>&1; then
+  KEY="$(printf '%s' "$ROOT" | shasum -a 256 | awk '{print $1}')"
+else
+  KEY="$(printf '%s' "$ROOT" | cksum | awk '{print $1}')"
+fi
+STAMP="${STATE_DIR}/${KEY}"
+NOW="$(date +%s)"
+
+if [[ -f "$STAMP" ]]; then
+  LAST="$(cat "$STAMP" 2>/dev/null || echo 0)"
+  if [[ "$LAST" =~ ^[0-9]+$ ]] && (( NOW - LAST < TTL )); then
+    exit 0
+  fi
+fi
+
+# Claim the slot before fetch so parallel hooks do not stampede.
+printf '%s\n' "$NOW" >"$STAMP"
+
+if git -C "$ROOT" fetch --prune --quiet origin >/dev/null 2>&1; then
+  (( QUIET )) || true
+  exit 0
+fi
+# Soft failure: clear stamp so a later enter retries soon.
+rm -f "$STAMP"
+exit 0

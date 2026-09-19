@@ -1,0 +1,10 @@
+# Optional allowlist for git-fetch-repos (fetch only, never merge).
+# One path per line. Absolute, ~/…, or relative to $HOME/git or $HOME/work/git.
+# Lines starting with # are ignored. If this file is missing, the script uses
+# its built-in defaults.
+#
+# Examples:
+# personal/vd-cli
+# dpl/infra
+# cnb/cnb-infra
+# ~/dotfiles
