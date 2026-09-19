@@ -80,11 +80,16 @@ if [ -n "${ZSH_VERSION:-}" ]; then
   case " ${chpwd_functions[*]:-} " in
     *" _vd_git_fetch_cwd "*) ;;
     *)
+      _vd_git_fetch_cwd_registered=0
       if typeset -f add-zsh-hook >/dev/null 2>&1 || autoload -Uz add-zsh-hook 2>/dev/null; then
-        add-zsh-hook chpwd _vd_git_fetch_cwd 2>/dev/null || true
-      else
+        if add-zsh-hook chpwd _vd_git_fetch_cwd 2>/dev/null; then
+          _vd_git_fetch_cwd_registered=1
+        fi
+      fi
+      if [ "$_vd_git_fetch_cwd_registered" -eq 0 ]; then
         chpwd_functions+=(_vd_git_fetch_cwd)
       fi
+      unset _vd_git_fetch_cwd_registered
       ;;
   esac
 else
@@ -94,7 +99,7 @@ else
     _vd_git_fetch_cwd
   }
   case ";${PROMPT_COMMAND:-};" in
-    *\;_vd_git_fetch_cwd_bash\;*|*_vd_git_fetch_cwd_bash*) ;;
+    *_vd_git_fetch_cwd_bash*) ;;
     *) PROMPT_COMMAND="_vd_git_fetch_cwd_bash${PROMPT_COMMAND:+;${PROMPT_COMMAND}}" ;;
   esac
 fi

@@ -17,7 +17,7 @@ Git is `~/work/git/{cnb,crashchat,ab-spectrum,bhcoe,dpl,nlb,personal}`. Worktree
 
 Managed home repos (same layout as Mac): `~/dotfiles`, `~/skills`, `~/firstmate`. Hourly `git-sync-repos` keeps them on `origin/main` without discarding WIP. Vault stays at `~/git/personal/vault`.
 
-Curated work clones (CLIs, infra, goclaw, …) get a fetch-only refresh every 2h via `git-fetch-repos` (never checkout/merge). Override the list with `~/.config/git-fetch-repos/repos` (see `repos.example`). Entering a git repo also runs a debounced `git-fetch-cwd` from the shell hook.
+Curated work clones get a fetch-only refresh every 2h via `git-fetch-repos` (never checkout/merge) when `~/.config/git-fetch-repos/repos` lists them (see `repos.example`; no built-in defaults). Entering a git repo also runs a debounced `git-fetch-cwd` from the shell hook.
 
 On either host, from this repo:
 

@@ -3,45 +3,29 @@
 # Never checkout/merge/stash. Platform repos stay on git-sync-repos.
 #
 # macOS: launchd StartInterval. Linux: systemd --user timer.
-# Optional override list: $XDG_CONFIG_HOME/git-fetch-repos/repos (one path per line).
-# Paths are absolute, or relative to the first existing root in GIT_FETCH_ROOTS
-# (default: $HOME/git:$HOME/work/git).
+# Allowlist: $XDG_CONFIG_HOME/git-fetch-repos/repos (one path per line).
+# Paths are absolute, ~/…, or relative to the first existing root in
+# GIT_FETCH_ROOTS (default: $HOME/git:$HOME/work/git).
+# No built-in defaults - empty/missing config is a no-op (public repo hygiene).
 set -u
 
 PATH="${HOME}/.local/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:${PATH:-/usr/bin:/bin}"
 export PATH
-export GIT_SSH_COMMAND="${GIT_SSH_COMMAND:-ssh -o BatchMode=yes -o IdentitiesOnly=yes}"
+export GIT_SSH_COMMAND="${GIT_SSH_COMMAND:-ssh -o BatchMode=yes -o IdentitiesOnly=yes -o ConnectTimeout=10 -o ServerAliveInterval=5 -o ServerAliveCountMax=2}"
 
 LOG_DIR="${HOME}/.local/log"
 mkdir -p "$LOG_DIR"
 LOG="${LOG_DIR}/git-fetch-repos.log"
-LOCK="${LOG_DIR}/git-fetch-repos.lock"
+LOCKDIR="${LOG_DIR}/git-fetch-repos.lock.d"
 CONFIG="${XDG_CONFIG_HOME:-$HOME/.config}/git-fetch-repos/repos"
 ROOTS="${GIT_FETCH_ROOTS:-${HOME}/git:${HOME}/work/git}"
-
-# Default allowlist when no config file exists (relative to a GIT_FETCH root).
-DEFAULT_REPOS=(
-  personal/vd-cli
-  personal/miu-cr
-  personal/miu-db
-  personal/jira-cli
-  personal/braze-cli
-  personal/smartsheet-cli
-  personal/voice-agent-cli
-  personal/infra-template
-  personal/oh-my-dsh
-  dpl/infra
-  dpl/goclaw
-  dpl/goclaw-config
-  dpl/code-review
-  cnb/cnb-infra
-)
 
 ts() { date '+%Y-%m-%d %H:%M:%S'; }
 log() { printf '%s %s\n' "$(ts)" "$*" >>"$LOG"; }
 
 resolve_dir() {
   local entry="$1" root
+  entry="${entry%/}"
   if [[ "$entry" == /* ]]; then
     printf '%s\n' "$entry"
     return 0
@@ -58,7 +42,6 @@ resolve_dir() {
       return 0
     fi
   done
-  # Prefer first root for skip messages.
   printf '%s\n' "${roots[0]:-$HOME/git}/${entry}"
 }
 
@@ -81,47 +64,57 @@ fetch_one() {
 
 load_list() {
   local line
-  if [[ -f "$CONFIG" ]]; then
-    while IFS= read -r line || [[ -n "$line" ]]; do
-      line="${line%%#*}"
-      line="$(printf '%s' "$line" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
-      [[ -n "$line" ]] || continue
-      printf '%s\n' "$line"
-    done <"$CONFIG"
+  if [[ ! -f "$CONFIG" ]]; then
     return 0
   fi
-  printf '%s\n' "${DEFAULT_REPOS[@]}"
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    line="${line%%#*}"
+    line="$(printf '%s' "$line" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
+    [[ -n "$line" ]] || continue
+    printf '%s\n' "$line"
+  done <"$CONFIG"
+}
+
+acquire_lock() {
+  GIT_FETCH_REPOS_LOCKDIR="$LOCKDIR"
+  if mkdir "$GIT_FETCH_REPOS_LOCKDIR" 2>/dev/null; then
+    printf '%s\n' "$$" >"${GIT_FETCH_REPOS_LOCKDIR}/pid"
+    trap 'rm -f "${GIT_FETCH_REPOS_LOCKDIR:-}/pid"; rmdir "${GIT_FETCH_REPOS_LOCKDIR:-}" 2>/dev/null || true' EXIT
+    return 0
+  fi
+  local pid=""
+  pid="$(cat "${GIT_FETCH_REPOS_LOCKDIR}/pid" 2>/dev/null || true)"
+  if [[ "$pid" =~ ^[0-9]+$ ]] && kill -0 "$pid" 2>/dev/null; then
+    log "skip: already running (pid ${pid})"
+    return 1
+  fi
+  # Dead or missing holder: reclaim.
+  rm -f "${GIT_FETCH_REPOS_LOCKDIR}/pid" 2>/dev/null || true
+  rmdir "$GIT_FETCH_REPOS_LOCKDIR" 2>/dev/null || {
+    log "skip: stale lock not removable"
+    return 1
+  }
+  mkdir "$GIT_FETCH_REPOS_LOCKDIR" 2>/dev/null || {
+    log "skip: already running"
+    return 1
+  }
+  printf '%s\n' "$$" >"${GIT_FETCH_REPOS_LOCKDIR}/pid"
+  trap 'rm -f "${GIT_FETCH_REPOS_LOCKDIR:-}/pid"; rmdir "${GIT_FETCH_REPOS_LOCKDIR:-}" 2>/dev/null || true' EXIT
+  return 0
 }
 
 main() {
-  local entry dir
-  # Serialize: launchd kickstart + manual runs must not stampede the same remotes.
-  # Use a global lock path so the EXIT trap still works after main returns (set -u).
-  GIT_FETCH_REPOS_LOCKDIR="${LOCK}.d"
-  if mkdir "$GIT_FETCH_REPOS_LOCKDIR" 2>/dev/null; then
-    trap 'rmdir "${GIT_FETCH_REPOS_LOCKDIR:-}" 2>/dev/null || true' EXIT
-  else
-    local mtime=""
-    mtime="$(stat -f %m "$GIT_FETCH_REPOS_LOCKDIR" 2>/dev/null || stat -c %Y "$GIT_FETCH_REPOS_LOCKDIR" 2>/dev/null || true)"
-    if [[ ! "$mtime" =~ ^[0-9]+$ ]]; then
-      log "skip: lock present (mtime unknown)"
-      return 0
-    fi
-    local age=$(( $(date +%s) - mtime ))
-    if (( age > 3600 )); then
-      rmdir "$GIT_FETCH_REPOS_LOCKDIR" 2>/dev/null || { log "skip: stale lock not removable"; return 0; }
-      mkdir "$GIT_FETCH_REPOS_LOCKDIR" 2>/dev/null || { log "skip: already running"; return 0; }
-      trap 'rmdir "${GIT_FETCH_REPOS_LOCKDIR:-}" 2>/dev/null || true' EXIT
-    else
-      log "skip: already running"
-      return 0
-    fi
-  fi
+  local entry dir count=0
+  acquire_lock || return 0
   while IFS= read -r entry; do
     [[ -n "$entry" ]] || continue
     dir="$(resolve_dir "$entry")"
     fetch_one "$entry" "$dir"
+    count=$((count + 1))
   done < <(load_list)
+  if (( count == 0 )); then
+    log "skip: no repos configured (${CONFIG})"
+  fi
 }
 
 main

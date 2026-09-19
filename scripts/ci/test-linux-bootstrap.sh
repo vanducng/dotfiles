@@ -80,17 +80,24 @@ if grep -q 'sync_main firstmate "${HOME}/firstmate"' "$ROOT/dotfiles/bin/.local/
 else
   fail "firstmate must be ensured/synced at \$HOME/firstmate on Mac and Linux"
 fi
-if grep -q 'git-fetch-cwd' "$ROOT/dotfiles/zsh/.zshrc" \
-  && grep -q 'uname -s.*Darwin' "$ROOT/dotfiles/zsh/.zshrc" \
+# Positive checks on non-comment lines; negative checks use POSIX word edges (no GNU \\b).
+_fetch_repos_code=$(grep -vE '^[[:space:]]*#' "$ROOT/dotfiles/bin/.local/bin/git-fetch-repos" || true)
+_fetch_cwd_code=$(grep -vE '^[[:space:]]*#' "$ROOT/dotfiles/bin/.local/bin/git-fetch-cwd" || true)
+_forbidden='(^|[^[:alnum:]_])(checkout|merge|stash|pull|rebase)([^[:alnum:]_]|$)'
+if grep -q '_vd_git_fetch_cwd' "$ROOT/dotfiles/zsh/.zshrc" \
+  && grep -A8 'uname -s.*" == Darwin' "$ROOT/dotfiles/zsh/.zshrc" | grep -q 'git-fetch-cwd' \
   && grep -q 'git-fetch-cwd' "$ROOT/dotfiles/shell-linux/.config/shell/linux.sh" \
-  && grep -q 'fetch --prune --quiet origin' "$ROOT/dotfiles/bin/.local/bin/git-fetch-repos" \
-  && grep -q 'GIT_FETCH_CWD_TTL_SEC' "$ROOT/dotfiles/bin/.local/bin/git-fetch-cwd" \
-  && ! grep -vE '^[[:space:]]*#' "$ROOT/dotfiles/bin/.local/bin/git-fetch-repos" | grep -qE '\b(checkout|merge|stash|pull|rebase)\b' \
-  && ! grep -vE '^[[:space:]]*#' "$ROOT/dotfiles/bin/.local/bin/git-fetch-cwd" | grep -qE '\b(checkout|merge|stash|pull|rebase)\b'; then
+  && printf '%s\n' "$_fetch_repos_code" | grep -q 'fetch --prune --quiet origin' \
+  && printf '%s\n' "$_fetch_cwd_code" | grep -q 'GIT_FETCH_CWD_TTL_SEC' \
+  && printf '%s\n' "$_fetch_repos_code" | grep -q 'ConnectTimeout=10' \
+  && ! printf '%s\n' "$_fetch_repos_code" | grep -qE "$_forbidden" \
+  && ! printf '%s\n' "$_fetch_cwd_code" | grep -qE "$_forbidden" \
+  && ! printf '%s\n' "$_fetch_repos_code" | grep -qE 'dpl/|cnb/|goclaw'; then
   pass "git-fetch-repos is fetch-only with shell debounce hooks"
 else
   fail "git-fetch must stay fetch-only and hook both Mac zsh and Linux shells"
 fi
+unset _fetch_repos_code _fetch_cwd_code _forbidden
 remote_cli="$ROOT/dotfiles/bin/.local/bin/dpl-remote"
 mac_config="$(WAN6_IP=2001:db8::10 LAN_IP=192.0.2.10 bash "$remote_cli" mac-config)"
 shell_block="$(printf '%s\n' "$mac_config" | awk '/^Host dpl dpl-v6 dpl-ts$/{capture=1; next} /^Host dpl$/{capture=0} capture')"
