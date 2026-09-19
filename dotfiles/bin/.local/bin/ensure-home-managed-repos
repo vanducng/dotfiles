@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+# Ensure managed home repos live at ~/skills, ~/dotfiles, ~/firstmate on Mac and Linux.
+# skills/dotfiles are expected to already exist (bootstrap clones). firstmate is cloned if missing.
+# Also migrates a leftover clone from ~/git/personal or ~/work/git/personal into ~/firstmate.
+set -u
+
+PATH="${HOME}/.local/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:${PATH:-/usr/bin:/bin}"
+export PATH
+export GIT_SSH_COMMAND="${GIT_SSH_COMMAND:-ssh -o BatchMode=yes -o IdentitiesOnly=yes}"
+
+log() { printf 'ensure-home-managed-repos: %s\n' "$*" >&2; }
+
+is_git_repo() {
+  git -C "$1" rev-parse --is-inside-work-tree >/dev/null 2>&1
+}
+
+ensure_firstmate() {
+  local dest="${HOME}/firstmate"
+  local cand
+  if is_git_repo "$dest"; then
+    log "ok firstmate at ${dest}"
+    return 0
+  fi
+  for cand in "${HOME}/git/personal/firstmate" "${HOME}/work/git/personal/firstmate"; do
+    if is_git_repo "$cand"; then
+      log "migrate ${cand} -> ${dest}"
+      mv "$cand" "$dest"
+      log "ok firstmate at ${dest}"
+      return 0
+    fi
+  done
+  log "clone vanducng/firstmate -> ${dest}"
+  GIT_LFS_SKIP_SMUDGE=1 git clone git@github.com:vanducng/firstmate.git "$dest" \
+    || { log "FAIL clone firstmate"; return 1; }
+  log "ok firstmate at ${dest}"
+}
+
+warn_missing() {
+  local name="$1" dir="$2"
+  if is_git_repo "$dir"; then
+    log "ok ${name} at ${dir}"
+    return 0
+  fi
+  log "warn missing ${name} at ${dir} (bootstrap/clone separately)"
+}
+
+warn_missing skills "${HOME}/skills"
+warn_missing dotfiles "${HOME}/dotfiles"
+ensure_firstmate

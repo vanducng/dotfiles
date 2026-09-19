@@ -155,6 +155,13 @@ vault_sync() {
   fi
 }
 
+# Ensure ~/firstmate exists (Mac launchd + Linux timer both hit this path).
+if [[ -x "${HOME}/.local/bin/ensure-home-managed-repos" ]]; then
+  "${HOME}/.local/bin/ensure-home-managed-repos" >>"$LOG" 2>&1 || true
+elif [[ -x "$(dirname "$0")/ensure-home-managed-repos" ]]; then
+  "$(dirname "$0")/ensure-home-managed-repos" >>"$LOG" 2>&1 || true
+fi
+
 sync_main skills "${HOME}/skills"
 sync_main dotfiles "${HOME}/dotfiles"
 sync_main firstmate "${HOME}/firstmate"

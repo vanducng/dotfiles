@@ -12,7 +12,7 @@ STOW_FOLDERS=$(COMMON_STOW_FOLDERS) $(LINUX_STOW_EXTRAS)
 endif
 SHELL := /bin/bash
 
-.PHONY: help stow-folders stow-install stow-uninstall stow-status setup-herdr setup-tinycast test validate deps platform-test script-test linux-deps linux-desktop linux-homelab bootstrap-linux
+.PHONY: help stow-folders stow-install stow-uninstall stow-status setup-herdr setup-tinycast test validate deps platform-test script-test linux-deps linux-desktop linux-homelab bootstrap-linux ensure-home-repos
 
 help:
 	@echo "Dotfiles Management"
@@ -23,6 +23,7 @@ help:
 	@echo "  make stow-status     - Check installation status"
 	@echo "  make stow-<tool>     - Install specific tool"
 	@echo "  make unstow-<tool>   - Remove specific tool"
+	@echo "  make ensure-home-repos - Clone/migrate ~/firstmate (Mac + Linux)"
 	@echo "  make linux-deps      - User-space Linux CLI bootstrap (no sudo)"
 	@echo "  make linux-desktop   - Sway/Ghostty/waybar desktop (sudo optional)"
 	@echo "  make linux-homelab   - disks, never-sleep, ssh :2222, clone hot repos"
@@ -55,6 +56,10 @@ stow-install:
 			 stow --no-folding -t $(HOME) $$folder); \
 		fi; \
 	done
+	@$(MAKE) ensure-home-repos
+
+ensure-home-repos:
+	@./dotfiles/bin/.local/bin/ensure-home-managed-repos
 
 stow-uninstall stow-clean:
 	@for folder in $(STOW_FOLDERS); do \
