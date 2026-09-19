@@ -45,6 +45,15 @@ if grep -q 'insert -m -f' "$ovpn" && grep -q 'show -n' "$ovpn" && ! grep -q 'gop
 else
   fail "cnb-openvpn must gopass insert -m / show -n the ovpn (not cat)"
 fi
+mac_ovpn="$ROOT/dotfiles/bin/.local/bin/cnb-openvpn-mac"
+bash -n "$mac_ovpn" && pass "cnb-openvpn-mac parses" || fail "cnb-openvpn-mac syntax"
+if grep -qE '^(split|cmd_split)\(\)|case .*split' "$mac_ovpn" \
+  && grep -q '0/1' "$mac_ovpn" \
+  && grep -q 'redirect-gateway' "$mac_ovpn"; then
+  pass "cnb-openvpn-mac can strip redirect-gateway full-tunnel routes"
+else
+  fail "cnb-openvpn-mac must implement split against 0/1 full-tunnel"
+fi
 bash -n "$ROOT/dotfiles/bin/.local/bin/dpl-remote" && pass "dpl-remote parses" || fail "dpl-remote syntax"
 bash -n "$ROOT/dotfiles/homelab/.config/homelab/cdp-chrome" && pass "cdp-chrome parses" || fail "cdp-chrome syntax"
 bash -n "$ROOT/dotfiles/homelab/.config/homelab/install-chrome" && pass "install-chrome parses" || fail "install-chrome syntax"
