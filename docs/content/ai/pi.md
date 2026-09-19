@@ -24,6 +24,26 @@ poll seeds state and does not fire.
 `/standby` prints the same state. `/reload` after stow. Herdr pane titles still
 show a check when idle and a spinner when that pane is working.
 
+## Jev
+
+TypeSafe Jev is not a Pi session model. It does not generate text or call tools.
+The stowed `jev` extension registers a `jev` tool that posts to Vercel AI
+Gateway's evaluation endpoint (`typesafe-ai/jev`).
+
+Use it for boolean / choice / score decisions with probabilities: routing,
+gating, continue vs retry vs ask, rubric checks. Keep `/model` on a coding LLM.
+`/jev` prints the same reminder.
+
+Auth is the existing Gateway key (`/login vercel-ai-gateway` or
+`AI_GATEWAY_API_KEY`). Jev is paid-only on Gateway; a free-tier key returns 403
+until you top up credits.
+
+```bash
+make stow-pi
+```
+
+Then `/reload` (or restart pi).
+
 ## Home layout
 
 `~/.pi` itself must be a **real directory** under `$HOME`. Do not replace it with a
