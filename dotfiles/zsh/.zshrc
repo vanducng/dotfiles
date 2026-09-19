@@ -27,6 +27,11 @@ zsh-vi-mode
 source $ZSH/oh-my-zsh.sh
 source <(gopass completion zsh)
 
+# 1Password CLI. Unlock comes from the desktop app (Settings > Developer >
+# Integrate with 1Password CLI), never from `op signin`, so no OP_SESSION_* here.
+export OP_ACCOUNT=my
+command -v op >/dev/null && { eval "$(op completion zsh)"; compdef _op op; }
+
 function zvm_vi_yank() {
 	zvm_yank
 	echo ${CUTBUFFER} | pbcopy
@@ -74,7 +79,7 @@ LC_ALL=en_US.UTF-8
 # GoLang - go itself is managed by mise (see `mise activate` later in this file).
 # Do NOT hard-set GOROOT to /usr/local/go: it ran before mise activated and shadowed
 # mise's pinned go, producing a 1.24.3-tool / 1.23.4-stdlib "compile: version" mismatch.
-export GOPATH=/Users/vanducng/go
+export GOPATH="$HOME/go"
 export PATH=$GOPATH/bin:$PATH
 export PATH="$PATH:/usr/local/bin"
 export LDFLAGS="-L/usr/local/opt/zlib/lib"
@@ -273,19 +278,19 @@ eval "$(mise activate zsh)"
 
 
 # opencode
-export PATH=/Users/vanducng/.opencode/bin:$PATH
+export PATH="$HOME/.opencode/bin:$PATH"
 
 # Completion system already initialized above
 
 # npm global path
-export PATH="/Users/vanducng/.npm-global/bin:$PATH"
+export PATH="$HOME/.npm-global/bin:$PATH"
 
 # Added by Windsurf
-export PATH="/Users/vanducng/.codeium/windsurf/bin:$PATH"
+export PATH="$HOME/.codeium/windsurf/bin:$PATH"
 
 
 # bun completions
-[ -s "/Users/vanducng/.bun/_bun" ] && source "/Users/vanducng/.bun/_bun"
+[ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
 
 # bun
 export BUN_INSTALL="$HOME/.bun"
@@ -296,14 +301,14 @@ export PATH="$BUN_INSTALL/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
 
 # The next line updates PATH for the Google Cloud SDK.
-if [ -f '/Users/vanducng/google-cloud-sdk/path.zsh.inc' ]; then . '/Users/vanducng/google-cloud-sdk/path.zsh.inc'; fi
+if [ -f "$HOME/google-cloud-sdk/path.zsh.inc" ]; then . "$HOME/google-cloud-sdk/path.zsh.inc"; fi
 
 # The next line enables shell command completion for gcloud.
-if [ -f '/Users/vanducng/google-cloud-sdk/completion.zsh.inc' ]; then . '/Users/vanducng/google-cloud-sdk/completion.zsh.inc'; fi
+if [ -f "$HOME/google-cloud-sdk/completion.zsh.inc" ]; then . "$HOME/google-cloud-sdk/completion.zsh.inc"; fi
 
 
 # Added by Antigravity
-export PATH="/Users/vanducng/.antigravity/antigravity/bin:$PATH"
+export PATH="$HOME/.antigravity/antigravity/bin:$PATH"
 
 
 # Load Angular CLI autocompletion.
@@ -322,15 +327,15 @@ if command -v wt >/dev/null 2>&1; then eval "$(command wt config shell init zsh)
 
 
 # Herd injected PHP 8.4 configuration.
-export HERD_PHP_84_INI_SCAN_DIR="/Users/vanducng/Library/Application Support/Herd/config/php/84/"
+export HERD_PHP_84_INI_SCAN_DIR="$HOME/Library/Application Support/Herd/config/php/84/"
 
 
 # Herd injected PHP binary.
-export PATH="/Users/vanducng/Library/Application Support/Herd/bin/":$PATH
+export PATH="$HOME/Library/Application Support/Herd/bin/":$PATH
 
 
 # Herd injected PHP 8.5 configuration.
-export HERD_PHP_85_INI_SCAN_DIR="/Users/vanducng/Library/Application Support/Herd/config/php/85/"
+export HERD_PHP_85_INI_SCAN_DIR="$HOME/Library/Application Support/Herd/config/php/85/"
 
 . "$HOME/.bruin/env"
 
