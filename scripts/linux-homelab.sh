@@ -224,6 +224,9 @@ EOF
   if [[ -x "${HOME}/.local/opt/google-chrome/google-chrome" ]]; then
     systemctl --user enable --now homelab-cdp.service || true
   fi
+  if [[ -f "${HOME}/.config/systemd/user/git-sync-repos.timer" ]]; then
+    systemctl --user enable --now git-sync-repos.timer 2>/dev/null || true
+  fi
 }
 
 nm_static_hint() {
@@ -327,8 +330,15 @@ clone_recent() {
 }
 
 ensure_home_managed_repos() {
-  # Mirror skills/dotfiles: clone lives under $HOME and is synced by git-sync-repos.
-  clone_one git@github.com:vanducng/firstmate.git "${HOME}/firstmate"
+  local ensure="${HOME}/.local/bin/ensure-home-managed-repos"
+  if [[ ! -x "$ensure" ]]; then
+    ensure="${REPO_ROOT}/dotfiles/bin/.local/bin/ensure-home-managed-repos"
+  fi
+  if [[ -x "$ensure" ]]; then
+    bash "$ensure" || log "WARN: ensure-home-managed-repos failed"
+  else
+    log "WARN: ensure-home-managed-repos missing"
+  fi
 }
 
 stow_homelab() {
