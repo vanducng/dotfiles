@@ -27,6 +27,11 @@ zsh-vi-mode
 source $ZSH/oh-my-zsh.sh
 source <(gopass completion zsh)
 
+# 1Password CLI. Unlock comes from the desktop app (Settings > Developer >
+# Integrate with 1Password CLI), never from `op signin`, so no OP_SESSION_* here.
+export OP_ACCOUNT=my
+command -v op >/dev/null && { eval "$(op completion zsh)"; compdef _op op; }
+
 function zvm_vi_yank() {
 	zvm_yank
 	echo ${CUTBUFFER} | pbcopy
