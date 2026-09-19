@@ -84,8 +84,12 @@ fi
 _fetch_repos_code=$(grep -vE '^[[:space:]]*#' "$ROOT/dotfiles/bin/.local/bin/git-fetch-repos" || true)
 _fetch_cwd_code=$(grep -vE '^[[:space:]]*#' "$ROOT/dotfiles/bin/.local/bin/git-fetch-cwd" || true)
 _forbidden='(^|[^[:alnum:]_])(checkout|merge|stash|pull|rebase)([^[:alnum:]_]|$)'
-if grep -q '_vd_git_fetch_cwd' "$ROOT/dotfiles/zsh/.zshrc" \
-  && grep -A8 'uname -s.*" == Darwin' "$ROOT/dotfiles/zsh/.zshrc" | grep -q 'git-fetch-cwd' \
+if awk '
+  /uname -s.*" == Darwin/ { in_darwin=1; next }
+  in_darwin && /fi$/ { in_darwin=0 }
+  in_darwin && /git-fetch-cwd/ { found=1 }
+  END { exit found ? 0 : 1 }
+' "$ROOT/dotfiles/zsh/.zshrc" \
   && grep -q 'git-fetch-cwd' "$ROOT/dotfiles/shell-linux/.config/shell/linux.sh" \
   && printf '%s\n' "$_fetch_repos_code" | grep -q 'fetch --prune --quiet origin' \
   && printf '%s\n' "$_fetch_cwd_code" | grep -q 'GIT_FETCH_CWD_TTL_SEC' \

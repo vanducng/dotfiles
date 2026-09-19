@@ -7,7 +7,7 @@
 # Paths are absolute, ~/…, or relative to the first existing root in
 # GIT_FETCH_ROOTS (default: $HOME/git:$HOME/work/git).
 # No built-in defaults - empty/missing config is a no-op (public repo hygiene).
-set -u
+set -uo pipefail
 
 PATH="${HOME}/.local/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:${PATH:-/usr/bin:/bin}"
 export PATH
