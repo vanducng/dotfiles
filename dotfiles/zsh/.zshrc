@@ -258,14 +258,16 @@ auto_activate_venv() {
   fi
 }
 
-# Debounced fetch --prune on enter (never merge). See git-fetch-cwd.
-_vd_git_fetch_cwd() {
-  command -v git-fetch-cwd >/dev/null 2>&1 || return 0
-  (git-fetch-cwd --quiet &) >/dev/null 2>&1
-}
-
 # Hook to run on directory change
-chpwd_functions+=(auto_activate_venv _vd_git_fetch_cwd)
+chpwd_functions+=(auto_activate_venv)
+# Debounced fetch --prune on enter (Darwin only). Linux registers via linux.sh.
+if [[ "$(uname -s)" == Darwin ]]; then
+  _vd_git_fetch_cwd() {
+    command -v git-fetch-cwd >/dev/null 2>&1 || return 0
+    (git-fetch-cwd --quiet &) >/dev/null 2>&1
+  }
+  chpwd_functions+=(_vd_git_fetch_cwd)
+fi
 
 clear-terminal() { tput reset; zle redisplay; }
 zle -N clear-terminal

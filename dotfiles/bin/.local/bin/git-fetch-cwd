@@ -13,14 +13,13 @@ PATH="${HOME}/.local/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:${PATH:-
 export PATH
 export GIT_SSH_COMMAND="${GIT_SSH_COMMAND:-ssh -o BatchMode=yes -o IdentitiesOnly=yes}"
 
-QUIET=0
 DIR="${PWD:-.}"
 TTL="${GIT_FETCH_CWD_TTL_SEC:-900}"
 STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/git-fetch-cwd"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --quiet|-q) QUIET=1; shift ;;
+    --quiet|-q) shift ;; # accepted for hook callers; fetch is always silent
     -h|--help)
       printf 'usage: git-fetch-cwd [--quiet] [dir]\n'
       exit 0
@@ -56,10 +55,10 @@ if [[ -f "$STAMP" ]]; then
 fi
 
 # Claim the slot before fetch so parallel hooks do not stampede.
-printf '%s\n' "$NOW" >"$STAMP"
+tmp="${STAMP}.$$"
+printf '%s\n' "$NOW" >"$tmp" && mv -f "$tmp" "$STAMP"
 
 if git -C "$ROOT" fetch --prune --quiet origin >/dev/null 2>&1; then
-  (( QUIET )) || true
   exit 0
 fi
 # Soft failure: clear stamp so a later enter retries soon.

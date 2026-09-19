@@ -81,11 +81,12 @@ else
   fail "firstmate must be ensured/synced at \$HOME/firstmate on Mac and Linux"
 fi
 if grep -q 'git-fetch-cwd' "$ROOT/dotfiles/zsh/.zshrc" \
+  && grep -q 'uname -s.*Darwin' "$ROOT/dotfiles/zsh/.zshrc" \
   && grep -q 'git-fetch-cwd' "$ROOT/dotfiles/shell-linux/.config/shell/linux.sh" \
-  && grep -q 'fetch --all --prune' "$ROOT/dotfiles/bin/.local/bin/git-fetch-repos" \
+  && grep -q 'fetch --prune --quiet origin' "$ROOT/dotfiles/bin/.local/bin/git-fetch-repos" \
   && grep -q 'GIT_FETCH_CWD_TTL_SEC' "$ROOT/dotfiles/bin/.local/bin/git-fetch-cwd" \
-  && ! grep -vE '^[[:space:]]*#' "$ROOT/dotfiles/bin/.local/bin/git-fetch-repos" | grep -qE 'checkout|merge |stash|pull --rebase' \
-  && ! grep -vE '^[[:space:]]*#' "$ROOT/dotfiles/bin/.local/bin/git-fetch-cwd" | grep -qE 'checkout|merge |stash|pull --rebase'; then
+  && ! grep -vE '^[[:space:]]*#' "$ROOT/dotfiles/bin/.local/bin/git-fetch-repos" | grep -qE '\b(checkout|merge|stash|pull|rebase)\b' \
+  && ! grep -vE '^[[:space:]]*#' "$ROOT/dotfiles/bin/.local/bin/git-fetch-cwd" | grep -qE '\b(checkout|merge|stash|pull|rebase)\b'; then
   pass "git-fetch-repos is fetch-only with shell debounce hooks"
 else
   fail "git-fetch must stay fetch-only and hook both Mac zsh and Linux shells"

@@ -71,16 +71,22 @@ ssh() {
 }
 
 # Debounced fetch --prune on directory enter (never merge). See git-fetch-cwd.
+# Owned here for Linux; Darwin registers from .zshrc only (this file is not sourced there).
 _vd_git_fetch_cwd() {
   command -v git-fetch-cwd >/dev/null 2>&1 || return 0
   (git-fetch-cwd --quiet &) >/dev/null 2>&1
 }
 if [ -n "${ZSH_VERSION:-}" ]; then
-  if typeset -f add-zsh-hook >/dev/null 2>&1 || autoload -Uz add-zsh-hook 2>/dev/null; then
-    add-zsh-hook chpwd _vd_git_fetch_cwd 2>/dev/null || true
-  else
-    chpwd_functions+=(_vd_git_fetch_cwd)
-  fi
+  case " ${chpwd_functions[*]:-} " in
+    *" _vd_git_fetch_cwd "*) ;;
+    *)
+      if typeset -f add-zsh-hook >/dev/null 2>&1 || autoload -Uz add-zsh-hook 2>/dev/null; then
+        add-zsh-hook chpwd _vd_git_fetch_cwd 2>/dev/null || true
+      else
+        chpwd_functions+=(_vd_git_fetch_cwd)
+      fi
+      ;;
+  esac
 else
   _vd_git_fetch_cwd_bash() {
     [ "${_VD_GIT_FETCH_LAST_PWD:-}" = "${PWD:-}" ] && return 0
