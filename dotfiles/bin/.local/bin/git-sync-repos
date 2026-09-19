@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Keep listed clones on origin/main (or origin/master).
 # macOS: launchd StartInterval. Linux: systemd --user timer.
-# skills/dotfiles/firstmate: never discard WIP (stash, update main, apply).
+# skills/dotfiles/firstmate: live under $HOME; never discard WIP (stash, update main, apply).
 # vault: commit WIP on main, then pull --rebase and push.
 set -u
 
@@ -157,6 +157,6 @@ vault_sync() {
 
 sync_main skills "${HOME}/skills"
 sync_main dotfiles "${HOME}/dotfiles"
-sync_main firstmate "$(personal_repo firstmate)"
+sync_main firstmate "${HOME}/firstmate"
 vault_sync
 exit 0
