@@ -53,12 +53,17 @@ bash -n "$ROOT/dotfiles/homelab/.config/homelab/install-tailscale" && pass "inst
 [[ -f "$ROOT/dotfiles/homelab/.config/systemd/user/homelab-tailscale.service" ]] && pass "homelab-tailscale.service exists" || fail "missing homelab-tailscale.service"
 [[ -f "$ROOT/dotfiles/homelab/.config/homelab/REMOTE.md" ]] && pass "REMOTE.md exists" || fail "missing REMOTE.md"
 bash -n "$ROOT/dotfiles/bin/.local/bin/git-sync-repos" && pass "git-sync-repos parses" || fail "git-sync-repos syntax"
-if grep -q 'clone_one git@github.com:vanducng/firstmate.git "${HOME}/firstmate"' "$ROOT/scripts/linux-homelab.sh" \
-  && grep -q 'sync_main firstmate "${HOME}/firstmate"' "$ROOT/dotfiles/bin/.local/bin/git-sync-repos" \
+bash -n "$ROOT/dotfiles/bin/.local/bin/ensure-home-managed-repos" && pass "ensure-home-managed-repos parses" || fail "ensure-home-managed-repos syntax"
+if grep -q 'sync_main firstmate "${HOME}/firstmate"' "$ROOT/dotfiles/bin/.local/bin/git-sync-repos" \
+  && grep -q 'ensure-home-managed-repos' "$ROOT/dotfiles/bin/.local/bin/git-sync-repos" \
+  && grep -q 'HOME}/firstmate' "$ROOT/dotfiles/bin/.local/bin/ensure-home-managed-repos" \
+  && grep -q 'ensure-home-managed-repos' "$ROOT/scripts/linux-homelab.sh" \
+  && grep -q 'git-sync-repos.timer' "$ROOT/scripts/linux-homelab.sh" \
+  && grep -q 'ensure-home-repos' "$ROOT/Makefile" \
   && ! grep -q 'personal/firstmate' "$ROOT/scripts/linux-homelab.sh"; then
-  pass "firstmate lives under HOME like skills/dotfiles"
+  pass "firstmate managed under HOME on Mac and Linux"
 else
-  fail "firstmate must clone and sync at \$HOME/firstmate like skills/dotfiles"
+  fail "firstmate must be ensured/synced at \$HOME/firstmate on Mac and Linux"
 fi
 remote_cli="$ROOT/dotfiles/bin/.local/bin/dpl-remote"
 mac_config="$(WAN6_IP=2001:db8::10 LAN_IP=192.0.2.10 bash "$remote_cli" mac-config)"

@@ -17,6 +17,15 @@ Git is `~/work/git/{cnb,crashchat,ab-spectrum,bhcoe,dpl,nlb,personal}`. Worktree
 
 Managed home repos (same layout as Mac): `~/dotfiles`, `~/skills`, `~/firstmate`. Hourly `git-sync-repos` keeps them on `origin/main` without discarding WIP. Vault stays at `~/git/personal/vault`.
 
+On either host, from this repo:
+
+```bash
+make ensure-home-repos   # clone/migrate ~/firstmate
+make stow-install        # also runs ensure-home-repos after stow
+```
+
+Mac runs the sync via launchd `dev.vanducng.git-sync-repos`; Linux via `git-sync-repos.timer`. Both call `ensure-home-managed-repos` first.
+
 ## User-space (no sudo)
 
 ```bash
