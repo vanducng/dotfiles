@@ -100,6 +100,22 @@ jq -e '
 	| select(.id == "gpt-5.6-sol")
 	| .contextWindow == 272000 and .maxTokens == 65536
 ' "$agent_dir/models.json" >/dev/null
+jq -e '
+	.providers.cliproxyapi.models[]
+	| select(.id == "glm-5.3")
+	| .contextWindow == 1000000 and .maxTokens == 131072
+	  and .thinkingLevelMap.low == "low"
+	  and .thinkingLevelMap.high == "high"
+	  and .thinkingLevelMap.max == "max"
+' "$agent_dir/models.json" >/dev/null
+jq -e '
+	.providers.cliproxyapi.models[]
+	| select(.id == "muse-spark-1.3-contributor")
+	| .contextWindow == 1048576 and .maxTokens == 16384
+	  and .thinkingLevelMap.minimal == "minimal"
+	  and .thinkingLevelMap.xhigh == "xhigh"
+	  and .thinkingLevelMap.max == "max"
+' "$agent_dir/models.json" >/dev/null
 node --check "$agent_dir/extensions/terminal-status-title.js"
 node --check "$agent_dir/extensions/standby-status.js"
 AGENT_DIR="$agent_dir" node --input-type=module <<'EOF'
