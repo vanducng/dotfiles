@@ -15,6 +15,8 @@ Host `dpl` is a homelab box: never-sleep, auto-login, coding-agent handoff, extr
 
 Git is `~/work/git/{cnb,crashchat,ab-spectrum,bhcoe,dpl,nlb,personal}`. Worktrees sit next to the clone (`.worktrees/`). Docker images/volumes/json-logs: `~/work/docker/data` after the sudo root script.
 
+Managed home repos (same layout as Mac): `~/dotfiles`, `~/skills`, `~/firstmate`. Hourly `git-sync-repos` keeps them on `origin/main` without discarding WIP. Vault stays at `~/git/personal/vault`.
+
 ## User-space (no sudo)
 
 ```bash

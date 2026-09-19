@@ -53,13 +53,12 @@ bash -n "$ROOT/dotfiles/homelab/.config/homelab/install-tailscale" && pass "inst
 [[ -f "$ROOT/dotfiles/homelab/.config/systemd/user/homelab-tailscale.service" ]] && pass "homelab-tailscale.service exists" || fail "missing homelab-tailscale.service"
 [[ -f "$ROOT/dotfiles/homelab/.config/homelab/REMOTE.md" ]] && pass "REMOTE.md exists" || fail "missing REMOTE.md"
 bash -n "$ROOT/dotfiles/bin/.local/bin/git-sync-repos" && pass "git-sync-repos parses" || fail "git-sync-repos syntax"
-if grep -q 'vanducng/firstmate.git' "$ROOT/scripts/linux-homelab.sh" \
-  && grep -q 'personal/firstmate' "$ROOT/scripts/linux-homelab.sh" \
-  && grep -q 'sync_main firstmate' "$ROOT/dotfiles/bin/.local/bin/git-sync-repos" \
-  && grep -q 'personal_repo firstmate' "$ROOT/dotfiles/bin/.local/bin/git-sync-repos"; then
-  pass "homelab clones and syncs firstmate like skills/dotfiles"
+if grep -q 'clone_one git@github.com:vanducng/firstmate.git "${HOME}/firstmate"' "$ROOT/scripts/linux-homelab.sh" \
+  && grep -q 'sync_main firstmate "${HOME}/firstmate"' "$ROOT/dotfiles/bin/.local/bin/git-sync-repos" \
+  && ! grep -q 'personal/firstmate' "$ROOT/scripts/linux-homelab.sh"; then
+  pass "firstmate lives under HOME like skills/dotfiles"
 else
-  fail "homelab must clone firstmate into personal/ and sync it via git-sync-repos"
+  fail "firstmate must clone and sync at \$HOME/firstmate like skills/dotfiles"
 fi
 remote_cli="$ROOT/dotfiles/bin/.local/bin/dpl-remote"
 mac_config="$(WAN6_IP=2001:db8::10 LAN_IP=192.0.2.10 bash "$remote_cli" mac-config)"

@@ -248,7 +248,8 @@ clone_one() {
 }
 
 clone_recent() {
-  # org/path pairs: last 30 days as of 2026-08-26, minus already-home clones (dotfiles, skills).
+  # org/path pairs: last 30 days as of 2026-08-26, minus already-home clones
+  # (dotfiles, skills, firstmate live under $HOME and sync via git-sync-repos).
   local root="${GIT_ROOT}"
   local jobs=0
   clone_jobs() { # url dest
@@ -260,8 +261,7 @@ clone_recent() {
     fi
   }
 
-  # personal (skip dotfiles/skills — live in $HOME; firstmate syncs via git-sync-repos)
-  clone_jobs git@github.com:vanducng/firstmate.git         "$root/personal/firstmate"
+  # personal (skip dotfiles/skills/firstmate — live in $HOME)
   clone_jobs git@github.com:vanducng/miu-cr.git            "$root/personal/miu-cr"
   clone_jobs git@github.com:vanducng/pass.git               "$root/personal/pass"
   clone_jobs git@github.com:vanducng/vd-cli.git             "$root/personal/vd-cli"
@@ -326,6 +326,11 @@ clone_recent() {
   wait
 }
 
+ensure_home_managed_repos() {
+  # Mirror skills/dotfiles: clone lives under $HOME and is synced by git-sync-repos.
+  clone_one git@github.com:vanducng/firstmate.git "${HOME}/firstmate"
+}
+
 stow_homelab() {
   if have stow; then
     (cd "${REPO_ROOT}/dotfiles" && stow --no-folding -D -t "${HOME}" homelab 2>/dev/null || true
@@ -360,6 +365,7 @@ main() {
   enable_units
   nm_static_hint
   if [[ "${SKIP_CLONE:-0}" != 1 ]]; then
+    ensure_home_managed_repos
     clone_recent
   else
     log "SKIP_CLONE=1 — not cloning"
