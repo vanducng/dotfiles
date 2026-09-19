@@ -69,6 +69,7 @@ All application shortcuts use the `meh` key (ctrl+alt+shift) for consistency and
 ### Productivity & AI Tools
 | Shortcut | Application | Description |
 |----------|-------------|-------------|
+| `meh + 1` | 1Password | Password manager |
 | `meh + v` | Grok Bot | Grok desktop app on space 16 |
 | `meh + c` | Claude | AI assistant on display 2, space 16 |
 | `meh + l` | Perplexity | AI search engine |
