@@ -139,6 +139,30 @@ install_user_sshd() {
   chmod 600 "${HOME}/.ssh/environment"
 }
 
+configure_cli_proxy_env() {
+  local key
+  if ! have gopass || ! key="$(gopass show -o personal/saas/cli-proxy/code-01-api-key 2>/dev/null)" \
+    || [[ -z "$key" ]]; then
+    log "WARN: CLIProxyAPI key unavailable from gopass"
+    return 0
+  fi
+  mkdir -p "${HOME}/.ssh" "${HOME}/.config/environment.d" "${HOME}/.config/systemd/user/herdr-server.service.d"
+  chmod 700 "${HOME}/.ssh"
+  touch "${HOME}/.ssh/environment"
+  sed -i '/^CLI_PROXY_API_KEY=/d' "${HOME}/.ssh/environment"
+  printf 'CLI_PROXY_API_KEY=%s\n' "$key" >>"${HOME}/.ssh/environment"
+  printf 'CLI_PROXY_API_KEY=%s\n' "$key" >"${HOME}/.config/environment.d/cli-proxy.conf"
+  chmod 600 "${HOME}/.ssh/environment" "${HOME}/.config/environment.d/cli-proxy.conf"
+  cat >"${HOME}/.config/systemd/user/herdr-server.service.d/cli-proxy.conf" <<'EOF'
+[Service]
+EnvironmentFile=-%h/.config/environment.d/cli-proxy.conf
+EOF
+  if have systemctl; then
+    systemctl --user daemon-reload || true
+  fi
+  unset key
+}
+
 install_compose() {
   if have docker-compose || docker compose version >/dev/null 2>&1; then
     log "compose present"
@@ -328,6 +352,7 @@ main() {
   link_home
   never_sleep
   install_user_sshd
+  configure_cli_proxy_env
   install_compose
   install_lazygit_link
   install_remote

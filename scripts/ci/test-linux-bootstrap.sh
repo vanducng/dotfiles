@@ -78,6 +78,16 @@ if grep -q '^PermitUserEnvironment yes$' "$sshd_config" \
 else
   fail "user SSH PATH must be generated from HOME at install time"
 fi
+if grep -q 'gopass show -o personal/saas/cli-proxy/code-01-api-key' "$ROOT/scripts/linux-homelab.sh" \
+  && grep -q "sed -i '/^CLI_PROXY_API_KEY=/d'" "$ROOT/scripts/linux-homelab.sh" \
+  && grep -q 'CLI_PROXY_API_KEY=' "$ROOT/scripts/linux-homelab.sh" \
+  && grep -q 'EnvironmentFile=-%h/.config/environment.d/cli-proxy.conf' "$ROOT/scripts/linux-homelab.sh" \
+  && grep -q 'systemctl --user daemon-reload' "$ROOT/scripts/linux-homelab.sh" \
+  && grep -q 'chmod 700 "${HOME}/.ssh"' "$ROOT/scripts/linux-homelab.sh"; then
+  pass "homelab Pi receives CLIProxyAPI credentials"
+else
+  fail "homelab Pi must receive CLIProxyAPI credentials"
+fi
 if grep -qE 'serve --bg --tcp' "$ROOT/dotfiles/bin/.local/bin/dpl-remote" \
   && grep -qi 'not using Funnel' "$ROOT/dotfiles/bin/.local/bin/dpl-remote"; then
   pass "internet path is Tailscale serve, not Funnel"
