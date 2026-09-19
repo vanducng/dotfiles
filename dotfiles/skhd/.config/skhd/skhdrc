@@ -54,7 +54,7 @@ meh - y : yabai -m space --focus 12; open "/Applications/WhatsApp.app"
 meh - z : open "/Applications/Zen Browser.app"
 meh - n : yabai -m space --focus 8; open "/Applications/Obsidian.app"
 meh - o : yabai -m space --focus 6; open -a "Preview"
-# meh - 1 : open "/Applications/Firefox.app"
+meh - 1 : open "/Applications/1Password.app"
 # meh - 2 : open "/Applications/DBeaver.app"
 
 # -----------------------------------------------------------------------------
