@@ -1,0 +1,214 @@
+#!/usr/bin/env bash
+# CNB OpenVPN on macOS (OpenVPN Connect) - keep work routes, drop full-tunnel.
+#
+# pfSense pushes `redirect-gateway def1` (0/1 + 128/1 via the CNB tun). That
+# sends Cursor/Herdr/agent traffic through the VPN. When the tunnel flaps or
+# blackholes internet, `agent` fails with "Failed to reach the Cursor API".
+# Linux `cnb-openvpn` already ignores redirect-gateway; this is the Mac side.
+#
+#   cnb-openvpn-mac status
+#   cnb-openvpn-mac split          # drop 0/1 + 128/1 (keeps 10.255.248/24)
+#   cnb-openvpn-mac patch-profiles # add pull-filter to CNB .ovpn copies
+#   cnb-openvpn-mac doctor         # status + Cursor API reachability
+set -euo pipefail
+
+PROFILES_DIR="${HOME}/Library/Application Support/OpenVPN Connect/profiles"
+CNB_GW_HINT="10.255.248"
+PULL_FILTER_RG='pull-filter ignore "redirect-gateway"'
+PULL_FILTER_DNS='pull-filter ignore "block-outside-dns"'
+
+usage() {
+  cat <<EOF
+CNB OpenVPN on macOS - split-tunnel helper (OpenVPN Connect).
+
+  cnb-openvpn-mac status
+  cnb-openvpn-mac split           remove full-tunnel routes (needs admin once)
+  cnb-openvpn-mac patch-profiles  add pull-filter lines to CNB .ovpn profiles
+  cnb-openvpn-mac doctor          status + https://api2.cursor.sh check
+
+After OpenVPN Connect reconnects, run \`split\` again if 0/1 routes return,
+or re-import a patched profile so Connect stops pulling redirect-gateway.
+EOF
+}
+
+have_cnb_tun() {
+  ifconfig 2>/dev/null | grep -q "inet ${CNB_GW_HINT}"
+}
+
+full_tunnel_gateways() {
+  # Print unique gateways that own 0/1 or 128/1 (OpenVPN def1).
+  netstat -rn -f inet 2>/dev/null | awk '
+    $1 == "0/1" || $1 == "128.0/1" { print $2 }
+  ' | sort -u
+}
+
+cmd_status() {
+  local gws gw
+  gws="$(full_tunnel_gateways || true)"
+  if have_cnb_tun; then
+    echo "cnb-openvpn-mac: CNB tun present (looking for ${CNB_GW_HINT}.x)"
+  else
+    echo "cnb-openvpn-mac: no CNB tun (${CNB_GW_HINT}.x) found"
+  fi
+  if [[ -z "${gws}" ]]; then
+    echo "cnb-openvpn-mac: no full-tunnel routes (0/1, 128/1) - internet uses default route"
+    return 0
+  fi
+  echo "cnb-openvpn-mac: FULL TUNNEL active - public IPv4 via VPN:"
+  while IFS= read -r gw; do
+    [[ -z "$gw" ]] && continue
+    netstat -rn -f inet | awk -v g="$gw" '
+      ($1 == "0/1" || $1 == "128.0/1") && $2 == g {
+        print "  " $1 " -> " $2 " (" $NF ")"
+      }'
+  done <<<"$gws"
+  echo "cnb-openvpn-mac: fix with: cnb-openvpn-mac split"
+  return 1
+}
+
+_run_root() {
+  local script="$1"
+  local tmp
+  if sudo -n true 2>/dev/null; then
+    sudo -n /bin/bash -c "$script"
+    return
+  fi
+  # GUI password prompt (works from agent/IDE without a TTY).
+  if command -v osascript >/dev/null 2>&1; then
+    tmp="$(mktemp /tmp/cnb-openvpn-mac.XXXXXX)"
+    printf '%s\n' "$script" >"$tmp"
+    chmod 700 "$tmp"
+    if osascript -e "do shell script \"/bin/bash ${tmp}\" with administrator privileges" >/dev/null; then
+      rm -f "$tmp"
+      return 0
+    fi
+    rm -f "$tmp"
+    return 1
+  fi
+  sudo /bin/bash -c "$script"
+}
+
+cmd_split() {
+  local gws gw script=""
+  gws="$(full_tunnel_gateways || true)"
+  if [[ -z "${gws}" ]]; then
+    echo "cnb-openvpn-mac: nothing to split (no 0/1 or 128/1)"
+    cmd_status || true
+    return 0
+  fi
+  while IFS= read -r gw; do
+    [[ -z "$gw" ]] && continue
+    script+="route -n delete -net 0.0.0.0/1 ${gw} 2>/dev/null || true; "
+    script+="route -n delete -net 128.0.0.0/1 ${gw} 2>/dev/null || true; "
+  done <<<"$gws"
+  echo "cnb-openvpn-mac: removing full-tunnel routes (keeping CNB LAN)..."
+  _run_root "$script"
+  if full_tunnel_gateways | grep -q .; then
+    echo "cnb-openvpn-mac: full-tunnel routes still present" >&2
+    cmd_status || true
+    return 1
+  fi
+  echo "cnb-openvpn-mac: split tunnel OK"
+  route -n get default 2>/dev/null | awk '/gateway:|interface:/{print}'
+  return 0
+}
+
+_is_cnb_profile() {
+  local f="$1"
+  grep -qE 'CNB_VPN|143\.59\.6\.146|74\.199\.124\.166|207\.98\.177\.126|Career Now Brands|CNB-VPN' "$f" 2>/dev/null
+}
+
+cmd_patch_profiles() {
+  local f patched=0 skipped=0
+  [[ -d "$PROFILES_DIR" ]] || {
+    echo "cnb-openvpn-mac: missing profiles dir: $PROFILES_DIR" >&2
+    return 1
+  }
+  shopt -s nullglob
+  for f in "$PROFILES_DIR"/*.ovpn; do
+    if ! _is_cnb_profile "$f"; then
+      continue
+    fi
+    if grep -qF "$PULL_FILTER_RG" "$f"; then
+      echo "cnb-openvpn-mac: already patched $(basename "$f")"
+      skipped=$((skipped + 1))
+      continue
+    fi
+    # Insert after the first `client` line when present; else prepend.
+    if grep -q '^client$' "$f"; then
+      awk -v rg="$PULL_FILTER_RG" -v dns="$PULL_FILTER_DNS" '
+        BEGIN { done=0 }
+        /^client$/ && !done {
+          print
+          print rg
+          print dns
+          done=1
+          next
+        }
+        { print }
+        END {
+          if (!done) {
+            print rg
+            print dns
+          }
+        }
+      ' "$f" >"${f}.tmp" && mv "${f}.tmp" "$f"
+    else
+      {
+        echo "$PULL_FILTER_RG"
+        echo "$PULL_FILTER_DNS"
+        cat "$f"
+      } >"${f}.tmp" && mv "${f}.tmp" "$f"
+    fi
+    echo "cnb-openvpn-mac: patched $(basename "$f")"
+    patched=$((patched + 1))
+  done
+  echo "cnb-openvpn-mac: patch-profiles done (patched=$patched already=$skipped)"
+  echo "cnb-openvpn-mac: reconnect the CNB profile in OpenVPN Connect, then run: cnb-openvpn-mac split"
+}
+
+cmd_doctor() {
+  local rc=0
+  cmd_status || rc=1
+  if command -v curl >/dev/null 2>&1; then
+    if curl -fsS -o /dev/null --connect-timeout 5 https://api2.cursor.sh/; then
+      echo "cnb-openvpn-mac: api2.cursor.sh OK"
+    else
+      echo "cnb-openvpn-mac: api2.cursor.sh FAILED" >&2
+      rc=1
+    fi
+  fi
+  if command -v agent >/dev/null 2>&1; then
+    # Prefer Cursor agent over other `agent` shims (e.g. grok).
+    local agent_bin
+    agent_bin="$(command -v agent)"
+    if [[ -x "${HOME}/.local/bin/agent" ]]; then
+      agent_bin="${HOME}/.local/bin/agent"
+    fi
+    if "$agent_bin" status >/dev/null 2>&1; then
+      echo "cnb-openvpn-mac: cursor agent status OK"
+    else
+      echo "cnb-openvpn-mac: cursor agent status FAILED ($agent_bin)" >&2
+      rc=1
+    fi
+  fi
+  return "$rc"
+}
+
+main() {
+  local cmd="${1:-}"
+  case "$cmd" in
+    status) cmd_status ;;
+    split) cmd_split ;;
+    patch-profiles) cmd_patch_profiles ;;
+    doctor) cmd_doctor ;;
+    -h|--help|help|"") usage; [[ -n "$cmd" ]] || return 0 ;;
+    *)
+      echo "cnb-openvpn-mac: unknown command: $cmd" >&2
+      usage >&2
+      return 2
+      ;;
+  esac
+}
+
+main "$@"
