@@ -4,6 +4,11 @@ set -euo pipefail
 brew install obsidian
 brew install fzf
 brew install zsh-syntax-highlighting
+
+# Desktop app is required for CLI biometric unlock; without it `op signin`
+# sessions die after 30 minutes of inactivity and cannot be extended.
+brew install --cask 1password
+brew install --cask 1password-cli
 brew install firefox
 brew install skhd
 brew install istat-menus
