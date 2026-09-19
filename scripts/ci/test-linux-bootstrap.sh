@@ -82,7 +82,8 @@ if grep -q 'gopass show -o personal/saas/cli-proxy/code-01-api-key' "$ROOT/scrip
   && grep -q "sed -i '/^CLI_PROXY_API_KEY=/d'" "$ROOT/scripts/linux-homelab.sh" \
   && grep -q 'CLI_PROXY_API_KEY=' "$ROOT/scripts/linux-homelab.sh" \
   && grep -q 'EnvironmentFile=-%h/.config/environment.d/cli-proxy.conf' "$ROOT/scripts/linux-homelab.sh" \
-  && grep -q 'systemctl --user daemon-reload' "$ROOT/scripts/linux-homelab.sh"; then
+  && grep -q 'systemctl --user daemon-reload' "$ROOT/scripts/linux-homelab.sh" \
+  && grep -q 'chmod 700 "${HOME}/.ssh"' "$ROOT/scripts/linux-homelab.sh"; then
   pass "homelab Pi receives CLIProxyAPI credentials"
 else
   fail "homelab Pi must receive CLIProxyAPI credentials"
