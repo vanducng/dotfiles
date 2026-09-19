@@ -24,7 +24,8 @@
     "git:github.com/vanducng/pi-subagents@aa75b3353836f7868898e3bd58234d21eaff1463",
     "npm:@calesennett/pi-codex-fast",
     "npm:pi-mcp-adapter",
-    "git:github.com/DietrichGebert/ponytail@v4.9.0"
+    "git:github.com/DietrichGebert/ponytail@v4.9.0",
+    "npm:@superwhisper/pi"
   ],
   "skills": [
     "-skills/backend-development",
