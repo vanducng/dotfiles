@@ -217,7 +217,7 @@ open_window() {
   kitty="$(kitty_bin)"
   detach_exec "$kitty" --single-instance --instance-group sysmon --wait-for-single-instance-window-close=no \
     --config NONE --title "$title" \
-    --override macos_quit_when_last_window_closed=no --override confirm_os_window_close=0 --override font_size=13 \
+    --override "macos_quit_when_last_window_closed no" --override "confirm_os_window_close 0" --override "font_size 13" \
     -- "$@"
 }
 
