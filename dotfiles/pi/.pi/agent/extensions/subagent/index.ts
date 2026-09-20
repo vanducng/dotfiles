@@ -221,8 +221,8 @@ export default function (pi: ExtensionAPI) {
 				result.error || result.output || "(no output)",
 			].join("\n\n")).join("\n\n---\n\n");
 			const failures = results.filter((result) => result.error).length;
-			if (failures) throw new Error(`${failures}/${results.length} subagents failed\n\n${text}`);
-			return { content: [{ type: "text", text }], details: { results } };
+			const summary = failures ? `FAILURE: ${failures}/${results.length} subagents failed\n\n${text}` : text;
+			return { content: [{ type: "text", text: summary }], details: { results } };
 		},
 	});
 }

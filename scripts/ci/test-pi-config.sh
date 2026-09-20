@@ -23,7 +23,7 @@ jq -e '
 jq -e '
 	.packages
 	| index("npm:pi-web-access")
-	  and (map(select(test("pi-subagents|pi-subagent"))) | length == 0)
+	  and (map(select(test("pi-subagent"))) | length == 0)
 	  and index("npm:pi-mcp-adapter")
 ' "$agent_dir/settings.json" >/dev/null
 jq -e '

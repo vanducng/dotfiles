@@ -11,8 +11,10 @@ pass() { echo "OK: $*"; }
 snapshot() {
   python3 -c 'import os, sys
 path = sys.argv[1]
-if os.path.islink(path) or os.path.exists(path):
-    print(os.path.realpath(path), os.readlink(path) if os.path.islink(path) else "")
+if os.path.islink(path):
+    print(os.path.realpath(path), os.readlink(path))
+elif os.path.exists(path):
+    print(os.path.realpath(path), os.lstat(path).st_ino)
 else:
     print("missing")
 ' "$1"
