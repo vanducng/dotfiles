@@ -62,7 +62,7 @@ yabai -m rule --add app=".*"                          sub-layer=normal
 # Pin apps to specific spaces (by index). 17 spaces: D1=1-8, D2=9-17.
 # 1 Ghostty  2 LibreOffice  3 Dia  4 Chrome+Devin  5 Cursor  6 PDF  7 Alter  8 Obsidian
 # 9 Slack  10 Telegram  11 Zalo  12 Discord+WhatsApp  13 Arc  14 Cliq  15 kitty  16 AI  17 ego
-yabai -m rule --add app="^Ghostty$" title="^(sysmon-|notes-vault)"  manage=off
+yabai -m rule --add app="^Ghostty$" title="^(sysmon-|notes-vault)"  manage=off sticky=on
 yabai -m rule --add app="^Ghostty$" title!="^(sysmon-|notes-vault)" space=1
 yabai -m rule --add app="^LibreOffice$"               space=2
 yabai -m rule --add app="^Dia$"                       space=3
@@ -81,7 +81,7 @@ yabai -m rule --add app="^Discord$"                   space=12
 yabai -m rule --add app="WhatsApp$"                   space=12
 yabai -m rule --add app="^Arc$"                       space=13
 yabai -m rule --add app="^Cliq$"                      space=14
-yabai -m rule --add app="^kitty$" title="^(sysmon-|notes-vault)"    manage=off
+yabai -m rule --add app="^kitty$" title="^(sysmon-|notes-vault)"    manage=off sticky=on
 yabai -m rule --add app="^kitty$" title!="^(sysmon-|notes-vault)"   space=15
 yabai -m rule --add app="^Codex$"                     space=16
 yabai -m rule --add app="^ChatGPT$"                   space=16
