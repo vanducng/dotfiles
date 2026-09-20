@@ -17,6 +17,7 @@ grep -q 'single-instance' "$SCRIPT" || fail "sysmon should reuse one kitty proce
 grep -q 'instance-group sysmon' "$SCRIPT" || fail "sysmon should isolate its kitty group"
 grep -q 'find_window_ids' "$SCRIPT" || fail "sysmon should locate an existing overlay by title"
 grep -q 'os.setsid' "$SCRIPT" || fail "sysmon should detach kitty from the launcher process group"
+grep -q 'confirm_os_window_close=0' "$SCRIPT" || fail "sysmon should close overlays without a kitty confirm"
 pass "sysmon returns without polling yabai"
 grep -q 'System: Processes' "$SETUP" || fail "setup missing processes command"
 grep -q 'System: Disk' "$SETUP" || fail "setup missing disk command"
