@@ -42,6 +42,11 @@ for command_id, (name, verb) in required.items():
         raise SystemExit(f"{name} must run without confirmation or rc load")
 PY
 pass "custom-commands.json"
+if grep -q '7c8e1a2b-4d3f-4a91-9b6e-0f2c8d1a5e70' "$SETUP"; then
+  fail "tinycast-setup.sh hardcodes the Switch Audio id"
+fi
+grep -q 'c["name"]=="Switch Audio"' "$SETUP" || grep -q "c\[\"name\"\]==\"Switch Audio\"" "$SETUP" || fail "setup does not derive PICK_ID from the catalog"
+pass "setup derives pick id"
 
 workdir="$(mktemp -d "${TMPDIR:-/tmp}/audio-switch-test.XXXXXX")"
 trap 'rm -rf -- "$workdir"' EXIT

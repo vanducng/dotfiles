@@ -37,7 +37,12 @@ resolve_bin() {
     command -v "$name"
     return 0
   fi
-  echo "audio-switch: $name not found; brew install switchaudio-osx blueutil" >&2
+  local pkg="$name"
+  case "$name" in
+    SwitchAudioSource) pkg="switchaudio-osx" ;;
+    blueutil) pkg="blueutil" ;;
+  esac
+  echo "audio-switch: $name not found; brew install $pkg" >&2
   return 1
 }
 
@@ -178,6 +183,7 @@ set_device() {
 
 sync_input() {
   local output_name="$1"
+  local outputs="${2:-}"
   local inputs built_out mic
   inputs="$(devices_of input)" || return 0
   if [[ -z "$inputs" ]]; then
@@ -187,7 +193,10 @@ sync_input() {
     set_device input "$output_name"
     return 0
   fi
-  built_out="$(devices_of output | built_in_device output || true)"
+  if [[ -z "$outputs" ]]; then
+    outputs="$(devices_of output)"
+  fi
+  built_out="$(printf '%s\n' "$outputs" | built_in_device output || true)"
   if [[ -n "$built_out" && "$output_name" == "$built_out" ]]; then
     mic="$(printf '%s\n' "$inputs" | built_in_device input || true)"
     if [[ -n "$mic" ]]; then
@@ -240,8 +249,10 @@ cmd_list() {
 
 apply_output() {
   local name="$1"
+  local outputs
+  outputs="$(devices_of output)" || return 1
   set_device output "$name"
-  sync_input "$name" || true
+  sync_input "$name" "$outputs" || true
   notify "Audio output" "$name"
   printf 'output: %s\n' "$name"
 }

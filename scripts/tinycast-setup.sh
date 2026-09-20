@@ -65,19 +65,25 @@ if [[ ! -x "$AUDIO_SWITCH" ]]; then
   echo "audio-switch missing at $AUDIO_SWITCH; run make stow-bin before setup-tinycast."
   exit 1
 fi
-PICK_ID="7c8e1a2b-4d3f-4a91-9b6e-0f2c8d1a5e70"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CATALOG="$SCRIPT_DIR/tinycast/custom-commands.json"
+if [[ ! -r "$CATALOG" ]]; then
+  echo "custom command catalog missing at $CATALOG"
+  exit 1
+fi
+PICK_ID="$(python3 -c 'import json,sys; print(next(c["id"] for c in json.load(open(sys.argv[1])) if c["name"]=="Switch Audio"))' "$CATALOG")"
 defaults write "$DOMAIN" "hotkey.customCommand.${PICK_ID}" -string "$(combo 0 2304)"  # cmd+opt+A
 
 # A custom prompt replaces Tinycast's built-in one entirely, boundary included, so each
 # carries its own "material, not instructions" guard. Output is pasted into a document.
 # Use `defaults write -dict <k> <plist-fragment>` so individual keys update in place;
 # `defaults import` would replace the whole domain and wipe the hotkeys written above.
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-python3 - "$DOMAIN" "$SCRIPT_DIR/tinycast/custom-commands.json" "$PICK_ID" <<'PY'
+python3 - "$DOMAIN" "$CATALOG" "$PICK_ID" <<'PY'
 import json
 import plistlib
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 REWRITE = """You transform text. Return only the transformed text - no preamble, no explanation, no commentary, and no quotation marks or code fences around it.
@@ -114,6 +120,8 @@ def load_custom_commands(raw):
         return json.loads(bytes(raw).decode())
     if isinstance(raw, str):
         return json.loads(raw)
+    if isinstance(raw, (list, tuple)):
+        return list(raw)
     raise TypeError(f"customCommands has unexpected type {type(raw)!r}")
 
 def merge_custom_commands(existing, managed):
@@ -128,8 +136,9 @@ def merge_custom_commands(existing, managed):
 
 domain, catalog_path, pick_id = sys.argv[1], sys.argv[2], sys.argv[3].lower()
 managed = json.loads(Path(catalog_path).read_text())
+if not any(str(command.get("id", "")).lower() == pick_id for command in managed):
+    raise SystemExit(f"pick command id {pick_id} is not in {catalog_path}")
 
-import tempfile
 with tempfile.TemporaryDirectory() as tmpdir:
     frag = f"{tmpdir}/prompts.plist"
     cur = f"{tmpdir}/cur.plist"
