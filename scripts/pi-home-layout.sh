@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Idempotent pi home layout for Linux and macOS.
 # ~/.pi stays a real directory under $HOME so stow relative links and
-# pi-subagents schedule roots resolve inside the home directory.
+# Pi package paths resolve inside the home directory.
 # A wholesale ~/.pi symlink is unwrapped; only npm/sessions/git may live
 # on a runtime store. Never creates a store unless one already exists or
 # PI_STORE is set.

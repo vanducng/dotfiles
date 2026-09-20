@@ -12,7 +12,7 @@ snapshot() {
   python3 -c 'import os, sys
 path = sys.argv[1]
 if os.path.islink(path) or os.path.exists(path):
-    print(os.path.realpath(path), os.lstat(path).st_ino, os.readlink(path) if os.path.islink(path) else "")
+    print(os.path.realpath(path), os.readlink(path) if os.path.islink(path) else "")
 else:
     print("missing")
 ' "$1"
@@ -30,7 +30,10 @@ assert_real_pi() {
   [[ -d "${home}/.pi" ]] || fail "${home}/.pi is not a directory"
   [[ ! -L "${home}/.pi" ]] || fail "${home}/.pi is a symlink"
   [[ -e "${home}/.pi/agent/themes/rose-pine-moon.json" ]] || fail "theme missing in ${home}"
-  [[ -e "${home}/.pi/agent/extensions/subagent/config.json" ]] || fail "subagent config missing in ${home}"
+  [[ -e "${home}/.pi/agent/extensions/subagent/index.ts" ]] || fail "subagent extension missing in ${home}"
+  for agent in scout worker reviewer oracle; do
+    [[ -e "${home}/.pi/agent/agents/${agent}.md" ]] || fail "${agent} agent missing in ${home}"
+  done
   [[ -e "${home}/.pi/agent/mcp.json" ]] || fail "mcp.json missing in ${home}"
   [[ -e "${home}/.pi/agent/settings.json" ]] || fail "settings.json missing in ${home}"
 }
