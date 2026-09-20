@@ -1,3 +1,6 @@
+# Tinycast runs custom commands as /bin/zsh -lc; skip the full login shell.
+[[ -n ${TINYCAST:-} ]] && return
+
 ##
 # Your previous $HOME/.zprofile file was backed up as $HOME/.zprofile.macports-saved_2022-08-02_at_01:17:23
 ##
