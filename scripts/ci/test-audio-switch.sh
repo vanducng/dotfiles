@@ -170,6 +170,7 @@ chmod +x "$workdir/blueutil"
 export SWITCH_AUDIO_BIN="$workdir/SwitchAudioSource"
 export BLUEUTIL_BIN="$workdir/blueutil"
 export AUDIO_SWITCH_STATE="$workdir/state"
+export AUDIO_SWITCH_HIDDEN="$workdir/hidden"
 mkdir -p "$AUDIO_SWITCH_STATE"
 export PATH="$workdir:$PATH"
 
@@ -216,7 +217,35 @@ printf '%s\n' "$out" | grep -q 'disconnected: AirPods Pro' || fail "disconnect: 
 grep -q $'11-22-33-44-55-66\tAirPods Pro\t0' "$AUDIO_SWITCH_STATE/bt" || fail "disconnect did not drop device"
 pass "disconnect"
 
-if grep -R -nE '/Users/|/home/[a-z]' "$SCRIPT" "$CATALOG" "$SETUP" >/dev/null; then
+printf '%s\n' "Microsoft Teams Audio" "Jump Desktop Audio" "Jump Desktop Microphone" "Kuycon P32U" "Samson Q9U" >"$AUDIO_SWITCH_STATE/extra_outputs"
+out="$("$SCRIPT" list)"
+printf '%s\n' "$out" | awk '/^Output$/,/^Hidden$/' | grep -q 'Kuycon' && fail "list output still shows Kuycon: $out"
+printf '%s\n' "$out" | awk '/^Hidden$/,/^Input$/' | grep -q 'Kuycon P32U' || fail "list hidden missing Kuycon: $out"
+printf '%s\n' "$out" | awk '/^Hidden$/,/^Input$/' | grep -q 'Microsoft Teams Audio' || fail "list hidden missing Teams: $out"
+printf '%s\n' "$out" | awk '/^Hidden$/,/^Input$/' | grep -q 'Jump Desktop Audio' || fail "list hidden missing Jump: $out"
+pass "default hide virtual outputs"
+
+out="$("$SCRIPT" hide samson)"
+printf '%s\n' "$out" | grep -q 'hidden: samson' || fail "hide: $out"
+grep -q 'samson' "$AUDIO_SWITCH_HIDDEN" || fail "hide did not persist"
+out="$("$SCRIPT" list)"
+printf '%s\n' "$out" | awk '/^Hidden$/,/^Input$/' | grep -q 'Samson Q9U' || fail "hide samson: $out"
+pass "hide"
+
+out="$("$SCRIPT" unhide kuycon)"
+printf '%s\n' "$out" | grep -q 'unhidden: kuycon' || fail "unhide: $out"
+out="$("$SCRIPT" list)"
+printf '%s\n' "$out" | awk '/^Output$/,/^Hidden$/' | grep -q 'Kuycon P32U' || fail "unhide kuycon: $out"
+pass "unhide"
+
+HIDDEN_FILE="$ROOT/dotfiles/bin/.config/audio-switch/hidden"
+[[ -f "$HIDDEN_FILE" ]] || fail "stowed hidden list missing"
+grep -q 'kuycon' "$HIDDEN_FILE" || fail "stowed hidden list missing kuycon"
+grep -q 'microsoft teams' "$HIDDEN_FILE" || fail "stowed hidden list missing teams"
+grep -q 'jump desktop' "$HIDDEN_FILE" || fail "stowed hidden list missing jump"
+pass "stowed hidden defaults"
+
+if grep -R -nE '/Users/|/home/[a-z]' "$SCRIPT" "$CATALOG" "$SETUP" "$HIDDEN_FILE" >/dev/null; then
   fail "personal home path leaked into managed files"
 fi
 pass "no personal home paths"
