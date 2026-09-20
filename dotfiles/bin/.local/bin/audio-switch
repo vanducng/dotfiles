@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 set -euo pipefail
 
 usage() {
@@ -105,24 +105,6 @@ default_clause = ""
 if default in items:
     default_clause = " default items {" + q(default) + "}"
 title_q = q(title)
-raiser = """
-tell application "System Events"
-    repeat 40 times
-        repeat with procName in {"System Events", "osascript", "OSAScript"}
-            try
-                tell process (procName as text)
-                    if exists (window %s) then
-                        set frontmost to true
-                        perform action "AXRaise" of window %s
-                        return
-                    end if
-                end tell
-            end try
-        end repeat
-        delay 0.05
-    end repeat
-end tell
-""" % (title_q, title_q)
 script = """
 tell application "System Events"
     activate
@@ -135,18 +117,7 @@ tell application "System Events"
     end if
 end tell
 """ % (", ".join(q(item) for item in items), title_q, q(prompt), default_clause)
-raiser_proc = subprocess.Popen(
-    ["osascript"],
-    input=raiser,
-    text=True,
-    stdout=subprocess.DEVNULL,
-    stderr=subprocess.DEVNULL,
-)
-try:
-    result = subprocess.run(["osascript"], input=script, text=True, capture_output=True)
-finally:
-    raiser_proc.terminate()
-    raiser_proc.wait()
+result = subprocess.run(["osascript"], input=script, text=True, capture_output=True)
 if result.returncode != 0:
     sys.stderr.write(result.stderr)
     raise SystemExit(result.returncode)
@@ -325,24 +296,31 @@ picker_choices() {
 import json
 import subprocess
 import sys
+from pathlib import Path
 
 blueutil = sys.argv[1]
+paired_json = sys.argv[2] if len(sys.argv) > 2 else ""
 outputs = [line for line in sys.stdin.read().splitlines() if line]
 folded = [name.casefold() for name in outputs]
 for name in outputs:
     print(name)
-if not blueutil:
+raw = ""
+if paired_json:
+    raw = Path(paired_json).read_text()
+elif blueutil:
+    proc = subprocess.run(
+        [blueutil, "--format", "json", "--paired"],
+        text=True,
+        capture_output=True,
+    )
+    if proc.returncode != 0:
+        sys.stderr.write(proc.stderr)
+        raise SystemExit(proc.returncode)
+    raw = proc.stdout
+else:
     raise SystemExit(0)
-proc = subprocess.run(
-    [blueutil, "--format", "json", "--paired"],
-    text=True,
-    capture_output=True,
-)
-if proc.returncode != 0:
-    sys.stderr.write(proc.stderr)
-    raise SystemExit(proc.returncode)
 try:
-    devices = json.loads(proc.stdout or "[]")
+    devices = json.loads(raw or "[]")
 except json.JSONDecodeError as exc:
     raise SystemExit(f"audio-switch: blueutil json: {exc}") from exc
 keywords = (
@@ -365,7 +343,7 @@ for device in devices:
         continue
     seen.add(folded_name)
     print(name)
-' "${1:-}"
+' "${1:-}" "${2:-}"
 }
 
 bluetooth_address_for() {
@@ -401,7 +379,7 @@ wait_for_output() {
       printf '%s\n' "$name"
       return 0
     fi
-    sleep 0.4
+    sleep 0.2
   done
   return 1
 }
@@ -432,14 +410,22 @@ apply_selected() {
 
 cmd_pick() {
   require_switch_audio
-  local current selected outputs
-  outputs="$(devices_of output)"
-  current="$(current_of output)"
+  local current selected outputs work
+  work="$(mktemp -d "${TMPDIR:-/tmp}/audio-switch.XXXXXX")"
+  devices_of output >"$work/out" &
+  current_of output >"$work/cur" &
   if BLUEUTIL="$(resolve_bin blueutil "${BLUEUTIL_BIN:-}" 2>/dev/null)"; then
-    selected="$(printf '%s\n' "$outputs" | picker_choices "$BLUEUTIL" | choose_from_list "Audio output" "Current: $current" "$current")"
+    "$BLUEUTIL" --format json --paired >"$work/bt" 2>"$work/bt.err" &
+  fi
+  wait
+  outputs="$(cat "$work/out")"
+  current="$(cat "$work/cur")"
+  if [[ -s "$work/bt" ]]; then
+    selected="$(printf '%s\n' "$outputs" | picker_choices "$BLUEUTIL" "$work/bt" | choose_from_list "Audio output" "Current: $current" "$current")"
   else
     selected="$(printf '%s\n' "$outputs" | choose_from_list "Audio output" "Current: $current" "$current")"
   fi
+  rm -rf "$work"
   if [[ -z "$selected" ]]; then
     return 0
   fi

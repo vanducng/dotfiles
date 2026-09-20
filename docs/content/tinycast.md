@@ -21,7 +21,7 @@ make setup-tinycast
 | `cmd+shift+N` | Notes |
 | `cmd+shift+R` | Rewrite selected text |
 | `cmd+shift+T` | Summarize selected text |
-| `cmd+opt+A` | Switch audio output |
+| `cmd+opt+A` | Switch audio output (skips the full login zsh) |
 
 Move Alter off `cmd+shift+R` (use `cmd+shift+D`) or rewrite loses the race on launch.
 
