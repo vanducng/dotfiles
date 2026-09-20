@@ -57,7 +57,7 @@ Needs `switchaudio-osx` and `blueutil` from `scripts/macos-deps.sh`. Switching o
 
 ## System monitor
 
-`cmd+opt+S` opens `btop`. `cmd+opt+U` opens `dua i` on `$HOME` (not `cmd+opt+D`, which is macOS Dock hide). Both keep running in tmux after you close the window, so graphs and the disk tree stay warm. Overlays share one kitty process and stay sticky, so a second press focuses the existing window instead of switching spaces or spawning another. A new window returns immediately; kitty is not waited on.
+`cmd+opt+S` opens `btop`. `cmd+opt+U` opens `dua i` on `$HOME` (not `cmd+opt+D`, which is macOS Dock hide). Both keep running in tmux after you close the window, so graphs and the disk tree stay warm. Closing the overlay does not ask to confirm tmux. Overlays share one kitty process and stay sticky, so a second press focuses the existing window instead of switching spaces or spawning another. A new window returns immediately; kitty is not waited on.
 
 `cmd+opt+N` opens the Obsidian vault in Neovim (`$OBSIDIAN_VAULT` or `$HOME/git/personal/vault`). Same persist-in-tmux behavior. `cmd+shift+N` stays Tinycast's own notes.
 
