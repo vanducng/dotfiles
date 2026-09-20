@@ -101,18 +101,52 @@ title, prompt, default = sys.argv[1], sys.argv[2], sys.argv[3]
 items = [line for line in sys.stdin.read().splitlines() if line]
 if not items:
     raise SystemExit("audio-switch: nothing to choose")
-script = "set deviceList to {" + ", ".join(q(item) for item in items) + "}\n"
-script += "set dialogResult to choose from list deviceList with title " + q(title) + " with prompt " + q(prompt)
+default_clause = ""
 if default in items:
-    script += " default items {" + q(default) + "}"
-script += """
-if dialogResult is false then
-    return ""
-else
-    return item 1 of dialogResult
-end if
-"""
-result = subprocess.run(["osascript"], input=script, text=True, capture_output=True)
+    default_clause = " default items {" + q(default) + "}"
+title_q = q(title)
+raiser = """
+tell application "System Events"
+    repeat 40 times
+        repeat with procName in {"System Events", "osascript", "OSAScript"}
+            try
+                tell process (procName as text)
+                    if exists (window %s) then
+                        set frontmost to true
+                        perform action "AXRaise" of window %s
+                        return
+                    end if
+                end tell
+            end try
+        end repeat
+        delay 0.05
+    end repeat
+end tell
+""" % (title_q, title_q)
+script = """
+tell application "System Events"
+    activate
+    set deviceList to {%s}
+    set dialogResult to choose from list deviceList with title %s with prompt %s%s
+    if dialogResult is false then
+        return ""
+    else
+        return item 1 of dialogResult
+    end if
+end tell
+""" % (", ".join(q(item) for item in items), title_q, q(prompt), default_clause)
+raiser_proc = subprocess.Popen(
+    ["osascript"],
+    input=raiser,
+    text=True,
+    stdout=subprocess.DEVNULL,
+    stderr=subprocess.DEVNULL,
+)
+try:
+    result = subprocess.run(["osascript"], input=script, text=True, capture_output=True)
+finally:
+    raiser_proc.terminate()
+    raiser_proc.wait()
 if result.returncode != 0:
     sys.stderr.write(result.stderr)
     raise SystemExit(result.returncode)

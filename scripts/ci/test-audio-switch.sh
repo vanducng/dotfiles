@@ -13,6 +13,9 @@ pass() { echo "OK: $*"; }
 bash -n "$SCRIPT" || fail "audio-switch syntax"
 bash -n "$SETUP" || fail "tinycast-setup.sh syntax"
 pass "scripts parse"
+grep -q 'tell application "System Events"' "$SCRIPT" || fail "picker does not host the list in System Events"
+grep -q 'activate' "$SCRIPT" || fail "picker does not activate System Events for focus"
+pass "picker activates System Events"
 
 command -v python3 >/dev/null 2>&1 || fail "python3 is required"
 python3 -m json.tool "$CATALOG" >/dev/null || fail "custom-commands.json is invalid"
