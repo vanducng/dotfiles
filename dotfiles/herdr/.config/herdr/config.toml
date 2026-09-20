@@ -34,7 +34,7 @@ split_horizontal = "prefix+v"
 [[keys.command]]
 key = "prefix+0"
 type = "shell"
-command = "herdr-home"
+command = "/bin/bash \"$HOME/.local/bin/herdr-home\""
 description = "focus first pane on this machine"
 
 [[keys.command]]
@@ -52,7 +52,7 @@ description = "focus agent by address"
 [[keys.command]]
 key = "prefix+,"
 type = "shell"
-command = "herdr-pane-rename"
+command = "/bin/bash \"$HOME/.local/bin/herdr-pane-rename\""
 description = "rename pane from session context"
 
 [[keys.command]]
@@ -64,7 +64,7 @@ description = "open current pull request or pull request list"
 [[keys.command]]
 key = "prefix+shift+i"
 type = "shell"
-command = "herdr-tab-renumber"
+command = "/bin/bash \"$HOME/.local/bin/herdr-tab-renumber\""
 description = "renumber tabs 1-based"
 
 [[keys.command]]
