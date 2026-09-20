@@ -13,22 +13,58 @@
 set -euo pipefail
 
 PROFILES_DIR="${HOME}/Library/Application Support/OpenVPN Connect/profiles"
+OPENVPN_CONNECT_BIN="${OPENVPN_CONNECT_BIN:-/Applications/OpenVPN Connect/OpenVPN Connect.app/Contents/MacOS/OpenVPN Connect}"
 CNB_GW_HINT="10.255.248"
 PULL_FILTER_RG='pull-filter ignore "redirect-gateway"'
 PULL_FILTER_DNS='pull-filter ignore "block-outside-dns"'
 
 usage() {
   cat <<EOF
-CNB OpenVPN on macOS - split-tunnel helper (OpenVPN Connect).
+CNB OpenVPN on macOS - OpenVPN Connect helper.
 
+  cnb-openvpn-mac profiles
+  cnb-openvpn-mac start <profile-id>
+  cnb-openvpn-mac stop
   cnb-openvpn-mac status
   cnb-openvpn-mac split           remove full-tunnel routes (needs admin once)
   cnb-openvpn-mac patch-profiles  add pull-filter lines to CNB .ovpn profiles
   cnb-openvpn-mac doctor          status + https://api2.cursor.sh check
 
+  stop/disconnect/disable disconnect the active VPN. OpenVPN Connect may show its GUI.
+
 After OpenVPN Connect reconnects, run \`split\` again if 0/1 routes return,
 or re-import a patched profile so Connect stops pulling redirect-gateway.
 EOF
+}
+
+openvpn_connect() {
+  [[ -x "$OPENVPN_CONNECT_BIN" ]] || {
+    echo "cnb-openvpn-mac: OpenVPN Connect not found: $OPENVPN_CONNECT_BIN" >&2
+    return 1
+  }
+  "$OPENVPN_CONNECT_BIN" "$@"
+}
+
+cmd_profiles() {
+  openvpn_connect --list-profiles
+}
+
+cmd_connect() {
+  local profile_id="${1:-}"
+  if [[ -z "$profile_id" || "$#" -ne 1 ]]; then
+    echo "usage: cnb-openvpn-mac start <profile-id>" >&2
+    cmd_profiles
+    return 2
+  fi
+  openvpn_connect "--connect-shortcut=${profile_id}"
+}
+
+cmd_disconnect() {
+  [[ "$#" -eq 0 ]] || {
+    echo "usage: cnb-openvpn-mac stop" >&2
+    return 2
+  }
+  openvpn_connect --disconnect-shortcut
 }
 
 have_cnb_tun() {
@@ -198,6 +234,9 @@ cmd_doctor() {
 main() {
   local cmd="${1:-}"
   case "$cmd" in
+    profiles|list) cmd_profiles ;;
+    start|connect) shift; cmd_connect "$@" ;;
+    stop|disconnect|disable) shift; cmd_disconnect "$@" ;;
     status) cmd_status ;;
     split) cmd_split ;;
     patch-profiles) cmd_patch_profiles ;;
