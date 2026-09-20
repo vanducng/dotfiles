@@ -32,9 +32,8 @@ symlink onto `~/work/store/pi` (or any other volume). That breaks two things:
 1. Stow writes relative links for the theme and extensions. Those resolve from the
    real path of `~/.pi`, so a store symlink makes `rose-pine-moon` dangle and pi
    falls back to the dark theme.
-2. Running `pi` from `$HOME` makes pi-subagents treat `~/.pi/subagents/schedules` as
-   the project schedule root. If that path realpaths outside `$HOME`, the extension
-   crashes on startup (`Project schedule root ... resolves outside the real project`).
+2. Pi package and session paths are resolved below the real agent directory. Moving
+   only runtime-heavy children keeps those paths stable across machines.
 
 `make stow-install` and `make stow-pi` run `scripts/pi-home-layout.sh` on Linux and
 macOS. The script is idempotent: a fresh home gets a real `~/.pi`, a wholesale
@@ -50,10 +49,6 @@ make stow-pi
 PI_STORE="$HOME/work/store/pi" make stow-pi
 ```
 
-Schedules are stored under `~/.local/share/pi-subagents/schedules` via the stowed
-`extensions/subagent/config.json` (`scheduledRuns.storeRoot`), so a relocated `~/.pi`
-cannot take the extension down even if someone runs `pi` from `$HOME`.
-
 ## Install
 
 ```bash
@@ -66,11 +61,17 @@ Re-running the installs is idempotent and keeps the settings entries unchanged:
 
 ```bash
 pi install npm:pi-web-access
-pi install npm:pi-subagents
 pi install npm:pi-mcp-adapter
 pi install npm:pi-langfuse
 # ...one per entry in the stowed "packages" list
 ```
+
+The subagent extension is owned directly in
+`dotfiles/pi/.pi/agent/extensions/subagent/index.ts`; no package install is needed.
+Its four agent prompts live in `dotfiles/pi/.pi/agent/agents/`. It intentionally keeps
+only fresh foreground runs, one call or up to four parallel tasks, and the
+`scout`/`worker`/`reviewer`/`oracle` roles. Dependent stages are sequenced by the parent.
+Run `/reload` after changing the extension or an agent prompt.
 
 ## Structured MCP
 
