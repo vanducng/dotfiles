@@ -5,12 +5,15 @@ usage() {
   cat <<'EOF'
 Switch macOS audio output or disconnect a Bluetooth device.
 
-  audio-switch pick         choose a live output or a paired Bluetooth headset
-  audio-switch speakers     jump to built-in Mac speakers
-  audio-switch set <query>  fuzzy-match an output name
-  audio-switch disconnect   choose a connected Bluetooth device to drop
-  audio-switch list         print outputs, inputs, and Bluetooth
-  audio-switch status       print the current output and input
+  audio-switch pick            choose a live output or a paired Bluetooth headset
+  audio-switch speakers        jump to built-in Mac speakers
+  audio-switch set <query>     fuzzy-match an output name
+  audio-switch disconnect      choose a connected Bluetooth device to drop
+  audio-switch hide <query>... omit matching outputs from the picker
+  audio-switch unhide <query>... show them again
+  audio-switch hidden          print hide patterns and matching devices
+  audio-switch list            print outputs, inputs, and Bluetooth
+  audio-switch status          print the current output and input
 
 Requires switchaudio-osx. Bluetooth actions also need blueutil.
 EOF
@@ -81,6 +84,92 @@ devices_of() {
 current_of() {
   local kind="$1"
   "$SWITCH_AUDIO" -c -t "$kind" -f human
+}
+
+hidden_config_path() {
+  printf '%s\n' "${AUDIO_SWITCH_HIDDEN:-${XDG_CONFIG_HOME:-$HOME/.config}/audio-switch/hidden}"
+}
+
+default_hidden_patterns() {
+  printf '%s\n' 'kuycon' 'microsoft teams' 'jump desktop'
+}
+
+read_hidden_patterns() {
+  local file
+  file="$(hidden_config_path)"
+  if [[ -f "$file" ]]; then
+    python3 -c '
+import sys
+from pathlib import Path
+
+for line in Path(sys.argv[1]).read_text().splitlines():
+    text = line.strip()
+    if text and not text.startswith("#"):
+        print(text)
+' "$file"
+  else
+    default_hidden_patterns
+  fi
+}
+
+write_hidden_patterns() {
+  local file dir
+  file="$(hidden_config_path)"
+  dir="$(dirname "$file")"
+  mkdir -p "$dir"
+  python3 -c '
+import sys
+from pathlib import Path
+
+seen = set()
+lines = []
+for raw in sys.stdin.read().splitlines():
+    text = raw.strip()
+    if not text:
+        continue
+    key = text.casefold()
+    if key in seen:
+        continue
+    seen.add(key)
+    lines.append(text)
+Path(sys.argv[1]).write_text("\n".join(lines) + ("\n" if lines else ""))
+' "$file"
+}
+
+filter_hidden() {
+  local mode="${1:-visible}"
+  AUDIO_SWITCH_HIDE_PATTERNS="$(read_hidden_patterns)" python3 -c '
+import os
+import sys
+
+patterns = [
+    line.casefold()
+    for line in os.environ.get("AUDIO_SWITCH_HIDE_PATTERNS", "").splitlines()
+    if line.strip() and not line.lstrip().startswith("#")
+]
+want_hidden = sys.argv[1] == "hidden"
+for line in sys.stdin:
+    name = line.rstrip("\n")
+    if not name:
+        continue
+    hit = any(pattern in name.casefold() for pattern in patterns)
+    if hit == want_hidden:
+        print(name)
+' "$mode"
+}
+
+matching_hidden_devices() {
+  local pattern="$1" names="${2:-}"
+  AUDIO_SWITCH_HIDE_PATTERNS="$pattern" python3 -c '
+import os
+import sys
+
+pattern = os.environ.get("AUDIO_SWITCH_HIDE_PATTERNS", "").casefold()
+for line in sys.stdin:
+    name = line.rstrip("\n")
+    if name and pattern and pattern in name.casefold():
+        print(name)
+' <<<"$names"
 }
 
 choose_from_list() {
@@ -216,29 +305,33 @@ cmd_status() {
   printf 'input: %s\n' "$(current_of input)"
 }
 
+print_named_list() {
+  local current="$1"
+  while IFS= read -r name; do
+    [[ -z "$name" ]] && continue
+    if [[ "$name" == "$current" ]]; then
+      printf '  * %s\n' "$name"
+    else
+      printf '    %s\n' "$name"
+    fi
+  done
+}
+
 cmd_list() {
   require_switch_audio
-  local current_out current_in
+  local current_out current_in outputs hidden
   current_out="$(current_of output)"
   current_in="$(current_of input)"
+  outputs="$(devices_of output)"
   echo "Output"
-  while IFS= read -r name; do
-    [[ -z "$name" ]] && continue
-    if [[ "$name" == "$current_out" ]]; then
-      printf '  * %s\n' "$name"
-    else
-      printf '    %s\n' "$name"
-    fi
-  done < <(devices_of output)
+  print_named_list "$current_out" < <(printf '%s\n' "$outputs" | filter_hidden)
+  hidden="$(printf '%s\n' "$outputs" | filter_hidden hidden)"
+  if [[ -n "$hidden" ]]; then
+    echo "Hidden"
+    print_named_list "$current_out" <<<"$hidden"
+  fi
   echo "Input"
-  while IFS= read -r name; do
-    [[ -z "$name" ]] && continue
-    if [[ "$name" == "$current_in" ]]; then
-      printf '  * %s\n' "$name"
-    else
-      printf '    %s\n' "$name"
-    fi
-  done < <(devices_of input)
+  print_named_list "$current_in" < <(devices_of input)
   if BLUEUTIL="$(resolve_bin blueutil "${BLUEUTIL_BIN:-}" 2>/dev/null)"; then
     echo "Bluetooth"
     while IFS=$'\t' read -r address name connected; do
@@ -248,7 +341,7 @@ cmd_list() {
       else
         printf '    %s (%s)\n' "$name" "$address"
       fi
-    done < <(devices_of output | bluetooth_audio_rows 0)
+    done < <(printf '%s\n' "$outputs" | bluetooth_audio_rows 0)
   fi
 }
 
@@ -410,7 +503,7 @@ apply_selected() {
 
 cmd_pick() {
   require_switch_audio
-  local current selected outputs work
+  local current selected outputs visible work
   work="$(mktemp -d "${TMPDIR:-/tmp}/audio-switch.XXXXXX")"
   devices_of output >"$work/out" &
   current_of output >"$work/cur" &
@@ -420,16 +513,105 @@ cmd_pick() {
   wait
   outputs="$(cat "$work/out")"
   current="$(cat "$work/cur")"
+  visible="$(printf '%s\n' "$outputs" | filter_hidden)"
   if [[ -s "$work/bt" ]]; then
-    selected="$(printf '%s\n' "$outputs" | picker_choices "$BLUEUTIL" "$work/bt" | choose_from_list "Audio output" "Current: $current" "$current")"
+    selected="$(printf '%s\n' "$visible" | picker_choices "$BLUEUTIL" "$work/bt" | choose_from_list "Audio output" "Current: $current" "$current")"
   else
-    selected="$(printf '%s\n' "$outputs" | choose_from_list "Audio output" "Current: $current" "$current")"
+    selected="$(printf '%s\n' "$visible" | choose_from_list "Audio output" "Current: $current" "$current")"
   fi
   rm -rf "$work"
   if [[ -z "$selected" ]]; then
     return 0
   fi
   apply_selected "$selected"
+}
+
+cmd_hidden() {
+  local pattern outputs matches
+  if [[ -x "${SWITCH_AUDIO_BIN:-}" ]] || SWITCH_AUDIO="$(resolve_bin SwitchAudioSource "${SWITCH_AUDIO_BIN:-}" 2>/dev/null)"; then
+    require_switch_audio
+    outputs="$(devices_of output || true)"
+  else
+    outputs=""
+  fi
+  while IFS= read -r pattern; do
+    [[ -z "$pattern" ]] && continue
+    printf '%s\n' "$pattern"
+    matches="$(matching_hidden_devices "$pattern" "$outputs")"
+    if [[ -n "$matches" ]]; then
+      printf '%s\n' "$matches" | sed 's/^/  /'
+    fi
+  done < <(read_hidden_patterns)
+}
+
+cmd_hide() {
+  if [[ $# -eq 0 ]]; then
+    echo "usage: audio-switch hide <query>..." >&2
+    return 2
+  fi
+  local query pattern outputs matches
+  if [[ -x "${SWITCH_AUDIO_BIN:-}" ]] || SWITCH_AUDIO="$(resolve_bin SwitchAudioSource "${SWITCH_AUDIO_BIN:-}" 2>/dev/null)"; then
+    require_switch_audio
+    outputs="$(devices_of output || true)"
+  else
+    outputs=""
+  fi
+  {
+    read_hidden_patterns
+    for query in "$@"; do
+      pattern="$(python3 -c 'import sys; print(sys.argv[1].strip())' "$query")"
+      [[ -z "$pattern" ]] && continue
+      printf '%s\n' "$pattern"
+    done
+  } | write_hidden_patterns
+  for query in "$@"; do
+    pattern="$(python3 -c 'import sys; print(sys.argv[1].strip())' "$query")"
+    [[ -z "$pattern" ]] && continue
+    matches="$(matching_hidden_devices "$pattern" "$outputs")"
+    printf 'hidden: %s\n' "$pattern"
+    if [[ -n "$matches" ]]; then
+      printf '%s\n' "$matches" | sed 's/^/  /'
+    fi
+  done
+}
+
+cmd_unhide() {
+  if [[ $# -eq 0 ]]; then
+    echo "usage: audio-switch unhide <query>..." >&2
+    return 2
+  fi
+  local kept_file
+  kept_file="$(mktemp "${TMPDIR:-/tmp}/audio-switch-unhide.XXXXXX")"
+  if AUDIO_SWITCH_UNHIDE="$(printf '%s\n' "$@")" AUDIO_SWITCH_UNHIDE_OUT="$kept_file" python3 -c '
+import os
+import sys
+from pathlib import Path
+
+queries = [item.casefold() for item in os.environ.get("AUDIO_SWITCH_UNHIDE", "").splitlines() if item.strip()]
+kept = []
+removed = []
+for line in sys.stdin:
+    pattern = line.rstrip("\n")
+    if not pattern:
+        continue
+    folded = pattern.casefold()
+    if any(query in folded or folded in query for query in queries):
+        removed.append(pattern)
+    else:
+        kept.append(pattern)
+if not removed:
+    print("audio-switch: no hidden pattern matches", file=sys.stderr)
+    raise SystemExit(1)
+Path(os.environ["AUDIO_SWITCH_UNHIDE_OUT"]).write_text("\n".join(kept) + ("\n" if kept else ""))
+for pattern in removed:
+    print(f"unhidden: {pattern}")
+' < <(read_hidden_patterns); then
+    write_hidden_patterns <"$kept_file"
+    rm -f "$kept_file"
+  else
+    rm -f "$kept_file"
+    return 1
+  fi
 }
 
 bluetooth_audio_rows() {
@@ -524,6 +706,9 @@ main() {
     speakers) cmd_speakers ;;
     set) shift; cmd_set "${1:-}" ;;
     disconnect) cmd_disconnect ;;
+    hide) shift; cmd_hide "$@" ;;
+    unhide) shift; cmd_unhide "$@" ;;
+    hidden) cmd_hidden ;;
     list) cmd_list ;;
     status) cmd_status ;;
     -h | --help | help | "") usage ;;

@@ -43,6 +43,11 @@ The CLI is `~/.local/bin/audio-switch` (stowed from `dotfiles/bin`). Commands li
 audio-switch list
 audio-switch status
 audio-switch set air
+audio-switch hide kuycon "microsoft teams" "jump desktop"
+audio-switch hidden
+audio-switch unhide kuycon
 ```
+
+The picker hides display and virtual devices (Kuycon, Microsoft Teams, Jump Desktop) by default. `hide` / `unhide` edit `~/.config/audio-switch/hidden` (substring match). Those devices stay installed; they are only omitted from the list.
 
 Needs `switchaudio-osx` and `blueutil` from `scripts/macos-deps.sh`. Switching output does not disconnect Bluetooth; use Audio: Disconnect for that.
