@@ -29,7 +29,7 @@ help:
 	@echo "  make linux-homelab   - disks, never-sleep, ssh :2222, clone hot repos"
 	@echo "  make bootstrap-linux - linux-deps + stow-install"
 	@echo "  make setup-herdr     - Install Herdr's Droid integration"
-	@echo "  make setup-tinycast  - Apply Tinycast hotkeys and Quick Action prompts"
+	@echo "  make setup-tinycast  - Apply Tinycast hotkeys, Quick Actions, and audio commands"
 	@echo ""
 	@echo "Testing:"
 	@echo "  make test            - Run all tests"
@@ -157,6 +157,7 @@ script-test:
 	@./scripts/ci/test-nvim-jsonl.sh
 	@./scripts/ci/test-linux-bootstrap.sh
 	@./scripts/ci/test-yazi-config.sh
+	@./scripts/ci/test-audio-switch.sh
 	@./scripts/ci/test-release-manifest.sh
 
 install-test:

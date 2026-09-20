@@ -1,0 +1,382 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+  cat <<'EOF'
+Switch macOS audio output or disconnect a Bluetooth device.
+
+  audio-switch pick         choose a live output (and matching input)
+  audio-switch speakers     jump to built-in Mac speakers
+  audio-switch set <query>  fuzzy-match an output name
+  audio-switch disconnect   choose a connected Bluetooth device to drop
+  audio-switch list         print outputs, inputs, and Bluetooth
+  audio-switch status       print the current output and input
+
+Requires switchaudio-osx. Bluetooth actions also need blueutil.
+EOF
+}
+
+resolve_bin() {
+  local name="$1" override="${2:-}"
+  local candidate
+  if [[ -n "$override" ]]; then
+    if [[ -x "$override" ]]; then
+      printf '%s\n' "$override"
+      return 0
+    fi
+    echo "audio-switch: not executable: $override" >&2
+    return 1
+  fi
+  for candidate in "/opt/homebrew/bin/$name" "/usr/local/bin/$name"; do
+    if [[ -x "$candidate" ]]; then
+      printf '%s\n' "$candidate"
+      return 0
+    fi
+  done
+  if command -v "$name" >/dev/null 2>&1; then
+    command -v "$name"
+    return 0
+  fi
+  echo "audio-switch: $name not found; brew install switchaudio-osx blueutil" >&2
+  return 1
+}
+
+notify() {
+  local title="$1" message="$2"
+  python3 - "$title" "$message" <<'PY' || true
+import subprocess
+import sys
+
+def q(value: str) -> str:
+    return '"' + value.replace("\\", "\\\\").replace('"', '\\"') + '"'
+
+title, message = sys.argv[1], sys.argv[2]
+subprocess.run(
+    ["osascript", "-e", f"display notification {q(message)} with title {q(title)}"],
+    check=False,
+    stdout=subprocess.DEVNULL,
+    stderr=subprocess.DEVNULL,
+)
+PY
+}
+
+require_switch_audio() {
+  SWITCH_AUDIO="$(resolve_bin SwitchAudioSource "${SWITCH_AUDIO_BIN:-}")"
+}
+
+require_blueutil() {
+  BLUEUTIL="$(resolve_bin blueutil "${BLUEUTIL_BIN:-}")"
+}
+
+devices_of() {
+  local kind="$1"
+  "$SWITCH_AUDIO" -a -t "$kind" -f human
+}
+
+current_of() {
+  local kind="$1"
+  "$SWITCH_AUDIO" -c -t "$kind" -f human
+}
+
+choose_from_list() {
+  local title="$1" prompt="$2" default="$3"
+  if [[ -n "${AUDIO_SWITCH_SELECT:-}" ]]; then
+    cat >/dev/null
+    printf '%s\n' "$AUDIO_SWITCH_SELECT"
+    return 0
+  fi
+  python3 -c '
+import subprocess
+import sys
+
+def q(value: str) -> str:
+    return "\"" + value.replace("\\", "\\\\").replace("\"", "\\\"") + "\""
+
+title, prompt, default = sys.argv[1], sys.argv[2], sys.argv[3]
+items = [line for line in sys.stdin.read().splitlines() if line]
+if not items:
+    raise SystemExit("audio-switch: nothing to choose")
+script = "set deviceList to {" + ", ".join(q(item) for item in items) + "}\n"
+script += "set dialogResult to choose from list deviceList with title " + q(title) + " with prompt " + q(prompt)
+if default in items:
+    script += " default items {" + q(default) + "}"
+script += """
+if dialogResult is false then
+    return ""
+else
+    return item 1 of dialogResult
+end if
+"""
+result = subprocess.run(["osascript"], input=script, text=True, capture_output=True)
+if result.returncode != 0:
+    sys.stderr.write(result.stderr)
+    raise SystemExit(result.returncode)
+print(result.stdout.strip())
+' "$title" "$prompt" "$default"
+}
+
+match_device() {
+  python3 -c '
+import sys
+
+query = sys.argv[1].casefold()
+devices = [line for line in sys.stdin.read().splitlines() if line]
+exact = [name for name in devices if name.casefold() == query]
+if len(exact) == 1:
+    print(exact[0])
+    raise SystemExit(0)
+hits = [name for name in devices if query in name.casefold()]
+if len(hits) == 1:
+    print(hits[0])
+    raise SystemExit(0)
+prefixed = [name for name in hits if name.casefold().startswith(query)]
+if len(prefixed) == 1:
+    print(prefixed[0])
+    raise SystemExit(0)
+if not hits:
+    print(f"audio-switch: no device matches {sys.argv[1]!r}", file=sys.stderr)
+else:
+    print("audio-switch: ambiguous match:", file=sys.stderr)
+    for name in hits:
+        print(f"  {name}", file=sys.stderr)
+raise SystemExit(1)
+' "$1"
+}
+
+built_in_device() {
+  python3 -c '
+import re
+import sys
+
+kind = sys.argv[1]
+devices = [line for line in sys.stdin.read().splitlines() if line]
+patterns = (
+    re.compile(r"(macbook|imac|mac mini|mac studio|mac pro).*(speaker|microphone|headphones)", re.I),
+    re.compile(r"^macintosh (speakers|microphone)$", re.I),
+    re.compile(r"built-?in.*(speaker|output|microphone|input|mic)", re.I),
+)
+for pattern in patterns:
+    hits = [name for name in devices if pattern.search(name)]
+    if hits:
+        print(hits[0])
+        raise SystemExit(0)
+fallback = re.compile(r"speaker|microphone", re.I)
+avoid = re.compile(r"display|hdmi|airplay|aggregate|virtual|loopback", re.I)
+hits = [name for name in devices if fallback.search(name) and not avoid.search(name)]
+if hits:
+    print(hits[0])
+    raise SystemExit(0)
+print(f"audio-switch: no built-in {kind} device", file=sys.stderr)
+raise SystemExit(1)
+' "$1"
+}
+
+set_device() {
+  local kind="$1" name="$2"
+  "$SWITCH_AUDIO" -t "$kind" -s "$name" >/dev/null
+}
+
+sync_input() {
+  local output_name="$1"
+  local inputs built_out mic
+  inputs="$(devices_of input)" || return 0
+  if [[ -z "$inputs" ]]; then
+    return 0
+  fi
+  if printf '%s\n' "$inputs" | grep -Fxq -- "$output_name"; then
+    set_device input "$output_name"
+    return 0
+  fi
+  built_out="$(devices_of output | built_in_device output || true)"
+  if [[ -n "$built_out" && "$output_name" == "$built_out" ]]; then
+    mic="$(printf '%s\n' "$inputs" | built_in_device input || true)"
+    if [[ -n "$mic" ]]; then
+      set_device input "$mic"
+    fi
+  fi
+}
+
+cmd_status() {
+  require_switch_audio
+  printf 'output: %s\n' "$(current_of output)"
+  printf 'input: %s\n' "$(current_of input)"
+}
+
+cmd_list() {
+  require_switch_audio
+  local current_out current_in
+  current_out="$(current_of output)"
+  current_in="$(current_of input)"
+  echo "Output"
+  while IFS= read -r name; do
+    [[ -z "$name" ]] && continue
+    if [[ "$name" == "$current_out" ]]; then
+      printf '  * %s\n' "$name"
+    else
+      printf '    %s\n' "$name"
+    fi
+  done < <(devices_of output)
+  echo "Input"
+  while IFS= read -r name; do
+    [[ -z "$name" ]] && continue
+    if [[ "$name" == "$current_in" ]]; then
+      printf '  * %s\n' "$name"
+    else
+      printf '    %s\n' "$name"
+    fi
+  done < <(devices_of input)
+  if BLUEUTIL="$(resolve_bin blueutil "${BLUEUTIL_BIN:-}" 2>/dev/null)"; then
+    echo "Bluetooth"
+    while IFS=$'\t' read -r address name connected; do
+      [[ -z "$name" ]] && continue
+      if [[ "$connected" == "1" ]]; then
+        printf '  * %s (%s)\n' "$name" "$address"
+      else
+        printf '    %s (%s)\n' "$name" "$address"
+      fi
+    done < <(devices_of output | bluetooth_audio_rows 0)
+  fi
+}
+
+apply_output() {
+  local name="$1"
+  set_device output "$name"
+  sync_input "$name" || true
+  notify "Audio output" "$name"
+  printf 'output: %s\n' "$name"
+}
+
+cmd_set() {
+  local query="${1:-}"
+  if [[ -z "$query" ]]; then
+    echo "usage: audio-switch set <query>" >&2
+    return 2
+  fi
+  require_switch_audio
+  local name
+  name="$(devices_of output | match_device "$query")"
+  apply_output "$name"
+}
+
+cmd_speakers() {
+  require_switch_audio
+  local name
+  name="$(devices_of output | built_in_device output)"
+  apply_output "$name"
+}
+
+cmd_pick() {
+  require_switch_audio
+  local current selected
+  current="$(current_of output)"
+  selected="$(devices_of output | choose_from_list "Audio output" "Current: $current" "$current")"
+  if [[ -z "$selected" ]]; then
+    return 0
+  fi
+  apply_output "$selected"
+}
+
+bluetooth_audio_rows() {
+  local connected_only="$1"
+  python3 -c '
+import json
+import subprocess
+import sys
+
+blueutil = sys.argv[1]
+connected_only = sys.argv[2] == "1"
+outputs = [line.casefold() for line in sys.stdin.read().splitlines() if line]
+proc = subprocess.run(
+    [blueutil, "--format", "json", "--paired"],
+    text=True,
+    capture_output=True,
+)
+if proc.returncode != 0:
+    sys.stderr.write(proc.stderr)
+    raise SystemExit(proc.returncode)
+try:
+    devices = json.loads(proc.stdout or "[]")
+except json.JSONDecodeError as exc:
+    raise SystemExit(f"audio-switch: blueutil json: {exc}") from exc
+keywords = (
+    "airpods", "jabra", "beats", "bose", "sony", "speaker", "soundstick",
+    "headset", "headphone", "evolve", "buds", "willen",
+)
+exclude = ("trackpad", "watch", "keyboard", "ipad", "iphone", "mouse", "pencil", "corne")
+seen = set()
+for device in devices:
+    address = device.get("address") or ""
+    name = device.get("name") or ""
+    if not address or address in seen:
+        continue
+    folded = name.casefold()
+    audio = any(key in folded for key in keywords) or any(
+        output in folded or folded in output for output in outputs
+    )
+    if not audio or any(key in folded for key in exclude):
+        continue
+    if connected_only and not device.get("connected"):
+        continue
+    seen.add(address)
+    connected = 1 if device.get("connected") else 0
+    print(f"{address}\t{name}\t{connected}")
+' "$BLUEUTIL" "$connected_only"
+}
+
+cmd_disconnect() {
+  require_blueutil
+  if [[ -z "${SWITCH_AUDIO:-}" ]]; then
+    SWITCH_AUDIO="$(resolve_bin SwitchAudioSource "${SWITCH_AUDIO_BIN:-}" 2>/dev/null || true)"
+  fi
+  local rows selected address
+  if [[ -n "${SWITCH_AUDIO:-}" ]]; then
+    rows="$(devices_of output | bluetooth_audio_rows 1)"
+  else
+    rows="$(bluetooth_audio_rows 1 </dev/null)"
+  fi
+  if [[ -z "$rows" ]]; then
+    echo "audio-switch: no connected Bluetooth devices"
+    return 0
+  fi
+  selected="$(printf '%s\n' "$rows" | awk -F '\t' '{print $2}' | choose_from_list "Disconnect Bluetooth" "Choose a connected device" "")"
+  if [[ -z "$selected" ]]; then
+    return 0
+  fi
+  address=""
+  while IFS=$'\t' read -r row_address row_name _; do
+    if [[ "$row_name" == "$selected" ]]; then
+      address="$row_address"
+      break
+    fi
+  done <<<"$rows"
+  if [[ -z "$address" ]]; then
+    echo "audio-switch: unknown device: $selected" >&2
+    return 1
+  fi
+  if ! "$BLUEUTIL" --disconnect "$address" --wait-disconnect "$address"; then
+    echo "audio-switch: disconnect failed for $selected; audio may already be on another device" >&2
+    return 1
+  fi
+  notify "Bluetooth" "Disconnected $selected"
+  printf 'disconnected: %s\n' "$selected"
+}
+
+main() {
+  local cmd="${1:-}"
+  case "$cmd" in
+    pick) cmd_pick ;;
+    speakers) cmd_speakers ;;
+    set) shift; cmd_set "${1:-}" ;;
+    disconnect) cmd_disconnect ;;
+    list) cmd_list ;;
+    status) cmd_status ;;
+    -h | --help | help | "") usage ;;
+    *)
+      echo "audio-switch: unknown command: $cmd" >&2
+      usage >&2
+      return 2
+      ;;
+  esac
+}
+
+main "$@"

@@ -50,6 +50,7 @@ export default defineConfig({
             { label: 'Tmux - Legacy Multiplexer', link: '/tmux/' },
             'atuin',
             'skhd',
+            'tinycast',
             'zen-mode',
           ],
         },
