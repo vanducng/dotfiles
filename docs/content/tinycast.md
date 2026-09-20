@@ -22,6 +22,8 @@ make setup-tinycast
 | `cmd+shift+R` | Rewrite selected text |
 | `cmd+shift+T` | Summarize selected text |
 | `cmd+opt+A` | Switch audio output (skips the full login zsh) |
+| `cmd+opt+S` | Processes (`btop`) |
+| `cmd+opt+D` | Disk (`dua i`) |
 
 Move Alter off `cmd+shift+R` (use `cmd+shift+D`) or rewrite loses the race on launch.
 
@@ -51,3 +53,15 @@ audio-switch unhide kuycon
 The picker hides display and virtual devices (Kuycon, Microsoft Teams, Jump Desktop) by default. `hide` / `unhide` edit `~/.config/audio-switch/hidden` (substring match). Those devices stay installed; they are only omitted from the list.
 
 Needs `switchaudio-osx` and `blueutil` from `scripts/macos-deps.sh`. Switching output does not disconnect Bluetooth; use Audio: Disconnect for that.
+
+## System monitor
+
+`cmd+opt+S` opens `btop` in a floating kitty window. `cmd+opt+D` opens `dua i` on `$HOME`. A second press focuses the same window. Titles start with `sysmon-` so they do not jump to the pinned kitty space.
+
+```bash
+sysmon processes
+sysmon disk
+sysmon disk /
+```
+
+Needs `btop` and `dua-cli` from `scripts/macos-deps.sh`. Palette search also finds `processes` and `disk`.

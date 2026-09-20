@@ -62,7 +62,8 @@ yabai -m rule --add app=".*"                          sub-layer=normal
 # Pin apps to specific spaces (by index). 17 spaces: D1=1-8, D2=9-17.
 # 1 Ghostty  2 LibreOffice  3 Dia  4 Chrome+Devin  5 Cursor  6 PDF  7 Alter  8 Obsidian
 # 9 Slack  10 Telegram  11 Zalo  12 Discord+WhatsApp  13 Arc  14 Cliq  15 kitty  16 AI  17 ego
-yabai -m rule --add app="^Ghostty$"                   space=1
+yabai -m rule --add app="^Ghostty$" title="^sysmon-"  manage=off
+yabai -m rule --add app="^Ghostty$" title!="^sysmon-" space=1
 yabai -m rule --add app="^LibreOffice$"               space=2
 yabai -m rule --add app="^Dia$"                       space=3
 yabai -m rule --add app="^Google Chrome$"             space=4
@@ -80,7 +81,8 @@ yabai -m rule --add app="^Discord$"                   space=12
 yabai -m rule --add app="WhatsApp$"                   space=12
 yabai -m rule --add app="^Arc$"                       space=13
 yabai -m rule --add app="^Cliq$"                      space=14
-yabai -m rule --add app="^kitty$"                     space=15
+yabai -m rule --add app="^kitty$" title="^sysmon-"    manage=off
+yabai -m rule --add app="^kitty$" title!="^sysmon-"   space=15
 yabai -m rule --add app="^Codex$"                     space=16
 yabai -m rule --add app="^ChatGPT$"                   space=16
 yabai -m rule --add app="^Claude$"                    space=16
@@ -98,14 +100,14 @@ yabai -m space 16 --layout stack 2>/dev/null
 for pin in "Ghostty:1" "LibreOffice:2" "Dia:3" "Google Chrome:4" "Devin:4" "Cursor:5" "Preview:6" "Foxit PDF Reader:6" "Alter:7" "Obsidian:8" "Slack:9" "Telegram:10" "Zalo:11" "Discord:12" "WhatsApp:12" "Arc:13" "Cliq:14" "kitty:15" "Codex:16" "ChatGPT:16" "Claude:16" "Grok Bot:16" "ego lite:17"; do
     app="${pin%:*}"; sp="${pin#*:}"
     # yabai rules cannot strip U+200E; some apps report it in .app
-    for id in $(yabai -m query --windows | jq -r --arg a "$app" '.[] | select((.app | gsub("\u200e"; "")) == $a) | .id'); do
+    for id in $(yabai -m query --windows | jq -r --arg a "$app" '.[] | select((.app | gsub("\u200e"; "")) == $a and ((.title // "") | startswith("sysmon-") | not)) | .id'); do
         yabai -m window "$id" --space "$sp" 2>/dev/null
     done
 done
 
 # Force-float apps that must never be tiled (manage=off rule only fires on
 # window creation; this re-floats existing windows after yabai restart).
-for id in $(yabai -m query --windows | jq -r '.[] | select((.app=="Alter" or .app=="Structured" or .app=="superwhisper" or .app=="ZaloCall") and ."is-floating"==false) | .id'); do
+for id in $(yabai -m query --windows | jq -r '.[] | select((.app=="Alter" or .app=="Structured" or .app=="superwhisper" or .app=="ZaloCall" or ((.app=="kitty" or .app=="Ghostty") and ((.title // "") | startswith("sysmon-")))) and ."is-floating"==false) | .id'); do
     yabai -m window "$id" --toggle float 2>/dev/null
 done
 

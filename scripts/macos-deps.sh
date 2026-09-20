@@ -37,6 +37,10 @@ brew install tmux
 brew install rust
 brew install switchaudio-osx
 brew install blueutil
+brew install btop
+brew install dua-cli
+brew install btop
+brew install dua-cli
 
 # Core dependencies intentionally fail fast; Tinycast below is the only optional, guarded step.
 # Only Tinycast is guarded with a warning, everything else should abort on failure.

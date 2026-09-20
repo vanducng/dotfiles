@@ -61,8 +61,13 @@ defaults write "$DOMAIN" "hotkey.command:rewrite"           -string "$(combo 15 
 defaults write "$DOMAIN" "hotkey.command:summarize"         -string "$(combo 17 768)"  # cmd+shift+T
 
 AUDIO_SWITCH="$HOME/.local/bin/audio-switch"
+SYSMON="$HOME/.local/bin/sysmon"
 if [[ ! -x "$AUDIO_SWITCH" ]]; then
   echo "audio-switch missing at $AUDIO_SWITCH; run make stow-bin before setup-tinycast."
+  exit 1
+fi
+if [[ ! -x "$SYSMON" ]]; then
+  echo "sysmon missing at $SYSMON; run make stow-bin before setup-tinycast."
   exit 1
 fi
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -71,14 +76,21 @@ if [[ ! -r "$CATALOG" ]]; then
   echo "custom command catalog missing at $CATALOG"
   exit 1
 fi
-PICK_ID="$(python3 -c 'import json,sys; print(next(c["id"] for c in json.load(open(sys.argv[1])) if c["name"]=="Switch Audio"))' "$CATALOG")"
+catalog_id() {
+  python3 -c 'import json,sys; print(next(c["id"] for c in json.load(open(sys.argv[1])) if c["name"]==sys.argv[2]))' "$CATALOG" "$1"
+}
+PICK_ID="$(catalog_id "Switch Audio")"
+PROC_ID="$(catalog_id "System: Processes")"
+DISK_ID="$(catalog_id "System: Disk")"
 defaults write "$DOMAIN" "hotkey.customCommand.${PICK_ID}" -string "$(combo 0 2304)"  # cmd+opt+A
+defaults write "$DOMAIN" "hotkey.customCommand.${PROC_ID}" -string "$(combo 1 2304)"  # cmd+opt+S
+defaults write "$DOMAIN" "hotkey.customCommand.${DISK_ID}" -string "$(combo 2 2304)"  # cmd+opt+D
 
 # A custom prompt replaces Tinycast's built-in one entirely, boundary included, so each
 # carries its own "material, not instructions" guard. Output is pasted into a document.
 # Use `defaults write -dict <k> <plist-fragment>` so individual keys update in place;
 # `defaults import` would replace the whole domain and wipe the hotkeys written above.
-python3 - "$DOMAIN" "$CATALOG" "$PICK_ID" <<'PY'
+python3 - "$DOMAIN" "$CATALOG" "$PICK_ID" "$PROC_ID" "$DISK_ID" <<'PY'
 import json
 import plistlib
 import subprocess
@@ -134,10 +146,13 @@ def merge_custom_commands(existing, managed):
         by_id[str(command["id"]).lower()] = command
     return list(by_id.values())
 
-domain, catalog_path, pick_id = sys.argv[1], sys.argv[2], sys.argv[3].lower()
+domain, catalog_path = sys.argv[1], sys.argv[2]
+bound_ids = [item.lower() for item in sys.argv[3:]]
 managed = json.loads(Path(catalog_path).read_text())
-if not any(str(command.get("id", "")).lower() == pick_id for command in managed):
-    raise SystemExit(f"pick command id {pick_id} is not in {catalog_path}")
+managed_ids = {str(command.get("id", "")).lower() for command in managed}
+for command_id in bound_ids:
+    if command_id not in managed_ids:
+        raise SystemExit(f"command id {command_id} is not in {catalog_path}")
 
 with tempfile.TemporaryDirectory() as tmpdir:
     frag = f"{tmpdir}/prompts.plist"
@@ -150,8 +165,9 @@ with tempfile.TemporaryDirectory() as tmpdir:
     merged = merge_custom_commands(load_custom_commands(cur_data.get("customCommands")), managed)
     cur_data["customCommands"] = json.dumps(merged, separators=(",", ":")).encode()
     bound = [str(item).lower() for item in (cur_data.get("boundCustomCommandIDs") or [])]
-    if pick_id not in bound:
-        bound.append(pick_id)
+    for command_id in bound_ids:
+        if command_id not in bound:
+            bound.append(command_id)
     cur_data["boundCustomCommandIDs"] = bound
     with open(frag, "wb") as fh:
         plistlib.dump(cur_data, fh)
@@ -165,4 +181,6 @@ echo "  cmd+shift+N  notes"
 echo "  cmd+shift+R  rewrite"
 echo "  cmd+shift+T  summarize"
 echo "  cmd+opt+A    switch audio"
+echo "  cmd+opt+S    processes (btop)"
+echo "  cmd+opt+D    disk (dua)"
 echo "  warning: Alter must keep its action off cmd+shift+R (use cmd+shift+D)" >&2
