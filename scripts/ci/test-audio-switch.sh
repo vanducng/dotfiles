@@ -71,11 +71,18 @@ while [[ $# -gt 0 ]]; do
     *) shift ;;
   esac
 done
+extra=""
+if [[ -f "$state_dir/extra_outputs" ]]; then
+  extra="$(cat "$state_dir/extra_outputs")"
+fi
 case "$type" in
   output) list=$'MacBook Pro Speakers\nAirPods Pro\nJabra Evolve2 65' ;;
   input) list=$'MacBook Pro Microphone\nAirPods Pro\nJabra Evolve2 65' ;;
   *) list="" ;;
 esac
+if [[ -n "$extra" ]]; then
+  list="$list"$'\n'"$extra"
+fi
 current_file="$state_dir/$type"
 [[ -f "$current_file" ]] || printf '%s\n' "AirPods Pro" >"$current_file"
 case "$action" in
@@ -97,7 +104,7 @@ cat >"$workdir/blueutil" <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
 state="${AUDIO_SWITCH_STATE:?}/bt"
-[[ -f "$state" ]] || printf '%s\n' "11-22-33-44-55-66	AirPods Pro	1" >"$state"
+[[ -f "$state" ]] || printf '%s\n' $'11-22-33-44-55-66\tAirPods Pro\t1\naa-bb-cc-dd-ee-ff\tAirPods Max\t0' >"$state"
 action=""
 format="text"
 while [[ $# -gt 0 ]]; do
@@ -106,6 +113,8 @@ while [[ $# -gt 0 ]]; do
     --paired) action="paired"; shift ;;
     --disconnect) action="disconnect"; address="$2"; shift 2 ;;
     --wait-disconnect) shift 2 ;;
+    --connect) action="connect"; address="$2"; shift 2 ;;
+    --wait-connect) shift 2 ;;
     *) shift ;;
   esac
 done
@@ -132,11 +141,16 @@ PY
       done <"$state"
     fi
     ;;
-  disconnect)
+  disconnect|connect)
     tmp="$(mktemp)"
     while IFS=$'\t' read -r row_address name connected; do
       if [[ "$row_address" == "$address" ]]; then
-        connected=0
+        if [[ "$action" == "connect" ]]; then
+          connected=1
+          printf '%s\n' "$name" >>"${AUDIO_SWITCH_STATE}/extra_outputs"
+        else
+          connected=0
+        fi
       fi
       printf '%s\t%s\t%s\n' "$row_address" "$name" "$connected"
     done <"$state" >"$tmp"
@@ -185,6 +199,12 @@ if "$SCRIPT" set pro >/dev/null 2>"$workdir/err"; then
 fi
 grep -q 'ambiguous match' "$workdir/err" || fail "ambiguous error: $(cat "$workdir/err")"
 pass "ambiguous set"
+
+out="$(AUDIO_SWITCH_SELECT="AirPods Max" "$SCRIPT" pick)"
+printf '%s\n' "$out" | grep -q 'output: AirPods Max' || fail "pick max: $out"
+[[ "$(cat "$AUDIO_SWITCH_STATE/output")" == "AirPods Max" ]] || fail "pick max did not set output"
+grep -q $'aa-bb-cc-dd-ee-ff\tAirPods Max\t1' "$AUDIO_SWITCH_STATE/bt" || fail "pick max did not connect"
+pass "pick connects offline bluetooth"
 
 out="$(AUDIO_SWITCH_SELECT="AirPods Pro" "$SCRIPT" disconnect)"
 printf '%s\n' "$out" | grep -q 'disconnected: AirPods Pro' || fail "disconnect: $out"

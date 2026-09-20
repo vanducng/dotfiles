@@ -5,7 +5,7 @@ usage() {
   cat <<'EOF'
 Switch macOS audio output or disconnect a Bluetooth device.
 
-  audio-switch pick         choose a live output (and matching input)
+  audio-switch pick         choose a live output or a paired Bluetooth headset
   audio-switch speakers     jump to built-in Mac speakers
   audio-switch set <query>  fuzzy-match an output name
   audio-switch disconnect   choose a connected Bluetooth device to drop
@@ -299,8 +299,18 @@ cmd_set() {
   fi
   require_switch_audio
   local name
-  name="$(devices_of output | match_device "$query")"
-  apply_output "$name"
+  if name="$(devices_of output | match_device "$query" 2>/dev/null)"; then
+    apply_output "$name"
+    return 0
+  fi
+  if ! BLUEUTIL="$(resolve_bin blueutil "${BLUEUTIL_BIN:-}" 2>/dev/null)"; then
+    return 1
+  fi
+  if name="$(devices_of output | picker_choices "$BLUEUTIL" | match_device "$query")"; then
+    apply_selected "$name"
+    return 0
+  fi
+  return 1
 }
 
 cmd_speakers() {
@@ -310,15 +320,130 @@ cmd_speakers() {
   apply_output "$name"
 }
 
+picker_choices() {
+  python3 -c '
+import json
+import subprocess
+import sys
+
+blueutil = sys.argv[1]
+outputs = [line for line in sys.stdin.read().splitlines() if line]
+folded = [name.casefold() for name in outputs]
+for name in outputs:
+    print(name)
+if not blueutil:
+    raise SystemExit(0)
+proc = subprocess.run(
+    [blueutil, "--format", "json", "--paired"],
+    text=True,
+    capture_output=True,
+)
+if proc.returncode != 0:
+    sys.stderr.write(proc.stderr)
+    raise SystemExit(proc.returncode)
+try:
+    devices = json.loads(proc.stdout or "[]")
+except json.JSONDecodeError as exc:
+    raise SystemExit(f"audio-switch: blueutil json: {exc}") from exc
+keywords = (
+    "airpods", "jabra", "beats", "bose", "sony", "speaker", "soundstick",
+    "headset", "headphone", "evolve", "buds", "willen",
+)
+exclude = ("trackpad", "watch", "keyboard", "ipad", "iphone", "mouse", "pencil", "corne")
+seen = set(folded)
+for device in devices:
+    name = device.get("name") or ""
+    folded_name = name.casefold()
+    if not name or folded_name in seen:
+        continue
+    audio = any(key in folded_name for key in keywords) or any(
+        output in folded_name or folded_name in output for output in folded
+    )
+    if not audio or any(key in folded_name for key in exclude):
+        continue
+    if any(folded_name in output or output in folded_name for output in folded):
+        continue
+    seen.add(folded_name)
+    print(name)
+' "${1:-}"
+}
+
+bluetooth_address_for() {
+  python3 -c '
+import json
+import subprocess
+import sys
+
+blueutil, wanted = sys.argv[1], sys.argv[2].casefold()
+proc = subprocess.run(
+    [blueutil, "--format", "json", "--paired"],
+    text=True,
+    capture_output=True,
+)
+if proc.returncode != 0:
+    sys.stderr.write(proc.stderr)
+    raise SystemExit(proc.returncode)
+devices = json.loads(proc.stdout or "[]")
+for device in devices:
+    name = device.get("name") or ""
+    if name.casefold() == wanted:
+        print(device.get("address") or "")
+        raise SystemExit(0)
+raise SystemExit(1)
+' "$BLUEUTIL" "$1"
+}
+
+wait_for_output() {
+  local query="$1"
+  local name i
+  for i in $(seq 1 30); do
+    if name="$(devices_of output | match_device "$query" 2>/dev/null)"; then
+      printf '%s\n' "$name"
+      return 0
+    fi
+    sleep 0.4
+  done
+  return 1
+}
+
+apply_selected() {
+  local name="$1"
+  local outputs matched address
+  outputs="$(devices_of output)" || return 1
+  if printf '%s\n' "$outputs" | grep -Fxq -- "$name"; then
+    apply_output "$name"
+    return 0
+  fi
+  require_blueutil
+  address="$(bluetooth_address_for "$name")" || {
+    echo "audio-switch: unknown device: $name" >&2
+    return 1
+  }
+  if ! "$BLUEUTIL" --connect "$address" --wait-connect "$address"; then
+    echo "audio-switch: connect failed for $name" >&2
+    return 1
+  fi
+  matched="$(wait_for_output "$name")" || {
+    echo "audio-switch: connected $name but it did not appear as an output" >&2
+    return 1
+  }
+  apply_output "$matched"
+}
+
 cmd_pick() {
   require_switch_audio
-  local current selected
+  local current selected outputs
+  outputs="$(devices_of output)"
   current="$(current_of output)"
-  selected="$(devices_of output | choose_from_list "Audio output" "Current: $current" "$current")"
+  if BLUEUTIL="$(resolve_bin blueutil "${BLUEUTIL_BIN:-}" 2>/dev/null)"; then
+    selected="$(printf '%s\n' "$outputs" | picker_choices "$BLUEUTIL" | choose_from_list "Audio output" "Current: $current" "$current")"
+  else
+    selected="$(printf '%s\n' "$outputs" | choose_from_list "Audio output" "Current: $current" "$current")"
+  fi
   if [[ -z "$selected" ]]; then
     return 0
   fi
-  apply_output "$selected"
+  apply_selected "$selected"
 }
 
 bluetooth_audio_rows() {
