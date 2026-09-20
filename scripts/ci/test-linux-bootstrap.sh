@@ -54,6 +54,19 @@ if grep -qE '^(split|cmd_split)\(\)|case .*split' "$mac_ovpn" \
 else
   fail "work-vpn-mac must implement split against 0/1 full-tunnel"
 fi
+mock_openvpn="$(mktemp)"
+cat >"$mock_openvpn" <<'EOF'
+#!/bin/sh
+printf '%s\n' "$@"
+EOF
+chmod +x "$mock_openvpn"
+if [[ "$(OPENVPN_CONNECT_BIN="$mock_openvpn" "$mac_ovpn" start profile-id)" == "--connect-shortcut=profile-id" ]] \
+  && [[ "$(OPENVPN_CONNECT_BIN="$mock_openvpn" "$mac_ovpn" stop)" == "--disconnect-shortcut" ]]; then
+  pass "work-vpn-mac starts and stops through OpenVPN Connect"
+else
+  fail "work-vpn-mac start/stop commands are incorrect"
+fi
+rm -f "$mock_openvpn"
 bash -n "$ROOT/dotfiles/bin/.local/bin/lab-remote" && pass "lab-remote parses" || fail "lab-remote syntax"
 bash -n "$ROOT/dotfiles/homelab/.config/homelab/cdp-chrome" && pass "cdp-chrome parses" || fail "cdp-chrome syntax"
 bash -n "$ROOT/dotfiles/homelab/.config/homelab/install-chrome" && pass "install-chrome parses" || fail "install-chrome syntax"
