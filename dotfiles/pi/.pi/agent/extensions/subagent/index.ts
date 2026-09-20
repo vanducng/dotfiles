@@ -196,7 +196,8 @@ export default function (pi: ExtensionAPI) {
 		async execute(_id, params, signal, onUpdate, ctx) {
 			const single = Boolean(params.agent && params.task);
 			const parallel = Boolean(params.tasks?.length);
-			if (single === parallel) throw new Error("Provide either agent + task or tasks, not both");
+			if (!single && !parallel) throw new Error("Provide agent + task or at least one task");
+			if (single && parallel) throw new Error("Provide either agent + task or tasks, not both");
 
 			const requested = single
 				? [{ agent: params.agent!, task: params.task!, cwd: params.cwd }]
