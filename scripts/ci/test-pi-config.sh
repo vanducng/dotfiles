@@ -14,10 +14,7 @@ for command in jq node pi; do
 done
 
 jq empty "$agent_dir/settings.json" "$agent_dir/models.json" "$agent_dir/mcp.json" \
-	"$agent_dir/themes/rose-pine-moon.json" \
-	"$agent_dir/extensions/subagent/config.json"
-jq -e '.scheduledRuns.storeRoot == "~/.local/share/pi-subagents/schedules"' \
-	"$agent_dir/extensions/subagent/config.json" >/dev/null
+	"$agent_dir/themes/rose-pine-moon.json"
 jq -e '
 	.defaultProvider == "cliproxyapi" and
 	.defaultModel == "grok-4.6" and
@@ -26,7 +23,7 @@ jq -e '
 jq -e '
 	.packages
 	| index("npm:pi-web-access")
-	  and index("git:github.com/vanducng/pi-subagents@aa75b3353836f7868898e3bd58234d21eaff1463")
+	  and (map(select(test("pi-subagents|pi-subagent"))) | length == 0)
 	  and index("npm:pi-mcp-adapter")
 ' "$agent_dir/settings.json" >/dev/null
 jq -e '
@@ -148,8 +145,15 @@ if (wakeMessage([], ["x"]) !== "Crew needs attention: x. Inspect that pane check
 }
 if (wakeMessage([], []) !== "") throw new Error("empty wake");
 EOF
+mkdir -p "$test_dir/agents"
+for agent in scout worker reviewer oracle; do
+	test -s "$agent_dir/agents/$agent.md"
+	grep -q "^name: $agent$" "$agent_dir/agents/$agent.md"
+	cp "$agent_dir/agents/$agent.md" "$test_dir/agents/"
+done
 PI_CODING_AGENT_DIR="$test_dir" PI_OFFLINE=1 pi --no-skills --no-prompt-templates --no-themes \
-  --extension "$agent_dir/extensions/calm/index.ts" --list-models >/dev/null
+  --extension "$agent_dir/extensions/calm/index.ts" \
+  --extension "$agent_dir/extensions/subagent/index.ts" --list-models >/dev/null
 
 if [[ -e "${HOME}/.pi" || -L "${HOME}/.pi" ]]; then
 	if [[ -L "${HOME}/.pi" ]]; then
