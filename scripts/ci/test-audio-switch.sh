@@ -16,6 +16,11 @@ pass "scripts parse"
 grep -q 'tell application "System Events"' "$SCRIPT" || fail "picker does not host the list in System Events"
 grep -q 'activate' "$SCRIPT" || fail "picker does not activate System Events for focus"
 pass "picker activates System Events"
+ZPROFILE="$ROOT/dotfiles/zsh/.zprofile"
+ZSHRC="$ROOT/dotfiles/zsh/.zshrc"
+grep -q 'TINYCAST' "$ZPROFILE" || fail "zprofile missing TINYCAST fast path"
+grep -q 'TINYCAST' "$ZSHRC" || fail "zshrc missing TINYCAST fast path"
+pass "tinycast skips full zsh startup"
 
 command -v python3 >/dev/null 2>&1 || fail "python3 is required"
 python3 -m json.tool "$CATALOG" >/dev/null || fail "custom-commands.json is invalid"
@@ -37,7 +42,7 @@ for command_id, (name, verb) in required.items():
     command = by_id[command_id]
     if command["name"] != name:
         raise SystemExit(f"{command_id} name {command['name']!r} != {name!r}")
-    if f'audio-switch" {verb}' not in command["command"]:
+    if f'audio-switch" {verb}' not in command["command"] and f"audio-switch\" {verb}" not in command["command"]:
         raise SystemExit(f"{name} command does not invoke {verb}")
     if "/Users/" in command["command"] or "/home/" in command["command"]:
         raise SystemExit(f"{name} command has a personal home path")
