@@ -31,7 +31,7 @@ Custom Commands, not Quick Actions. The picker lists devices that are available 
 
 | Command | What it does |
 |---|---|
-| Switch Audio | Native list of live outputs plus paired Bluetooth audio (AirPods, Jabra, and the rest). Picking an offline headset connects it, then switches. |
+| Switch Audio | Native list of live outputs plus paired Bluetooth audio (AirPods, Jabra, and the rest). Picking an offline headset connects it, then switches. A second `cmd+opt+A` focuses the open list instead of stacking another window. |
 | Audio: Mac Speakers | Built-in speakers and mic |
 | Audio: Disconnect | Connected Bluetooth device to drop |
 
