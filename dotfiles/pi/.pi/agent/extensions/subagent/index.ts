@@ -75,6 +75,12 @@ function capOutput(text: string): string {
 	return `${output}\n\n[Output truncated]`;
 }
 
+function appendTail(current: string, chunk: string): string {
+	const bytes = Buffer.from(current + chunk, "utf8");
+	if (bytes.length <= MAX_OUTPUT_BYTES) return current + chunk;
+	return bytes.subarray(bytes.length - MAX_OUTPUT_BYTES).toString("utf8").replace(/^\uFFFD/, "");
+}
+
 async function runAgent(
 	agent: Agent,
 	task: string,
@@ -133,7 +139,7 @@ async function runAgent(
 						.join("");
 					if (messageText) finalOutput = messageText;
 				} catch {
-					stdout += `${line}\n`;
+					stdout = appendTail(stdout, `${line}\n`);
 				}
 			};
 
@@ -143,7 +149,7 @@ async function runAgent(
 				buffer = lines.pop() ?? "";
 				for (const line of lines) consume(line);
 			});
-			child.stderr.on("data", (chunk) => { stderr += chunk.toString(); });
+			child.stderr.on("data", (chunk) => { stderr = appendTail(stderr, chunk.toString()); });
 			child.on("error", (error) => complete({ agent: agent.name, task, output: "", error: error.message }));
 			child.on("close", (code) => {
 				consume(buffer);
@@ -214,6 +220,8 @@ export default function (pi: ExtensionAPI) {
 				`## ${result.agent}${result.error ? " - failed" : ""}`,
 				result.error || result.output || "(no output)",
 			].join("\n\n")).join("\n\n---\n\n");
+			const failures = results.filter((result) => result.error).length;
+			if (failures) throw new Error(`${failures}/${results.length} subagents failed\n\n${text}`);
 			return { content: [{ type: "text", text }], details: { results } };
 		},
 	});
