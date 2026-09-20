@@ -17,7 +17,7 @@ if ! rows="$(jq -r '
     .result.tabs
     | sort_by(.workspace_id, .number)
     | .[]
-    | [.tab_id, .workspace_id, (.label // "" | gsub("[\\t\\r\\n]"; " "))]
+    | [.tab_id, .workspace_id, (.label // "" | gsub("[\\t\\r\\n]"; " ") | @base64)]
     | @tsv
     end
   ' <<<"$tab_json")"; then
@@ -28,8 +28,10 @@ fi
 current_workspace=""
 current_index=0
 renamed=0
-while IFS=$'\t' read -r tab_id workspace label; do
+failed=0
+while IFS=$'\t' read -r tab_id workspace encoded_label; do
   [[ -n "$tab_id" ]] || continue
+  label="$(jq -rn --arg encoded "$encoded_label" '$encoded | @base64d')"
   if [[ "$workspace" != "$current_workspace" ]]; then
     current_workspace="$workspace"
     current_index=1
@@ -46,7 +48,9 @@ while IFS=$'\t' read -r tab_id workspace label; do
     renamed=$((renamed + 1))
   else
     printf 'herdr-tab-renumber: failed to rename %s\n' "$tab_id" >&2
+    failed=1
   fi
 done <<<"$rows"
 
 printf 'herdr-tab-renumber: renamed %d tab(s)\n' "$renamed"
+(( failed == 0 )) || exit 1
