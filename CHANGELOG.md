@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.22.0](https://github.com/vanducng/dotfiles/compare/v0.21.0...v0.22.0) (2026-09-20)
+
+
+### Features
+
+* **mac:** add OpenVPN Connect CLI controls ([#165](https://github.com/vanducng/dotfiles/issues/165)) ([607d28e](https://github.com/vanducng/dotfiles/commit/607d28e765bc17435b42597a4aab1adbec441321))
+* **skhd:** add 1Password launcher hotkey ([#163](https://github.com/vanducng/dotfiles/issues/163)) ([1be933d](https://github.com/vanducng/dotfiles/commit/1be933d2e926f3bd0ce4c0ac4ec252fc7b6f12c9))
+
+
+### Bug Fixes
+
+* **config:** swapped app hotkeys and added Pi extension ([7e32ec5](https://github.com/vanducng/dotfiles/commit/7e32ec59789c15502730a6946e0fb24cc8c0e37d))
+* **herdr:** restored detached shell shortcuts ([#164](https://github.com/vanducng/dotfiles/issues/164)) ([268804c](https://github.com/vanducng/dotfiles/commit/268804ca056b0b30da94074af1e0796b24f8ceb0))
+* **skhd:** swap Alter and WhatsApp hotkeys ([0624443](https://github.com/vanducng/dotfiles/commit/062444353969646861e39a2abc692702a55bfdfb))
+
 ## [0.21.0](https://github.com/vanducng/dotfiles/compare/v0.20.0...v0.21.0) (2026-09-19)
 
 
