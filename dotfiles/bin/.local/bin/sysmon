@@ -82,19 +82,9 @@ save_window_id() {
   printf '%s\n' "$id" >"$(wid_path "$title")"
 }
 
-window_id_for_title() {
-  local title="$1" yabai saved
-  yabai="$(yabai_bin)"
-  if [[ -z "$yabai" ]]; then
-    return 1
-  fi
-  saved="$(cat "$(wid_path "$title")" 2>/dev/null || true)"
-  if [[ -n "$saved" ]] && "$yabai" -m query --windows --window "$saved" >/dev/null 2>&1; then
-    printf '%s\n' "$saved"
-    return 0
-  fi
-  local found
-  if found="$("$yabai" -m query --windows | python3 -c '
+find_window_ids() {
+  local title="$1" yabai="$2"
+  "$yabai" -m query --windows | python3 -c '
 import json
 import sys
 
@@ -102,20 +92,51 @@ title = sys.argv[1]
 try:
     windows = json.load(sys.stdin)
 except json.JSONDecodeError:
+    raise SystemExit(0)
+ids = [
+    window["id"]
+    for window in windows
+    if window.get("app") == "kitty" and window.get("title") == title
+]
+ids.sort()
+for window_id in ids:
+    print(window_id)
+' "$title" 2>/dev/null || true
+}
+
+apply_overlay() {
+  local yabai="$1" id="$2" json floating sticky
+  json="$("$yabai" -m query --windows --window "$id" 2>/dev/null || true)"
+  [[ -n "$json" ]] || return 1
+  read -r floating sticky < <(printf '%s' "$json" | python3 -c '
+import json
+import sys
+
+try:
+    window = json.load(sys.stdin)
+except json.JSONDecodeError:
     raise SystemExit(1)
-for window in windows:
-    if window.get("app") != "kitty":
-        continue
-    if (window.get("title") or "").startswith(title):
-        print(window["id"])
-        raise SystemExit(0)
-raise SystemExit(1)
-' "$title")"; then
-    save_window_id "$title" "$found"
-    printf '%s\n' "$found"
+print("1" if window.get("is-floating") else "0", "1" if window.get("is-sticky") else "0")
+')
+  if [[ "$floating" != 1 ]]; then
+    "$yabai" -m window "$id" --toggle float 2>/dev/null || true
+  fi
+  if [[ "$sticky" != 1 ]]; then
+    "$yabai" -m window "$id" --toggle sticky 2>/dev/null || true
+  fi
+}
+
+resolve_window_id() {
+  local title="$1" yabai="$2" id
+  id="$(cat "$(wid_path "$title")" 2>/dev/null || true)"
+  if [[ -n "$id" ]] && "$yabai" -m query --windows --window "$id" >/dev/null 2>&1; then
+    printf '%s\n' "$id"
     return 0
   fi
-  return 1
+  id="$(find_window_ids "$title" "$yabai" | tail -n 1)"
+  [[ -n "$id" ]] || return 1
+  save_window_id "$title" "$id"
+  printf '%s\n' "$id"
 }
 
 focus_window() {
@@ -124,58 +145,61 @@ focus_window() {
     printf 'focus: %s\n' "$title"
     return 0
   fi
-  if id="$(window_id_for_title "$title")"; then
-    yabai="$(yabai_bin)"
-    "$yabai" -m window "$id" --focus
+  if [[ -n "${SYSMON_OPEN:-}" ]]; then
+    return 1
+  fi
+  yabai="$(yabai_bin)"
+  [[ -n "$yabai" ]] || return 1
+  id="$(cat "$(wid_path "$title")" 2>/dev/null || true)"
+  if [[ -n "$id" ]] && "$yabai" -m window "$id" --focus 2>/dev/null; then
     return 0
   fi
-  command -v osascript >/dev/null 2>&1 || return 1
-  python3 -c '
-import subprocess
-import sys
-
-def q(value: str) -> str:
-    return "\"" + value.replace("\\", "\\\\").replace("\"", "\\\"") + "\""
-
-title_q = q(sys.argv[1])
-script = """
-tell application "System Events"
-    if not (exists process "kitty") then
-        return "0"
-    end if
-    tell process "kitty"
-        repeat with w in windows
-            try
-                if (name of w as text) starts with %s then
-                    set frontmost to true
-                    perform action "AXRaise" of w
-                    return "1"
-                end if
-            end try
-        end repeat
-    end tell
-    return "0"
-end tell
-""" % title_q
-result = subprocess.run(["osascript"], input=script, text=True, capture_output=True)
-if result.stdout.strip() != "1":
-    raise SystemExit(1)
-' "$title"
+  id="$(resolve_window_id "$title" "$yabai" || true)"
+  [[ -n "$id" ]] || return 1
+  apply_overlay "$yabai" "$id" || return 1
+  "$yabai" -m window "$id" --focus 2>/dev/null
 }
 
-place_window() {
-  local title="$1" id yabai space
-  yabai="$(yabai_bin)"
-  [[ -n "$yabai" ]] || return 0
-  id="$(window_id_for_title "$title" || true)"
-  [[ -n "$id" ]] || return 0
-  save_window_id "$title" "$id"
-  space="$("$yabai" -m query --spaces --space | python3 -c 'import json,sys; print(json.load(sys.stdin).get("index",""))')"
-  if [[ -n "$space" ]]; then
-    "$yabai" -m window "$id" --space "$space" 2>/dev/null || true
-  fi
-  "$yabai" -m window "$id" --grid 6:6:1:1:4:4 2>/dev/null || true
-  "$yabai" -m window "$id" --focus 2>/dev/null || true
+place_title_later() {
+  local title="$1"
+  (
+    local yabai id attempt
+    yabai="$(yabai_bin)"
+    [[ -n "$yabai" ]] || exit 0
+    for attempt in 1 2 3 4 5 6; do
+      id="$(find_window_ids "$title" "$yabai" | tail -n 1)"
+      if [[ -n "$id" ]]; then
+        save_window_id "$title" "$id"
+        apply_overlay "$yabai" "$id" || true
+        "$yabai" -m window "$id" --grid 6:6:1:1:4:4 2>/dev/null || true
+        "$yabai" -m window "$id" --focus 2>/dev/null || true
+        exit 0
+      fi
+      sleep 0.08
+    done
+  ) >/dev/null 2>&1 &
+  disown
+}
+
+detach_exec() {
+  python3 - "$@" <<'PY'
+import os
+import sys
+
+argv = sys.argv[1:]
+if os.fork() > 0:
+    os._exit(0)
+os.setsid()
+if os.fork() > 0:
+    os._exit(0)
+devnull = os.open(os.devnull, os.O_RDWR)
+os.dup2(devnull, 0)
+os.dup2(devnull, 1)
+os.dup2(devnull, 2)
+if devnull > 2:
+    os.close(devnull)
+os.execv(argv[0], argv)
+PY
 }
 
 open_window() {
@@ -191,61 +215,35 @@ open_window() {
   fi
   local kitty
   kitty="$(kitty_bin)"
-  "$kitty" --title "$title" --override macos_quit_when_last_window_closed=yes -- "$@" >/dev/null 2>&1 &
-  SYSMON_LAST_PID=$!
-  disown
-}
-
-window_id_for_pid() {
-  local pid="$1" yabai
-  yabai="$(yabai_bin)"
-  [[ -n "$yabai" && -n "$pid" ]] || return 1
-  "$yabai" -m query --windows | python3 -c '
-import json
-import sys
-
-pid = int(sys.argv[1])
-try:
-    windows = json.load(sys.stdin)
-except json.JSONDecodeError:
-    raise SystemExit(1)
-for window in windows:
-    if window.get("app") == "kitty" and window.get("pid") == pid:
-        print(window["id"])
-        raise SystemExit(0)
-raise SystemExit(1)
-' "$pid"
+  detach_exec "$kitty" --single-instance --instance-group sysmon --wait-for-single-instance-window-close=no \
+    --config NONE --title "$title" \
+    --override macos_quit_when_last_window_closed=no --override font_size=13 \
+    -- "$@"
 }
 
 raise_or_open() {
-  local title="$1" pid id
+  local title="$1"
   shift
+  if [[ -n "${SYSMON_OPEN:-}" ]]; then
+    if [[ -n "${SYSMON_FOCUSED:-}" ]]; then
+      printf 'focus: %s\n' "$title"
+      return 0
+    fi
+    open_window "$title" "$@"
+    return 0
+  fi
   if focus_window "$title"; then
     return 0
   fi
-  SYSMON_LAST_PID=""
   open_window "$title" "$@"
-  pid="${SYSMON_LAST_PID:-}"
-  if [[ -n "${SYSMON_OPEN:-}" ]]; then
-    return 0
-  fi
-  local i
-  for i in $(seq 1 25); do
-    id="$(window_id_for_title "$title" || true)"
-    if [[ -z "$id" ]]; then
-      id="$(window_id_for_pid "$pid" || true)"
-    fi
-    if [[ -n "$id" ]]; then
-      save_window_id "$title" "$id"
-      place_window "$title"
-      return 0
-    fi
-    sleep 0.1
-  done
+  place_title_later "$title"
 }
 
 cmd_processes() {
   local btop tmux
+  if focus_window "sysmon-processes"; then
+    return 0
+  fi
   btop="$(resolve_bin btop "${SYSMON_BTOP:-}")"
   tmux="$(tmux_bin)"
   ensure_session sysmon-processes "$btop"
@@ -254,6 +252,9 @@ cmd_processes() {
 
 cmd_disk() {
   local dua tmux path="${1:-$HOME}"
+  if focus_window "sysmon-disk"; then
+    return 0
+  fi
   dua="$(resolve_bin dua "${SYSMON_DUA:-}")"
   tmux="$(tmux_bin)"
   ensure_session sysmon-disk "$dua" i "$path"
@@ -261,7 +262,7 @@ cmd_disk() {
 }
 
 cmd_stop() {
-  local tmux name
+  local tmux name yabai pid
   tmux="$(tmux_bin)"
   for name in sysmon-processes sysmon-disk; do
     if "$tmux" has-session -t "$name" 2>/dev/null; then
@@ -269,10 +270,38 @@ cmd_stop() {
       printf 'stopped: %s\n' "$name"
     fi
   done
+  yabai="$(yabai_bin)"
+  if [[ -n "$yabai" ]]; then
+    while read -r pid; do
+      [[ -n "$pid" ]] || continue
+      kill "$pid" 2>/dev/null || true
+    done < <("$yabai" -m query --windows | python3 -c '
+import json
+import sys
+
+try:
+    windows = json.load(sys.stdin)
+except json.JSONDecodeError:
+    raise SystemExit(0)
+seen = set()
+for window in windows:
+    title = window.get("title") or ""
+    if window.get("app") != "kitty":
+        continue
+    if title.startswith("sysmon-") or title == "notes-vault":
+        pid = window.get("pid")
+        if pid and pid not in seen:
+            seen.add(pid)
+            print(pid)
+')
+    for name in sysmon-processes sysmon-disk notes-vault; do
+      rm -f "$(wid_path "$name")"
+    done
+  fi
 }
 
 main() {
-  local cmd="${1:-}"
+  local cmd="${1:-}" title
   case "$cmd" in
     processes) cmd_processes ;;
     disk) shift; cmd_disk "${1:-}" ;;
