@@ -1,0 +1,250 @@
+#!/bin/bash
+set -euo pipefail
+
+usage() {
+  cat <<'EOF'
+Open an on-demand system monitor in kitty.
+
+  sysmon processes     btop (CPU, memory, processes)
+  sysmon disk [path]   dua interactive (default: $HOME)
+
+A second press focuses the open window instead of stacking another.
+EOF
+}
+
+resolve_bin() {
+  local name="$1" override="${2:-}"
+  local candidate
+  if [[ -n "$override" ]]; then
+    if [[ -x "$override" ]]; then
+      printf '%s\n' "$override"
+      return 0
+    fi
+    echo "sysmon: not executable: $override" >&2
+    return 1
+  fi
+  for candidate in "/opt/homebrew/bin/$name" "/usr/local/bin/$name"; do
+    if [[ -x "$candidate" ]]; then
+      printf '%s\n' "$candidate"
+      return 0
+    fi
+  done
+  if command -v "$name" >/dev/null 2>&1; then
+    command -v "$name"
+    return 0
+  fi
+  local pkg="$name"
+  case "$name" in
+    dua) pkg="dua-cli" ;;
+  esac
+  echo "sysmon: $name not found; brew install $pkg" >&2
+  return 1
+}
+
+kitty_bin() {
+  resolve_bin kitty "${SYSMON_KITTY:-}"
+}
+
+yabai_bin() {
+  resolve_bin yabai "${SYSMON_YABAI:-}" 2>/dev/null || true
+}
+
+wid_path() {
+  printf '%s\n' "${SYSMON_WID_DIR:-${TMPDIR:-/tmp}}/sysmon.${1}.wid"
+}
+
+save_window_id() {
+  local title="$1" id="$2"
+  mkdir -p "$(dirname "$(wid_path "$title")")"
+  printf '%s\n' "$id" >"$(wid_path "$title")"
+}
+
+window_id_for_title() {
+  local title="$1" yabai saved
+  yabai="$(yabai_bin)"
+  if [[ -z "$yabai" ]]; then
+    return 1
+  fi
+  saved="$(cat "$(wid_path "$title")" 2>/dev/null || true)"
+  if [[ -n "$saved" ]] && "$yabai" -m query --windows --window "$saved" >/dev/null 2>&1; then
+    printf '%s\n' "$saved"
+    return 0
+  fi
+  local found
+  if found="$("$yabai" -m query --windows | python3 -c '
+import json
+import sys
+
+title = sys.argv[1]
+try:
+    windows = json.load(sys.stdin)
+except json.JSONDecodeError:
+    raise SystemExit(1)
+for window in windows:
+    if window.get("app") != "kitty":
+        continue
+    if (window.get("title") or "").startswith(title):
+        print(window["id"])
+        raise SystemExit(0)
+raise SystemExit(1)
+' "$title")"; then
+    save_window_id "$title" "$found"
+    printf '%s\n' "$found"
+    return 0
+  fi
+  return 1
+}
+
+focus_window() {
+  local title="$1" id yabai
+  if [[ -n "${SYSMON_FOCUSED:-}" ]]; then
+    printf 'focus: %s\n' "$title"
+    return 0
+  fi
+  if id="$(window_id_for_title "$title")"; then
+    yabai="$(yabai_bin)"
+    "$yabai" -m window "$id" --focus
+    return 0
+  fi
+  command -v osascript >/dev/null 2>&1 || return 1
+  python3 -c '
+import subprocess
+import sys
+
+def q(value: str) -> str:
+    return "\"" + value.replace("\\", "\\\\").replace("\"", "\\\"") + "\""
+
+title_q = q(sys.argv[1])
+script = """
+tell application "System Events"
+    if not (exists process "kitty") then
+        return "0"
+    end if
+    tell process "kitty"
+        repeat with w in windows
+            try
+                if (name of w as text) starts with %s then
+                    set frontmost to true
+                    perform action "AXRaise" of w
+                    return "1"
+                end if
+            end try
+        end repeat
+    end tell
+    return "0"
+end tell
+""" % title_q
+result = subprocess.run(["osascript"], input=script, text=True, capture_output=True)
+if result.stdout.strip() != "1":
+    raise SystemExit(1)
+' "$title"
+}
+
+place_window() {
+  local title="$1" id yabai space
+  yabai="$(yabai_bin)"
+  [[ -n "$yabai" ]] || return 0
+  id="$(window_id_for_title "$title" || true)"
+  [[ -n "$id" ]] || return 0
+  save_window_id "$title" "$id"
+  space="$("$yabai" -m query --spaces --space | python3 -c 'import json,sys; print(json.load(sys.stdin).get("index",""))')"
+  if [[ -n "$space" ]]; then
+    "$yabai" -m window "$id" --space "$space" 2>/dev/null || true
+  fi
+  "$yabai" -m window "$id" --grid 6:6:1:1:4:4 2>/dev/null || true
+  "$yabai" -m window "$id" --focus 2>/dev/null || true
+}
+
+open_window() {
+  local title="$1"
+  shift
+  if [[ -n "${SYSMON_OPEN:-}" ]]; then
+    printf 'open: %s' "$title"
+    for arg in "$@"; do
+      printf ' %s' "$arg"
+    done
+    printf '\n'
+    return 0
+  fi
+  local kitty
+  kitty="$(kitty_bin)"
+  "$kitty" --title "$title" --override macos_quit_when_last_window_closed=yes -- "$@" >/dev/null 2>&1 &
+  SYSMON_LAST_PID=$!
+  disown
+}
+
+window_id_for_pid() {
+  local pid="$1" yabai
+  yabai="$(yabai_bin)"
+  [[ -n "$yabai" && -n "$pid" ]] || return 1
+  "$yabai" -m query --windows | python3 -c '
+import json
+import sys
+
+pid = int(sys.argv[1])
+try:
+    windows = json.load(sys.stdin)
+except json.JSONDecodeError:
+    raise SystemExit(1)
+for window in windows:
+    if window.get("app") == "kitty" and window.get("pid") == pid:
+        print(window["id"])
+        raise SystemExit(0)
+raise SystemExit(1)
+' "$pid"
+}
+
+raise_or_open() {
+  local title="$1" pid id
+  shift
+  if focus_window "$title"; then
+    return 0
+  fi
+  SYSMON_LAST_PID=""
+  open_window "$title" "$@"
+  pid="${SYSMON_LAST_PID:-}"
+  if [[ -n "${SYSMON_OPEN:-}" ]]; then
+    return 0
+  fi
+  local i
+  for i in $(seq 1 25); do
+    id="$(window_id_for_title "$title" || true)"
+    if [[ -z "$id" ]]; then
+      id="$(window_id_for_pid "$pid" || true)"
+    fi
+    if [[ -n "$id" ]]; then
+      save_window_id "$title" "$id"
+      place_window "$title"
+      return 0
+    fi
+    sleep 0.1
+  done
+}
+
+cmd_processes() {
+  local btop
+  btop="$(resolve_bin btop "${SYSMON_BTOP:-}")"
+  raise_or_open "sysmon-processes" "$btop"
+}
+
+cmd_disk() {
+  local dua path="${1:-$HOME}"
+  dua="$(resolve_bin dua "${SYSMON_DUA:-}")"
+  raise_or_open "sysmon-disk" "$dua" i "$path"
+}
+
+main() {
+  local cmd="${1:-}"
+  case "$cmd" in
+    processes) cmd_processes ;;
+    disk) shift; cmd_disk "${1:-}" ;;
+    -h | --help | help | "") usage ;;
+    *)
+      echo "sysmon: unknown command: $cmd" >&2
+      usage >&2
+      return 2
+      ;;
+  esac
+}
+
+main "$@"

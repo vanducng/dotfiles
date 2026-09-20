@@ -37,5 +37,31 @@
     "showsOutput": false,
     "workingDirectory": null,
     "iconSymbol": "cable.connector"
+  },
+  {
+    "id": "c4d8e2a1-7b19-4f3c-9e60-2a1d8c5b4f77",
+    "name": "System: Processes",
+    "command": "exec \"$HOME/.local/bin/sysmon\" processes",
+    "isEnabled": true,
+    "loadsShellEnvironment": false,
+    "requiresConfirmation": false,
+    "showsConfirmation": false,
+    "arguments": [],
+    "showsOutput": false,
+    "workingDirectory": null,
+    "iconSymbol": "cpu"
+  },
+  {
+    "id": "d9e1f3b2-8c20-4a4d-af71-3b2e9d6c5a88",
+    "name": "System: Disk",
+    "command": "exec \"$HOME/.local/bin/sysmon\" disk",
+    "isEnabled": true,
+    "loadsShellEnvironment": false,
+    "requiresConfirmation": false,
+    "showsConfirmation": false,
+    "arguments": [],
+    "showsOutput": false,
+    "workingDirectory": null,
+    "iconSymbol": "internaldrive"
   }
 ]
