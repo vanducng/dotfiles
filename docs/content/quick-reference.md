@@ -33,7 +33,8 @@ tail -n 100 ~/.config/herdr/herdr-server.log
 | `ctrl+shift+hjkl` | Focus Window | `cmd+shift+h/l` | Move Window |
 | `hyper + arrows` | Resize Window | `hyper + f` | Fullscreen |
 | `cmd+opt+A` | Switch audio (Tinycast) | `cmd+space` | Tinycast palette |
-| `cmd+opt+S` | Processes / btop | `cmd+opt+D` | Disk / dua |
+| `cmd+opt+S` | Processes / btop | `cmd+opt+U` | Disk / dua |
+| `cmd+opt+N` | Vault notes / nvim | `cmd+shift+N` | Tinycast notes |
 
 ### Herdr (Prefix: C-x)
 | Key | Action | Key | Action |

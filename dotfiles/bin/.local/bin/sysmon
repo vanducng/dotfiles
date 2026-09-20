@@ -7,8 +7,9 @@ Open an on-demand system monitor in kitty.
 
   sysmon processes     btop (CPU, memory, processes)
   sysmon disk [path]   dua interactive (default: $HOME)
+  sysmon stop          kill the background tmux sessions
 
-A second press focuses the open window instead of stacking another.
+btop and dua keep running in tmux after the window closes, so graphs and the disk tree stay warm. A second press focuses the open window.
 EOF
 }
 
@@ -43,6 +44,28 @@ resolve_bin() {
 
 kitty_bin() {
   resolve_bin kitty "${SYSMON_KITTY:-}"
+}
+
+tmux_bin() {
+  resolve_bin tmux "${SYSMON_TMUX:-}"
+}
+
+ensure_session() {
+  local name="$1" tmux
+  shift
+  if [[ -n "${SYSMON_OPEN:-}" ]]; then
+    printf 'session: %s' "$name"
+    for arg in "$@"; do
+      printf ' %s' "$arg"
+    done
+    printf '\n'
+    return 0
+  fi
+  tmux="$(tmux_bin)"
+  if "$tmux" has-session -t "$name" 2>/dev/null; then
+    return 0
+  fi
+  "$tmux" new-session -d -s "$name" "$@"
 }
 
 yabai_bin() {
@@ -222,15 +245,30 @@ raise_or_open() {
 }
 
 cmd_processes() {
-  local btop
+  local btop tmux
   btop="$(resolve_bin btop "${SYSMON_BTOP:-}")"
-  raise_or_open "sysmon-processes" "$btop"
+  tmux="$(tmux_bin)"
+  ensure_session sysmon-processes "$btop"
+  raise_or_open "sysmon-processes" "$tmux" attach -t sysmon-processes
 }
 
 cmd_disk() {
-  local dua path="${1:-$HOME}"
+  local dua tmux path="${1:-$HOME}"
   dua="$(resolve_bin dua "${SYSMON_DUA:-}")"
-  raise_or_open "sysmon-disk" "$dua" i "$path"
+  tmux="$(tmux_bin)"
+  ensure_session sysmon-disk "$dua" i "$path"
+  raise_or_open "sysmon-disk" "$tmux" attach -t sysmon-disk
+}
+
+cmd_stop() {
+  local tmux name
+  tmux="$(tmux_bin)"
+  for name in sysmon-processes sysmon-disk; do
+    if "$tmux" has-session -t "$name" 2>/dev/null; then
+      "$tmux" kill-session -t "$name"
+      printf 'stopped: %s\n' "$name"
+    fi
+  done
 }
 
 main() {
@@ -238,6 +276,17 @@ main() {
   case "$cmd" in
     processes) cmd_processes ;;
     disk) shift; cmd_disk "${1:-}" ;;
+    attach)
+      shift
+      if [[ -z "${1:-}" ]]; then
+        echo "usage: sysmon attach <title> <command>..." >&2
+        return 2
+      fi
+      title="$1"
+      shift
+      raise_or_open "$title" "$@"
+      ;;
+    stop) cmd_stop ;;
     -h | --help | help | "") usage ;;
     *)
       echo "sysmon: unknown command: $cmd" >&2

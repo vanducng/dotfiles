@@ -55,24 +55,31 @@ cat >"$workdir/dua" <<'EOF'
 #!/usr/bin/env bash
 echo dua "$@"
 EOF
-chmod +x "$workdir/btop" "$workdir/dua"
+cat >"$workdir/tmux" <<'EOF'
+#!/usr/bin/env bash
+echo tmux "$@"
+EOF
+chmod +x "$workdir/btop" "$workdir/dua" "$workdir/tmux"
 
 export SYSMON_BTOP="$workdir/btop"
 export SYSMON_DUA="$workdir/dua"
+export SYSMON_TMUX="$workdir/tmux"
 export SYSMON_OPEN=1
 export HOME="$workdir/home"
 mkdir -p "$HOME"
 
 out="$("$SCRIPT" processes)"
-printf '%s\n' "$out" | grep -q 'open: sysmon-processes' || fail "processes open: $out"
+printf '%s\n' "$out" | grep -q 'session: sysmon-processes' || fail "processes session: $out"
 printf '%s\n' "$out" | grep -q "$workdir/btop" || fail "processes missing btop: $out"
-pass "processes opens btop"
+printf '%s\n' "$out" | grep -q 'attach -t sysmon-processes' || fail "processes missing attach: $out"
+pass "processes keeps btop in tmux"
 
 out="$("$SCRIPT" disk)"
-printf '%s\n' "$out" | grep -q 'open: sysmon-disk' || fail "disk open: $out"
+printf '%s\n' "$out" | grep -q 'session: sysmon-disk' || fail "disk session: $out"
 printf '%s\n' "$out" | grep -q "$workdir/dua" || fail "disk missing dua: $out"
 printf '%s\n' "$out" | grep -q " i $HOME" || fail "disk missing home path: $out"
-pass "disk opens dua i \$HOME"
+printf '%s\n' "$out" | grep -q 'attach -t sysmon-disk' || fail "disk missing attach: $out"
+pass "disk keeps dua in tmux"
 
 out="$("$SCRIPT" disk "$workdir/scan")"
 printf '%s\n' "$out" | grep -q " i $workdir/scan" || fail "disk path: $out"
@@ -83,7 +90,34 @@ printf '%s\n' "$out" | grep -q 'focus: sysmon-processes' || fail "reuse: $out"
 printf '%s\n' "$out" | grep -q 'open:' && fail "reuse opened another window: $out"
 pass "processes reuses an open window"
 
-if grep -R -nE '/Users/|/home/[a-z]' "$SCRIPT" "$CATALOG" "$SETUP" >/dev/null; then
+NOTES="$ROOT/dotfiles/bin/.local/bin/notes-vault"
+[[ -x "$NOTES" ]] || chmod +x "$NOTES"
+bash -n "$NOTES" || fail "notes-vault syntax"
+grep -q 'Notes: Vault' "$SETUP" || fail "setup missing vault command"
+grep -q 'combo 32 2304' "$SETUP" || fail "disk hotkey is still Dock's cmd+opt+D"
+pass "vault command and disk chord"
+
+export OBSIDIAN_VAULT="$workdir/vault"
+export NOTES_VAULT_NVIM="$workdir/nvim"
+export NOTES_VAULT_TMUX="$workdir/tmux"
+export NOTES_VAULT_OPEN=1
+mkdir -p "$OBSIDIAN_VAULT"
+cat >"$workdir/nvim" <<'EOF'
+#!/usr/bin/env bash
+echo nvim "$@"
+EOF
+cat >"$workdir/tmux" <<'EOF'
+#!/usr/bin/env bash
+echo tmux "$@"
+EOF
+chmod +x "$workdir/nvim" "$workdir/tmux"
+out="$("$NOTES")"
+printf '%s\n' "$out" | grep -q 'session: notes-vault' || fail "vault session: $out"
+printf '%s\n' "$out" | grep -q "$workdir/nvim" || fail "vault missing nvim: $out"
+printf '%s\n' "$out" | grep -q 'attach -t notes-vault' || fail "vault missing attach: $out"
+pass "notes-vault opens nvim on the vault"
+
+if grep -R -nE '/Users/|/home/[a-z]' "$SCRIPT" "$NOTES" "$CATALOG" "$SETUP" >/dev/null; then
   fail "personal home path leaked into managed files"
 fi
 pass "no personal home paths"

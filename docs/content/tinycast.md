@@ -23,7 +23,8 @@ make setup-tinycast
 | `cmd+shift+T` | Summarize selected text |
 | `cmd+opt+A` | Switch audio output (skips the full login zsh) |
 | `cmd+opt+S` | Processes (`btop`) |
-| `cmd+opt+D` | Disk (`dua i`) |
+| `cmd+opt+U` | Disk (`dua i`) |
+| `cmd+opt+N` | Vault notes (`nvim`) |
 
 Move Alter off `cmd+shift+R` (use `cmd+shift+D`) or rewrite loses the race on launch.
 
@@ -56,12 +57,16 @@ Needs `switchaudio-osx` and `blueutil` from `scripts/macos-deps.sh`. Switching o
 
 ## System monitor
 
-`cmd+opt+S` opens `btop` in a floating kitty window. `cmd+opt+D` opens `dua i` on `$HOME`. A second press focuses the same window. Titles start with `sysmon-` so they do not jump to the pinned kitty space.
+`cmd+opt+S` opens `btop`. `cmd+opt+U` opens `dua i` on `$HOME` (not `cmd+opt+D`, which is macOS Dock hide). Both keep running in tmux after you close the window, so graphs and the disk tree stay warm. A second press focuses the same window.
+
+`cmd+opt+N` opens the Obsidian vault in Neovim (`$OBSIDIAN_VAULT` or `$HOME/git/personal/vault`). Same persist-in-tmux behavior. `cmd+shift+N` stays Tinycast's own notes.
 
 ```bash
 sysmon processes
 sysmon disk
-sysmon disk /
+sysmon stop
+notes-vault
+notes-vault stop
 ```
 
-Needs `btop` and `dua-cli` from `scripts/macos-deps.sh`. Palette search also finds `processes` and `disk`.
+Needs `btop`, `dua-cli`, `tmux`, and `kitty` from `scripts/macos-deps.sh`. Palette search also finds `processes`, `disk`, and `vault`.

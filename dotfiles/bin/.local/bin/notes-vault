@@ -1,0 +1,89 @@
+#!/bin/bash
+set -euo pipefail
+
+usage() {
+  cat <<'EOF'
+Open the Obsidian vault in Neovim.
+
+  notes-vault         attach a persistent nvim session on the vault
+  notes-vault stop    kill that session
+
+Vault path: $OBSIDIAN_VAULT, else $HOME/git/personal/vault.
+Closing the window detaches; buffers stay in tmux.
+EOF
+}
+
+resolve_bin() {
+  local name="$1" override="${2:-}"
+  local candidate
+  if [[ -n "$override" ]]; then
+    if [[ -x "$override" ]]; then
+      printf '%s\n' "$override"
+      return 0
+    fi
+    echo "notes-vault: not executable: $override" >&2
+    return 1
+  fi
+  for candidate in "/opt/homebrew/bin/$name" "/usr/local/bin/$name"; do
+    if [[ -x "$candidate" ]]; then
+      printf '%s\n' "$candidate"
+      return 0
+    fi
+  done
+  if command -v "$name" >/dev/null 2>&1; then
+    command -v "$name"
+    return 0
+  fi
+  echo "notes-vault: $name not found" >&2
+  return 1
+}
+
+vault_path() {
+  printf '%s\n' "${OBSIDIAN_VAULT:-$HOME/git/personal/vault}"
+}
+
+main() {
+  local cmd="${1:-open}"
+  case "$cmd" in
+    -h | --help | help)
+      usage
+      return 0
+      ;;
+    stop)
+      local tmux
+      tmux="$(resolve_bin tmux "${NOTES_VAULT_TMUX:-}")"
+      if "$tmux" has-session -t notes-vault 2>/dev/null; then
+        "$tmux" kill-session -t notes-vault
+        printf 'stopped: notes-vault\n'
+      fi
+      return 0
+      ;;
+    open | "")
+      ;;
+    *)
+      echo "notes-vault: unknown command: $cmd" >&2
+      usage >&2
+      return 2
+      ;;
+  esac
+  local vault nvim tmux
+  vault="$(vault_path)"
+  if [[ ! -d "$vault" ]]; then
+    echo "notes-vault: vault not found: $vault" >&2
+    return 1
+  fi
+  nvim="$(resolve_bin nvim "${NOTES_VAULT_NVIM:-}")"
+  tmux="$(resolve_bin tmux "${NOTES_VAULT_TMUX:-}")"
+  if [[ -n "${NOTES_VAULT_OPEN:-}" ]]; then
+    printf 'session: notes-vault %s .\n' "$nvim"
+    printf 'open: notes-vault %s attach -t notes-vault\n' "$tmux"
+    return 0
+  fi
+  if ! "$tmux" has-session -t notes-vault 2>/dev/null; then
+    "$tmux" new-session -d -s notes-vault -c "$vault" "$nvim" .
+  fi
+  here="$(cd "$(dirname "$0")" && pwd)"
+  exec "$here/sysmon" attach notes-vault "$tmux" attach -t notes-vault
+}
+
+main "$@"

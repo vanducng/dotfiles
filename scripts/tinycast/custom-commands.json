@@ -63,5 +63,18 @@
     "showsOutput": false,
     "workingDirectory": null,
     "iconSymbol": "internaldrive"
+  },
+  {
+    "id": "e2a4c6d8-9b31-4f5e-8a72-4c3f0e7d6b99",
+    "name": "Notes: Vault",
+    "command": "exec \"$HOME/.local/bin/notes-vault\"",
+    "isEnabled": true,
+    "loadsShellEnvironment": false,
+    "requiresConfirmation": false,
+    "showsConfirmation": false,
+    "arguments": [],
+    "showsOutput": false,
+    "workingDirectory": null,
+    "iconSymbol": "book"
   }
 ]

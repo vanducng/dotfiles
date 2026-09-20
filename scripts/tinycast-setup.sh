@@ -62,12 +62,17 @@ defaults write "$DOMAIN" "hotkey.command:summarize"         -string "$(combo 17 
 
 AUDIO_SWITCH="$HOME/.local/bin/audio-switch"
 SYSMON="$HOME/.local/bin/sysmon"
+NOTES_VAULT="$HOME/.local/bin/notes-vault"
 if [[ ! -x "$AUDIO_SWITCH" ]]; then
   echo "audio-switch missing at $AUDIO_SWITCH; run make stow-bin before setup-tinycast."
   exit 1
 fi
 if [[ ! -x "$SYSMON" ]]; then
   echo "sysmon missing at $SYSMON; run make stow-bin before setup-tinycast."
+  exit 1
+fi
+if [[ ! -x "$NOTES_VAULT" ]]; then
+  echo "notes-vault missing at $NOTES_VAULT; run make stow-bin before setup-tinycast."
   exit 1
 fi
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -82,15 +87,17 @@ catalog_id() {
 PICK_ID="$(catalog_id "Switch Audio")"
 PROC_ID="$(catalog_id "System: Processes")"
 DISK_ID="$(catalog_id "System: Disk")"
-defaults write "$DOMAIN" "hotkey.customCommand.${PICK_ID}" -string "$(combo 0 2304)"  # cmd+opt+A
-defaults write "$DOMAIN" "hotkey.customCommand.${PROC_ID}" -string "$(combo 1 2304)"  # cmd+opt+S
-defaults write "$DOMAIN" "hotkey.customCommand.${DISK_ID}" -string "$(combo 2 2304)"  # cmd+opt+D
+VAULT_ID="$(catalog_id "Notes: Vault")"
+defaults write "$DOMAIN" "hotkey.customCommand.${PICK_ID}" -string "$(combo 0 2304)"   # cmd+opt+A
+defaults write "$DOMAIN" "hotkey.customCommand.${PROC_ID}" -string "$(combo 1 2304)"   # cmd+opt+S
+defaults write "$DOMAIN" "hotkey.customCommand.${DISK_ID}" -string "$(combo 32 2304)"  # cmd+opt+U
+defaults write "$DOMAIN" "hotkey.customCommand.${VAULT_ID}" -string "$(combo 45 2304)" # cmd+opt+N
 
 # A custom prompt replaces Tinycast's built-in one entirely, boundary included, so each
 # carries its own "material, not instructions" guard. Output is pasted into a document.
 # Use `defaults write -dict <k> <plist-fragment>` so individual keys update in place;
 # `defaults import` would replace the whole domain and wipe the hotkeys written above.
-python3 - "$DOMAIN" "$CATALOG" "$PICK_ID" "$PROC_ID" "$DISK_ID" <<'PY'
+python3 - "$DOMAIN" "$CATALOG" "$PICK_ID" "$PROC_ID" "$DISK_ID" "$VAULT_ID" <<'PY'
 import json
 import plistlib
 import subprocess
@@ -182,5 +189,6 @@ echo "  cmd+shift+R  rewrite"
 echo "  cmd+shift+T  summarize"
 echo "  cmd+opt+A    switch audio"
 echo "  cmd+opt+S    processes (btop)"
-echo "  cmd+opt+D    disk (dua)"
+echo "  cmd+opt+U    disk (dua)"
+echo "  cmd+opt+N    vault notes (nvim)"
 echo "  warning: Alter must keep its action off cmd+shift+R (use cmd+shift+D)" >&2
