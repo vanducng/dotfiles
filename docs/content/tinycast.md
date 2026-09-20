@@ -31,7 +31,7 @@ Custom Commands, not Quick Actions. The picker lists devices that are available 
 
 | Command | What it does |
 |---|---|
-| Switch Audio | Native list of live outputs. Sets a matching input on headsets. |
+| Switch Audio | Native list of live outputs, focused for keyboard use. Sets a matching input on headsets. |
 | Audio: Mac Speakers | Built-in speakers and mic |
 | Audio: Disconnect | Connected Bluetooth device to drop |
 
