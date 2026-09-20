@@ -172,6 +172,83 @@ for line in sys.stdin:
 ' <<<"$names"
 }
 
+dialog_lock_dir() {
+  local name="$1"
+  if [[ -n "${AUDIO_SWITCH_LOCK:-}" ]]; then
+    printf '%s\n' "$AUDIO_SWITCH_LOCK"
+    return 0
+  fi
+  printf '%s\n' "${TMPDIR:-/tmp}/audio-switch.${name}.lock"
+}
+
+raise_existing_dialog() {
+  local title="$1"
+  command -v osascript >/dev/null 2>&1 || return 0
+  python3 -c '
+import subprocess
+import sys
+
+def q(value: str) -> str:
+    return "\"" + value.replace("\\", "\\\\").replace("\"", "\\\"") + "\""
+
+title_q = q(sys.argv[1])
+script = """
+tell application "System Events"
+    activate
+    repeat with procName in {"System Events", "osascript", "OSAScript"}
+        try
+            tell process (procName as text)
+                if exists (window %s) then
+                    set frontmost to true
+                    perform action "AXRaise" of window %s
+                    return "1"
+                end if
+            end tell
+        end try
+    end repeat
+    return "0"
+end tell
+""" % (title_q, title_q)
+subprocess.run(["osascript"], input=script, text=True, capture_output=True)
+' "$title" || true
+}
+
+release_dialog_lock() {
+  if [[ -n "${DIALOG_LOCK:-}" ]]; then
+    rm -rf "$DIALOG_LOCK"
+    DIALOG_LOCK=""
+  fi
+}
+
+acquire_dialog_lock() {
+  local name="$1" title="$2" dir pidfile pid
+  if [[ -n "${AUDIO_SWITCH_SELECT:-}" ]]; then
+    return 0
+  fi
+  dir="$(dialog_lock_dir "$name")"
+  pidfile="$dir/pid"
+  if mkdir "$dir" 2>/dev/null; then
+    printf '%s\n' "$$" >"$pidfile"
+    DIALOG_LOCK="$dir"
+    return 0
+  fi
+  if [[ -f "$pidfile" ]]; then
+    pid="$(cat "$pidfile" 2>/dev/null || true)"
+    if [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null; then
+      raise_existing_dialog "$title"
+      return 1
+    fi
+  fi
+  rm -rf "$dir"
+  if mkdir "$dir" 2>/dev/null; then
+    printf '%s\n' "$$" >"$pidfile"
+    DIALOG_LOCK="$dir"
+    return 0
+  fi
+  raise_existing_dialog "$title"
+  return 1
+}
+
 choose_from_list() {
   local title="$1" prompt="$2" default="$3"
   if [[ -n "${AUDIO_SWITCH_SELECT:-}" ]]; then
@@ -502,6 +579,8 @@ apply_selected() {
 }
 
 cmd_pick() {
+  acquire_dialog_lock pick "Audio output" || return 0
+  trap 'release_dialog_lock' EXIT
   require_switch_audio
   local current selected outputs visible work
   work="$(mktemp -d "${TMPDIR:-/tmp}/audio-switch.XXXXXX")"
@@ -520,6 +599,8 @@ cmd_pick() {
     selected="$(printf '%s\n' "$visible" | choose_from_list "Audio output" "Current: $current" "$current")"
   fi
   rm -rf "$work"
+  release_dialog_lock
+  trap - EXIT
   if [[ -z "$selected" ]]; then
     return 0
   fi
@@ -662,6 +743,8 @@ for device in devices:
 }
 
 cmd_disconnect() {
+  acquire_dialog_lock disconnect "Disconnect Bluetooth" || return 0
+  trap 'release_dialog_lock' EXIT
   require_blueutil
   if [[ -z "${SWITCH_AUDIO:-}" ]]; then
     SWITCH_AUDIO="$(resolve_bin SwitchAudioSource "${SWITCH_AUDIO_BIN:-}" 2>/dev/null || true)"
@@ -674,9 +757,13 @@ cmd_disconnect() {
   fi
   if [[ -z "$rows" ]]; then
     echo "audio-switch: no connected Bluetooth devices"
+    release_dialog_lock
+    trap - EXIT
     return 0
   fi
   selected="$(printf '%s\n' "$rows" | awk -F '\t' '{print $2}' | choose_from_list "Disconnect Bluetooth" "Choose a connected device" "")"
+  release_dialog_lock
+  trap - EXIT
   if [[ -z "$selected" ]]; then
     return 0
   fi
