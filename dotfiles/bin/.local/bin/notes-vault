@@ -42,6 +42,16 @@ vault_path() {
   printf '%s\n' "${OBSIDIAN_VAULT:-$HOME/git/personal/vault}"
 }
 
+session_path() {
+  local prefix=""
+  if [[ -d /opt/homebrew/bin ]]; then
+    prefix="/opt/homebrew/bin:"
+  elif [[ -d /usr/local/bin ]]; then
+    prefix="/usr/local/bin:"
+  fi
+  printf '%s%s:%s\n' "$prefix" "${HOME}/.local/bin" "${PATH}"
+}
+
 main() {
   local cmd="${1:-open}"
   case "$cmd" in
@@ -80,7 +90,7 @@ main() {
     return 0
   fi
   if ! "$tmux" has-session -t notes-vault 2>/dev/null; then
-    "$tmux" new-session -d -s notes-vault -c "$vault" "$nvim" .
+    env PATH="$(session_path)" "$tmux" new-session -d -s notes-vault -c "$vault" "$nvim" .
   fi
   here="$(cd "$(dirname "$0")" && pwd)"
   exec "$here/sysmon" attach notes-vault "$tmux" attach -t notes-vault
