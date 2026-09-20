@@ -1,5 +1,5 @@
 import { spawn } from "node:child_process";
-import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { basename, join } from "node:path";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
@@ -36,7 +36,10 @@ function discoverAgents(): Agent[] {
 					description?: unknown;
 					tools?: unknown;
 				}>(readFileSync(join(dir, entry.name), "utf8"));
-				if (typeof frontmatter.name !== "string" || typeof frontmatter.description !== "string") return [];
+				if (typeof frontmatter.name !== "string" || typeof frontmatter.description !== "string") {
+					console.warn(`subagent: skipping ${entry.name}: name and description are required`);
+					return [];
+				}
 				const rawTools = Array.isArray(frontmatter.tools)
 					? frontmatter.tools
 					: typeof frontmatter.tools === "string"
@@ -48,7 +51,8 @@ function discoverAgents(): Agent[] {
 					tools: rawTools.filter((tool): tool is string => typeof tool === "string").map((tool) => tool.trim()).filter(Boolean),
 					prompt: body.trim(),
 				}];
-			} catch {
+			} catch (error) {
+				console.warn(`subagent: skipping ${entry.name}: ${error instanceof Error ? error.message : String(error)}`);
 				return [];
 			}
 		});
@@ -65,9 +69,9 @@ function piInvocation(args: string[]): { command: string; args: string[] } {
 }
 
 function capOutput(text: string): string {
-	if (Buffer.byteLength(text, "utf8") <= MAX_OUTPUT_BYTES) return text;
-	let output = text.slice(0, MAX_OUTPUT_BYTES);
-	while (Buffer.byteLength(output, "utf8") > MAX_OUTPUT_BYTES) output = output.slice(0, -1);
+	const bytes = Buffer.from(text, "utf8");
+	if (bytes.length <= MAX_OUTPUT_BYTES) return text;
+	const output = bytes.subarray(0, MAX_OUTPUT_BYTES).toString("utf8").replace(/\uFFFD$/, "");
 	return `${output}\n\n[Output truncated]`;
 }
 
@@ -79,6 +83,9 @@ async function runAgent(
 	thinking: string | undefined,
 	signal: AbortSignal | undefined,
 ): Promise<RunResult> {
+	if (!existsSync(cwd) || !statSync(cwd).isDirectory()) {
+		return { agent: agent.name, task, output: "", error: `Invalid working directory: ${cwd}` };
+	}
 	const tempDir = mkdtempSync(join(tmpdir(), "pi-subagent-"));
 	const promptPath = join(tempDir, "prompt.md");
 	writeFileSync(promptPath, agent.prompt, { mode: 0o600 });
@@ -99,7 +106,20 @@ async function runAgent(
 			let finalOutput = "";
 			let modelError = "";
 			let stopReason = "";
+			let killTimer: NodeJS.Timeout | undefined;
+			let settled = false;
 
+			const abort = () => {
+				child.kill("SIGTERM");
+				killTimer = setTimeout(() => child.kill("SIGKILL"), 5000);
+			};
+			const complete = (result: RunResult) => {
+				if (settled) return;
+				settled = true;
+				if (killTimer) clearTimeout(killTimer);
+				signal?.removeEventListener("abort", abort);
+				resolve(result);
+			};
 			const consume = (line: string) => {
 				if (!line.trim()) return;
 				try {
@@ -107,9 +127,11 @@ async function runAgent(
 					if (event.type !== "message_end" || event.message?.role !== "assistant") return;
 					modelError = event.message.errorMessage ?? modelError;
 					stopReason = event.message.stopReason ?? stopReason;
-					for (const part of event.message.content ?? []) {
-						if (part.type === "text") finalOutput = part.text;
-					}
+					const messageText = (event.message.content ?? [])
+						.filter((part: { type?: string }) => part.type === "text")
+						.map((part: { text?: string }) => part.text ?? "")
+						.join("");
+					if (messageText) finalOutput = messageText;
 				} catch {
 					stdout += `${line}\n`;
 				}
@@ -122,15 +144,14 @@ async function runAgent(
 				for (const line of lines) consume(line);
 			});
 			child.stderr.on("data", (chunk) => { stderr += chunk.toString(); });
-			child.on("error", (error) => resolve({ agent: agent.name, task, output: "", error: error.message }));
+			child.on("error", (error) => complete({ agent: agent.name, task, output: "", error: error.message }));
 			child.on("close", (code) => {
 				consume(buffer);
 				const failed = code !== 0 || stopReason === "error" || stopReason === "aborted";
 				const error = failed ? modelError || stderr.trim() || `pi stopped: ${stopReason || `exit ${code}`}` : undefined;
-				resolve({ agent: agent.name, task, output: capOutput(finalOutput || stdout.trim()), error });
+				complete({ agent: agent.name, task, output: capOutput(finalOutput || stdout.trim()), error });
 			});
 
-			const abort = () => child.kill("SIGTERM");
 			if (signal?.aborted) abort();
 			else signal?.addEventListener("abort", abort, { once: true });
 		});
