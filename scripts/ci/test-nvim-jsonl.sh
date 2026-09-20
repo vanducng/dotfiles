@@ -25,6 +25,31 @@ fi
 if command -v luac >/dev/null 2>&1; then
   luac -p "$module"
   luac -p "$nvim_cfg/lua/polish.lua"
+  luac -p "$nvim_cfg/lua/brew_path.lua"
+fi
+
+if ! grep -q 'require "brew_path"' "$nvim_cfg/init.lua"; then
+  printf 'error: init.lua must load brew_path before plugins\n' >&2
+  exit 1
+fi
+
+if [[ -d /opt/homebrew/bin ]]; then
+  nvim_bin="$(command -v nvim)"
+  path_head="$(
+    env PATH="/usr/local/bin:/usr/bin:/bin" "$nvim_bin" --headless -u NONE -i NONE -n \
+      --cmd "let &runtimepath = '$nvim_cfg' . ',' . &runtimepath" \
+      --cmd "lua require('brew_path')" \
+      --cmd "lua io.write(vim.env.PATH)" \
+      +qa!
+  )"
+  case "$path_head" in
+    */opt/homebrew/bin:/usr/local/bin:* | /opt/homebrew/bin:/usr/local/bin:*)
+      ;;
+    *)
+      printf 'error: brew_path must put /opt/homebrew/bin ahead of /usr/local/bin\n%s\n' "$path_head" >&2
+      exit 1
+      ;;
+  esac
 fi
 
 if grep -q 'Format buffer as JSON (jq)' "$nvim_cfg/lua/plugins/astrocore.lua"; then
