@@ -1,0 +1,41 @@
+[
+  {
+    "id": "7c8e1a2b-4d3f-4a91-9b6e-0f2c8d1a5e70",
+    "name": "Switch Audio",
+    "command": "\"$HOME/.local/bin/audio-switch\" pick",
+    "isEnabled": true,
+    "loadsShellEnvironment": false,
+    "requiresConfirmation": false,
+    "showsConfirmation": false,
+    "arguments": [],
+    "showsOutput": false,
+    "workingDirectory": null,
+    "iconSymbol": "hifispeaker"
+  },
+  {
+    "id": "3a9f2d81-6c14-4e08-b7a5-21d0e84c9f33",
+    "name": "Audio: Mac Speakers",
+    "command": "\"$HOME/.local/bin/audio-switch\" speakers",
+    "isEnabled": true,
+    "loadsShellEnvironment": false,
+    "requiresConfirmation": false,
+    "showsConfirmation": false,
+    "arguments": [],
+    "showsOutput": false,
+    "workingDirectory": null,
+    "iconSymbol": "speaker.wave.2"
+  },
+  {
+    "id": "b5e0c472-18a9-4d6f-8c31-7a2e9f0b4d16",
+    "name": "Audio: Disconnect",
+    "command": "\"$HOME/.local/bin/audio-switch\" disconnect",
+    "isEnabled": true,
+    "loadsShellEnvironment": false,
+    "requiresConfirmation": false,
+    "showsConfirmation": false,
+    "arguments": [],
+    "showsOutput": false,
+    "workingDirectory": null,
+    "iconSymbol": "cable.connector"
+  }
+]

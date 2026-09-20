@@ -35,6 +35,8 @@ brew install neovim
 brew install fnm
 brew install tmux
 brew install rust
+brew install switchaudio-osx
+brew install blueutil
 
 # Core dependencies intentionally fail fast; Tinycast below is the only optional, guarded step.
 # Only Tinycast is guarded with a warning, everything else should abort on failure.

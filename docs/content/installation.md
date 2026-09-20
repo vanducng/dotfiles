@@ -115,6 +115,10 @@ ls -la
 # - Development tools (Node.js, Python, Rust)
 # - Applications (browsers, editors, communication tools)
 # - Utilities (file managers, system tools)
+# - Tinycast plus switchaudio-osx and blueutil for audio switching
+
+# After stow, apply Tinycast hotkeys and audio Custom Commands
+make setup-tinycast
 ```
 
 ## 🔗 Step 5: Install Dotfiles
