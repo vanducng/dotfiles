@@ -89,9 +89,12 @@ More modifiers means a bigger jump: panes, then tabs, then workspaces, then mach
 | `C-x Space` | Pick a recent path or URL |
 | `C-x [` | Copy mode |
 | `C-x Shift-G` | Open the current branch's pull request, or the repository's pull request list |
+| `C-x Shift-I` | Renumber visible tab labels from 1 in each workspace |
 | `C-x r` | Resize mode |
 | `C-x R` | Reload config |
 | `C-x ?` | Active key help |
+
+Herdr keeps tab IDs stable after closes, so `C-x Shift-I` renumbers the visible label prefixes without changing IDs such as `wR:t5`.
 
 Herdr 0.9.0 has no machine key. `C-x 0` is home on the machine you are viewing: workspace 1, tab 1, first pane (the Local orchestrator when you are on Local). From another machine, `C-x g` then `Home` then `Enter` selects Local; the first navigator row is Local. `C-x Shift-Left/Right` also walks workspaces across machines. `C-x w` stays the portable workspace jump when numbered workspace chords do not reach Herdr.
 
