@@ -1,0 +1,25 @@
+{
+  "title": "Sysmon dock",
+  "rules": [
+    {
+      "description": "cmd+opt+G docks the sysmon overlay",
+      "manipulators": [
+        {
+          "type": "basic",
+          "from": {
+            "key_code": "g",
+            "modifiers": {
+              "mandatory": ["command", "option"],
+              "optional": ["caps_lock"]
+            }
+          },
+          "to": [
+            {
+              "shell_command": "/bin/bash -lc '\"$HOME/.local/bin/sysmon\" dock'"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

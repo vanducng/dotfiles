@@ -1,26 +1,29 @@
 #!/bin/bash
 set -euo pipefail
 
-# One kitty overlay, one tmux session (btop / disk / vault). A new app
-# is a cmd_* that calls open_app. Hotkeys: scripts/tinycast-setup.sh.
+# One kitty overlay, one tmux session. meh+f raises the last window;
+# first start creates btop. Palette/CLI can still open disk or vault.
 
 SESSION="${SYSMON_SESSION:-sysmon}"
 SOCKET="${SYSMON_TMUX_SOCKET:-sysmon}"
 HUB_TITLE="${SYSMON_TITLE:-sysmon-hub}"
 OVERLAY_GRID="${SYSMON_GRID:-6:6:1:1:4:4}"
+OVERLAY_DOCK="${SYSMON_DOCK:-1:4:3:0:1:1}"
+PLACE_GRID="$OVERLAY_GRID"
 
 usage() {
   cat <<'EOF'
 Open system tools in one tmux session (kitty overlay).
 
-  sysmon processes     window 1: btop
+  sysmon               raise the last window, centered
+  sysmon dock          raise the last window as a right sidebar
+  sysmon processes     window 1: btop (also first start)
   sysmon disk [path]   window 2: dua interactive (default: $HOME)
   sysmon vault         window 3: nvim on $OBSIDIAN_VAULT
   sysmon stop          kill the session and overlay
 
-Apps stay running after the overlay closes. A second press focuses the
-same window and selects that app. Prefix and window keys come from
-~/.tmux.conf (override with SYSMON_TMUX_CONF).
+meh+f recenters. cmd+opt+G docks on the right (~1/4). First start
+creates btop. Prefix and window keys come from ~/.tmux.conf.
 EOF
 }
 
@@ -192,7 +195,8 @@ print("1" if window.get("is-floating") else "0", "1" if window.get("is-sticky") 
   if [[ "$sticky" != 1 ]]; then
     "$yabai" -m window "$id" --toggle sticky 2>/dev/null || true
   fi
-  "$yabai" -m window "$id" --grid "$OVERLAY_GRID" 2>/dev/null || true
+  "$yabai" -m window "$id" --sub-layer above 2>/dev/null || true
+  "$yabai" -m window "$id" --grid "${PLACE_GRID:-$OVERLAY_GRID}" 2>/dev/null || true
 }
 
 resolve_window_id() {
@@ -319,6 +323,21 @@ attach_hub() {
   raise_or_open "$HUB_TITLE" "$tmux" -L "$SOCKET" attach -t "$SESSION"
 }
 
+cmd_show() {
+  PLACE_GRID="${1:-$OVERLAY_GRID}"
+  if [[ -n "${SYSMON_OPEN:-}" ]]; then
+    printf 'show: %s\n' "$SESSION"
+    printf 'place: %s\n' "$PLACE_GRID"
+    attach_hub
+    return 0
+  fi
+  if ! has_session; then
+    cmd_processes
+    return
+  fi
+  attach_hub
+}
+
 open_app() {
   local name="$1" index="$2" cwd="$3"
   shift 3
@@ -344,14 +363,15 @@ cmd_disk() {
 }
 
 cmd_vault() {
-  local nvim vault
+  local nvim vault zsh
   vault="$(vault_path)"
   if [[ ! -d "$vault" ]]; then
     echo "sysmon: vault not found: $vault" >&2
     return 1
   fi
   nvim="$(resolve_bin nvim "${SYSMON_NVIM:-}")"
-  open_app vault 3 "$vault" "$nvim" .
+  zsh="${SYSMON_ZSH:-/bin/zsh}"
+  open_app vault 3 "$vault" "$zsh" -lc "source \"\$HOME/.zshrc\" >/dev/null 2>&1 || true; exec \"$nvim\" ."
 }
 
 cmd_stop() {
@@ -404,6 +424,8 @@ for window in windows:
 main() {
   local cmd="${1:-}" title
   case "$cmd" in
+    "" | show | center) cmd_show "$OVERLAY_GRID" ;;
+    dock | sidebar) cmd_show "$OVERLAY_DOCK" ;;
     processes) cmd_processes ;;
     disk) shift; cmd_disk "${1:-}" ;;
     vault) cmd_vault ;;
@@ -418,7 +440,7 @@ main() {
       raise_or_open "$title" "$@"
       ;;
     stop) cmd_stop ;;
-    -h | --help | help | "") usage ;;
+    -h | --help | help) usage ;;
     *)
       echo "sysmon: unknown command: $cmd" >&2
       usage >&2

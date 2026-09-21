@@ -76,5 +76,18 @@
     "showsOutput": false,
     "workingDirectory": null,
     "iconSymbol": "book"
+  },
+  {
+    "id": "a1c3e5f7-2d43-4b6a-8c94-6e5f2a9d8b11",
+    "name": "System: Dock",
+    "command": "exec \"$HOME/.local/bin/sysmon\" dock",
+    "isEnabled": true,
+    "loadsShellEnvironment": false,
+    "requiresConfirmation": false,
+    "showsConfirmation": false,
+    "arguments": [],
+    "showsOutput": false,
+    "workingDirectory": null,
+    "iconSymbol": "sidebar.right"
   }
 ]

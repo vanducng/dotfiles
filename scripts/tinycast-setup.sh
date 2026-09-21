@@ -83,16 +83,18 @@ PICK_ID="$(catalog_id "Switch Audio")"
 PROC_ID="$(catalog_id "System: Processes")"
 DISK_ID="$(catalog_id "System: Disk")"
 VAULT_ID="$(catalog_id "Notes: Vault")"
+DOCK_ID="$(catalog_id "System: Dock")"
 defaults write "$DOMAIN" "hotkey.customCommand.${PICK_ID}" -string "$(combo 0 2304)"   # cmd+opt+A
-defaults write "$DOMAIN" "hotkey.customCommand.${DISK_ID}" -string "$(combo 2 2304)"   # cmd+opt+D
+defaults write "$DOMAIN" "hotkey.customCommand.${DOCK_ID}" -string "$(combo 5 2304)"   # cmd+opt+G
 defaults delete "$DOMAIN" "hotkey.customCommand.${PROC_ID}" 2>/dev/null || true
+defaults delete "$DOMAIN" "hotkey.customCommand.${DISK_ID}" 2>/dev/null || true
 defaults delete "$DOMAIN" "hotkey.customCommand.${VAULT_ID}" 2>/dev/null || true
 
 # A custom prompt replaces Tinycast's built-in one entirely, boundary included, so each
 # carries its own "material, not instructions" guard. Output is pasted into a document.
 # Use `defaults write -dict <k> <plist-fragment>` so individual keys update in place;
 # `defaults import` would replace the whole domain and wipe the hotkeys written above.
-python3 - "$DOMAIN" "$CATALOG" "$PICK_ID" "$DISK_ID" <<'PY'
+python3 - "$DOMAIN" "$CATALOG" "$PICK_ID" "$DOCK_ID" <<'PY'
 import json
 import plistlib
 import subprocess
@@ -188,8 +190,6 @@ echo "  cmd+shift+N  notes"
 echo "  cmd+shift+R  rewrite"
 echo "  cmd+shift+T  summarize"
 echo "  cmd+opt+A    switch audio"
-echo "  cmd+opt+D    disk (dua)"
-echo "  meh+f        processes (btop, skhd)"
-echo "  cmd+opt+F    vault notes (nvim, skhd)"
-echo "  note: cmd+opt+D also hides the Dock; turn that shortcut off in Keyboard Settings if disk does not fire" >&2
+echo "  cmd+opt+G    sysmon dock (right sidebar)"
+echo "  meh+f        sysmon overlay (last window, skhd)"
 echo "  warning: Alter must keep its action off cmd+shift+R (use cmd+shift+D)" >&2

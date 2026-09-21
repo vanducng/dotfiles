@@ -22,9 +22,8 @@ make setup-tinycast
 | `cmd+shift+R` | Rewrite selected text |
 | `cmd+shift+T` | Summarize selected text |
 | `cmd+opt+A` | Switch audio output (skips the full login zsh) |
-| `meh+f` | Processes (`btop`, skhd) |
-| `cmd+opt+D` | Disk (`dua i`) |
-| `cmd+opt+F` | Vault notes (`nvim`, skhd) |
+| `meh+f` | Sysmon overlay, centered (last window; first start is `btop`) |
+| `cmd+opt+G` | Same overlay, docked on the right (~1/4, Custom Command) |
 
 Move Alter off `cmd+shift+R` (use `cmd+shift+D`) or rewrite loses the race on launch.
 
@@ -57,15 +56,14 @@ Needs `switchaudio-osx` and `blueutil` from `scripts/macos-deps.sh`. Switching o
 
 ## System monitor
 
-`meh+f` opens `btop`, `cmd+opt+D` opens `dua i` on `$HOME`, `cmd+opt+F` opens the Obsidian vault in Neovim (`$OBSIDIAN_VAULT` or `$HOME/git/personal/vault`). All three share one tmux session (`sysmon` on socket `sysmon`) and one kitty overlay: window 1 is processes, 2 is disk, 3 is vault. The session loads `~/.tmux.conf`, so prefix `C-x` and window keys work the same as elsewhere. Apps stay warm after the overlay closes. A second press focuses the same window and selects that app. Processes and vault are skhd chords so they do not depend on Tinycast grabbing the key.
-
-macOS also binds `cmd+opt+D` to Dock hide. Turn that shortcut off in Keyboard Settings if disk does not fire. `cmd+shift+N` stays Tinycast's own notes.
+`meh+f` raises one kitty overlay attached to the `sysmon` tmux session, centered, and leaves whatever window you last used. `cmd+opt+G` docks the same overlay on the right at one quarter width (about 380-640px depending on the display; tighter 1/5 is too narrow for Neovim notes). That chord is a Tinycast Custom Command plus a Karabiner HID rule, not skhd: `cmd+opt+F` stays with Cursor Replace in Files. First start creates `btop` as window 1. Vault Neovim starts through a login zsh so AstroNvim gets the same PATH as Ghostty. Palette search still finds `processes`, `disk`, `vault`, and `dock`. The session loads `~/.tmux.conf`.
 
 ```bash
+sysmon
 sysmon processes
 sysmon disk
 sysmon vault
 sysmon stop
 ```
 
-Needs `btop`, `dua-cli`, `tmux`, and `kitty` from `scripts/macos-deps.sh`. Palette search also finds `processes`, `disk`, and `vault`.
+Needs `btop`, `dua-cli`, `tmux`, and `kitty` from `scripts/macos-deps.sh`.
