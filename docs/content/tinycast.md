@@ -22,9 +22,8 @@ make setup-tinycast
 | `cmd+shift+R` | Rewrite selected text |
 | `cmd+shift+T` | Summarize selected text |
 | `cmd+opt+A` | Switch audio output (skips the full login zsh) |
-| `cmd+opt+S` | Processes (`btop`) |
-| `cmd+opt+U` | Disk (`dua i`) |
-| `cmd+opt+N` | Vault notes (`nvim`) |
+| `meh+f` | Sysmon overlay, centered (last window; first start is `btop`) |
+| `cmd+opt+G` | Same overlay, docked on the right (~1/4, Custom Command) |
 
 Move Alter off `cmd+shift+R` (use `cmd+shift+D`) or rewrite loses the race on launch.
 
@@ -57,16 +56,14 @@ Needs `switchaudio-osx` and `blueutil` from `scripts/macos-deps.sh`. Switching o
 
 ## System monitor
 
-`cmd+opt+S` opens `btop`. `cmd+opt+U` opens `dua i` on `$HOME` (not `cmd+opt+D`, which is macOS Dock hide). Both keep running in tmux after you close the window, so graphs and the disk tree stay warm. Closing the overlay does not ask to confirm tmux. Overlays share one kitty process and stay sticky, so a second press focuses the existing window instead of switching spaces or spawning another. A new window returns immediately; kitty is not waited on.
-
-`cmd+opt+N` opens the Obsidian vault in Neovim (`$OBSIDIAN_VAULT` or `$HOME/git/personal/vault`). Same persist-in-tmux behavior. `cmd+shift+N` stays Tinycast's own notes.
+`meh+f` raises one kitty overlay attached to the `sysmon` tmux session, centered, and leaves whatever window you last used. `cmd+opt+G` docks the same overlay on the right at one quarter width (about 380-640px depending on the display; tighter 1/5 is too narrow for Neovim notes). That chord is a Tinycast Custom Command plus a Karabiner HID rule, not skhd: `cmd+opt+F` stays with Cursor Replace in Files. First start creates `btop` as window 1. Vault Neovim starts through a login zsh so AstroNvim gets the same PATH as Ghostty. Palette search still finds `processes`, `disk`, `vault`, and `dock`. The session loads `~/.tmux.conf`.
 
 ```bash
+sysmon
 sysmon processes
 sysmon disk
+sysmon vault
 sysmon stop
-notes-vault
-notes-vault stop
 ```
 
-Needs `btop`, `dua-cli`, `tmux`, and `kitty` from `scripts/macos-deps.sh`. Palette search also finds `processes`, `disk`, and `vault`.
+Needs `btop`, `dua-cli`, `tmux`, and `kitty` from `scripts/macos-deps.sh`.

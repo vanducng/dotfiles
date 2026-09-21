@@ -31,9 +31,17 @@ brew install ksdiff
 brew install whatsapp
 # brew install alt-tab
 brew install neovim
+brew install --cask font-hasklug-nerd-font
+
+kitty_terminfo="/Applications/kitty.app/Contents/Resources/kitty/terminfo/kitty.terminfo"
+if [[ -r "$kitty_terminfo" ]]; then
+  mkdir -p "${HOME}/.terminfo"
+  tic -x -o "${HOME}/.terminfo" "$kitty_terminfo"
+fi
 
 brew install fnm
 brew install tmux
+brew install tmux-fingers
 brew install rust
 brew install switchaudio-osx
 brew install blueutil

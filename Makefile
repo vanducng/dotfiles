@@ -159,6 +159,7 @@ script-test:
 	@./scripts/ci/test-yazi-config.sh
 	@./scripts/ci/test-audio-switch.sh
 	@./scripts/ci/test-sysmon.sh
+	@./scripts/ci/test-tmux-fingers-conf.sh
 	@./scripts/ci/test-release-manifest.sh
 
 install-test:
