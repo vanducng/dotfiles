@@ -1,15 +1,26 @@
 #!/bin/bash
 set -euo pipefail
 
+# One kitty overlay, one tmux session (btop / disk / vault). A new app
+# is a cmd_* that calls open_app. Hotkeys: scripts/tinycast-setup.sh.
+
+SESSION="${SYSMON_SESSION:-sysmon}"
+SOCKET="${SYSMON_TMUX_SOCKET:-sysmon}"
+HUB_TITLE="${SYSMON_TITLE:-sysmon-hub}"
+OVERLAY_GRID="${SYSMON_GRID:-6:6:1:1:4:4}"
+
 usage() {
   cat <<'EOF'
-Open an on-demand system monitor in kitty.
+Open system tools in one tmux session (kitty overlay).
 
-  sysmon processes     btop (CPU, memory, processes)
-  sysmon disk [path]   dua interactive (default: $HOME)
-  sysmon stop          kill the background tmux sessions
+  sysmon processes     window 1: btop
+  sysmon disk [path]   window 2: dua interactive (default: $HOME)
+  sysmon vault         window 3: nvim on $OBSIDIAN_VAULT
+  sysmon stop          kill the session and overlay
 
-btop and dua keep running in tmux after the window closes, so graphs and the disk tree stay warm. A second press focuses the open window.
+Apps stay running after the overlay closes. A second press focuses the
+same window and selects that app. Prefix and window keys come from
+~/.tmux.conf (override with SYSMON_TMUX_CONF).
 EOF
 }
 
@@ -50,22 +61,84 @@ tmux_bin() {
   resolve_bin tmux "${SYSMON_TMUX:-}"
 }
 
-ensure_session() {
-  local name="$1" tmux
-  shift
+tmux_conf() {
+  local conf="${SYSMON_TMUX_CONF:-$HOME/.tmux.conf}"
+  if [[ -r "$conf" ]]; then
+    printf '%s\n' "$conf"
+  fi
+}
+
+session_path() {
+  local prefix=""
+  if [[ -d /opt/homebrew/bin ]]; then
+    prefix="/opt/homebrew/bin:"
+  elif [[ -d /usr/local/bin ]]; then
+    prefix="/usr/local/bin:"
+  fi
+  printf '%s%s:%s\n' "$prefix" "${HOME}/.local/bin" "${PATH}"
+}
+
+vault_path() {
+  printf '%s\n' "${OBSIDIAN_VAULT:-$HOME/git/personal/vault}"
+}
+
+tmux_cmd() {
+  local tmux conf
+  tmux="$(tmux_bin)"
+  conf="$(tmux_conf)"
+  if [[ -n "$conf" ]]; then
+    env PATH="$(session_path)" "$tmux" -L "$SOCKET" -f "$conf" "$@"
+  else
+    env PATH="$(session_path)" "$tmux" -L "$SOCKET" "$@"
+  fi
+}
+
+has_session() {
+  tmux_cmd has-session -t "${1:-$SESSION}" 2>/dev/null
+}
+
+has_window() {
+  local name="$1"
+  tmux_cmd list-windows -t "$SESSION" -F '#{window_name}' 2>/dev/null | grep -qx "$name"
+}
+
+ensure_window() {
+  local index="$1" name="$2" cwd="$3"
+  shift 3
   if [[ -n "${SYSMON_OPEN:-}" ]]; then
-    printf 'session: %s' "$name"
+    printf 'session: %s' "$SESSION"
+    local conf
+    conf="$(tmux_conf)"
+    if [[ -n "$conf" ]]; then
+      printf ' -f %s' "$conf"
+    fi
+    printf '\n'
+    printf 'window: %s %s' "$index" "$name"
     for arg in "$@"; do
       printf ' %s' "$arg"
     done
     printf '\n'
+    printf 'select: %s:%s\n' "$SESSION" "$index"
     return 0
   fi
-  tmux="$(tmux_bin)"
-  if "$tmux" has-session -t "$name" 2>/dev/null; then
-    return 0
+  if ! has_session; then
+    tmux_cmd new-session -d -s "$SESSION" -n "$name" -c "$cwd" -- "$@"
+    local conf
+    conf="$(tmux_conf)"
+    if [[ -n "$conf" ]]; then
+      tmux_cmd source-file "$conf" 2>/dev/null || true
+    fi
+    tmux_cmd set-option -t "$SESSION" base-index 1
+    tmux_cmd set-option -t "$SESSION" renumber-windows off
+    local current
+    current="$(tmux_cmd display-message -p -t "$SESSION" '#{window_index}')"
+    if [[ "$current" != "$index" ]]; then
+      tmux_cmd move-window -s "$SESSION:$name" -t "$SESSION:$index"
+    fi
+  elif ! has_window "$name"; then
+    tmux_cmd new-window -t "$SESSION:$index" -n "$name" -c "$cwd" -- "$@"
   fi
-  "$tmux" new-session -d -s "$name" "$@"
+  tmux_cmd select-window -t "$SESSION:$name"
 }
 
 yabai_bin() {
@@ -124,6 +197,7 @@ print("1" if window.get("is-floating") else "0", "1" if window.get("is-sticky") 
   if [[ "$sticky" != 1 ]]; then
     "$yabai" -m window "$id" --toggle sticky 2>/dev/null || true
   fi
+  "$yabai" -m window "$id" --grid "$OVERLAY_GRID" 2>/dev/null || true
 }
 
 resolve_window_id() {
@@ -140,19 +214,23 @@ resolve_window_id() {
 }
 
 focus_window() {
-  local title="$1" id yabai
-  if [[ -n "${SYSMON_FOCUSED:-}" ]]; then
-    printf 'focus: %s\n' "$title"
-    return 0
-  fi
-  if [[ -n "${SYSMON_OPEN:-}" ]]; then
-    return 1
-  fi
+  local title="$1" id yabai json
   yabai="$(yabai_bin)"
   [[ -n "$yabai" ]] || return 1
   id="$(cat "$(wid_path "$title")" 2>/dev/null || true)"
-  if [[ -n "$id" ]] && "$yabai" -m window "$id" --focus 2>/dev/null; then
-    return 0
+  if [[ -n "$id" ]]; then
+    json="$("$yabai" -m query --windows --window "$id" 2>/dev/null || true)"
+    if [[ -n "$json" ]] && printf '%s' "$json" | python3 -c '
+import json, sys
+try:
+    window = json.load(sys.stdin)
+except json.JSONDecodeError:
+    raise SystemExit(1)
+raise SystemExit(0 if window.get("app") == "kitty" and window.get("title") == sys.argv[1] else 1)
+' "$title"; then
+      apply_overlay "$yabai" "$id" || true
+      "$yabai" -m window "$id" --focus 2>/dev/null && return 0
+    fi
   fi
   id="$(resolve_window_id "$title" "$yabai" || true)"
   [[ -n "$id" ]] || return 1
@@ -171,7 +249,6 @@ place_title_later() {
       if [[ -n "$id" ]]; then
         save_window_id "$title" "$id"
         apply_overlay "$yabai" "$id" || true
-        "$yabai" -m window "$id" --grid 6:6:1:1:4:4 2>/dev/null || true
         "$yabai" -m window "$id" --focus 2>/dev/null || true
         exit 0
       fi
@@ -216,8 +293,10 @@ open_window() {
   local kitty
   kitty="$(kitty_bin)"
   detach_exec "$kitty" --single-instance --instance-group sysmon --wait-for-single-instance-window-close=no \
-    --config NONE --title "$title" \
+    --title "$title" \
     --override "macos_quit_when_last_window_closed no" --override "confirm_os_window_close 0" --override "font_size 13" \
+    --override "hide_window_decorations no" --override "remember_window_size no" \
+    --override "initial_window_width 1400" --override "initial_window_height 900" \
     -- "$@"
 }
 
@@ -239,32 +318,54 @@ raise_or_open() {
   place_title_later "$title"
 }
 
-cmd_processes() {
-  local btop tmux
-  if focus_window "sysmon-processes"; then
-    return 0
-  fi
-  btop="$(resolve_bin btop "${SYSMON_BTOP:-}")"
+attach_hub() {
+  local tmux
   tmux="$(tmux_bin)"
-  ensure_session sysmon-processes "$btop"
-  raise_or_open "sysmon-processes" "$tmux" attach -t sysmon-processes
+  raise_or_open "$HUB_TITLE" "$tmux" -L "$SOCKET" attach -t "$SESSION"
+}
+
+open_app() {
+  local name="$1" index="$2" cwd="$3"
+  shift 3
+  ensure_window "$index" "$name" "$cwd" "$@"
+  attach_hub
+}
+
+cmd_processes() {
+  local btop
+  btop="$(resolve_bin btop "${SYSMON_BTOP:-}")"
+  open_app processes 1 "$HOME" "$btop"
 }
 
 cmd_disk() {
-  local dua tmux path="${1:-$HOME}"
-  if focus_window "sysmon-disk"; then
-    return 0
-  fi
+  local dua path="${1:-$HOME}"
   dua="$(resolve_bin dua "${SYSMON_DUA:-}")"
-  tmux="$(tmux_bin)"
-  ensure_session sysmon-disk "$dua" i "$path"
-  raise_or_open "sysmon-disk" "$tmux" attach -t sysmon-disk
+  open_app disk 2 "$path" "$dua" i "$path"
+}
+
+cmd_vault() {
+  local nvim vault
+  vault="$(vault_path)"
+  if [[ ! -d "$vault" ]]; then
+    echo "sysmon: vault not found: $vault" >&2
+    return 1
+  fi
+  nvim="$(resolve_bin nvim "${SYSMON_NVIM:-}")"
+  open_app vault 3 "$vault" "$nvim" .
 }
 
 cmd_stop() {
   local tmux name yabai pid
   tmux="$(tmux_bin)"
-  for name in sysmon-processes sysmon-disk; do
+  if [[ -n "${SYSMON_OPEN:-}" ]]; then
+    printf 'stopped: %s\n' "$SESSION"
+    return 0
+  fi
+  if "$tmux" -L "$SOCKET" has-session -t "$SESSION" 2>/dev/null; then
+    "$tmux" -L "$SOCKET" kill-session -t "$SESSION"
+    printf 'stopped: %s\n' "$SESSION"
+  fi
+  for name in sysmon-processes sysmon-disk notes-vault; do
     if "$tmux" has-session -t "$name" 2>/dev/null; then
       "$tmux" kill-session -t "$name"
       printf 'stopped: %s\n' "$name"
@@ -288,13 +389,13 @@ for window in windows:
     title = window.get("title") or ""
     if window.get("app") != "kitty":
         continue
-    if title.startswith("sysmon-") or title == "notes-vault":
+    if title.startswith("sysmon") or title == "notes-vault":
         pid = window.get("pid")
         if pid and pid not in seen:
             seen.add(pid)
             print(pid)
 ')
-    for name in sysmon-processes sysmon-disk notes-vault; do
+    for name in sysmon-hub sysmon-processes sysmon-disk notes-vault; do
       rm -f "$(wid_path "$name")"
     done
   fi
@@ -305,6 +406,7 @@ main() {
   case "$cmd" in
     processes) cmd_processes ;;
     disk) shift; cmd_disk "${1:-}" ;;
+    vault) cmd_vault ;;
     attach)
       shift
       if [[ -z "${1:-}" ]]; then

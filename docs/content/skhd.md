@@ -47,7 +47,8 @@ All application shortcuts use the `meh` key (ctrl+alt+shift) for consistency and
 | Shortcut | Application | Description |
 |----------|-------------|-------------|
 | `meh + a` | Ghostty | Focus the primary terminal and move the pointer to it |
-| `meh + f` | Kitty | Secondary terminal emulator on display 2, space 15 |
+| `meh + f` | Processes overlay | Shared kitty/tmux overlay on `btop` |
+| `cmd + opt + f` | Vault overlay | Same overlay, Neovim on the Obsidian vault |
 | `meh + x` | ChatGPT | AI assistant on display 2, space 16 |
 | `meh + g` | Cursor | AI-powered code editor on space 5 |
 | `meh + h` | Alter | Chat hub on space 7 |

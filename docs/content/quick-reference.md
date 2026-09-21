@@ -27,14 +27,14 @@ tail -n 100 ~/.config/herdr/herdr-server.log
 | Key | Action | Key | Action |
 |-----|--------|-----|--------|
 | `meh + a` | Ghostty | `meh + s` | Dia |
-| `meh + f` | Kitty | `meh + g` | Cursor |
+| `meh + f` | Processes / btop | `meh + g` | Cursor |
 | `meh + t` | Discord | `meh + x` | ChatGPT |
 | `meh + v` | Grok Bot | `meh + q` | Music |
 | `ctrl+shift+hjkl` | Focus Window | `cmd+shift+h/l` | Move Window |
 | `hyper + arrows` | Resize Window | `hyper + f` | Fullscreen |
 | `cmd+opt+A` | Switch audio (Tinycast) | `cmd+space` | Tinycast palette |
-| `cmd+opt+S` | Processes / btop | `cmd+opt+U` | Disk / dua |
-| `cmd+opt+N` | Vault notes / nvim | `cmd+shift+N` | Tinycast notes |
+| `cmd+opt+D` | Disk / dua | `cmd+opt+F` | Vault notes / nvim |
+| `cmd+shift+N` | Tinycast notes | | |
 
 ### Herdr (Prefix: C-x)
 | Key | Action | Key | Action |

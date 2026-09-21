@@ -67,7 +67,7 @@
   {
     "id": "e2a4c6d8-9b31-4f5e-8a72-4c3f0e7d6b99",
     "name": "Notes: Vault",
-    "command": "exec \"$HOME/.local/bin/notes-vault\"",
+    "command": "exec \"$HOME/.local/bin/sysmon\" vault",
     "isEnabled": true,
     "loadsShellEnvironment": false,
     "requiresConfirmation": false,

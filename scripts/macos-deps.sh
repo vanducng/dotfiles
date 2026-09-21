@@ -31,9 +31,11 @@ brew install ksdiff
 brew install whatsapp
 # brew install alt-tab
 brew install neovim
+brew install --cask font-hasklug-nerd-font
 
 brew install fnm
 brew install tmux
+brew install tmux-fingers
 brew install rust
 brew install switchaudio-osx
 brew install blueutil
