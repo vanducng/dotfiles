@@ -22,8 +22,9 @@ Open system tools in one tmux session (kitty overlay).
   sysmon vault         window 3: nvim on $OBSIDIAN_VAULT
   sysmon stop          kill the session and overlay
 
-meh+f recenters. cmd+opt+G docks on the right (~1/4). First start
-creates btop. Prefix and window keys come from ~/.tmux.conf.
+meh+f recenters the hub. Close it with cmd+w. cmd+opt+G docks on
+the right (~1/4). First start creates btop. Prefix and window keys
+come from ~/.tmux.conf.
 EOF
 }
 
@@ -202,7 +203,7 @@ print("1" if window.get("is-floating") else "0", "1" if window.get("is-sticky") 
 resolve_window_id() {
   local title="$1" yabai="$2" id
   id="$(cat "$(wid_path "$title")" 2>/dev/null || true)"
-  if [[ -n "$id" ]] && "$yabai" -m query --windows --window "$id" >/dev/null 2>&1; then
+  if [[ -n "$id" ]] && window_matches "$yabai" "$id" "$title"; then
     printf '%s\n' "$id"
     return 0
   fi
@@ -213,20 +214,12 @@ resolve_window_id() {
 }
 
 focus_window() {
-  local title="$1" id yabai json
+  local title="$1" id yabai
   yabai="$(yabai_bin)"
   [[ -n "$yabai" ]] || return 1
   id="$(cat "$(wid_path "$title")" 2>/dev/null || true)"
   if [[ -n "$id" ]]; then
-    json="$("$yabai" -m query --windows --window "$id" 2>/dev/null || true)"
-    if [[ -n "$json" ]] && printf '%s' "$json" | python3 -c '
-import json, sys
-try:
-    window = json.load(sys.stdin)
-except json.JSONDecodeError:
-    raise SystemExit(1)
-raise SystemExit(0 if window.get("app") == "kitty" and window.get("title") == sys.argv[1] else 1)
-' "$title"; then
+    if window_matches "$yabai" "$id" "$title"; then
       apply_overlay "$yabai" "$id" || true
       "$yabai" -m window "$id" --focus 2>/dev/null && return 0
     fi
@@ -235,6 +228,20 @@ raise SystemExit(0 if window.get("app") == "kitty" and window.get("title") == sy
   [[ -n "$id" ]] || return 1
   apply_overlay "$yabai" "$id" || return 1
   "$yabai" -m window "$id" --focus 2>/dev/null
+}
+
+window_matches() {
+  local yabai="$1" id="$2" title="$3" json
+  json="$("$yabai" -m query --windows --window "$id" 2>/dev/null || true)"
+  [[ -n "$json" ]] || return 1
+  printf '%s' "$json" | python3 -c '
+import json, sys
+try:
+    window = json.load(sys.stdin)
+except json.JSONDecodeError:
+    raise SystemExit(1)
+raise SystemExit(0 if window.get("app") == "kitty" and window.get("title") == sys.argv[1] else 1)
+' "$title"
 }
 
 place_title_later() {
