@@ -18,10 +18,10 @@ grep -q '@fingers-copy-command' "$CONF" && fail "tmux.conf still sets removed @f
 grep -q '@fingers-use-system-clipboard' "$CONF" || fail "tmux.conf should set @fingers-use-system-clipboard"
 grep -q 'brew install tmux-fingers' "$DEPS" || fail "macos-deps.sh should install tmux-fingers"
 grep -q 'bind-key -n C-1 select-window' "$CONF" || fail "tmux should bind Ctrl+1 to a window"
-grep -q 'xterm-kitty:extkeys' "$CONF" || fail "tmux should enable kitty extended keys"
+grep -q 'xterm-kitty:.*extkeys' "$CONF" || fail "tmux should enable kitty extended keys"
 grep -q 'map ctrl+1 send_text all' "$KITTY" || fail "kitty should forward Ctrl+1 as CSI-u"
-grep -q 'Tokyo Night' "$KITTY" || fail "kitty theme comment should be Tokyo Night"
-grep -q 'background #1a1b26' "$THEME" || fail "current-theme.conf should be Tokyo Night"
+grep -q 'Duskfox' "$KITTY" || fail "kitty theme comment should be Duskfox"
+grep -q 'background #232136' "$THEME" || fail "current-theme.conf should be Duskfox"
 pass "tmux.conf prefers a runnable tmux-fingers"
 
 if [[ -x /opt/homebrew/bin/tmux-fingers ]] && command -v tmux >/dev/null 2>&1; then
