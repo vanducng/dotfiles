@@ -55,7 +55,7 @@ tail -n 100 ~/.config/herdr/herdr-server.log
 | Key | Action | Key | Action |
 |-----|--------|-----|--------|
 | `C-x + t` | Project Sessionizer | `C-x + m` | Split Horizontal |
-| `C-x + v` | Split Vertical | `C-x + hjkl` | Navigate Panes |
+| `C-x + v` | Split Vertical | `C-x + hjkl` / `Ctrl-Alt-hjkl` | Navigate Panes |
 | `C-x + Space` | Last Window | `C-x + c` | New Window |
 | `C-x + Tab` | Tmux Fingers | `C-x + a` | Zoom Pane |
 | `C-x + r` | Reload Config | `C-x + i` | Show Pane Numbers |

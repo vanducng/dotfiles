@@ -14,7 +14,7 @@ Tmux is retained as a legacy fallback for remote and compatibility workflows. [H
 
 ### Key Features
 - **Project Sessionizer**: Quick project switching with FZF
-- **Vim Navigation**: Consistent hjkl movement across panes
+- **Vim Navigation**: `Ctrl-Alt-hjkl` focuses panes directly, same as Herdr. `C-x` then `hjkl` remains where that chord cannot be sent
 - **Catppuccin Theme**: Beautiful, consistent theming
 - **Session Persistence**: Automatic session management
 - **Copy-Paste Integration**: Seamless macOS clipboard integration
@@ -41,6 +41,7 @@ Tmux is retained as a legacy fallback for remote and compatibility workflows. [H
 | `C-x + Space` | Last Window | Toggle between current and previous window |
 | `C-x + Tab` | Tmux Fingers | Select and copy/open visible text hints |
 | `C-x + h/j/k/l` | Navigate Panes | Vim-style pane navigation |
+| `Ctrl-Alt-h/j/k/l` | Navigate Panes | Direct focus, same chord as Herdr |
 | `C-x + H/J/K/L` | Resize Panes | Resize panes in direction |
 | `C-x + a` | Toggle Zoom | Zoom current pane |
 | `C-x + A` | Next Pane Zoom | Switch to next pane and zoom |
