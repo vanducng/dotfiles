@@ -24,10 +24,11 @@ grep -q 'Tokyo Night' "$KITTY" || fail "kitty theme comment should be Tokyo Nigh
 grep -q 'background #1a1b26' "$THEME" || fail "current-theme.conf should be Tokyo Night"
 pass "tmux.conf prefers a runnable tmux-fingers"
 
-if [[ -x /opt/homebrew/bin/tmux-fingers ]]; then
+if [[ -x /opt/homebrew/bin/tmux-fingers ]] && command -v tmux >/dev/null 2>&1; then
   file /opt/homebrew/bin/tmux-fingers | grep -q 'arm64' || fail "Homebrew tmux-fingers is not arm64"
   socket="tmux-fingers-conf-$$"
   err="$(mktemp "${TMPDIR:-/tmp}/tmux-fingers-conf.XXXXXX")"
+  trap 'tmux -L "$socket" kill-server >/dev/null 2>&1 || true; rm -f -- "$err"' EXIT
   tmux -L "$socket" -f "$CONF" new-session -d -s t -n hold sleep 20 2>"$err" || true
   sleep 0.6
   if grep -q "tmux-fingers load-config' returned 126" "$err"; then

@@ -62,17 +62,12 @@ defaults write "$DOMAIN" "hotkey.command:summarize"         -string "$(combo 17 
 
 AUDIO_SWITCH="$HOME/.local/bin/audio-switch"
 SYSMON="$HOME/.local/bin/sysmon"
-NOTES_VAULT="$HOME/.local/bin/notes-vault"
 if [[ ! -x "$AUDIO_SWITCH" ]]; then
   echo "audio-switch missing at $AUDIO_SWITCH; run make stow-bin before setup-tinycast."
   exit 1
 fi
 if [[ ! -x "$SYSMON" ]]; then
   echo "sysmon missing at $SYSMON; run make stow-bin before setup-tinycast."
-  exit 1
-fi
-if [[ ! -x "$NOTES_VAULT" ]]; then
-  echo "notes-vault missing at $NOTES_VAULT; run make stow-bin before setup-tinycast."
   exit 1
 fi
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

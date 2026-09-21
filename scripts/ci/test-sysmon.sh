@@ -34,7 +34,7 @@ grep -q 'app="\^kitty\$" title="\^(sysmon|notes-vault)"    manage=off sticky=on 
   "$ROOT/dotfiles/yabai/.config/yabai/yabairc" || fail "yabai should grid the kitty overlay at create"
 grep -q 'app="\^kitty\$" title!="\^(sysmon.\*|notes-vault)?\$" space=15' \
   "$ROOT/dotfiles/yabai/.config/yabai/yabairc" || fail "yabai must not send untitled or overlay kitty windows to space 15"
-grep -q 'source-file' "$SCRIPT" || fail "sysmon should load tmux.conf"
+grep -q -- '-f "$conf"' "$SCRIPT" || fail "sysmon should load tmux.conf"
 grep -q 'SYSMON_TMUX_SOCKET' "$SCRIPT" || fail "sysmon should use a dedicated tmux socket"
 grep -q '/opt/homebrew/bin' "$SCRIPT" || fail "sysmon must put Homebrew on PATH"
 pass "sysmon returns without polling yabai"
@@ -127,9 +127,17 @@ printf '%s\n' "$out" | grep -q 'select: sysmon:2' || fail "disk missing select: 
 printf '%s\n' "$out" | grep -q -- '-L sysmon attach -t sysmon' || fail "disk missing attach: $out"
 pass "disk keeps dua in window 2"
 
+mkdir -p "$workdir/scan"
 out="$("$SCRIPT" disk "$workdir/scan")"
 printf '%s\n' "$out" | grep -q " i $workdir/scan" || fail "disk path: $out"
 pass "disk accepts a path"
+out="$("$SCRIPT" disk "")"
+printf '%s\n' "$out" | grep -q " i $HOME" || fail "empty disk path should use home: $out"
+pass "empty disk path falls back to home"
+if "$SCRIPT" disk "$workdir/missing-disk" >/dev/null 2>&1; then
+  fail "disk accepted a missing path"
+fi
+pass "disk rejects a missing path"
 
 export OBSIDIAN_VAULT="$workdir/vault"
 mkdir -p "$OBSIDIAN_VAULT"

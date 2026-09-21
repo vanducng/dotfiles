@@ -123,11 +123,6 @@ ensure_window() {
   fi
   if ! has_session; then
     tmux_cmd new-session -d -s "$SESSION" -n "$name" -c "$cwd" -- "$@"
-    local conf
-    conf="$(tmux_conf)"
-    if [[ -n "$conf" ]]; then
-      tmux_cmd source-file "$conf" 2>/dev/null || true
-    fi
     tmux_cmd set-option -t "$SESSION" base-index 1
     tmux_cmd set-option -t "$SESSION" renumber-windows off
     local current
@@ -338,7 +333,12 @@ cmd_processes() {
 }
 
 cmd_disk() {
-  local dua path="${1:-$HOME}"
+  local dua path="${1-}"
+  path="${path:-$HOME}"
+  if [[ ! -d "$path" ]]; then
+    echo "sysmon: disk path not found: $path" >&2
+    return 1
+  fi
   dua="$(resolve_bin dua "${SYSMON_DUA:-}")"
   open_app disk 2 "$path" "$dua" i "$path"
 }
@@ -389,7 +389,7 @@ for window in windows:
     title = window.get("title") or ""
     if window.get("app") != "kitty":
         continue
-    if title.startswith("sysmon") or title == "notes-vault":
+    if title in {"sysmon-hub", "sysmon-processes", "sysmon-disk", "notes-vault"}:
         pid = window.get("pid")
         if pid and pid not in seen:
             seen.add(pid)
