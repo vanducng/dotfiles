@@ -67,7 +67,7 @@
   {
     "id": "e2a4c6d8-9b31-4f5e-8a72-4c3f0e7d6b99",
     "name": "Notes: Vault",
-    "command": "exec \"$HOME/.local/bin/notes-vault\"",
+    "command": "exec \"$HOME/.local/bin/sysmon\" vault",
     "isEnabled": true,
     "loadsShellEnvironment": false,
     "requiresConfirmation": false,
@@ -76,5 +76,18 @@
     "showsOutput": false,
     "workingDirectory": null,
     "iconSymbol": "book"
+  },
+  {
+    "id": "a1c3e5f7-2d43-4b6a-8c94-6e5f2a9d8b11",
+    "name": "System: Dock",
+    "command": "exec \"$HOME/.local/bin/sysmon\" dock",
+    "isEnabled": true,
+    "loadsShellEnvironment": false,
+    "requiresConfirmation": false,
+    "showsConfirmation": false,
+    "arguments": [],
+    "showsOutput": false,
+    "workingDirectory": null,
+    "iconSymbol": "sidebar.right"
   }
 ]

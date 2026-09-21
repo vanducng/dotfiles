@@ -3,6 +3,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 SCRIPT="$ROOT/dotfiles/bin/.local/bin/sysmon"
+NOTES="$ROOT/dotfiles/bin/.local/bin/notes-vault"
 CATALOG="$ROOT/scripts/tinycast/custom-commands.json"
 SETUP="$ROOT/scripts/tinycast-setup.sh"
 
@@ -10,7 +11,9 @@ fail() { echo "FAIL: $*" >&2; exit 1; }
 pass() { echo "OK: $*"; }
 
 [[ -x "$SCRIPT" ]] || chmod +x "$SCRIPT"
+[[ -x "$NOTES" ]] || chmod +x "$NOTES"
 bash -n "$SCRIPT" || fail "sysmon syntax"
+bash -n "$NOTES" || fail "notes-vault syntax"
 pass "sysmon parses"
 grep -q 'seq 1 25' "$SCRIPT" && fail "sysmon still waits in a yabai poll loop"
 grep -q 'single-instance' "$SCRIPT" || fail "sysmon should reuse one kitty process"
@@ -19,10 +22,42 @@ grep -q 'find_window_ids' "$SCRIPT" || fail "sysmon should locate an existing ov
 grep -q 'os.setsid' "$SCRIPT" || fail "sysmon should detach kitty from the launcher process group"
 grep -q 'confirm_os_window_close 0' "$SCRIPT" || fail "sysmon should close overlays without a kitty confirm"
 grep -q 'confirm_os_window_close=' "$SCRIPT" && fail "kitty --override uses spaces, not equals"
+grep -q -- '--config NONE' "$SCRIPT" && fail "sysmon must load kitty.conf so nvim gets the nerd font"
+grep -q 'hide_window_decorations no' "$SCRIPT" || fail "sysmon overlay should keep the kitty title bar"
+grep -q 'remember_window_size no' "$SCRIPT" || fail "sysmon overlay should not restore a previous kitty size"
+grep -q 'cmd_scratch' "$SCRIPT" && fail "sysmon should not expose a scratch session"
+grep -q 'meh - f : "$HOME/.local/bin/sysmon" center' "$ROOT/dotfiles/skhd/.config/skhd/skhdrc" \
+  || fail "skhd meh-f should recenter the sysmon overlay"
+grep -q 'cmd + alt - f' "$ROOT/dotfiles/skhd/.config/skhd/skhdrc" \
+  && fail "cmd+opt dock belongs on Tinycast/Karabiner, not skhd"
+KARABINER_DOCK="$ROOT/dotfiles/karabiner/.config/karabiner/assets/complex_modifications/sysmon-dock.json"
+[[ -f "$KARABINER_DOCK" ]] || fail "karabiner sysmon-dock rule missing"
+grep -q 'sysmon' "$KARABINER_DOCK" && grep -q ' dock' "$KARABINER_DOCK" \
+  || fail "karabiner sysmon-dock should run sysmon dock"
+grep -q '/Users/' "$KARABINER_DOCK" && fail "karabiner sysmon-dock has a personal home path"
+grep -q '1:4:3:0:1:1' "$SCRIPT" || fail "sysmon dock should use a 1/4 right grid"
+grep -q 'app="\^kitty\$" title="\^(sysmon|notes-vault)"    manage=off sticky=on sub-layer=above grid=6:6:1:1:4:4' \
+  "$ROOT/dotfiles/yabai/.config/yabai/yabairc" || fail "yabai should float the kitty overlay above other apps"
+grep -q 'app="\^kitty\$" title!="\^(sysmon.\*|notes-vault)?\$" space=15' \
+  "$ROOT/dotfiles/yabai/.config/yabai/yabairc" || fail "yabai must not send untitled or overlay kitty windows to space 15"
+grep -q -- '-f "$conf"' "$SCRIPT" || fail "sysmon should load tmux.conf"
+grep -q 'SYSMON_TMUX_SOCKET' "$SCRIPT" || fail "sysmon should use a dedicated tmux socket"
+grep -q '/opt/homebrew/bin' "$SCRIPT" || fail "sysmon must put Homebrew on PATH"
 pass "sysmon returns without polling yabai"
 grep -q 'System: Processes' "$SETUP" || fail "setup missing processes command"
 grep -q 'System: Disk' "$SETUP" || fail "setup missing disk command"
+grep -q 'Notes: Vault' "$SETUP" || fail "setup missing vault command"
+grep -q 'System: Dock' "$SETUP" || fail "setup missing dock command"
 grep -q 'catalog_id' "$SETUP" || fail "setup hardcodes command ids"
+grep -q 'combo 1 2304' "$SETUP" && fail "processes hotkey still on cmd+opt+S"
+grep -q 'combo 2 2304' "$SETUP" && fail "disk hotkey still on cmd+opt+D"
+grep -q 'DOCK_ID}" -string "$(combo 5 2304)"' "$SETUP" \
+  || fail "dock hotkey should be Tinycast cmd+opt+G"
+grep -q 'combo 3 2304' "$SETUP" && fail "cmd+opt+F is still bound (Cursor replace)"
+grep -q 'VAULT_ID}" -string "$(combo 5 2304)"' "$SETUP" \
+  && fail "vault hotkey should not use cmd+opt+G"
+grep -q 'combo 32 2304' "$SETUP" && fail "disk hotkey still on cmd+opt+U"
+grep -q 'combo 45 2304' "$SETUP" && fail "vault hotkey still on cmd+opt+N"
 pass "setup derives sysmon ids"
 
 command -v python3 >/dev/null 2>&1 || fail "python3 is required"
@@ -34,6 +69,8 @@ from pathlib import Path
 required = {
     "c4d8e2a1-7b19-4f3c-9e60-2a1d8c5b4f77": ("System: Processes", "processes"),
     "d9e1f3b2-8c20-4a4d-af71-3b2e9d6c5a88": ("System: Disk", "disk"),
+    "e2a4c6d8-9b31-4f5e-8a72-4c3f0e7d6b99": ("Notes: Vault", "vault"),
+    "a1c3e5f7-2d43-4b6a-8c94-6e5f2a9d8b11": ("System: Dock", "dock"),
 }
 commands = json.loads(Path(sys.argv[1]).read_text())
 by_id = {item["id"]: item for item in commands}
@@ -63,54 +100,6 @@ cat >"$workdir/dua" <<'EOF'
 #!/usr/bin/env bash
 echo dua "$@"
 EOF
-cat >"$workdir/tmux" <<'EOF'
-#!/usr/bin/env bash
-echo tmux "$@"
-EOF
-chmod +x "$workdir/btop" "$workdir/dua" "$workdir/tmux"
-
-export SYSMON_BTOP="$workdir/btop"
-export SYSMON_DUA="$workdir/dua"
-export SYSMON_TMUX="$workdir/tmux"
-export SYSMON_OPEN=1
-export HOME="$workdir/home"
-mkdir -p "$HOME"
-
-out="$("$SCRIPT" processes)"
-printf '%s\n' "$out" | grep -q 'session: sysmon-processes' || fail "processes session: $out"
-printf '%s\n' "$out" | grep -q "$workdir/btop" || fail "processes missing btop: $out"
-printf '%s\n' "$out" | grep -q 'attach -t sysmon-processes' || fail "processes missing attach: $out"
-pass "processes keeps btop in tmux"
-
-out="$("$SCRIPT" disk)"
-printf '%s\n' "$out" | grep -q 'session: sysmon-disk' || fail "disk session: $out"
-printf '%s\n' "$out" | grep -q "$workdir/dua" || fail "disk missing dua: $out"
-printf '%s\n' "$out" | grep -q " i $HOME" || fail "disk missing home path: $out"
-printf '%s\n' "$out" | grep -q 'attach -t sysmon-disk' || fail "disk missing attach: $out"
-pass "disk keeps dua in tmux"
-
-out="$("$SCRIPT" disk "$workdir/scan")"
-printf '%s\n' "$out" | grep -q " i $workdir/scan" || fail "disk path: $out"
-pass "disk accepts a path"
-
-out="$(SYSMON_FOCUSED=1 "$SCRIPT" processes)"
-printf '%s\n' "$out" | grep -q 'focus: sysmon-processes' || fail "reuse: $out"
-printf '%s\n' "$out" | grep -q 'open:' && fail "reuse opened another window: $out"
-pass "processes reuses an open window"
-
-NOTES="$ROOT/dotfiles/bin/.local/bin/notes-vault"
-[[ -x "$NOTES" ]] || chmod +x "$NOTES"
-bash -n "$NOTES" || fail "notes-vault syntax"
-grep -q '/opt/homebrew/bin' "$NOTES" || fail "notes-vault must put Homebrew on PATH"
-grep -q 'Notes: Vault' "$SETUP" || fail "setup missing vault command"
-grep -q 'combo 32 2304' "$SETUP" || fail "disk hotkey is still Dock's cmd+opt+D"
-pass "vault command and disk chord"
-
-export OBSIDIAN_VAULT="$workdir/vault"
-export NOTES_VAULT_NVIM="$workdir/nvim"
-export NOTES_VAULT_TMUX="$workdir/tmux"
-export NOTES_VAULT_OPEN=1
-mkdir -p "$OBSIDIAN_VAULT"
 cat >"$workdir/nvim" <<'EOF'
 #!/usr/bin/env bash
 echo nvim "$@"
@@ -119,14 +108,152 @@ cat >"$workdir/tmux" <<'EOF'
 #!/usr/bin/env bash
 echo tmux "$@"
 EOF
-chmod +x "$workdir/nvim" "$workdir/tmux"
-out="$("$NOTES")"
-printf '%s\n' "$out" | grep -q 'session: notes-vault' || fail "vault session: $out"
+chmod +x "$workdir/btop" "$workdir/dua" "$workdir/nvim" "$workdir/tmux"
+
+export SYSMON_BTOP="$workdir/btop"
+export SYSMON_DUA="$workdir/dua"
+export SYSMON_NVIM="$workdir/nvim"
+export SYSMON_TMUX="$workdir/tmux"
+export SYSMON_OPEN=1
+export HOME="$workdir/home"
+mkdir -p "$HOME"
+touch "$HOME/.tmux.conf"
+
+out="$("$SCRIPT" processes)"
+printf '%s\n' "$out" | grep -q 'session: sysmon' || fail "processes session: $out"
+printf '%s\n' "$out" | grep -q " -f $HOME/.tmux.conf" || fail "processes missing tmux.conf: $out"
+printf '%s\n' "$out" | grep -q 'window: 1 processes' || fail "processes window: $out"
+printf '%s\n' "$out" | grep -q "$workdir/btop" || fail "processes missing btop: $out"
+printf '%s\n' "$out" | grep -q 'select: sysmon:1' || fail "processes missing select: $out"
+printf '%s\n' "$out" | grep -q -- '-L sysmon attach -t sysmon' || fail "processes missing attach: $out"
+printf '%s\n' "$out" | grep -q 'open: sysmon-hub' || fail "processes overlay title: $out"
+printf '%s\n' "$out" | grep -q 'sysmon-processes' && fail "processes still uses a per-app session: $out"
+pass "processes keeps btop in window 1"
+
+out="$("$SCRIPT")"
+printf '%s\n' "$out" | grep -q 'show: sysmon' || fail "bare sysmon show: $out"
+printf '%s\n' "$out" | grep -q 'place: 6:6:1:1:4:4' || fail "bare sysmon should center: $out"
+printf '%s\n' "$out" | grep -q -- '-L sysmon attach -t sysmon' || fail "bare sysmon missing attach: $out"
+printf '%s\n' "$out" | grep -q 'window:' && fail "bare sysmon should not select a window: $out"
+printf '%s\n' "$out" | grep -q 'select:' && fail "bare sysmon should keep the last window: $out"
+pass "bare sysmon raises the last window"
+
+out="$("$SCRIPT" dock)"
+printf '%s\n' "$out" | grep -q 'place: 1:4:3:0:1:1' || fail "dock place: $out"
+printf '%s\n' "$out" | grep -q 'window:' && fail "dock should not select a window: $out"
+pass "dock raises the last window on the right"
+
+out="$("$SCRIPT" disk)"
+printf '%s\n' "$out" | grep -q 'session: sysmon' || fail "disk session: $out"
+printf '%s\n' "$out" | grep -q 'window: 2 disk' || fail "disk window: $out"
+printf '%s\n' "$out" | grep -q "$workdir/dua" || fail "disk missing dua: $out"
+printf '%s\n' "$out" | grep -q " i $HOME" || fail "disk missing home path: $out"
+printf '%s\n' "$out" | grep -q 'select: sysmon:2' || fail "disk missing select: $out"
+printf '%s\n' "$out" | grep -q -- '-L sysmon attach -t sysmon' || fail "disk missing attach: $out"
+pass "disk keeps dua in window 2"
+
+mkdir -p "$workdir/scan"
+out="$("$SCRIPT" disk "$workdir/scan")"
+printf '%s\n' "$out" | grep -q " i $workdir/scan" || fail "disk path: $out"
+pass "disk accepts a path"
+out="$("$SCRIPT" disk "")"
+printf '%s\n' "$out" | grep -q " i $HOME" || fail "empty disk path should use home: $out"
+pass "empty disk path falls back to home"
+if "$SCRIPT" disk "$workdir/missing-disk" >/dev/null 2>&1; then
+  fail "disk accepted a missing path"
+fi
+pass "disk rejects a missing path"
+
+export OBSIDIAN_VAULT="$workdir/vault"
+mkdir -p "$OBSIDIAN_VAULT"
+out="$("$SCRIPT" vault)"
+printf '%s\n' "$out" | grep -q 'session: sysmon' || fail "vault session: $out"
+printf '%s\n' "$out" | grep -q 'window: 3 vault' || fail "vault window: $out"
 printf '%s\n' "$out" | grep -q "$workdir/nvim" || fail "vault missing nvim: $out"
-printf '%s\n' "$out" | grep -q 'attach -t notes-vault' || fail "vault missing attach: $out"
-pass "notes-vault opens nvim on the vault"
+printf '%s\n' "$out" | grep -q -- '-lc' || fail "vault should start nvim via login zsh: $out"
+printf '%s\n' "$out" | grep -q '.zshrc' || fail "vault should source zshrc for AstroNvim: $out"
+printf '%s\n' "$out" | grep -q 'select: sysmon:3' || fail "vault missing select: $out"
+printf '%s\n' "$out" | grep -q -- '-L sysmon attach -t sysmon' || fail "vault missing attach: $out"
+pass "vault opens nvim in window 3"
+
+out="$(SYSMON_FOCUSED=1 "$SCRIPT" processes)"
+printf '%s\n' "$out" | grep -q 'focus: sysmon-hub' || fail "reuse: $out"
+printf '%s\n' "$out" | grep -q 'select: sysmon:1' || fail "reuse missing select: $out"
+printf '%s\n' "$out" | grep -q 'open:' && fail "reuse opened another window: $out"
+pass "processes reuses the hub overlay"
+
+out="$("$NOTES")"
+printf '%s\n' "$out" | grep -q 'window: 3 vault' || fail "notes-vault wrapper: $out"
+printf '%s\n' "$out" | grep -q "$workdir/nvim" || fail "notes-vault missing nvim: $out"
+pass "notes-vault delegates to sysmon vault"
 
 if grep -R -nE '/Users/|/home/[a-z]' "$SCRIPT" "$NOTES" "$CATALOG" "$SETUP" >/dev/null; then
   fail "personal home path leaked into managed files"
 fi
 pass "no personal home paths"
+
+if command -v tmux >/dev/null 2>&1; then
+  live="$workdir/live"
+  mkdir -p "$live"
+  cat >"$live/hold" <<'EOF'
+#!/bin/sh
+sleep 30
+EOF
+  cat >"$live/kitty" <<'EOF'
+#!/usr/bin/env bash
+echo kitty "$@"
+EOF
+  chmod +x "$live/hold" "$live/kitty"
+  unset SYSMON_OPEN SYSMON_FOCUSED
+  export SYSMON_BTOP="$live/hold"
+  export SYSMON_DUA="$live/hold"
+  export SYSMON_NVIM="$live/hold"
+  export SYSMON_TMUX="$(command -v tmux)"
+  export SYSMON_KITTY="$live/kitty"
+  export SYSMON_YABAI="$live/missing-yabai"
+  export SYSMON_TMUX_SOCKET="sysmon-ci-test-$$"
+  cat >"$live/tmux.conf" <<'EOF'
+unbind-key C-b
+set -g prefix C-x
+bind-key C-x send-prefix
+set -g base-index 0
+set -g renumber-windows on
+EOF
+  export SYSMON_TMUX_CONF="$live/tmux.conf"
+  export OBSIDIAN_VAULT="$workdir/vault"
+  mkdir -p "$OBSIDIAN_VAULT"
+  trap 'tmux -L "$SYSMON_TMUX_SOCKET" kill-server >/dev/null 2>&1 || true; rm -rf -- "$workdir"' EXIT
+
+  "$SCRIPT" processes >/dev/null
+  "$SCRIPT" disk >/dev/null
+  "$SCRIPT" vault >/dev/null
+
+  wins="$(tmux -L "$SYSMON_TMUX_SOCKET" list-windows -t sysmon -F '#{window_index}:#{window_name}')"
+  printf '%s\n' "$wins" | grep -qx '1:processes' || fail "live window 1: $wins"
+  printf '%s\n' "$wins" | grep -qx '2:disk' || fail "live window 2: $wins"
+  printf '%s\n' "$wins" | grep -qx '3:vault' || fail "live window 3: $wins"
+  prefix="$(tmux -L "$SYSMON_TMUX_SOCKET" show-options -gv prefix)"
+  [[ "$prefix" == "C-x" ]] || fail "tmux prefix is $prefix, expected C-x"
+  current="$(tmux -L "$SYSMON_TMUX_SOCKET" display-message -p -t sysmon '#{window_name}')"
+  [[ "$current" == vault ]] || fail "vault was not selected: $current"
+  sessions="$(tmux -L "$SYSMON_TMUX_SOCKET" list-sessions -F '#{session_name}')"
+  [[ "$sessions" == sysmon ]] || fail "expected one session, got: $sessions"
+  pass "live tmux session has windows 1-3 and prefix C-x"
+
+  "$SCRIPT" show >/dev/null
+  current="$(tmux -L "$SYSMON_TMUX_SOCKET" display-message -p -t sysmon '#{window_name}')"
+  [[ "$current" == vault ]] || fail "show changed the last window: $current"
+  pass "show keeps the last window"
+
+  "$SCRIPT" stop >/dev/null
+  if tmux -L "$SYSMON_TMUX_SOCKET" has-session -t sysmon 2>/dev/null; then
+    fail "stop left the sysmon session running"
+  fi
+  pass "stop kills the shared session"
+
+  "$SCRIPT" show >/dev/null
+  current="$(tmux -L "$SYSMON_TMUX_SOCKET" display-message -p -t sysmon '#{window_name}')"
+  [[ "$current" == processes ]] || fail "first start should open btop: $current"
+  pass "first start creates btop"
+  "$SCRIPT" stop >/dev/null
+fi
