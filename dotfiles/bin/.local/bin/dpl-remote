@@ -5,6 +5,7 @@ set -euo pipefail
 export PATH="${HOME}/.local/bin:${PATH}"
 TS_BIN="${HOME}/.local/opt/tailscale/tailscale"
 TS_SOCK="${HOME}/.local/state/tailscale/tailscaled.sock"
+KERNEL_TS_BIN="/usr/bin/tailscale"
 CDP_PORT="${CDP_PORT:-9222}"
 SSH_PORT="${SSH_PORT:-2222}"
 RDP_PORT="${RDP_PORT:-3389}"
@@ -37,9 +38,29 @@ IPv6 SSH on :2222 is the fallback if the ISP does not filter inbound v6.
 EOF
 }
 
+kernel_ts() {
+  [[ -x "$KERNEL_TS_BIN" ]] && "$KERNEL_TS_BIN" status >/dev/null 2>&1
+}
+
+userspace_active() {
+  [[ -S "$TS_SOCK" ]] && systemctl --user is-active --quiet homelab-tailscale.service 2>/dev/null
+}
+
 ts() {
+  if kernel_ts; then
+    "$KERNEL_TS_BIN" "$@"
+    return
+  fi
   [[ -x "$TS_BIN" ]] || { echo "dpl-remote: tailscale binary missing — dpl-remote install" >&2; return 1; }
   "$TS_BIN" --socket="$TS_SOCK" "$@"
+}
+
+ts_ip4() {
+  if [[ -n "${TS_IP:-}" ]]; then
+    printf '%s' "$TS_IP"
+    return
+  fi
+  ts ip -4 2>/dev/null || true
 }
 
 lan_ip() {
@@ -73,7 +94,11 @@ cmd_install() {
   mkdir -p "${HOME}/work/store/chrome-cdp" "${HOME}/work/store/chrome-profiles"
   chmod 700 "${HOME}/work/store/chrome-cdp" "${HOME}/work/store/chrome-profiles" 2>/dev/null || true
   systemctl --user daemon-reload
-  systemctl --user enable --now homelab-tailscale.service
+  if kernel_ts; then
+    echo "dpl-remote: kernel Tailscale already owns the node — leaving userspace daemon off"
+  else
+    systemctl --user enable --now homelab-tailscale.service
+  fi
   systemctl --user enable --now homelab-cdp.service
   echo "dpl-remote: binaries + units on. Next: dpl-remote up  (opens a Tailscale login URL)"
 }
@@ -101,6 +126,10 @@ print(d.get("AuthURL") or "")'
 }
 
 cmd_login_url() {
+  if kernel_ts; then
+    echo "dpl-remote: kernel Tailscale is already logged in ($(ts_ip4))"
+    return 0
+  fi
   systemctl --user enable --now homelab-tailscale.service
   local i=0 url=""
   while [[ ! -S "$TS_SOCK" && $i -lt 20 ]]; do
@@ -122,6 +151,12 @@ cmd_login_url() {
 }
 
 cmd_up() {
+  if kernel_ts; then
+    echo "dpl-remote: kernel Tailscale already owns the node — not starting userspace"
+    echo "dpl-remote: Moshi/Mosh needs this TUN path. Host: $(ts_ip4)"
+    ts status
+    return 0
+  fi
   systemctl --user enable --now homelab-tailscale.service
   local i=0
   while [[ ! -S "$TS_SOCK" && $i -lt 20 ]]; do
@@ -132,7 +167,7 @@ cmd_up() {
   echo "dpl-remote: open this URL on the Mac/phone (same Tailscale account):"
   cmd_login_url || true
   echo "dpl-remote: waiting up to 3 min for the node to come online..."
-  ts up --hostname=dpl --accept-dns=false --ssh --timeout=180s
+  ts up --hostname=dpl --accept-dns=false --timeout=180s
   cmd_serve
   ts status
 }
@@ -169,8 +204,24 @@ cmd_status() {
     echo "cdp :${CDP_PORT}    down  ($(systemctl --user is-active homelab-cdp.service 2>/dev/null || echo inactive))"
   fi
   echo
-  if [[ -S "$TS_SOCK" ]]; then
+  if kernel_ts; then
+    echo "tailscale: kernel TUN"
+    ts status --json 2>/dev/null | python3 -c '
+import json,sys
+try:
+    d=json.load(sys.stdin)
+except Exception:
+    sys.exit(0)
+self=d.get("Self") or {}
+print("tailscale self:", (self.get("DNSName") or "").rstrip("."), " ".join(self.get("TailscaleIPs") or []))
+print("tailscale backend:", d.get("BackendState"))
+' || ts status || true
+    if userspace_active; then
+      echo "tailscale userspace: still running — stop it (splits MagicDNS name dpl and drops Moshi Mosh UDP)"
+    fi
+  elif [[ -S "$TS_SOCK" ]]; then
     echo "tailscale daemon: $(systemctl --user is-active homelab-tailscale.service 2>/dev/null || echo socket)"
+    echo "tailscale note: userspace has no TUN; Moshi Mosh UDP fails. Prefer kernel tailscaled."
     ts status --json 2>/dev/null | python3 -c '
 import json,sys
 try:
@@ -197,9 +248,11 @@ if url and d.get("BackendState") != "Running":
 }
 
 cmd_mac_config() {
-  local ip6
+  local ip6 ts4
   ip6="$(wan6)"
   [[ -n "$ip6" ]] || ip6="2001:ee0:4fc4:60f0::dpl"
+  ts4="$(ts_ip4)"
+  [[ -n "$ts4" ]] || ts4="100.x.y.z"
   cat <<EOF
 # dpl homelab - paste into ~/.ssh/config on the Mac and phone SSH apps.
 # Shell aliases never claim local ports. Tunnel aliases own CDP and RDP forwards.
@@ -219,7 +272,7 @@ Host dpl-v6
   HostName ${ip6}
 
 Host dpl-ts
-  HostName 100.122.213.4
+  HostName ${ts4}
 
 Host dpl-tunnel dpl-v6-tunnel dpl-ts-tunnel
   User ubuntu
@@ -242,7 +295,7 @@ Host dpl-v6-tunnel
   HostName ${ip6}
 
 Host dpl-ts-tunnel
-  HostName 100.122.213.4
+  HostName ${ts4}
 
 # Usage:
 #   ssh dpl                  # LAN shell

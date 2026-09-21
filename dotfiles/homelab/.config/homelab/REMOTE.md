@@ -46,7 +46,7 @@ Host dpl-v6
   HostName 2001:ee0:4fc4:60f0:22d2:d132:ce3e:2e88
 
 Host dpl-ts
-  HostName dpl
+  HostName 100.111.142.22
 
 Host dpl-tunnel dpl-v6-tunnel dpl-ts-tunnel
   User ubuntu
@@ -69,7 +69,7 @@ Host dpl-v6-tunnel
   HostName 2001:ee0:4fc4:60f0:22d2:d132:ce3e:2e88
 
 Host dpl-ts-tunnel
-  HostName dpl
+  HostName 100.111.142.22
 ```
 
 Pubkey must already be in `~/.ssh/authorized_keys` on dpl (it is, from the Mac).
@@ -126,28 +126,34 @@ Restart Chrome: `dpl-remote cdp-restart`.
 
 ### Preferred: Tailscale (no router change)
 
-Userspace daemon (`homelab-tailscale.service`, no sudo, no TUN). Other devices
-reach SSH/RDP/CDP via `tailscale serve` TCP forwards — **not** Funnel, so not
-on the public internet.
+Kernel `tailscaled` (TUN) is the live path. Moshi/Mosh needs it: userspace
+networking can forward TCP via `tailscale serve`, but it drops Mosh UDP and
+registers a second node (`dpl` vs `dpl-1`) that steals MagicDNS.
 
-On dpl:
+After the one-time sudo root script:
+
+```bash
+# Do not `systemctl --user disable` — that unlinks the stowed unit files.
+systemctl --user stop homelab-tailscale.service homelab-tailscale-up.service
+rm -f ~/.config/systemd/user/default.target.wants/homelab-tailscale.service
+rm -f ~/.config/systemd/user/default.target.wants/homelab-tailscale-up.service
+sudo tailscale up --hostname=dpl --accept-dns=false
+```
+
+Leave Tailscale SSH off so Moshi key auth reaches OpenSSH on `:2222`.
+Delete any leftover userspace node in the Tailscale admin console so the
+short name `dpl` maps to the kernel node, not a stale `100.x` address.
+
+On Mac and phone: install [Tailscale](https://tailscale.com/download), **same account**.
+Then `ssh dpl-ts` (HostName is the kernel Tailscale IPv4 from `dpl-remote mac-config`).
+
+No-sudo fallback only (TCP SSH/RDP/CDP, not Moshi Mosh):
 
 ```bash
 dpl-remote status          # AuthURL while NeedsLogin
-dpl-remote login-url       # print / refresh the login URL
-dpl-remote up              # wait for you to approve, then serve
-dpl-remote serve           # after login: :2222 :3389 :9222 on the tailnet
-```
-
-On Mac and phone: install [Tailscale](https://tailscale.com/download), **same account**.
-Then `ssh dpl-ts` (or MagicDNS `ssh ubuntu@dpl` if Tailscale SSH ACLs allow it).
-
-After the one-time sudo root script (kernel Tailscale), stop the user daemon so
-the two do not race:
-
-```bash
-systemctl --user disable --now homelab-tailscale.service
-sudo tailscale up --ssh --hostname=dpl
+dpl-remote login-url       # print / refresh the Tailscale login URL
+dpl-remote up              # userspace node + serve; skip if kernel tailscaled is up
+dpl-remote serve           # :2222 :3389 :9222 on the tailnet, not Funnel
 ```
 
 ### IPv6 fallback (no Tailscale)
@@ -171,24 +177,25 @@ Keep **3389** and **9222** closed.
 
 Install **Moshi** from the App Store / Play Store. This host already has:
 
-- `moshi-hook` 0.3.5 daemon (`moshi-hook.service`, linger)
-- `herdr` 0.8.2 headless server (`herdr-server.service`)
-- `tmux` 3.7c + TPM plugins (catppuccin, tmux-fingers)
-- `mosh-server` on the SSH PATH (user-space, UDP 60000–61000)
+- `moshi-hook` daemon (`moshi-hook.service`, linger; keep current with `moshi-hook update`)
+- `herdr` headless server (`herdr-server.service`)
+- `tmux` + TPM plugins (catppuccin, tmux-fingers)
+- `mosh-server` on the SSH PATH (`~/.local/bin`, UDP 60000–61000)
 
 ### Easy Pair (SSH/Mosh from the phone)
 
-On dpl (prints a QR; expires in a few minutes; anyone who scans it gets SSH):
+Advertise the **kernel Tailscale IPv4**, not the LAN IP and not MagicDNS while a
+stale `dpl` node still exists. Prints a QR; expires in a few minutes:
 
 ```bash
-moshi-hook host setup --name dpl --host 192.168.1.193 --port 2222 --user ubuntu --force
+moshi-hook host setup --name dpl --host "$(tailscale ip -4)" --port 2222 --user ubuntu --force
 ```
 
 In Moshi: **Easy Pair** → scan the QR (or open the `moshi://host/setup?...` link on the phone).
 After that, Moshi opens a shell / tmux / Herdr session picker.
 
-Off-LAN, re-run setup with `--host <tailscale-magicdns-or-ipv6>` after `dpl-remote up`.
-Do **not** port-forward the mosh UDP range to the WAN; use Tailscale or IPv6 instead.
+Do **not** port-forward the mosh UDP range to the WAN. Userspace Tailscale cannot
+carry Mosh UDP; keep kernel `tailscaled` as the only node.
 
 ### Agent hooks (inbox / approvals)
 
@@ -226,7 +233,7 @@ Units (user systemd, linger=yes):
 - `sshd-user.service` — OpenSSH `:2222`
 - `gnome-remote-desktop.service` — RDP `:3389`
 - `homelab-cdp.service` — headed Chrome CDP
-- `homelab-tailscale.service` — userspace Tailscale
+- `homelab-tailscale.service` — userspace Tailscale (leave off once kernel tailscaled is up)
 - `homelab-nosleep.service` / `homelab-disks.service`
 
 ---

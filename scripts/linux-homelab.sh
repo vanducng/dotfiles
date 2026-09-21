@@ -217,7 +217,14 @@ EOF
   # the unit — systemd unlinks a stowed ~/.config/systemd/user/*.service.
   rm -f "${HOME}/.config/systemd/user/default.target.wants/cnb-openvpn.service"
   log "cnb-openvpn on-demand — cnb-openvpn start|stop|status (gopass cnb/vpn/pfsense-main)"
-  if [[ -x "${HOME}/.local/opt/tailscale/tailscaled" ]]; then
+  if [[ -S /var/run/tailscale/tailscaled.sock ]] || systemctl is-active --quiet tailscaled 2>/dev/null; then
+    # Do not `systemctl --user disable` — that unlinks stowed unit files.
+    systemctl --user stop homelab-tailscale-up.service 2>/dev/null || true
+    systemctl --user stop homelab-tailscale.service 2>/dev/null || true
+    rm -f "${HOME}/.config/systemd/user/default.target.wants/homelab-tailscale.service"
+    rm -f "${HOME}/.config/systemd/user/default.target.wants/homelab-tailscale-up.service"
+    log "kernel Tailscale is active — userspace daemon left off (Moshi/Mosh needs TUN)"
+  elif [[ -x "${HOME}/.local/opt/tailscale/tailscaled" ]]; then
     systemctl --user enable --now homelab-tailscale.service || true
     systemctl --user enable --now homelab-tailscale-up.service || true
   fi

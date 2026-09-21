@@ -77,15 +77,24 @@ fi
 # --- tailscale (inbound mesh SSH; prefer this over exposing :22 to the internet) ---
 # User-space daemon (homelab-tailscale.service) may already be running; stop it
 # so the kernel TUN unit owns the node instead of two daemons racing.
+# Do not `systemctl --user disable` — that unlinks stowed unit files.
 if [[ -n "$TARGET_HOME" ]]; then
+  ts_bin="${TARGET_HOME}/.local/opt/tailscale/tailscale"
+  ts_sock="${TARGET_HOME}/.local/state/tailscale/tailscaled.sock"
+  if [[ -x "$ts_bin" && -S "$ts_sock" ]]; then
+    sudo -u "$TARGET_USER" "$ts_bin" --socket="$ts_sock" logout || true
+  fi
   sudo -u "$TARGET_USER" XDG_RUNTIME_DIR="/run/user/$(id -u "$TARGET_USER")" \
-    systemctl --user disable --now homelab-tailscale.service 2>/dev/null || true
+    systemctl --user stop homelab-tailscale-up.service homelab-tailscale.service 2>/dev/null || true
+  rm -f "${TARGET_HOME}/.config/systemd/user/default.target.wants/homelab-tailscale.service"
+  rm -f "${TARGET_HOME}/.config/systemd/user/default.target.wants/homelab-tailscale-up.service"
 fi
 if ! command -v tailscale >/dev/null || [[ ! -x /usr/sbin/tailscaled && ! -x /usr/bin/tailscaled ]]; then
   curl -fsSL https://tailscale.com/install.sh | sh
 fi
 systemctl enable --now tailscaled || true
-echo "Tailscale installed. As ${TARGET_USER} run: sudo tailscale up --ssh --hostname=dpl"
+echo "Tailscale installed. As ${TARGET_USER} run: sudo tailscale up --hostname=dpl --accept-dns=false"
+echo "Leave Tailscale SSH off so Moshi key auth reaches OpenSSH on :2222."
 
 # --- persistent tun for user-space CNB OpenVPN (no sudo on each connect) ---
 cat >/etc/systemd/system/cnb-tun.service <<EOF
@@ -109,7 +118,7 @@ systemctl enable --now cnb-tun.service || true
 # --- moshi PATH ---
 loginctl enable-linger "$TARGET_USER"
 install -d /usr/local/bin
-for name in herdr tmux moshi moshi-hook nvim zsh lazygit docker; do
+for name in herdr tmux moshi moshi-hook mosh-server nvim zsh lazygit docker; do
   if [[ -e "$TARGET_HOME/.local/bin/$name" ]]; then
     ln -sfn "$TARGET_HOME/.local/bin/$name" "/usr/local/bin/$name"
   fi
@@ -118,5 +127,5 @@ done
 echo
 echo "sshd=$(systemctl is-active ssh) docker=$(systemctl is-active docker) linger=$(loginctl show-user "$TARGET_USER" -p Linger --value)"
 echo "LAN: ssh ${TARGET_USER}@192.168.1.193"
-echo "Then: sudo tailscale up --ssh --hostname=dpl"
+echo "Then: sudo tailscale up --hostname=dpl --accept-dns=false"
 echo "Reserve 192.168.1.193 on the router, port-forward 22 only if you must skip Tailscale."

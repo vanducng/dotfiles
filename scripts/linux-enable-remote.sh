@@ -32,7 +32,7 @@ loginctl enable-linger "$TARGET_USER"
 # Moshi probes `ssh host 'command -v herdr'` with a default PATH that
 # includes /usr/local/bin but not ~/.local/bin.
 install -d /usr/local/bin
-for name in herdr tmux moshi moshi-hook nvim zsh; do
+for name in herdr tmux moshi moshi-hook mosh-server nvim zsh; do
   if [[ -e "$TARGET_HOME/.local/bin/$name" ]]; then
     ln -sfn "$TARGET_HOME/.local/bin/$name" "/usr/local/bin/$name"
   fi
@@ -46,5 +46,5 @@ fi
 echo
 echo "sshd is $(systemctl is-active ssh). linger=$(loginctl show-user "$TARGET_USER" -p Linger --value)"
 echo "LAN: ssh ${TARGET_USER}@$(hostname -I | awk '{print $1}')"
-echo "Then as ${TARGET_USER}: moshi-hook host setup --name dpl --host $(hostname -I | awk '{print $1}')"
+echo "Then as ${TARGET_USER}: moshi-hook host setup --name dpl --host <tailscale-ipv4> --port 2222 --user ${TARGET_USER}"
 echo "Pair Moshi: scan the QR, then moshi-hook pair --token <token> && moshi-hook install"

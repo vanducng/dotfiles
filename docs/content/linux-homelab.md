@@ -40,10 +40,10 @@ Mounts disks via udisks, inhibits sleep, starts **sshd on :2222**, clones last-3
 
 ```bash
 sudo -E ~/.dotfiles/scripts/linux-homelab-root.sh
-sudo tailscale up --ssh --hostname=dpl
+sudo tailscale up --hostname=dpl --accept-dns=false
 ```
 
-That installs sshd `:22`, docker (data-root on NVMe), tailscale, fstab, and masks suspend. Prefer **Tailscale SSH** over forwarding `:22` to `222.253.112.200`.
+That installs sshd `:22`, docker (data-root on NVMe), tailscale, fstab, and masks suspend. Leave Tailscale SSH off so Moshi key auth reaches OpenSSH on `:2222`. Prefer the tailnet over forwarding `:22` to the WAN.
 
 LAN IP: `192.168.1.193` (set as NetworkManager manual). Reserve it on the router.
 
@@ -58,6 +58,6 @@ User-space, no sudo:
 | SSH | `:2222` pubkey | `ssh -p 2222 ubuntu@192.168.1.193` |
 | Screen | GNOME RDP `:3389` | Microsoft Remote Desktop on the LAN, or `127.0.0.1:13389` via SSH forward |
 | Chrome CDP | `127.0.0.1:9222` only | `ssh dpl` then `agent-browser connect 9222` on the Mac |
-| Off-LAN | Tailscale userspace | `dpl-remote up` (login URL), install Tailscale on Mac/phone |
+| Off-LAN | Kernel Tailscale TUN | `dpl-remote status`; Moshi host = `tailscale ip -4`. Userspace daemon stays off. |
 
 Do **not** port-forward `3389` or `9222`. IPv4 WAN is NAT; IPv6 may already reach `:2222` if the ISP leaves inbound open. Details: `~/.config/homelab/REMOTE.md` and `dpl-remote status`.

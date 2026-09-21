@@ -116,11 +116,13 @@ else
 fi
 unset _fetch_repos_code _fetch_cwd_code _forbidden
 remote_cli="$ROOT/dotfiles/bin/.local/bin/dpl-remote"
-mac_config="$(WAN6_IP=2001:db8::10 LAN_IP=192.0.2.10 bash "$remote_cli" mac-config)"
+mac_config="$(WAN6_IP=2001:db8::10 LAN_IP=192.0.2.10 TS_IP=100.64.0.1 bash "$remote_cli" mac-config)"
 shell_block="$(printf '%s\n' "$mac_config" | awk '/^Host dpl dpl-v6 dpl-ts$/{capture=1; next} /^Host dpl$/{capture=0} capture')"
 if grep -q 'remote-debugging-address=' "$ROOT/dotfiles/homelab/.config/homelab/cdp-chrome" \
   && grep -q 'CDP_ADDR:-127.0.0.1' "$ROOT/dotfiles/homelab/.config/homelab/cdp-chrome" \
   && grep -q '^Host dpl-ts-tunnel$' <<<"$mac_config" \
+  && grep -q 'HostName 100.64.0.1' <<<"$mac_config" \
+  && ! grep -q '100.122.213.4' "$remote_cli" \
   && grep -q 'LocalForward 127.0.0.1:9222 127.0.0.1:9222' <<<"$mac_config" \
   && ! grep -q 'LocalForward' <<<"$shell_block"; then
   pass "CDP is loopback-only with dedicated SSH tunnel aliases"
@@ -156,6 +158,16 @@ if grep -qE 'serve --bg --tcp' "$ROOT/dotfiles/bin/.local/bin/dpl-remote" \
   pass "internet path is Tailscale serve, not Funnel"
 else
   fail "dpl-remote must serve on the tailnet without Funnel"
+fi
+if grep -q 'kernel_ts' "$ROOT/dotfiles/bin/.local/bin/dpl-remote" \
+  && grep -q 'kernel Tailscale is active' "$ROOT/scripts/linux-homelab.sh" \
+  && grep -q 'default.target.wants/homelab-tailscale.service' "$ROOT/scripts/linux-homelab-root.sh" \
+  && ! grep -q 'systemctl --user disable --now homelab-tailscale' "$ROOT/scripts/linux-homelab-root.sh" \
+  && grep -q 'mosh-server' "$ROOT/scripts/linux-homelab-root.sh" \
+  && grep -q 'mosh-server' "$ROOT/scripts/linux-enable-remote.sh"; then
+  pass "kernel Tailscale stays the Moshi/Mosh path"
+else
+  fail "kernel Tailscale must own the Moshi node; do not unlink stowed userspace units"
 fi
 bash -n "$ROOT/scripts/linux-gnome-keys.sh" && pass "linux-gnome-keys.sh parses" || fail "linux-gnome-keys.sh syntax"
 bash -n "$ROOT/dotfiles/shell-linux/.config/shell/linux.sh" && pass "linux.sh parses" || fail "linux.sh syntax"
