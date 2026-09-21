@@ -27,7 +27,8 @@ grep -q 'hide_window_decorations no' "$SCRIPT" || fail "sysmon overlay should ke
 grep -q 'remember_window_size no' "$SCRIPT" || fail "sysmon overlay should not restore a previous kitty size"
 grep -q 'cmd_scratch' "$SCRIPT" && fail "sysmon should not expose a scratch session"
 grep -q 'meh - f : "$HOME/.local/bin/sysmon" center' "$ROOT/dotfiles/skhd/.config/skhd/skhdrc" \
-  || fail "skhd meh-f should recenter the sysmon overlay"
+  || fail "skhd meh-f should raise the sysmon overlay"
+grep -q 'set visible of' "$SCRIPT" && fail "hiding the kitty process activates the next app"
 grep -q 'cmd + alt - f' "$ROOT/dotfiles/skhd/.config/skhd/skhdrc" \
   && fail "cmd+opt dock belongs on Tinycast/Karabiner, not skhd"
 KARABINER_DOCK="$ROOT/dotfiles/karabiner/.config/karabiner/assets/complex_modifications/sysmon-dock.json"

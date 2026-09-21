@@ -56,7 +56,7 @@ Needs `switchaudio-osx` and `blueutil` from `scripts/macos-deps.sh`. Switching o
 
 ## System monitor
 
-`meh+f` raises one kitty overlay attached to the `sysmon` tmux session, centered, and leaves whatever window you last used. `cmd+opt+G` docks the same overlay on the right at one quarter width (about 380-640px depending on the display; tighter 1/5 is too narrow for Neovim notes). That chord is a Tinycast Custom Command plus a Karabiner HID rule, not skhd: `cmd+opt+F` stays with Cursor Replace in Files. First start creates `btop` as window 1. Vault Neovim starts through a login zsh so AstroNvim gets the same PATH as Ghostty. Palette search still finds `processes`, `disk`, `vault`, and `dock`. The session loads `~/.tmux.conf`.
+`meh+f` raises one kitty overlay attached to the `sysmon` tmux session, centered, and leaves whatever window you last used. Close it with `cmd+w`. `cmd+opt+G` docks the same overlay on the right at one quarter width (about 380-640px depending on the display; tighter 1/5 is too narrow for Neovim notes). That chord is a Tinycast Custom Command plus a Karabiner HID rule, not skhd: `cmd+opt+F` stays with Cursor Replace in Files. First start creates `btop` as window 1. Vault Neovim starts through a login zsh so AstroNvim gets the same PATH as Ghostty. Palette search still finds `processes`, `disk`, `vault`, and `dock`. The session loads `~/.tmux.conf`.
 
 ```bash
 sysmon
