@@ -44,7 +44,8 @@ yabai -m config insert_feedback_color       0x00010101
 # yabai -m config external_bar              all:5:5
 
 # -----------------------------------------------------------------------------
-# Multi-display reconcile — 17 spaces, display 1 holds 1-8, display 2 holds 9-17
+# Multi-display reconcile — 17 spaces. Display 2 should hold 9 (spaces 9-17).
+# Desktop moves are often refused; messaging windows are placed on display 2 after the pin loop.
 # Re-runs on monitor hot-plug via display_added / display_removed signals.
 # -----------------------------------------------------------------------------
 "$HOME/.config/yabai/arrange-displays.sh"
@@ -61,7 +62,8 @@ yabai -m rule --add app=".*"                          sub-layer=normal
 
 # Pin apps to specific spaces (by index). 17 spaces: D1=1-8, D2=9-17.
 # 1 Ghostty  2 LibreOffice  3 Dia  4 Chrome+Vivaldi  5 Cursor  6 PDF  7 Alter  8 Obsidian
-# 9 Slack  10 Telegram  11 Zalo  12 Discord+WhatsApp  13 Arc  14 Cliq  15 kitty  16 AI  17 ego
+# 9-10 stay on display 1 until macOS allows moving desktops.
+# Display 2: 11 Zalo  12 Telegram+Discord+WhatsApp  13 Arc  14 Slack+Cliq  15 kitty  16 AI  17 ego
 yabai -m rule --add app="^Ghostty$" title="^(sysmon|notes-vault)"  manage=off sticky=on sub-layer=above grid=6:6:1:1:4:4
 yabai -m rule --add app="^Ghostty$" title!="^(sysmon.*|notes-vault)?$" space=1
 yabai -m rule --add app="^LibreOffice$"               space=2
@@ -73,8 +75,8 @@ yabai -m rule --add app="^Preview$"                   space=6
 yabai -m rule --add app="^Foxit PDF Reader$"          space=6
 yabai -m rule --add app="^Alter$"                     space=7 manage=off
 yabai -m rule --add app="^Obsidian$"                  space=8
-yabai -m rule --add app="^Slack$"                     space=9
-yabai -m rule --add app="^Telegram$"                  space=10
+yabai -m rule --add app="^Slack$"                     space=14
+yabai -m rule --add app="^Telegram$"                  space=12
 yabai -m rule --add app="^Zalo$"                      space=11
 yabai -m rule --add app="^ZaloCall$"                  manage=off
 yabai -m rule --add app="^Discord$"                   space=12
@@ -91,16 +93,31 @@ yabai -m rule --add app="^ego lite$"                  space=17
 
 # Discord and AI stay stacked. Dia stacks only while herdr-bar is not its sidebar.
 yabai -m space 12 --layout stack 2>/dev/null
+yabai -m space 14 --layout stack 2>/dev/null
 yabai -m space 16 --layout stack 2>/dev/null
 
 # Enforce app→space pinning for windows already open when yabai (re)starts.
 # Rules above only fire on window creation, so existing windows would otherwise
 # stay on whatever space they were on at restart. Mirror the pin rules here.
-for pin in "Ghostty:1" "LibreOffice:2" "Dia:3" "Google Chrome:4" "Vivaldi:4" "Cursor:5" "Preview:6" "Foxit PDF Reader:6" "Alter:7" "Obsidian:8" "Slack:9" "Telegram:10" "Zalo:11" "Discord:12" "WhatsApp:12" "Arc:13" "Cliq:14" "kitty:15" "Codex:16" "ChatGPT:16" "Claude:16" "Grok Bot:16" "ego lite:17"; do
+for pin in "Ghostty:1" "LibreOffice:2" "Dia:3" "Google Chrome:4" "Vivaldi:4" "Cursor:5" "Preview:6" "Foxit PDF Reader:6" "Alter:7" "Obsidian:8" "Slack:14" "Telegram:12" "Zalo:11" "Discord:12" "WhatsApp:12" "Arc:13" "Cliq:14" "kitty:15" "Codex:16" "ChatGPT:16" "Claude:16" "Grok Bot:16" "ego lite:17"; do
     app="${pin%:*}"; sp="${pin#*:}"
     # yabai rules cannot strip U+200E; some apps report it in .app
     for id in $(yabai -m query --windows | jq -r --arg a "$app" '.[] | select((.app | gsub("\u200e"; "")) == $a and ((.title // "") | test("^(sysmon|notes-vault|herdr-bar)") | not)) | .id'); do
         yabai -m window "$id" --space "$sp" 2>/dev/null
+    done
+done
+
+# Spaces 9-10 cannot leave the primary while desktop moves are refused.
+# Messaging windows still have to sit on the built-in display after every restart.
+for pin in "Slack:14" "Telegram:12" "Zalo:11" "Discord:12" "WhatsApp:12" "Cliq:14"; do
+    app="${pin%:*}"; sp="${pin#*:}"
+    disp=$(yabai -m query --spaces --space "$sp" 2>/dev/null | jq -r '.display // empty')
+    for id in $(yabai -m query --windows | jq -r --arg a "$app" '.[] | select((.app | gsub("\u200e"; "")) == $a) | .id'); do
+        if [ "$disp" = "2" ]; then
+            yabai -m window "$id" --space "$sp" 2>/dev/null || true
+        else
+            yabai -m window "$id" --display 2 2>/dev/null || true
+        fi
     done
 done
 
