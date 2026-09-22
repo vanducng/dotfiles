@@ -779,14 +779,20 @@ ensure_hub_windows() {
   else
     created=1
   fi
-  ensure_processes_window
-  ensure_disk_window "$HOME"
+  ensure_processes_window || echo "sysmon: skipping processes window" >&2
+  ensure_disk_window "$HOME" || echo "sysmon: skipping disk window" >&2
   vault="$(vault_path)"
   if [[ -d "$vault" ]]; then
-    ensure_vault_window
+    ensure_vault_window || echo "sysmon: skipping vault window" >&2
+  fi
+  if ! has_session; then
+    echo "sysmon: no hub windows could be created" >&2
+    return 1
   fi
   if [[ "$created" == 1 ]]; then
-    tmux_cmd select-window -t "$SESSION:processes"
+    if has_window processes; then
+      tmux_cmd select-window -t "$SESSION:processes"
+    fi
   elif [[ -n "$current" ]] && has_window "$current"; then
     tmux_cmd select-window -t "$SESSION:$current"
   fi
