@@ -34,7 +34,9 @@ if [ "$displays" -ge 2 ]; then
         last=$(yabai -m query --spaces --display 1 2>/dev/null | jq '[.[] | select(."is-native-fullscreen"==false)] | .[-1].index')
         { [ -z "$last" ] || [ "$last" = "null" ]; } && break
         yabai -m space "$last" --display 2 2>/dev/null || break
-        d1_count=$((d1_count - 1))
+        new_d1=$(nonzero "$(yabai -m query --spaces --display 1 2>/dev/null | jq '[.[] | select(."is-native-fullscreen"==false)] | length')")
+        [ "$new_d1" -lt "$d1_count" ] || break
+        d1_count=$new_d1
     done
     while [ "$d1_count" -lt "$TARGET_D1" ]; do
         first=$(yabai -m query --spaces --display 2 2>/dev/null | jq '[.[] | select(."is-native-fullscreen"==false)] | .[0].index')

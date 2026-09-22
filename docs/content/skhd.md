@@ -21,7 +21,7 @@ All application shortcuts use the `meh` key (ctrl+alt+shift) for consistency and
 
 ### Space map
 
-17 spaces. Display 1 holds 1-8, display 2 holds 9-17.
+17 spaces. Display 1 holds 1-10. Display 2 (built-in) holds 11-17, including every messaging app.
 
 | Space | Display | App |
 |-------|---------|-----|
@@ -33,12 +33,12 @@ All application shortcuts use the `meh` key (ctrl+alt+shift) for consistency and
 | 6 | 1 | Preview, Foxit |
 | 7 | 1 | Alter |
 | 8 | 1 | Obsidian |
-| 9 | 2 | Slack |
-| 10 | 2 | Telegram |
+| 9 | 1 | (desktop stays on the primary; no pinned app) |
+| 10 | 1 | (desktop stays on the primary; no pinned app) |
 | 11 | 2 | Zalo |
-| 12 | 2 | Discord, WhatsApp (stack) |
+| 12 | 2 | Telegram, Discord, WhatsApp (stack) |
 | 13 | 2 | Arc |
-| 14 | 2 | Cliq |
+| 14 | 2 | Slack, Cliq (stack) |
 | 15 | 2 | kitty |
 | 16 | 2 | ChatGPT, Claude, Codex, Grok (stack) |
 | 17 | 2 | ego lite |
@@ -64,8 +64,8 @@ All application shortcuts use the `meh` key (ctrl+alt+shift) for consistency and
 | `meh + d` | Arc | Browser on space 13 |
 | `meh + z` | Zen Browser | Alternative browser |
 | `meh + c` | Vivaldi | Browser on display 1, space 4 |
-| `meh + k` | Slack | Team communication on space 9 |
-| `meh + r` | Telegram | Messaging app on space 10 |
+| `meh + k` | Slack | Team communication on display 2, space 14 |
+| `meh + r` | Telegram | Messaging app on display 2, space 12 |
 | `meh + u` | Zalo | Messaging app on space 11 |
 | `meh + t` | Discord | Community chat on space 12 |
 | `meh + y` | WhatsApp | Messaging app on space 12 |
