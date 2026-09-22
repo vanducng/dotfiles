@@ -1,5 +1,32 @@
 # Changelog
 
+## [0.23.0](https://github.com/vanducng/dotfiles/compare/v0.22.0...v0.23.0) (2026-09-22)
+
+
+### Features
+
+* **pi:** replaced subagents with local extension ([#166](https://github.com/vanducng/dotfiles/issues/166)) ([2403120](https://github.com/vanducng/dotfiles/commit/2403120b4ff55b19b34ca1cdcc5094d345c0f9f1))
+* **tinycast:** open btop and dua from keyboard shortcuts ([#174](https://github.com/vanducng/dotfiles/issues/174)) ([275bcc6](https://github.com/vanducng/dotfiles/commit/275bcc68b768f1e6ec8a3b2fd429ba8d33c1fa13))
+* **tinycast:** shared one overlay for processes, disk, and vault ([#180](https://github.com/vanducng/dotfiles/issues/180)) ([4feb562](https://github.com/vanducng/dotfiles/commit/4feb562c210d1a0ee5fe59b626eba9c74faf7300))
+* **tmux:** focus panes with Ctrl-Alt-hjkl like Herdr ([fa6a039](https://github.com/vanducng/dotfiles/commit/fa6a039091aa407052f0effcf5f4c70bcc93f6c2))
+
+
+### Bug Fixes
+
+* **homelab:** keep kernel Tailscale so Moshi Mosh has a TUN ([f3996e2](https://github.com/vanducng/dotfiles/commit/f3996e205a9f6e732e83d16eb6d0252d4701fbf8))
+* **kitty:** kept overlay color and skhd hotkeys ([#183](https://github.com/vanducng/dotfiles/issues/183)) ([8e07c40](https://github.com/vanducng/dotfiles/commit/8e07c40ef42872a69eab5d1eef209c21b3bdfcae))
+* **nvim:** prefer Homebrew so yazi.nvim does not run Intel ya ([#177](https://github.com/vanducng/dotfiles/issues/177)) ([f809482](https://github.com/vanducng/dotfiles/commit/f8094824572ba46452ca97fa44e28e35f5846e36))
+* **tinycast:** close sysmon overlays without a kitty confirm ([#178](https://github.com/vanducng/dotfiles/issues/178)) ([f05119a](https://github.com/vanducng/dotfiles/commit/f05119aa1b1d5911caac431627fcdf4bd9368044))
+* **tinycast:** focus the audio picker for keyboard use ([#169](https://github.com/vanducng/dotfiles/issues/169)) ([e8702ed](https://github.com/vanducng/dotfiles/commit/e8702ed8196e882cdbc4b42928ca4c3204504eba))
+* **tinycast:** hide Teams, Jump, and Kuycon from the audio picker ([#172](https://github.com/vanducng/dotfiles/issues/172)) ([0dae203](https://github.com/vanducng/dotfiles/commit/0dae203d55bb61e0d02e2249198aae2c9caaad68))
+* **tinycast:** keep sysmon overlays alive and focus them instantly ([#176](https://github.com/vanducng/dotfiles/issues/176)) ([a0e1a18](https://github.com/vanducng/dotfiles/commit/a0e1a18e97e1110ed25f545c4e3644f52d7476e8))
+* **tinycast:** persist sysmon in tmux and move disk off the Dock chord ([#175](https://github.com/vanducng/dotfiles/issues/175)) ([9158c02](https://github.com/vanducng/dotfiles/commit/9158c02740d40ffb42b56c17a94b2e8e5e701691))
+* **tinycast:** reuse the open audio picker instead of stacking another ([#173](https://github.com/vanducng/dotfiles/issues/173)) ([756467e](https://github.com/vanducng/dotfiles/commit/756467ee681d55906a5a75511fa053ca0fb11d67))
+* **tinycast:** show paired AirPods in the audio picker ([#170](https://github.com/vanducng/dotfiles/issues/170)) ([e558a9a](https://github.com/vanducng/dotfiles/commit/e558a9a87e1994a87cf5956faa68feed72cd0c9b))
+* **tinycast:** skip login zsh so the audio picker opens faster ([#171](https://github.com/vanducng/dotfiles/issues/171)) ([2525bab](https://github.com/vanducng/dotfiles/commit/2525bab4b9fe03b180cfc1e3559cd2bf5cb929fe))
+* **tinycast:** use kitty.conf syntax so overlay close is not confirmed ([#179](https://github.com/vanducng/dotfiles/issues/179)) ([cdbc1e7](https://github.com/vanducng/dotfiles/commit/cdbc1e7ec82376f40c08606a50adea0bc60c4479))
+* **tmux:** stopped TUI frames from filling scrollback ([#181](https://github.com/vanducng/dotfiles/issues/181)) ([13ec479](https://github.com/vanducng/dotfiles/commit/13ec479fb23e906d87b921189a3bac1ed6ce00a5))
+
 ## [0.22.0](https://github.com/vanducng/dotfiles/compare/v0.21.0...v0.22.0) (2026-09-20)
 
 
