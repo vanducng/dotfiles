@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # One kitty overlay, one tmux session. meh+f raises the last window;
-# first start creates btop. Palette/CLI can still open disk or vault.
+# first start creates btop, disk, and vault. Palette/CLI can still jump to any.
 
 SESSION="${SYSMON_SESSION:-sysmon}"
 SOCKET="${SYSMON_TMUX_SOCKET:-sysmon}"
@@ -27,7 +27,7 @@ Open system tools in one tmux session (kitty overlay).
   sysmon dock-left     raise the last window as a left sidebar
   sysmon dia           tile the hub on the left of the focused split app
   sysmon dia-right     tile the hub on the right of the focused split app
-  sysmon processes     window 1: btop (also first start)
+  sysmon processes     window 1: btop
   sysmon disk [path]   window 2: dua interactive (default: $HOME)
   sysmon vault         window 3: nvim on $OBSIDIAN_VAULT
   sysmon stop          kill the session and overlay
@@ -40,8 +40,8 @@ left / right quarter of Dia. cmd+shift+opt+r / t do the same for ego lite.
 That window is not inside tmux, so Herdr keeps its own prefix.
 Ctrl+Shift+H and Ctrl+Shift+L move between them. The same chord
 focuses the sidebar when it is already in place. Close that window
-to dismiss it. First start creates btop. Prefix and window
-keys come from ~/.tmux.conf.
+to dismiss it. First start creates windows 1-3 (btop, disk, vault)
+and lands on btop. Prefix and window keys come from ~/.tmux.conf.
 EOF
 }
 
@@ -741,6 +741,57 @@ cmd_dia() {
   arrange_dia_split "$side" "$space" "$dia" "$others" "$app" "$kept_layout"
 }
 
+ensure_processes_window() {
+  local btop
+  btop="$(resolve_bin btop "${SYSMON_BTOP:-}")"
+  ensure_window 1 processes "$HOME" "$btop"
+}
+
+ensure_disk_window() {
+  local dua path="${1-}"
+  path="${path:-$HOME}"
+  if [[ ! -d "$path" ]]; then
+    echo "sysmon: disk path not found: $path" >&2
+    return 1
+  fi
+  dua="$(resolve_bin dua "${SYSMON_DUA:-}")"
+  ensure_window 2 disk "$path" "$dua" i "$path"
+}
+
+ensure_vault_window() {
+  local nvim vault zsh
+  vault="$(vault_path)"
+  if [[ ! -d "$vault" ]]; then
+    echo "sysmon: vault not found: $vault" >&2
+    return 1
+  fi
+  nvim="$(resolve_bin nvim "${SYSMON_NVIM:-}")"
+  zsh="${SYSMON_ZSH:-/bin/zsh}"
+  ensure_window 3 vault "$vault" "$zsh" -lc "source \"\$HOME/.zshrc\" >/dev/null 2>&1 || true; exec \"$nvim\" ."
+}
+
+# Create the designed hub windows (btop, disk, vault). Keep the current
+# window when the session already exists; land on btop on first start.
+ensure_hub_windows() {
+  local current="" created=0 vault
+  if has_session; then
+    current="$(tmux_cmd display-message -p -t "$SESSION" '#{window_name}')"
+  else
+    created=1
+  fi
+  ensure_processes_window
+  ensure_disk_window "$HOME"
+  vault="$(vault_path)"
+  if [[ -d "$vault" ]]; then
+    ensure_vault_window
+  fi
+  if [[ "$created" == 1 ]]; then
+    tmux_cmd select-window -t "$SESSION:processes"
+  elif [[ -n "$current" ]] && has_window "$current"; then
+    tmux_cmd select-window -t "$SESSION:$current"
+  fi
+}
+
 cmd_show() {
   if [[ -z "${SYSMON_OPEN:-}" ]]; then
     close_bar floating
@@ -752,47 +803,23 @@ cmd_show() {
     attach_hub
     return 0
   fi
-  if ! has_session; then
-    cmd_processes
-    return
-  fi
-  attach_hub
-}
-
-open_app() {
-  local name="$1" index="$2" cwd="$3"
-  shift 3
-  ensure_window "$index" "$name" "$cwd" "$@"
+  ensure_hub_windows
   attach_hub
 }
 
 cmd_processes() {
-  local btop
-  btop="$(resolve_bin btop "${SYSMON_BTOP:-}")"
-  open_app processes 1 "$HOME" "$btop"
+  ensure_processes_window
+  attach_hub
 }
 
 cmd_disk() {
-  local dua path="${1-}"
-  path="${path:-$HOME}"
-  if [[ ! -d "$path" ]]; then
-    echo "sysmon: disk path not found: $path" >&2
-    return 1
-  fi
-  dua="$(resolve_bin dua "${SYSMON_DUA:-}")"
-  open_app disk 2 "$path" "$dua" i "$path"
+  ensure_disk_window "${1-}"
+  attach_hub
 }
 
 cmd_vault() {
-  local nvim vault zsh
-  vault="$(vault_path)"
-  if [[ ! -d "$vault" ]]; then
-    echo "sysmon: vault not found: $vault" >&2
-    return 1
-  fi
-  nvim="$(resolve_bin nvim "${SYSMON_NVIM:-}")"
-  zsh="${SYSMON_ZSH:-/bin/zsh}"
-  open_app vault 3 "$vault" "$zsh" -lc "source \"\$HOME/.zshrc\" >/dev/null 2>&1 || true; exec \"$nvim\" ."
+  ensure_vault_window
+  attach_hub
 }
 
 cmd_stop() {

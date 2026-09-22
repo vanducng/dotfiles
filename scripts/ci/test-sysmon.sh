@@ -312,8 +312,12 @@ EOF
   pass "stop kills the shared session"
 
   "$SCRIPT" show >/dev/null
+  wins="$(tmux -L "$SYSMON_TMUX_SOCKET" list-windows -t sysmon -F '#{window_index}:#{window_name}')"
+  printf '%s\n' "$wins" | grep -qx '1:processes' || fail "first start window 1: $wins"
+  printf '%s\n' "$wins" | grep -qx '2:disk' || fail "first start window 2: $wins"
+  printf '%s\n' "$wins" | grep -qx '3:vault' || fail "first start window 3: $wins"
   current="$(tmux -L "$SYSMON_TMUX_SOCKET" display-message -p -t sysmon '#{window_name}')"
-  [[ "$current" == processes ]] || fail "first start should open btop: $current"
-  pass "first start creates btop"
+  [[ "$current" == processes ]] || fail "first start should land on btop: $current"
+  pass "first start creates btop, disk, and vault"
   "$SCRIPT" stop >/dev/null
 fi
