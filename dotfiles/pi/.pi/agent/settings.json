@@ -2,7 +2,7 @@
   "defaultProvider": "cliproxyapi",
   "defaultModel": "grok-4.6",
   "defaultThinkingLevel": "xhigh",
-  "lastChangelogVersion": "0.86.1",
+  "lastChangelogVersion": "0.87.0",
   "images": {
     "blockImages": false
   },
@@ -22,8 +22,7 @@
     "npm:@plannotator/pi-extension",
     "npm:@calesennett/pi-codex-fast",
     "npm:pi-mcp-adapter",
-    "git:github.com/DietrichGebert/ponytail@v4.9.0",
-    "npm:@superwhisper/pi"
+    "git:github.com/DietrichGebert/ponytail@v4.9.0"
   ],
   "skills": [
     "-skills/backend-development",
