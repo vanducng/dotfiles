@@ -20,6 +20,8 @@ grep -q 'single-instance' "$SCRIPT" || fail "sysmon should reuse one kitty proce
 grep -q 'instance-group sysmon' "$SCRIPT" || fail "sysmon should isolate its kitty group"
 grep -q 'find_window_ids' "$SCRIPT" || fail "sysmon should locate an existing overlay by title"
 grep -q 'os.setsid' "$SCRIPT" || fail "sysmon should detach kitty from the launcher process group"
+grep -q 'unset NO_COLOR FORCE_COLOR' "$SCRIPT" || fail "sysmon should drop NO_COLOR before launching kitty"
+grep -q 'Ghostty.app' "$SCRIPT" || fail "sysmon should drop Ghostty TERMINFO so kitty terminfo resolves"
 grep -q 'confirm_os_window_close 0' "$SCRIPT" || fail "sysmon should close overlays without a kitty confirm"
 grep -q 'confirm_os_window_close=' "$SCRIPT" && fail "kitty --override uses spaces, not equals"
 grep -q -- '--config NONE' "$SCRIPT" && fail "sysmon must load kitty.conf so nvim gets the nerd font"
@@ -202,6 +204,11 @@ sleep 30
 EOF
   cat >"$live/kitty" <<'EOF'
 #!/usr/bin/env bash
+{
+  printf 'NO_COLOR=%s\n' "${NO_COLOR-<unset>}"
+  printf 'FORCE_COLOR=%s\n' "${FORCE_COLOR-<unset>}"
+  printf 'TERMINFO=%s\n' "${TERMINFO-<unset>}"
+} >"${SYSMON_ENV_LOG:?}"
 echo kitty "$@"
 EOF
   chmod +x "$live/hold" "$live/kitty"
@@ -221,11 +228,28 @@ set -g base-index 0
 set -g renumber-windows on
 EOF
   export SYSMON_TMUX_CONF="$live/tmux.conf"
+  export SYSMON_ENV_LOG="$live/kitty.env"
+  export NO_COLOR=1 FORCE_COLOR=0
+  export TERMINFO="/Applications/Ghostty.app/Contents/Resources/terminfo"
   export OBSIDIAN_VAULT="$workdir/vault"
   mkdir -p "$OBSIDIAN_VAULT"
   trap 'tmux -L "$SYSMON_TMUX_SOCKET" kill-server >/dev/null 2>&1 || true; rm -rf -- "$workdir"' EXIT
 
   "$SCRIPT" processes >/dev/null
+  sleep 0.4
+  [[ -f "$SYSMON_ENV_LOG" ]] || fail "kitty did not record its environment"
+  grep -q '^NO_COLOR=<unset>$' "$SYSMON_ENV_LOG" || fail "kitty inherited NO_COLOR: $(cat "$SYSMON_ENV_LOG")"
+  grep -q '^FORCE_COLOR=<unset>$' "$SYSMON_ENV_LOG" || fail "kitty inherited FORCE_COLOR: $(cat "$SYSMON_ENV_LOG")"
+  grep -q '^TERMINFO=<unset>$' "$SYSMON_ENV_LOG" || fail "kitty inherited Ghostty TERMINFO: $(cat "$SYSMON_ENV_LOG")"
+  if tmux -L "$SYSMON_TMUX_SOCKET" show-environment -t sysmon | grep -q '^NO_COLOR='; then
+    fail "tmux session kept NO_COLOR"
+  fi
+  if tmux -L "$SYSMON_TMUX_SOCKET" show-environment -t sysmon | grep -q '^FORCE_COLOR='; then
+    fail "tmux session kept FORCE_COLOR"
+  fi
+  if tmux -L "$SYSMON_TMUX_SOCKET" show-environment -t sysmon | grep -q 'Ghostty.app'; then
+    fail "tmux session kept Ghostty TERMINFO"
+  fi
   "$SCRIPT" disk >/dev/null
   "$SCRIPT" vault >/dev/null
 
