@@ -251,6 +251,7 @@ EOF
   export SYSMON_KITTY="$live/kitty"
   export SYSMON_YABAI="$live/missing-yabai"
   export SYSMON_TMUX_SOCKET="sysmon-ci-test-$$"
+  SESSION=sysmon
   cat >"$live/tmux.conf" <<'EOF'
 unbind-key C-b
 set -g prefix C-x
@@ -275,60 +276,60 @@ EOF
   grep -q '^NO_COLOR=<unset>$' "$SYSMON_ENV_LOG" || fail "kitty inherited NO_COLOR: $(cat "$SYSMON_ENV_LOG")"
   grep -q '^FORCE_COLOR=<unset>$' "$SYSMON_ENV_LOG" || fail "kitty inherited FORCE_COLOR: $(cat "$SYSMON_ENV_LOG")"
   grep -q '^TERMINFO=<unset>$' "$SYSMON_ENV_LOG" || fail "kitty inherited Ghostty TERMINFO: $(cat "$SYSMON_ENV_LOG")"
-  if tmux -L "$SYSMON_TMUX_SOCKET" show-environment -t sysmon | grep -q '^NO_COLOR='; then
+  if tmux -L "$SYSMON_TMUX_SOCKET" show-environment -t "$SESSION" | grep -q '^NO_COLOR='; then
     fail "tmux session kept NO_COLOR"
   fi
-  if tmux -L "$SYSMON_TMUX_SOCKET" show-environment -t sysmon | grep -q '^FORCE_COLOR='; then
+  if tmux -L "$SYSMON_TMUX_SOCKET" show-environment -t "$SESSION" | grep -q '^FORCE_COLOR='; then
     fail "tmux session kept FORCE_COLOR"
   fi
-  if tmux -L "$SYSMON_TMUX_SOCKET" show-environment -t sysmon | grep -q 'Ghostty.app'; then
+  if tmux -L "$SYSMON_TMUX_SOCKET" show-environment -t "$SESSION" | grep -q 'Ghostty.app'; then
     fail "tmux session kept Ghostty TERMINFO"
   fi
   "$SCRIPT" disk >/dev/null
   "$SCRIPT" vault >/dev/null
 
-  wins="$(tmux -L "$SYSMON_TMUX_SOCKET" list-windows -t sysmon -F '#{window_index}:#{window_name}')"
+  wins="$(tmux -L "$SYSMON_TMUX_SOCKET" list-windows -t "$SESSION" -F '#{window_index}:#{window_name}')"
   printf '%s\n' "$wins" | grep -qx '1:processes' || fail "live window 1: $wins"
   printf '%s\n' "$wins" | grep -qx '2:disk' || fail "live window 2: $wins"
   printf '%s\n' "$wins" | grep -qx '3:vault' || fail "live window 3: $wins"
   printf '%s\n' "$wins" | grep -q 'herdr' && fail "herdr must not live in the sysmon tmux session: $wins"
   prefix="$(tmux -L "$SYSMON_TMUX_SOCKET" show-options -gv prefix)"
   [[ "$prefix" == "C-x" ]] || fail "tmux prefix is $prefix, expected C-x"
-  current="$(tmux -L "$SYSMON_TMUX_SOCKET" display-message -p -t sysmon '#{window_name}')"
+  current="$(tmux -L "$SYSMON_TMUX_SOCKET" display-message -p -t "$SESSION" '#{window_name}')"
   [[ "$current" == vault ]] || fail "vault was not selected: $current"
   sessions="$(tmux -L "$SYSMON_TMUX_SOCKET" list-sessions -F '#{session_name}')"
-  [[ "$sessions" == sysmon ]] || fail "expected one session, got: $sessions"
+  [[ "$sessions" == "$SESSION" ]] || fail "expected one session, got: $sessions"
   pass "live tmux session has windows 1-3 and prefix C-x"
 
   "$SCRIPT" show >/dev/null
-  current="$(tmux -L "$SYSMON_TMUX_SOCKET" display-message -p -t sysmon '#{window_name}')"
+  current="$(tmux -L "$SYSMON_TMUX_SOCKET" display-message -p -t "$SESSION" '#{window_name}')"
   [[ "$current" == vault ]] || fail "show changed the last window: $current"
   pass "show keeps the last window"
 
-  tmux -L "$SYSMON_TMUX_SOCKET" kill-window -t 'sysmon:=disk'
-  tmux -L "$SYSMON_TMUX_SOCKET" kill-window -t 'sysmon:=vault'
-  tmux -L "$SYSMON_TMUX_SOCKET" select-window -t 'sysmon:=processes'
+  tmux -L "$SYSMON_TMUX_SOCKET" kill-window -t "$SESSION:=disk"
+  tmux -L "$SYSMON_TMUX_SOCKET" kill-window -t "$SESSION:=vault"
+  tmux -L "$SYSMON_TMUX_SOCKET" select-window -t "$SESSION:=processes"
   "$SCRIPT" show >/dev/null
-  wins="$(tmux -L "$SYSMON_TMUX_SOCKET" list-windows -t sysmon -F '#{window_index}:#{window_name}')"
+  wins="$(tmux -L "$SYSMON_TMUX_SOCKET" list-windows -t "$SESSION" -F '#{window_index}:#{window_name}')"
   printf '%s\n' "$wins" | grep -qx '1:processes' || fail "backfill window 1: $wins"
   printf '%s\n' "$wins" | grep -qx '2:disk' || fail "backfill window 2: $wins"
   printf '%s\n' "$wins" | grep -qx '3:vault' || fail "backfill window 3: $wins"
-  current="$(tmux -L "$SYSMON_TMUX_SOCKET" display-message -p -t sysmon '#{window_name}')"
+  current="$(tmux -L "$SYSMON_TMUX_SOCKET" display-message -p -t "$SESSION" '#{window_name}')"
   [[ "$current" == processes ]] || fail "backfill should keep current window: $current"
   pass "show recreates closed hub windows"
 
   "$SCRIPT" stop >/dev/null
-  if tmux -L "$SYSMON_TMUX_SOCKET" has-session -t sysmon 2>/dev/null; then
+  if tmux -L "$SYSMON_TMUX_SOCKET" has-session -t "$SESSION" 2>/dev/null; then
     fail "stop left the sysmon session running"
   fi
   pass "stop kills the shared session"
 
   "$SCRIPT" show >/dev/null
-  wins="$(tmux -L "$SYSMON_TMUX_SOCKET" list-windows -t sysmon -F '#{window_index}:#{window_name}')"
+  wins="$(tmux -L "$SYSMON_TMUX_SOCKET" list-windows -t "$SESSION" -F '#{window_index}:#{window_name}')"
   printf '%s\n' "$wins" | grep -qx '1:processes' || fail "first start window 1: $wins"
   printf '%s\n' "$wins" | grep -qx '2:disk' || fail "first start window 2: $wins"
   printf '%s\n' "$wins" | grep -qx '3:vault' || fail "first start window 3: $wins"
-  current="$(tmux -L "$SYSMON_TMUX_SOCKET" display-message -p -t sysmon '#{window_name}')"
+  current="$(tmux -L "$SYSMON_TMUX_SOCKET" display-message -p -t "$SESSION" '#{window_name}')"
   [[ "$current" == processes ]] || fail "first start should land on btop: $current"
   pass "first start creates btop, disk, and vault"
   "$SCRIPT" stop >/dev/null

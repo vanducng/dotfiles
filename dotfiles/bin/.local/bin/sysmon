@@ -778,7 +778,7 @@ ensure_vault_window() {
 ensure_hub_windows() {
   local current="" created=0 vault
   if has_session; then
-    current="$(tmux_cmd display-message -p -t "$SESSION" '#{window_name}' 2>/dev/null || true)"
+    current="$(tmux_cmd display-message -p -t "$SESSION" '#{window_index}' 2>/dev/null || true)"
   else
     created=1
   fi
@@ -797,8 +797,9 @@ ensure_hub_windows() {
     if has_window processes; then
       tmux_cmd select-window -t "$SESSION:=processes"
     fi
-  elif [[ -n "$current" ]] && has_window "$current"; then
-    tmux_cmd select-window -t "$SESSION:=$current"
+  elif [[ -n "$current" ]] \
+    && tmux_cmd list-windows -t "$SESSION" -F '#{window_index}' 2>/dev/null | grep -qx "$current"; then
+    tmux_cmd select-window -t "$SESSION:$current"
   fi
 }
 
