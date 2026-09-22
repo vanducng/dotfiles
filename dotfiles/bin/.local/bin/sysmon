@@ -154,7 +154,10 @@ ensure_window() {
 ensure_herdr() {
   local herdr
   if [[ -n "${SYSMON_HERDR:-}" ]]; then
-    herdr="$(resolve_bin herdr "$SYSMON_HERDR")" || return 1
+    herdr="$(resolve_bin herdr "$SYSMON_HERDR" 2>/dev/null)" || {
+      echo "sysmon: ignoring bad SYSMON_HERDR" >&2
+      return 0
+    }
   elif ! herdr="$(resolve_bin herdr 2>/dev/null)"; then
     return 0
   fi
