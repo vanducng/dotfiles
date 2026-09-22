@@ -30,7 +30,7 @@ All application shortcuts use the `meh` key (ctrl+alt+shift) for consistency and
 | 3 | 1 | Dia (stack) |
 | 4 | 1 | Chrome, Vivaldi |
 | 5 | 1 | Cursor |
-| 6 | 1 | Preview, Foxit, ego lite |
+| 6 | 1 | Preview, Foxit |
 | 7 | 1 | Alter |
 | 8 | 1 | Obsidian |
 | 9 | 2 | Slack |
@@ -41,7 +41,7 @@ All application shortcuts use the `meh` key (ctrl+alt+shift) for consistency and
 | 14 | 2 | Cliq |
 | 15 | 2 | kitty |
 | 16 | 2 | ChatGPT, Claude, Codex, Grok (stack) |
-| 17 | 2 | spare |
+| 17 | 2 | ego lite |
 
 ### Development Tools
 | Shortcut | Application | Description |
@@ -59,8 +59,8 @@ All application shortcuts use the `meh` key (ctrl+alt+shift) for consistency and
 ### Browsers & Communication
 | Shortcut | Application | Description |
 |----------|-------------|-------------|
-| `meh + s` | Dia | Primary web browser on space 3 |
-| `meh + e` | Ego | Lightweight browser on display 1, space 6 |
+| `meh + s` | Dia | Focus the existing Dia window on space 3 |
+| `meh + e` | Ego | Lightweight browser on display 2, space 17 |
 | `meh + d` | Arc | Browser on space 13 |
 | `meh + z` | Zen Browser | Alternative browser |
 | `meh + c` | Vivaldi | Browser on display 1, space 4 |
