@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.23.1](https://github.com/vanducng/dotfiles/compare/v0.23.0...v0.23.1) (2026-09-22)
+
+
+### Bug Fixes
+
+* **yabai:** floated Vivaldi fullscreen ([#182](https://github.com/vanducng/dotfiles/issues/182)) ([7231f0e](https://github.com/vanducng/dotfiles/commit/7231f0e4f4f9cc42e3a475f86bbaa7e0946dced5))
+
 ## [0.23.0](https://github.com/vanducng/dotfiles/compare/v0.22.0...v0.23.0) (2026-09-22)
 
 
