@@ -26,6 +26,8 @@ grep -q 'xterm-kitty:.*extkeys' "$CONF" || fail "tmux should enable kitty extend
 grep -q 'xterm-ghostty:.*extkeys' "$CONF" || fail "tmux should enable ghostty extended keys"
 grep -q 'map ctrl+1 send_text all' "$KITTY" || fail "kitty should forward Ctrl+1 as CSI-u"
 grep -q 'Duskfox' "$KITTY" || fail "kitty theme comment should be Duskfox"
+grep -q '^env NO_COLOR$' "$KITTY" || fail "kitty should drop inherited NO_COLOR"
+grep -q '^env FORCE_COLOR$' "$KITTY" || fail "kitty should drop inherited FORCE_COLOR"
 grep -q 'background #232136' "$THEME" || fail "current-theme.conf should be Duskfox"
 pass "tmux.conf prefers a runnable tmux-fingers"
 
