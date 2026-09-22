@@ -174,6 +174,16 @@ grep -q 'cmd + shift + alt - v : "$HOME/.local/bin/sysmon" dia-left "Dia"' "$ROO
 grep -q 'cmd + shift + alt - g : "$HOME/.local/bin/sysmon" dia-right "Dia"' "$ROOT/dotfiles/skhd/.config/skhd/skhdrc" || fail "skhd G should split Dia right"
 grep -q 'cmd + shift + alt - r : "$HOME/.local/bin/sysmon" dia-left "ego lite"' "$ROOT/dotfiles/skhd/.config/skhd/skhdrc" || fail "skhd R should split Ego left"
 grep -q 'cmd + shift + alt - t : "$HOME/.local/bin/sysmon" dia-right "ego lite"' "$ROOT/dotfiles/skhd/.config/skhd/skhdrc" || fail "skhd T should split Ego right"
+grep -q 'ox > bx + 8' "$SCRIPT" || fail "a stacked full-frame bar must not count as a sidebar"
+grep -q 'is-sticky' "$SCRIPT" || fail "sidebar rebuild must leave sticky windows alone"
+grep -q 'cmd_dia_sync' "$SCRIPT" || fail "sidebar should follow the app onto its live space"
+grep -q 'dia-sync' "$ROOT/dotfiles/yabai/.config/yabai/yabairc" || fail "yabai restart should restore the herdr sidebar"
+grep -q 'space 3 --layout stack' "$ROOT/dotfiles/yabai/.config/yabai/yabairc" \
+  && fail "Dia's space must not always stack over the herdr sidebar"
+grep -q 'event=window_moved app="^Dia$"' "$ROOT/dotfiles/yabai/.config/yabai/yabairc" || fail "Dia moves should keep the sidebar"
+grep -q 'event=window_moved app="^ego lite$"' "$ROOT/dotfiles/yabai/.config/yabai/yabairc" || fail "ego moves should keep the sidebar"
+out="$("$SCRIPT" dia-sync)"
+printf '%s\n' "$out" | grep -q 'sync: Dia,ego lite' || fail "dia-sync: $out"
 pass "split works for any configured app, left or right"
 
 out="$("$SCRIPT" disk)"

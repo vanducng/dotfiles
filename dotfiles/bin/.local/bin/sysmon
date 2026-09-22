@@ -433,7 +433,7 @@ others = []
 for window in windows:
     if window.get("space") != space or window.get("id") == pick.get("id"):
         continue
-    if window.get("is-floating"):
+    if window.get("is-floating") or window.get("is-sticky"):
         continue
     title = window.get("title") or ""
     if app_name(window) == "kitty" and title in {"sysmon-hub", "herdr-bar"}:
@@ -612,31 +612,23 @@ arrange_dia_split() {
   yabai_release_motion "$yabai"
   "$yabai" -m window "$hub" --ratio "abs:${share}" 2>/dev/null || true
   printf '%s|%s|%s|%s\n' "$space" "$layout" "$side" "$app" >"$(dia_state_path)"
-  "$yabai" -m space --focus "$space" 2>/dev/null || true
-  "$yabai" -m window "$dia" --focus 2>/dev/null || true
+  if [[ -z "${DIA_QUIET:-}" ]]; then
+    "$yabai" -m space --focus "$space" 2>/dev/null || true
+    "$yabai" -m window "$dia" --focus 2>/dev/null || true
+  fi
 }
 
 retarget_dia_side() {
   local side="$1" app="$2"
   local state space layout yabai hub dia
   state="$(dia_state_path)"
-  IFS='|' read -r space layout _ <"$state" || return 1
+  IFS='|' read -r _ layout _ _ <"$state" || return 1
   yabai="$(yabai_bin)"
   [[ -n "$yabai" && -n "$app" ]] || return 1
   hub="$(resolve_window_id "$BAR_TITLE" "$yabai" 2>/dev/null || true)"
   [[ -n "$hub" ]] || return 1
-  dia="$(printf '%s' "$("$yabai" -m query --windows)" | python3 -c '
-import json, sys
-space = int(sys.argv[1])
-target = sys.argv[2]
-windows = json.load(sys.stdin)
-def app_name(window):
-    return (window.get("app") or "").replace("\u200e", "")
-dias = [window for window in windows if app_name(window) == target and window.get("space") == space and not window.get("is-floating")]
-if not dias:
-    raise SystemExit(1)
-print(max(dias, key=lambda window: (window.get("frame") or {}).get("w") or 0)["id"])
-' "$space" "$app")" || return 1
+  read -r space dia _ < <(find_dia_target "$app") || return 1
+  "$yabai" -m window "$hub" --space "$space" 2>/dev/null || true
   yabai_hold_motion "$yabai" "$(dia_left_share "$side")"
   settle_dia_split "$yabai" "$hub" "$dia" "$side"
   yabai_release_motion "$yabai"
@@ -644,7 +636,8 @@ print(max(dias, key=lambda window: (window.get("frame") or {}).get("w") or 0)["i
   "$yabai" -m window "$dia" --focus 2>/dev/null || true
 }
 
-focus_bar_if_placed() {
+# Equal frames mean the space is stacked and the bar is a full window, not a sidebar.
+bar_is_placed() {
   local side="$1" space="$2" app="$3" yabai hub
   yabai="$(yabai_bin)" || return 1
   hub="$(resolve_window_id "$BAR_TITLE" "$yabai" 2>/dev/null || true)"
@@ -658,25 +651,98 @@ except json.JSONDecodeError:
     raise SystemExit(1)
 def app_name(window):
     return (window.get("app") or "").replace("\u200e", "")
+def frame(window):
+    raw = window.get("frame") or {}
+    return (raw.get("x") or 0, raw.get("y") or 0, raw.get("w") or 0, raw.get("h") or 0)
 bar = next((window for window in windows if window.get("id") == hub), None)
-if not bar or bar.get("is-floating") or bar.get("space") != space:
+if not bar or bar.get("is-floating") or bar.get("is-sticky") or bar.get("space") != space:
     raise SystemExit(1)
-others = [window for window in windows if app_name(window) == app and window.get("space") == space and not window.get("is-floating")]
+others = [window for window in windows if app_name(window) == app and window.get("space") == space and not window.get("is-floating") and not window.get("is-sticky")]
 if not others:
     raise SystemExit(1)
-other = max(others, key=lambda window: (window.get("frame") or {}).get("w") or 0)
-bar_x = (bar.get("frame") or {}).get("x") or 0
-other_x = (other.get("frame") or {}).get("x") or 0
-if side == "right" and bar_x < other_x:
+other = max(others, key=lambda window: frame(window)[2])
+bx, by, bw, bh = frame(bar)
+ox, oy, ow, oh = frame(other)
+if by + bh <= oy or oy + oh <= by:
     raise SystemExit(1)
-if side != "right" and bar_x > other_x:
+if side == "right":
+    if not bx > ox + 8:
+        raise SystemExit(1)
+elif not ox > bx + 8:
     raise SystemExit(1)
-' "$side" "$space" "$app" "$hub" || return 1
+' "$side" "$space" "$app" "$hub"
+}
+
+focus_bar_if_placed() {
+  local side="$1" space="$2" app="$3" yabai hub
+  bar_is_placed "$side" "$space" "$app" || return 1
+  yabai="$(yabai_bin)" || return 1
+  hub="$(resolve_window_id "$BAR_TITLE" "$yabai" 2>/dev/null || true)"
+  [[ -n "$hub" ]] || return 1
   "$yabai" -m window "$hub" --focus 2>/dev/null
 }
 
+dia_lock_acquire() {
+  local lock="${TMPDIR:-/tmp}/sysmon.dia.lock" now mtime
+  if ! mkdir "$lock" 2>/dev/null; then
+    now=$(date +%s)
+    mtime=$(stat -f %m "$lock" 2>/dev/null || printf '%s' "$now")
+    if (( now - mtime < 20 )); then
+      return 1
+    fi
+    rmdir "$lock" 2>/dev/null || return 1
+    mkdir "$lock" 2>/dev/null || return 1
+  fi
+  DIA_LOCK="$lock"
+}
+
+dia_lock_release() {
+  [[ -n "${DIA_LOCK:-}" ]] || return 0
+  rmdir "$DIA_LOCK" 2>/dev/null || true
+  DIA_LOCK=""
+}
+
+cmd_dia_sync() {
+  local state layout side app space dia others status=0 yabai trigger
+  state="$(dia_state_path)"
+  [[ -f "$state" ]] || return 0
+  IFS='|' read -r _ layout side app <"$state" || return 0
+  [[ -n "$app" && -n "$side" ]] || return 0
+  if [[ -n "${YABAI_WINDOW_ID:-}" ]]; then
+    yabai="$(yabai_bin)"
+    [[ -n "$yabai" ]] || return 0
+    trigger="$("$yabai" -m query --windows --window "$YABAI_WINDOW_ID" 2>/dev/null | python3 -c 'import json,sys
+try:
+    print((json.load(sys.stdin).get("app") or "").replace("\u200e", ""))
+except Exception:
+    print("")')"
+    [[ "$trigger" == "$app" ]] || return 0
+  fi
+  dia_lock_acquire || return 0
+  if ! read -r space dia others < <(find_dia_target "$app"); then
+    dia_lock_release
+    return 0
+  fi
+  if bar_is_placed "$side" "$space" "$app"; then
+    printf '%s|%s|%s|%s\n' "$space" "$layout" "$side" "$app" >"$state"
+    dia_lock_release
+    return 0
+  fi
+  if ! split_hub_open; then
+    PLACE_LATER=0
+    if ! attach_bar; then
+      dia_lock_release
+      return 1
+    fi
+  fi
+  DIA_QUIET=1
+  arrange_dia_split "$side" "$space" "$dia" "$others" "$app" "$layout" || status=$?
+  dia_lock_release
+  return "$status"
+}
+
 cmd_dia() {
-  local side="${1:-left}" requested="${2:-}" app="" space layout active saved dia others kept_layout="" kept_space="" yabai=""
+  local side="${1:-left}" requested="${2:-}" app="" space layout active saved dia others kept_layout="" kept_space="" yabai="" status=0
   if [[ -n "${SYSMON_OPEN:-}" ]]; then
     printf 'dia: %s\n' "$DIA_HUB_RATIO"
     printf 'side: %s\n' "$side"
@@ -709,14 +775,25 @@ cmd_dia() {
         fi
       fi
     elif [[ "$app" == "$saved" && "$active" == "$side" ]]; then
+      if read -r space _ _ < <(find_dia_target "$app"); then
+        :
+      fi
       if focus_bar_if_placed "$side" "$space" "$app"; then
+        printf '%s|%s|%s|%s\n' "$space" "$layout" "$side" "$app" >"$(dia_state_path)"
         return 0
       fi
       kept_layout="$layout"
       kept_space="$space"
     elif [[ "$app" == "$saved" ]]; then
-      retarget_dia_side "$side" "$saved" || cmd_dia_off
-      return 0
+      if read -r space _ _ < <(find_dia_target "$app"); then
+        if bar_is_placed "$active" "$space" "$app"; then
+          retarget_dia_side "$side" "$saved" && return 0
+          cmd_dia_off
+          return 0
+        fi
+      fi
+      kept_layout="$layout"
+      kept_space="$space"
     else
       cmd_dia_off
     fi
@@ -736,9 +813,15 @@ cmd_dia() {
   if [[ -n "$kept_space" && "$space" != "$kept_space" ]]; then
     kept_layout=""
   fi
+  dia_lock_acquire || return 0
   PLACE_LATER=0
-  attach_bar
-  arrange_dia_split "$side" "$space" "$dia" "$others" "$app" "$kept_layout"
+  if ! attach_bar; then
+    dia_lock_release
+    return 1
+  fi
+  arrange_dia_split "$side" "$space" "$dia" "$others" "$app" "$kept_layout" || status=$?
+  dia_lock_release
+  return "${status:-0}"
 }
 
 cmd_show() {
@@ -851,6 +934,13 @@ main() {
     dock-left | left) cmd_show "$OVERLAY_DOCK_LEFT" ;;
     dia | dia-left) shift; cmd_dia left "${1:-}" ;;
     dia-right) shift; cmd_dia right "${1:-}" ;;
+    dia-sync)
+      if [[ -n "${SYSMON_OPEN:-}" ]]; then
+        printf 'sync: %s\n' "$SPLIT_APPS"
+        return 0
+      fi
+      cmd_dia_sync
+      ;;
     processes) cmd_processes ;;
     disk) shift; cmd_disk "${1:-}" ;;
     vault) cmd_vault ;;
