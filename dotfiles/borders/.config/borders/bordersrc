@@ -7,7 +7,6 @@ options=(
 	# duskfox palette: bright iris active (vivid), muted bg-highlight inactive
 	active_color=0xffd4a4ff
 	inactive_color=0x40393552
-	background_color=0x00000000
 )
 
 borders "${options[@]}"
