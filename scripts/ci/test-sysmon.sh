@@ -305,6 +305,18 @@ EOF
   [[ "$current" == vault ]] || fail "show changed the last window: $current"
   pass "show keeps the last window"
 
+  tmux -L "$SYSMON_TMUX_SOCKET" kill-window -t 'sysmon:=disk'
+  tmux -L "$SYSMON_TMUX_SOCKET" kill-window -t 'sysmon:=vault'
+  tmux -L "$SYSMON_TMUX_SOCKET" select-window -t 'sysmon:=processes'
+  "$SCRIPT" show >/dev/null
+  wins="$(tmux -L "$SYSMON_TMUX_SOCKET" list-windows -t sysmon -F '#{window_index}:#{window_name}')"
+  printf '%s\n' "$wins" | grep -qx '1:processes' || fail "backfill window 1: $wins"
+  printf '%s\n' "$wins" | grep -qx '2:disk' || fail "backfill window 2: $wins"
+  printf '%s\n' "$wins" | grep -qx '3:vault' || fail "backfill window 3: $wins"
+  current="$(tmux -L "$SYSMON_TMUX_SOCKET" display-message -p -t sysmon '#{window_name}')"
+  [[ "$current" == processes ]] || fail "backfill should keep current window: $current"
+  pass "show recreates closed hub windows"
+
   "$SCRIPT" stop >/dev/null
   if tmux -L "$SYSMON_TMUX_SOCKET" has-session -t sysmon 2>/dev/null; then
     fail "stop left the sysmon session running"

@@ -778,7 +778,7 @@ ensure_vault_window() {
 ensure_hub_windows() {
   local current="" created=0 vault
   if has_session; then
-    current="$(tmux_cmd display-message -p -t "$SESSION" '#{window_name}')"
+    current="$(tmux_cmd display-message -p -t "$SESSION" '#{window_name}' 2>/dev/null || true)"
   else
     created=1
   fi
