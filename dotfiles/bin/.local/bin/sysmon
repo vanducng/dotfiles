@@ -586,7 +586,6 @@ arrange_dia_split() {
   else
     layout="$("$yabai" -m query --spaces --space "$space" | python3 -c 'import json,sys; print(json.load(sys.stdin).get("type") or "bsp")')"
   fi
-  printf '%s|%s|%s|%s\n' "$space" "$layout" "$side" "$app" >"$(dia_state_path)"
   share="$(dia_left_share "$side")"
   yabai_hold_motion "$yabai" "$share"
   "$yabai" -m window "$hub" --sub-layer auto 2>/dev/null || true
@@ -612,6 +611,7 @@ arrange_dia_split() {
   settle_dia_split "$yabai" "$hub" "$dia" "$side"
   yabai_release_motion "$yabai"
   "$yabai" -m window "$hub" --ratio "abs:${share}" 2>/dev/null || true
+  printf '%s|%s|%s|%s\n' "$space" "$layout" "$side" "$app" >"$(dia_state_path)"
   "$yabai" -m space --focus "$space" 2>/dev/null || true
   "$yabai" -m window "$dia" --focus 2>/dev/null || true
 }
@@ -667,9 +667,9 @@ if not others:
 other = max(others, key=lambda window: (window.get("frame") or {}).get("w") or 0)
 bar_x = (bar.get("frame") or {}).get("x") or 0
 other_x = (other.get("frame") or {}).get("x") or 0
-if side == "right" and not bar_x > other_x:
+if side == "right" and bar_x < other_x:
     raise SystemExit(1)
-if side != "right" and not bar_x < other_x:
+if side != "right" and bar_x > other_x:
     raise SystemExit(1)
 ' "$side" "$space" "$app" "$hub" || return 1
   "$yabai" -m window "$hub" --focus 2>/dev/null
@@ -700,7 +700,6 @@ cmd_dia() {
       # build the split again in this same press.
       kept_layout="$layout"
       kept_space="$space"
-      rm -f "$(dia_state_path)"
       if [[ -n "${space:-}" && -n "$kept_layout" ]]; then
         yabai="$(yabai_bin)"
         if [[ -n "$yabai" ]]; then
@@ -715,7 +714,6 @@ cmd_dia() {
       fi
       kept_layout="$layout"
       kept_space="$space"
-      rm -f "$(dia_state_path)"
     elif [[ "$app" == "$saved" ]]; then
       retarget_dia_side "$side" "$saved" || cmd_dia_off
       return 0

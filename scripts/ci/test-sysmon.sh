@@ -45,7 +45,7 @@ grep -q 'dock-left' "$KARABINER_DOCK" || fail "karabiner should dock left with c
 grep -q '"key_code": "v"' "$KARABINER_DOCK" || fail "karabiner left dock should bind v"
 grep -q 'app="\^kitty\$" title="\^(sysmon|notes-vault)"    manage=off sticky=on sub-layer=above grid=6:6:1:1:4:4' \
   "$ROOT/dotfiles/yabai/.config/yabai/yabairc" || fail "yabai should float the kitty overlay above other apps"
-grep -q 'app="\^kitty\$" title!="\^(sysmon.\*|notes-vault|herdr-bar)?\$" space=15' \
+grep -q 'app="\^kitty\$" title!="\^(sysmon.\*|notes-vault|herdr-bar\.\*)?\$" space=15' \
   "$ROOT/dotfiles/yabai/.config/yabai/yabairc" || fail "yabai must not send untitled or overlay kitty windows to space 15"
 grep -q -- '-f "$conf"' "$SCRIPT" || fail "sysmon should load tmux.conf"
 grep -q 'SYSMON_TMUX_SOCKET' "$SCRIPT" || fail "sysmon should use a dedicated tmux socket"
