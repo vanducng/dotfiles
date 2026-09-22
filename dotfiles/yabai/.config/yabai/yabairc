@@ -89,8 +89,7 @@ yabai -m rule --add app="^Claude$"                    space=16
 yabai -m rule --add app="^Grok Bot$"                  space=16
 yabai -m rule --add app="^ego lite$"                  space=6
 
-# Stacked spaces — only one window visible on top, others stacked beneath
-yabai -m space 3 --layout stack 2>/dev/null
+# Discord and AI stay stacked. Dia stacks only while herdr-bar is not its sidebar.
 yabai -m space 12 --layout stack 2>/dev/null
 yabai -m space 16 --layout stack 2>/dev/null
 
@@ -104,6 +103,17 @@ for pin in "Ghostty:1" "LibreOffice:2" "Dia:3" "Google Chrome:4" "Vivaldi:4" "Cu
         yabai -m window "$id" --space "$sp" 2>/dev/null
     done
 done
+
+# herdr-bar follows Dia or ego lite onto that app's live space; stacking Dia while the split is on makes the bar a full window.
+if [ -f "${TMPDIR:-/tmp}/sysmon.dia" ]; then
+    "$HOME/.local/bin/sysmon" dia-sync >/dev/null 2>&1 || true
+else
+    _sp=$(yabai -m query --windows 2>/dev/null | jq -r '[.[] | select((.app | gsub("\u200e"; "")) == "Dia")][0].space // empty')
+    if [ -z "$_sp" ] || [ "$_sp" = "null" ]; then
+        _sp=3
+    fi
+    yabai -m space "$_sp" --layout stack 2>/dev/null || true
+fi
 
 # Force-float apps that must never be tiled (manage=off rule only fires on
 # window creation; this re-floats existing windows after yabai restart).
@@ -181,6 +191,14 @@ yabai -m signal --add event=window_created \
             sleep 0.3 && yabai -m window $YABAI_WINDOW_ID --resize bottom:0:0 2>/dev/null'
 
 # Keep Alter floating even if it gets tiled after moves/space changes.
+yabai -m signal --add event=window_moved app="^Dia$" \
+    action="$HOME/.local/bin/sysmon dia-sync"
+yabai -m signal --add event=window_created app="^Dia$" \
+    action="$HOME/.local/bin/sysmon dia-sync"
+yabai -m signal --add event=window_moved app="^ego lite$" \
+    action="$HOME/.local/bin/sysmon dia-sync"
+yabai -m signal --add event=window_created app="^ego lite$" \
+    action="$HOME/.local/bin/sysmon dia-sync"
 yabai -m signal --add event=window_created app="^Alter$" \
     action='sleep 0.2 && [ "$(yabai -m query --windows --window $YABAI_WINDOW_ID | jq .\"is-floating\")" = "false" ] && yabai -m window $YABAI_WINDOW_ID --toggle float'
 yabai -m signal --add event=window_moved app="^Alter$" \
