@@ -22,7 +22,7 @@ make setup-tinycast
 | `cmd+shift+R` | Rewrite selected text |
 | `cmd+shift+T` | Summarize selected text |
 | `cmd+opt+A` | Switch audio output (skips the full login zsh) |
-| `meh+f` | Sysmon overlay, centered (last window; first start is `btop`) |
+| `meh+f` | Sysmon overlay, centered (last window; first start creates `btop` / disk / vault) |
 | `cmd+opt+G` | Overlay docked on the right (~1/4) |
 | `cmd+opt+V` | Overlay docked on the left (~1/4) |
 
@@ -57,7 +57,7 @@ Needs `switchaudio-osx` and `blueutil` from `scripts/macos-deps.sh`. Switching o
 
 ## System monitor
 
-`meh+f` raises one kitty overlay attached to the `sysmon` tmux session, centered, and leaves whatever window you last used. Close it with `cmd+w`. `cmd+opt+G` docks the same overlay on the right at one quarter width. `cmd+opt+V` docks it on the left at that same width. The overlay floats above the app underneath, including Dia and Ghostty. `cmd+shift+opt+v` and `cmd+shift+opt+g` open a separate Kitty window running Herdr and tile it beside Dia, on the left or the right quarter. `cmd+shift+opt+r` and `cmd+shift+opt+t` do the same beside ego lite. That window is not attached to tmux. Ctrl+Shift+H/L moves between Herdr and the app. The same chord focuses that sidebar when it is already in place. Close the Herdr window to dismiss it. `meh+f` stays the sysmon performance overlay. Those dock chords are a Tinycast Custom Command plus a Karabiner HID rule, not skhd: `cmd+opt+F` stays with Cursor Replace in Files. First start creates `btop` as window 1. The Herdr sidebar is a separate Kitty window, not a tmux window. Vault Neovim starts through a login zsh so AstroNvim gets the same PATH as Ghostty. Palette search still finds `processes`, `disk`, `vault`, `dock`, and `dock left`. The session loads `~/.tmux.conf`.
+`meh+f` raises one kitty overlay attached to the `sysmon` tmux session, centered, and leaves whatever window you last used. Close it with `cmd+w`. `cmd+opt+G` docks the same overlay on the right at one quarter width. `cmd+opt+V` docks it on the left at that same width. The overlay floats above the app underneath, including Dia and Ghostty. `cmd+shift+opt+v` and `cmd+shift+opt+g` open a separate Kitty window running Herdr and tile it beside Dia, on the left or the right quarter. `cmd+shift+opt+r` and `cmd+shift+opt+t` do the same beside ego lite. That window is not attached to tmux. Ctrl+Shift+H/L moves between Herdr and the app. The same chord focuses that sidebar when it is already in place. Close the Herdr window to dismiss it. `meh+f` stays the sysmon performance overlay. Those dock chords are a Tinycast Custom Command plus a Karabiner HID rule, not skhd: `cmd+opt+F` stays with Cursor Replace in Files. First start creates windows 1-3 (`btop`, disk, vault) and lands on `btop`. The Herdr sidebar is a separate Kitty window, not a tmux window. Vault Neovim starts through a login zsh so AstroNvim gets the same PATH as Ghostty. Palette search still finds `processes`, `disk`, `vault`, `dock`, and `dock left`. The session loads `~/.tmux.conf`.
 
 ```bash
 sysmon
