@@ -19,7 +19,7 @@
 # -----------------------------------------------------------------------------
 # 1. Service control
 # -----------------------------------------------------------------------------
-ctrl + alt + cmd - r : yabai --restart-service
+ctrl + alt + cmd - r : yabai --restart-service; skhd --restart-service
 
 # -----------------------------------------------------------------------------
 # 2. App launchers (meh)
@@ -37,13 +37,13 @@ meh - t : yabai -m space --focus 12; open "/System/Volumes/Data/Applications/Dis
 meh - h : yabai -m space --focus 7; open "alter://hub/chat/"
 meh - i : open "/Applications/Structured.app"
 meh - j : yabai -m space --focus 14; open "/Applications/Cliq.app"
-meh - k : yabai -m space --focus 9; open "/Applications/Slack.app"
+meh - k : yabai -m space --focus 14; open "/Applications/Slack.app"
 meh - l : open "/Applications/Perplexity.app"
 meh - m : open "/Applications/superwhisper.app"
 meh - v : yabai -m space --focus 16; open "/Applications/Grok Bot.app"
 meh - q : open -a "Music"
 meh - p : yabai -m space --focus 6; open "/Applications/Foxit PDF Reader.app"
-meh - r : yabai -m space --focus 10; open "/Applications/Telegram.app"
+meh - r : yabai -m space --focus 12; open "/Applications/Telegram.app"
 meh - s : "$HOME/.config/yabai/dia-one.sh" focus
 meh - f : "$HOME/.local/bin/sysmon" center
 cmd + shift + alt - v : "$HOME/.local/bin/sysmon" dia-left "Dia"
