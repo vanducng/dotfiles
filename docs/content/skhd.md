@@ -59,6 +59,7 @@ All application shortcuts use the `meh` key (ctrl+alt+shift) for consistency and
 | `meh + e` | Ego | Lightweight browser on display 2, space 17 |
 | `meh + d` | Arc | Browser on space 13 |
 | `meh + z` | Zen Browser | Alternative browser |
+| `meh + c` | Vivaldi | Sticky full-screen browser on the current space |
 | `meh + k` | Slack | Team communication on space 9 |
 | `meh + r` | Telegram | Messaging app on space 10 |
 | `meh + u` | Zalo | Messaging app on space 11 |
@@ -71,7 +72,6 @@ All application shortcuts use the `meh` key (ctrl+alt+shift) for consistency and
 |----------|-------------|-------------|
 | `meh + 1` | 1Password | Password manager |
 | `meh + v` | Grok Bot | Grok desktop app on space 16 |
-| `meh + c` | Claude | AI assistant on display 2, space 16 |
 | `meh + l` | Perplexity | AI search engine |
 | `meh + i` | Structured | Task and time management |
 | `meh + w` | LibreOffice | Office suite on space 2 |
