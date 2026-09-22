@@ -48,10 +48,10 @@ All application shortcuts use the `meh` key (ctrl+alt+shift) for consistency and
 |----------|-------------|-------------|
 | `meh + a` | Ghostty | Focus the primary terminal and move the pointer to it |
 | `meh + f` | Sysmon overlay | Last tmux window, centered |
-| `cmd + shift + opt + v` | Sysmon left of Dia | Hub on the left quarter of Dia's space. Press again to restore |
-| `cmd + shift + opt + g` | Sysmon right of Dia | Hub on the right quarter of Dia's space. Press again to restore |
-| `cmd + shift + opt + r` | Sysmon left of Ego | Hub on the left quarter of Ego's space. Press again to restore |
-| `cmd + shift + opt + t` | Sysmon right of Ego | Hub on the right quarter of Ego's space. Press again to restore |
+| `cmd + shift + opt + v` | Sysmon left of Dia | Hub on the left quarter of Dia's space. Press again to focus it |
+| `cmd + shift + opt + g` | Sysmon right of Dia | Hub on the right quarter of Dia's space. Press again to focus it |
+| `cmd + shift + opt + r` | Sysmon left of Ego | Hub on the left quarter of Ego's space. Press again to focus it |
+| `cmd + shift + opt + t` | Sysmon right of Ego | Hub on the right quarter of Ego's space. Press again to focus it |
 | `meh + x` | ChatGPT | AI assistant on display 2, space 16 |
 | `meh + g` | Cursor | AI-powered code editor on space 5 |
 | `meh + h` | Alter | Chat hub on space 7 |
