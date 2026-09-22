@@ -629,7 +629,7 @@ print(max(dias, key=lambda window: (window.get("frame") or {}).get("w") or 0)["i
 }
 
 cmd_dia() {
-  local side="${1:-left}" requested="${2:-}" app="" space layout active saved dia others kept_layout="" yabai=""
+  local side="${1:-left}" requested="${2:-}" app="" space layout active saved dia others kept_layout="" kept_space="" yabai=""
   if [[ -n "${SYSMON_OPEN:-}" ]]; then
     printf 'dia: %s\n' "$DIA_HUB_RATIO"
     printf 'side: %s\n' "$side"
@@ -652,6 +652,7 @@ cmd_dia() {
       # next press would only restore that mess. Put the space back, then
       # build the split again in this same press.
       kept_layout="$layout"
+      kept_space="$space"
       rm -f "$(dia_state_path)"
       if [[ -n "${space:-}" && -n "$kept_layout" ]]; then
         yabai="$(yabai_bin)"
@@ -682,6 +683,9 @@ cmd_dia() {
   if ! read -r space dia others < <(find_dia_target "$app"); then
     echo "sysmon: $app is not open" >&2
     return 1
+  fi
+  if [[ -n "$kept_space" && "$space" != "$kept_space" ]]; then
+    kept_layout=""
   fi
   PLACE_LATER=0
   if ! has_session; then
