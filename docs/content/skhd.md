@@ -30,7 +30,7 @@ All application shortcuts use the `meh` key (ctrl+alt+shift) for consistency and
 | 3 | 1 | Dia (stack) |
 | 4 | 1 | Chrome, Vivaldi |
 | 5 | 1 | Cursor |
-| 6 | 1 | Preview, Foxit |
+| 6 | 1 | Preview, Foxit, ego lite |
 | 7 | 1 | Alter |
 | 8 | 1 | Obsidian |
 | 9 | 2 | Slack |
@@ -41,13 +41,17 @@ All application shortcuts use the `meh` key (ctrl+alt+shift) for consistency and
 | 14 | 2 | Cliq |
 | 15 | 2 | kitty |
 | 16 | 2 | ChatGPT, Claude, Codex, Grok (stack) |
-| 17 | 2 | ego lite |
+| 17 | 2 | spare |
 
 ### Development Tools
 | Shortcut | Application | Description |
 |----------|-------------|-------------|
 | `meh + a` | Ghostty | Focus the primary terminal and move the pointer to it |
 | `meh + f` | Sysmon overlay | Last tmux window, centered |
+| `cmd + shift + opt + v` | Sysmon left of Dia | Hub on the left quarter of Dia's space. Press again to restore |
+| `cmd + shift + opt + g` | Sysmon right of Dia | Hub on the right quarter of Dia's space. Press again to restore |
+| `cmd + shift + opt + r` | Sysmon left of Ego | Hub on the left quarter of Ego's space. Press again to restore |
+| `cmd + shift + opt + t` | Sysmon right of Ego | Hub on the right quarter of Ego's space. Press again to restore |
 | `meh + x` | ChatGPT | AI assistant on display 2, space 16 |
 | `meh + g` | Cursor | AI-powered code editor on space 5 |
 | `meh + h` | Alter | Chat hub on space 7 |
@@ -56,7 +60,7 @@ All application shortcuts use the `meh` key (ctrl+alt+shift) for consistency and
 | Shortcut | Application | Description |
 |----------|-------------|-------------|
 | `meh + s` | Dia | Primary web browser on space 3 |
-| `meh + e` | Ego | Lightweight browser on display 2, space 17 |
+| `meh + e` | Ego | Lightweight browser on display 1, space 6 |
 | `meh + d` | Arc | Browser on space 13 |
 | `meh + z` | Zen Browser | Alternative browser |
 | `meh + c` | Vivaldi | Browser on display 1, space 4 |
