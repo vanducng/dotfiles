@@ -89,5 +89,18 @@
     "showsOutput": false,
     "workingDirectory": null,
     "iconSymbol": "sidebar.right"
+  },
+  {
+    "id": "f3b7a9c1-4e52-4d8b-9a16-8c0d5e2b7a44",
+    "name": "System: Dock Left",
+    "command": "exec \"$HOME/.local/bin/sysmon\" dock-left",
+    "isEnabled": true,
+    "loadsShellEnvironment": false,
+    "requiresConfirmation": false,
+    "showsConfirmation": false,
+    "arguments": [],
+    "showsOutput": false,
+    "workingDirectory": null,
+    "iconSymbol": "sidebar.left"
   }
 ]

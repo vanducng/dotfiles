@@ -2,7 +2,7 @@
   "title": "Sysmon dock",
   "rules": [
     {
-      "description": "cmd+opt+G docks the sysmon overlay",
+      "description": "cmd+opt+G docks the sysmon overlay on the right",
       "manipulators": [
         {
           "type": "basic",
@@ -16,6 +16,26 @@
           "to": [
             {
               "shell_command": "/bin/bash -lc '\"$HOME/.local/bin/sysmon\" dock'"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "description": "cmd+opt+V docks the sysmon overlay on the left",
+      "manipulators": [
+        {
+          "type": "basic",
+          "from": {
+            "key_code": "v",
+            "modifiers": {
+              "mandatory": ["command", "option"],
+              "optional": ["caps_lock"]
+            }
+          },
+          "to": [
+            {
+              "shell_command": "/bin/bash -lc '\"$HOME/.local/bin/sysmon\" dock-left'"
             }
           ]
         }

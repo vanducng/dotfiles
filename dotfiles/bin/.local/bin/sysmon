@@ -9,7 +9,13 @@ SOCKET="${SYSMON_TMUX_SOCKET:-sysmon}"
 HUB_TITLE="${SYSMON_TITLE:-sysmon-hub}"
 OVERLAY_GRID="${SYSMON_GRID:-6:6:1:1:4:4}"
 OVERLAY_DOCK="${SYSMON_DOCK:-1:4:3:0:1:1}"
+OVERLAY_DOCK_LEFT="${SYSMON_DOCK_LEFT:-1:4:0:0:1:1}"
+# Hub width as a fraction of the app's space. 0.25 is one quarter.
+DIA_HUB_RATIO="${SYSMON_DIA_RATIO:-0.25}"
+# Comma-separated yabai app names. Focus one of these, then use the split chords.
+SPLIT_APPS="${SYSMON_SPLIT_APPS:-Dia,ego lite}"
 PLACE_GRID="$OVERLAY_GRID"
+PLACE_LATER=1
 
 usage() {
   cat <<'EOF'
@@ -17,14 +23,23 @@ Open system tools in one tmux session (kitty overlay).
 
   sysmon               raise the last window, centered
   sysmon dock          raise the last window as a right sidebar
+  sysmon dock-left     raise the last window as a left sidebar
+  sysmon dia           tile the hub on the left of the focused split app
+  sysmon dia-right     tile the hub on the right of the focused split app
   sysmon processes     window 1: btop (also first start)
   sysmon disk [path]   window 2: dua interactive (default: $HOME)
   sysmon vault         window 3: nvim on $OBSIDIAN_VAULT
   sysmon stop          kill the session and overlay
 
 meh+f recenters the hub. Close it with cmd+w. cmd+opt+G docks on
-the right (~1/4). First start creates btop. Prefix and window keys
-come from ~/.tmux.conf.
+the right (~1/4). cmd+opt+V docks on the left at the same width.
+The overlay floats above whatever app is focused.
+cmd+shift+opt+v / g tile the hub on the left / right quarter of Dia.
+cmd+shift+opt+r / t do the same for ego lite.
+Ctrl+Shift+H and Ctrl+Shift+L move between them. The same chord
+puts that space back. First start creates
+btop and a herdr window on the default Herdr session. Prefix and
+window keys come from ~/.tmux.conf.
 EOF
 }
 
@@ -145,6 +160,30 @@ ensure_window() {
     tmux_cmd new-window -t "$SESSION:$index" -n "$name" -c "$cwd" -- "$@"
   fi
   tmux_cmd select-window -t "$SESSION:$name"
+}
+
+ensure_herdr() {
+  local herdr
+  if [[ -n "${SYSMON_HERDR:-}" ]]; then
+    herdr="$(resolve_bin herdr "$SYSMON_HERDR" 2>/dev/null)" || {
+      echo "sysmon: ignoring bad SYSMON_HERDR" >&2
+      return 0
+    }
+  elif ! herdr="$(resolve_bin herdr 2>/dev/null)"; then
+    return 0
+  fi
+  if [[ -n "${SYSMON_OPEN:-}" ]]; then
+    printf 'extra: herdr %s\n' "$herdr"
+    return 0
+  fi
+  if ! has_session || has_window herdr; then
+    return 0
+  fi
+  if tmux_cmd list-windows -t "$SESSION" -F '#{window_index}' | grep -qx 4; then
+    tmux_cmd new-window -d -n herdr -c "$HOME" -- "$herdr"
+  else
+    tmux_cmd new-window -d -t "$SESSION:4" -n herdr -c "$HOME" -- "$herdr"
+  fi
 }
 
 yabai_bin() {
@@ -328,7 +367,9 @@ raise_or_open() {
     return 0
   fi
   open_window "$title" "$@"
-  place_title_later "$title"
+  if [[ "$PLACE_LATER" == 1 ]]; then
+    place_title_later "$title"
+  fi
 }
 
 attach_hub() {
@@ -337,7 +378,298 @@ attach_hub() {
   raise_or_open "$HUB_TITLE" "$tmux" -L "$SOCKET" attach -t "$SESSION"
 }
 
+dia_state_path() {
+  printf '%s\n' "${SYSMON_DIA_STATE:-${TMPDIR:-/tmp}/sysmon.dia}"
+}
+
+wait_hub_id() {
+  local yabai="$1" id attempt
+  for attempt in 1 2 3 4 5 6 7 8; do
+    id="$(resolve_window_id "$HUB_TITLE" "$yabai" 2>/dev/null || true)"
+    if [[ -n "$id" ]]; then
+      printf '%s\n' "$id"
+      return 0
+    fi
+    sleep 0.08
+  done
+  return 1
+}
+
+find_dia_target() {
+  local app="$1" yabai json
+  yabai="$(yabai_bin)"
+  [[ -n "$yabai" && -n "$app" ]] || return 1
+  json="$("$yabai" -m query --windows 2>/dev/null || true)"
+  [[ -n "$json" ]] || return 1
+  printf '%s' "$json" | python3 -c '
+import json, sys
+from collections import Counter
+try:
+    windows = json.load(sys.stdin)
+except json.JSONDecodeError:
+    raise SystemExit(1)
+target = sys.argv[1]
+def app_name(window):
+    return (window.get("app") or "").replace("\u200e", "")
+dias = [window for window in windows if app_name(window) == target]
+if not dias:
+    raise SystemExit(1)
+focused = [window for window in dias if window.get("has-focus")]
+if focused:
+    space = focused[0].get("space")
+else:
+    space = Counter(window.get("space") for window in dias).most_common(1)[0][0]
+on_space = [window for window in dias if window.get("space") == space]
+pick = next((window for window in on_space if window.get("has-focus")), None)
+if pick is None:
+    pick = min(on_space, key=lambda window: (window.get("stack-index") or 0, window.get("id") or 0))
+others = []
+for window in windows:
+    if window.get("space") != space or window.get("id") == pick.get("id"):
+        continue
+    if window.get("is-floating"):
+        continue
+    title = window.get("title") or ""
+    if app_name(window) == "kitty" and title == "sysmon-hub":
+        continue
+    others.append(str(window.get("id")))
+print(space, pick.get("id"), ",".join(others))
+' "$app"
+}
+
+choose_split_app() {
+  local yabai json
+  yabai="$(yabai_bin)"
+  [[ -n "$yabai" ]] || return 1
+  json="$("$yabai" -m query --windows 2>/dev/null || true)"
+  [[ -n "$json" ]] || return 1
+  printf '%s' "$json" | python3 -c '
+import json, sys
+allowed = [name.strip() for name in sys.argv[1].split(",") if name.strip()]
+try:
+    windows = json.load(sys.stdin)
+except json.JSONDecodeError:
+    raise SystemExit(1)
+def app_name(window):
+    return (window.get("app") or "").replace("\u200e", "")
+focused = next((window for window in windows if window.get("has-focus")), None)
+if focused and app_name(focused) in allowed:
+    print(app_name(focused))
+    raise SystemExit(0)
+space = focused.get("space") if focused else None
+if space is not None:
+    present = [name for name in allowed if any(app_name(window) == name and window.get("space") == space and not window.get("is-floating") for window in windows)]
+    if len(present) == 1:
+        print(present[0])
+        raise SystemExit(0)
+present = [name for name in allowed if any(app_name(window) == name for window in windows)]
+if len(present) == 1:
+    print(present[0])
+    raise SystemExit(0)
+raise SystemExit(1)
+' "$SPLIT_APPS"
+}
+
+window_origin() {
+  local yabai="$1" id="$2"
+  "$yabai" -m query --windows --window "$id" | python3 -c '
+import json, sys
+window = json.load(sys.stdin)
+frame = window.get("frame") or {}
+print(int(frame.get("x") or 0), int(frame.get("y") or 0), int(frame.get("w") or 0), int(frame.get("h") or 0))
+'
+}
+
+dia_left_share() {
+  local side="$1"
+  if [[ "$side" == right ]]; then
+    awk -v r="$DIA_HUB_RATIO" 'BEGIN { printf "%.4f\n", 1 - r }'
+  else
+    printf '%s\n' "$DIA_HUB_RATIO"
+  fi
+}
+
+yabai_hold_motion() {
+  local yabai="$1" share="$2" anim ratio
+  anim="$("$yabai" -m config window_animation_duration 2>/dev/null || printf '0.0')"
+  ratio="$("$yabai" -m config split_ratio 2>/dev/null || printf '0.50')"
+  case "$anim" in
+    0|0.|0.0|0.000000|"") anim=0.0 ;;
+  esac
+  YABAI_ANIM_PREV="$anim"
+  YABAI_RATIO_PREV="$ratio"
+  "$yabai" -m config window_animation_duration 0.0
+  "$yabai" -m config split_ratio "$share"
+}
+
+yabai_release_motion() {
+  local yabai="$1"
+  [[ -n "$yabai" ]] || return 0
+  "$yabai" -m config split_ratio "${YABAI_RATIO_PREV:-0.50}" 2>/dev/null || true
+  "$yabai" -m config window_animation_duration "${YABAI_ANIM_PREV:-0}" 2>/dev/null || true
+}
+
+cmd_dia_off() {
+  local state space layout yabai hub
+  state="$(dia_state_path)"
+  [[ -f "$state" ]] || return 0
+  IFS='|' read -r space layout _ _ <"$state" || true
+  rm -f "$state"
+  [[ -n "${SYSMON_OPEN:-}" ]] && return 0
+  yabai="$(yabai_bin)"
+  [[ -n "$yabai" ]] || return 0
+  yabai_hold_motion "$yabai" "$DIA_HUB_RATIO"
+  hub="$(resolve_window_id "$HUB_TITLE" "$yabai" 2>/dev/null || true)"
+  if [[ -n "$hub" ]]; then
+    apply_overlay "$yabai" "$hub" || true
+  fi
+  if [[ -n "${space:-}" && -n "${layout:-}" ]]; then
+    "$yabai" -m space "$space" --layout "$layout" 2>/dev/null || true
+  fi
+  yabai_release_motion "$yabai"
+}
+
+dia_insert() {
+  if [[ "$1" == right ]]; then
+    printf 'east\n'
+  else
+    printf 'west\n'
+  fi
+}
+
+# One correction after the split: side-by-side, hub on the requested side.
+settle_dia_split() {
+  local yabai="$1" hub="$2" dia="$3" side="$4"
+  local hx hy hw hh dx dy dw dh share
+  read -r hx hy hw hh < <(window_origin "$yabai" "$hub")
+  read -r dx dy dw dh < <(window_origin "$yabai" "$dia")
+  if [[ $(( hy + hh )) -le "$dy" || $(( dy + dh )) -le "$hy" ]]; then
+    "$yabai" -m window "$hub" --toggle split 2>/dev/null || true
+    read -r hx hy hw hh < <(window_origin "$yabai" "$hub")
+    read -r dx dy dw dh < <(window_origin "$yabai" "$dia")
+  fi
+  if [[ "$side" == right && "$hx" -lt "$dx" ]] || [[ "$side" != right && "$hx" -gt "$dx" ]]; then
+    "$yabai" -m window "$hub" --swap "$dia" 2>/dev/null || true
+  fi
+  share="$(dia_left_share "$side")"
+  "$yabai" -m window "$hub" --ratio "abs:${share}" 2>/dev/null || true
+}
+
+arrange_dia_split() {
+  local side="$1" space="$2" dia="$3" others="$4" app="$5"
+  local yabai hub layout id share
+  yabai="$(yabai_bin)"
+  hub="$(wait_hub_id "$yabai")" || return 1
+  layout="$("$yabai" -m query --spaces --space "$space" | python3 -c 'import json,sys; print(json.load(sys.stdin).get("type") or "bsp")')"
+  printf '%s|%s|%s|%s\n' "$space" "$layout" "$side" "$app" >"$(dia_state_path)"
+  share="$(dia_left_share "$side")"
+  yabai_hold_motion "$yabai" "$share"
+  "$yabai" -m window "$hub" --sub-layer auto 2>/dev/null || true
+  if [[ "$("$yabai" -m query --windows --window "$hub" | python3 -c 'import json,sys; print("1" if json.load(sys.stdin).get("is-sticky") else "0")')" == 1 ]]; then
+    "$yabai" -m window "$hub" --toggle sticky 2>/dev/null || true
+  fi
+  "$yabai" -m window "$hub" --space "$space" 2>/dev/null || true
+  "$yabai" -m space "$space" --layout bsp 2>/dev/null || true
+  if [[ "$("$yabai" -m query --windows --window "$hub" | python3 -c 'import json,sys; print("1" if json.load(sys.stdin).get("is-floating") else "0")')" == 1 ]]; then
+    "$yabai" -m window "$hub" --toggle float 2>/dev/null || true
+  fi
+  if [[ -n "$others" ]]; then
+    IFS=',' read -r -a ids <<<"$others"
+    for id in "${ids[@]}"; do
+      [[ -n "$id" ]] || continue
+      "$yabai" -m window "$dia" --stack "$id" 2>/dev/null || true
+    done
+  fi
+  "$yabai" -m window "$dia" --insert "$(dia_insert "$side")" 2>/dev/null || true
+  "$yabai" -m window "$hub" --warp "$dia" 2>/dev/null || true
+  settle_dia_split "$yabai" "$hub" "$dia" "$side"
+  yabai_release_motion "$yabai"
+  "$yabai" -m space --focus "$space" 2>/dev/null || true
+  "$yabai" -m window "$dia" --focus 2>/dev/null || true
+}
+
+retarget_dia_side() {
+  local side="$1" app="$2"
+  local state space layout yabai hub dia
+  state="$(dia_state_path)"
+  IFS='|' read -r space layout _ <"$state" || return 1
+  yabai="$(yabai_bin)"
+  [[ -n "$yabai" && -n "$app" ]] || return 1
+  hub="$(resolve_window_id "$HUB_TITLE" "$yabai" 2>/dev/null || true)"
+  [[ -n "$hub" ]] || return 1
+  dia="$(printf '%s' "$("$yabai" -m query --windows)" | python3 -c '
+import json, sys
+space = int(sys.argv[1])
+target = sys.argv[2]
+windows = json.load(sys.stdin)
+def app_name(window):
+    return (window.get("app") or "").replace("\u200e", "")
+dias = [window for window in windows if app_name(window) == target and window.get("space") == space and not window.get("is-floating")]
+if not dias:
+    raise SystemExit(1)
+print(max(dias, key=lambda window: (window.get("frame") or {}).get("w") or 0)["id"])
+' "$space" "$app")" || return 1
+  yabai_hold_motion "$yabai" "$(dia_left_share "$side")"
+  settle_dia_split "$yabai" "$hub" "$dia" "$side"
+  yabai_release_motion "$yabai"
+  printf '%s|%s|%s|%s\n' "$space" "$layout" "$side" "$app" >"$state"
+  "$yabai" -m window "$dia" --focus 2>/dev/null || true
+}
+
+cmd_dia() {
+  local side="${1:-left}" requested="${2:-}" app="" space layout active saved dia others
+  if [[ -n "${SYSMON_OPEN:-}" ]]; then
+    printf 'dia: %s\n' "$DIA_HUB_RATIO"
+    printf 'side: %s\n' "$side"
+    printf 'app: %s\n' "${requested:-$SPLIT_APPS}"
+    attach_hub
+    return 0
+  fi
+  if [[ -f "$(dia_state_path)" ]]; then
+    IFS='|' read -r space layout active saved <"$(dia_state_path)" || true
+    active="${active:-left}"
+    if [[ -n "$requested" ]]; then
+      app="$requested"
+    else
+      app="$(choose_split_app 2>/dev/null || true)"
+      [[ -n "$app" ]] || app="$saved"
+    fi
+    if [[ "$app" == "$saved" && "$active" == "$side" ]]; then
+      cmd_dia_off
+      return 0
+    fi
+    if [[ "$app" == "$saved" ]]; then
+      retarget_dia_side "$side" "$saved" || cmd_dia_off
+      return 0
+    fi
+    cmd_dia_off
+  fi
+  if [[ -n "$requested" ]]; then
+    app="$requested"
+  elif [[ -z "$app" ]]; then
+    app="$(choose_split_app)" || {
+      echo "sysmon: focus one of: $SPLIT_APPS" >&2
+      return 1
+    }
+  fi
+  if ! read -r space dia others < <(find_dia_target "$app"); then
+    echo "sysmon: $app is not open" >&2
+    return 1
+  fi
+  PLACE_LATER=0
+  if ! has_session; then
+    cmd_processes
+  else
+    ensure_herdr
+    attach_hub
+  fi
+  arrange_dia_split "$side" "$space" "$dia" "$others" "$app"
+}
+
 cmd_show() {
+  if [[ -z "${SYSMON_OPEN:-}" && -f "$(dia_state_path)" ]]; then
+    cmd_dia_off
+  fi
   PLACE_GRID="${1:-$OVERLAY_GRID}"
   if [[ -n "${SYSMON_OPEN:-}" ]]; then
     printf 'show: %s\n' "$SESSION"
@@ -349,6 +681,7 @@ cmd_show() {
     cmd_processes
     return
   fi
+  ensure_herdr
   attach_hub
 }
 
@@ -356,6 +689,9 @@ open_app() {
   local name="$1" index="$2" cwd="$3"
   shift 3
   ensure_window "$index" "$name" "$cwd" "$@"
+  if [[ "$name" != herdr ]]; then
+    ensure_herdr
+  fi
   attach_hub
 }
 
@@ -441,6 +777,9 @@ main() {
   case "$cmd" in
     "" | show | center) cmd_show "$OVERLAY_GRID" ;;
     dock | sidebar) cmd_show "$OVERLAY_DOCK" ;;
+    dock-left | left) cmd_show "$OVERLAY_DOCK_LEFT" ;;
+    dia | dia-left) shift; cmd_dia left "${1:-}" ;;
+    dia-right) shift; cmd_dia right "${1:-}" ;;
     processes) cmd_processes ;;
     disk) shift; cmd_disk "${1:-}" ;;
     vault) cmd_vault ;;
