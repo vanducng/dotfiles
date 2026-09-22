@@ -41,7 +41,9 @@ That window is not inside tmux, so Herdr keeps its own prefix.
 Ctrl+Shift+H and Ctrl+Shift+L move between them. The same chord
 focuses the sidebar when it is already in place. Close that window
 to dismiss it. First start creates windows 1-3 (btop, disk, vault)
-and lands on btop. Prefix and window keys come from ~/.tmux.conf.
+and lands on btop. Later raises keep the last window and recreate any
+of those three that were closed. Prefix and window keys come from
+~/.tmux.conf.
 EOF
 }
 
@@ -772,6 +774,7 @@ ensure_vault_window() {
 
 # Create the designed hub windows (btop, disk, vault). Keep the current
 # window when the session already exists; land on btop on first start.
+# Recreate any of those three that were closed so meh+f always has the hub.
 ensure_hub_windows() {
   local current="" created=0 vault
   if has_session; then
@@ -781,6 +784,7 @@ ensure_hub_windows() {
   fi
   ensure_processes_window || echo "sysmon: skipping processes window" >&2
   ensure_disk_window "$HOME" || echo "sysmon: skipping disk window" >&2
+  # Quiet when vault path is missing; still guard nvim/resolve failures.
   vault="$(vault_path)"
   if [[ -d "$vault" ]]; then
     ensure_vault_window || echo "sysmon: skipping vault window" >&2
@@ -791,10 +795,10 @@ ensure_hub_windows() {
   fi
   if [[ "$created" == 1 ]]; then
     if has_window processes; then
-      tmux_cmd select-window -t "$SESSION:processes"
+      tmux_cmd select-window -t "$SESSION:=processes"
     fi
   elif [[ -n "$current" ]] && has_window "$current"; then
-    tmux_cmd select-window -t "$SESSION:$current"
+    tmux_cmd select-window -t "$SESSION:=$current"
   fi
 }
 
