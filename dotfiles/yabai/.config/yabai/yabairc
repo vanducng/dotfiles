@@ -82,7 +82,7 @@ yabai -m rule --add app="WhatsApp$"                   space=12
 yabai -m rule --add app="^Arc$"                       space=13
 yabai -m rule --add app="^Cliq$"                      space=14
 yabai -m rule --add app="^kitty$" title="^(sysmon|notes-vault)"    manage=off sticky=on sub-layer=above grid=6:6:1:1:4:4
-yabai -m rule --add app="^kitty$" title!="^(sysmon.*|notes-vault)?$" space=15
+yabai -m rule --add app="^kitty$" title!="^(sysmon.*|notes-vault|herdr-bar.*)?$" space=15
 yabai -m rule --add app="^Codex$"                     space=16
 yabai -m rule --add app="^ChatGPT$"                   space=16
 yabai -m rule --add app="^Claude$"                    space=16
@@ -100,7 +100,7 @@ yabai -m space 16 --layout stack 2>/dev/null
 for pin in "Ghostty:1" "LibreOffice:2" "Dia:3" "Google Chrome:4" "Vivaldi:4" "Cursor:5" "Preview:6" "Foxit PDF Reader:6" "Alter:7" "Obsidian:8" "Slack:9" "Telegram:10" "Zalo:11" "Discord:12" "WhatsApp:12" "Arc:13" "Cliq:14" "kitty:15" "Codex:16" "ChatGPT:16" "Claude:16" "Grok Bot:16" "ego lite:6"; do
     app="${pin%:*}"; sp="${pin#*:}"
     # yabai rules cannot strip U+200E; some apps report it in .app
-    for id in $(yabai -m query --windows | jq -r --arg a "$app" '.[] | select((.app | gsub("\u200e"; "")) == $a and ((.title // "") | test("^(sysmon|notes-vault)") | not)) | .id'); do
+    for id in $(yabai -m query --windows | jq -r --arg a "$app" '.[] | select((.app | gsub("\u200e"; "")) == $a and ((.title // "") | test("^(sysmon|notes-vault|herdr-bar)") | not)) | .id'); do
         yabai -m window "$id" --space "$sp" 2>/dev/null
     done
 done
