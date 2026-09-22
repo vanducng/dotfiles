@@ -382,6 +382,14 @@ dia_state_path() {
   printf '%s\n' "${SYSMON_DIA_STATE:-${TMPDIR:-/tmp}/sysmon.dia}"
 }
 
+split_hub_open() {
+  local yabai id
+  yabai="$(yabai_bin)"
+  [[ -n "$yabai" ]] || return 1
+  id="$(resolve_window_id "$HUB_TITLE" "$yabai" 2>/dev/null || true)"
+  [[ -n "$id" ]]
+}
+
 wait_hub_id() {
   local yabai="$1" id attempt
   for attempt in 1 2 3 4 5 6 7 8; do
@@ -556,11 +564,15 @@ settle_dia_split() {
 }
 
 arrange_dia_split() {
-  local side="$1" space="$2" dia="$3" others="$4" app="$5"
+  local side="$1" space="$2" dia="$3" others="$4" app="$5" kept_layout="${6:-}"
   local yabai hub layout id share
   yabai="$(yabai_bin)"
   hub="$(wait_hub_id "$yabai")" || return 1
-  layout="$("$yabai" -m query --spaces --space "$space" | python3 -c 'import json,sys; print(json.load(sys.stdin).get("type") or "bsp")')"
+  if [[ -n "$kept_layout" ]]; then
+    layout="$kept_layout"
+  else
+    layout="$("$yabai" -m query --spaces --space "$space" | python3 -c 'import json,sys; print(json.load(sys.stdin).get("type") or "bsp")')"
+  fi
   printf '%s|%s|%s|%s\n' "$space" "$layout" "$side" "$app" >"$(dia_state_path)"
   share="$(dia_left_share "$side")"
   yabai_hold_motion "$yabai" "$share"
@@ -617,7 +629,7 @@ print(max(dias, key=lambda window: (window.get("frame") or {}).get("w") or 0)["i
 }
 
 cmd_dia() {
-  local side="${1:-left}" requested="${2:-}" app="" space layout active saved dia others
+  local side="${1:-left}" requested="${2:-}" app="" space layout active saved dia others kept_layout="" yabai=""
   if [[ -n "${SYSMON_OPEN:-}" ]]; then
     printf 'dia: %s\n' "$DIA_HUB_RATIO"
     printf 'side: %s\n' "$side"
@@ -634,15 +646,30 @@ cmd_dia() {
       app="$(choose_split_app 2>/dev/null || true)"
       [[ -n "$app" ]] || app="$saved"
     fi
-    if [[ "$app" == "$saved" && "$active" == "$side" ]]; then
+    if ! split_hub_open; then
+      # Closing the hub drops it out of the tree and leaves the other windows
+      # tiled at random. The state file still says the split is on, so the
+      # next press would only restore that mess. Put the space back, then
+      # build the split again in this same press.
+      kept_layout="$layout"
+      rm -f "$(dia_state_path)"
+      if [[ -n "${space:-}" && -n "$kept_layout" ]]; then
+        yabai="$(yabai_bin)"
+        if [[ -n "$yabai" ]]; then
+          yabai_hold_motion "$yabai" "$DIA_HUB_RATIO"
+          "$yabai" -m space "$space" --layout "$kept_layout" 2>/dev/null || true
+          yabai_release_motion "$yabai"
+        fi
+      fi
+    elif [[ "$app" == "$saved" && "$active" == "$side" ]]; then
       cmd_dia_off
       return 0
-    fi
-    if [[ "$app" == "$saved" ]]; then
+    elif [[ "$app" == "$saved" ]]; then
       retarget_dia_side "$side" "$saved" || cmd_dia_off
       return 0
+    else
+      cmd_dia_off
     fi
-    cmd_dia_off
   fi
   if [[ -n "$requested" ]]; then
     app="$requested"
@@ -663,7 +690,7 @@ cmd_dia() {
     ensure_herdr
     attach_hub
   fi
-  arrange_dia_split "$side" "$space" "$dia" "$others" "$app"
+  arrange_dia_split "$side" "$space" "$dia" "$others" "$app" "$kept_layout"
 }
 
 cmd_show() {
