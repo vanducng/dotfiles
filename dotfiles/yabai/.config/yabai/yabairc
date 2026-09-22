@@ -82,6 +82,7 @@ yabai -m rule --add app="WhatsApp$"                   space=12
 yabai -m rule --add app="^Arc$"                       space=13
 yabai -m rule --add app="^Cliq$"                      space=14
 yabai -m rule --add app="^kitty$" title="^(sysmon|notes-vault)"    manage=off sticky=on sub-layer=above grid=6:6:1:1:4:4
+yabai -m rule --add app="^Vivaldi$"                                manage=off sticky=on sub-layer=above grid=1:1:0:0:1:1
 yabai -m rule --add app="^kitty$" title!="^(sysmon.*|notes-vault)?$" space=15
 yabai -m rule --add app="^Codex$"                     space=16
 yabai -m rule --add app="^ChatGPT$"                   space=16
@@ -107,12 +108,18 @@ done
 
 # Force-float apps that must never be tiled (manage=off rule only fires on
 # window creation; this re-floats existing windows after yabai restart).
-    for id in $(yabai -m query --windows | jq -r '.[] | select((.app=="Alter" or .app=="Structured" or .app=="superwhisper" or .app=="ZaloCall" or ((.app=="kitty" or .app=="Ghostty") and ((.title // "") | test("^(sysmon|notes-vault)")))) and ."is-floating"==false) | .id'); do
+for id in $(yabai -m query --windows | jq -r '.[] | select((.app=="Alter" or .app=="Structured" or .app=="superwhisper" or .app=="ZaloCall" or .app=="Vivaldi" or ((.app=="kitty" or .app=="Ghostty") and ((.title // "") | test("^(sysmon|notes-vault)")))) and ."is-floating"==false) | .id'); do
     yabai -m window "$id" --toggle float 2>/dev/null
 done
 for id in $(yabai -m query --windows | jq -r '.[] | select((.app=="kitty" or .app=="Ghostty") and ((.title // "") | test("^(sysmon|notes-vault)"))) | .id'); do
+    [ "$(yabai -m query --windows --window "$id" | jq -r '."is-sticky"')" = "false" ] && yabai -m window "$id" --toggle sticky 2>/dev/null
     yabai -m window "$id" --sub-layer above 2>/dev/null
     yabai -m window "$id" --grid 6:6:1:1:4:4 2>/dev/null
+done
+for id in $(yabai -m query --windows | jq -r '.[] | select(.app=="Vivaldi") | .id'); do
+    [ "$(yabai -m query --windows --window "$id" | jq -r '."is-sticky"')" = "false" ] && yabai -m window "$id" --toggle sticky 2>/dev/null
+    yabai -m window "$id" --sub-layer above 2>/dev/null
+    yabai -m window "$id" --grid 1:1:0:0:1:1 2>/dev/null
 done
 
 # Sticky overlays (pinned across spaces, above tiled windows)
@@ -170,7 +177,7 @@ yabai -m signal --add event=window_title_changed app="^kitty$" \
 yabai -m signal --add event=window_created \
     action='app=$(yabai -m query --windows --window $YABAI_WINDOW_ID | jq -r ".app"); \
             title=$(yabai -m query --windows --window $YABAI_WINDOW_ID | jq -r ".title // empty"); \
-            case "$app:$title" in kitty:|kitty:sysmon*|kitty:notes-vault|Ghostty:sysmon*|Ghostty:notes-vault) exit 0 ;; esac; \
+            case "$app:$title" in kitty:|kitty:sysmon*|kitty:notes-vault|Ghostty:sysmon*|Ghostty:notes-vault|Vivaldi:*) exit 0 ;; esac; \
             sleep 0.3 && yabai -m window $YABAI_WINDOW_ID --resize bottom:0:0 2>/dev/null'
 
 # Keep Alter floating even if it gets tiled after moves/space changes.
