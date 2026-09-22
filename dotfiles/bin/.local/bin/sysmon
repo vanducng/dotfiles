@@ -9,6 +9,7 @@ SOCKET="${SYSMON_TMUX_SOCKET:-sysmon}"
 HUB_TITLE="${SYSMON_TITLE:-sysmon-hub}"
 OVERLAY_GRID="${SYSMON_GRID:-6:6:1:1:4:4}"
 OVERLAY_DOCK="${SYSMON_DOCK:-1:4:3:0:1:1}"
+OVERLAY_DOCK_LEFT="${SYSMON_DOCK_LEFT:-1:4:0:0:1:1}"
 PLACE_GRID="$OVERLAY_GRID"
 
 usage() {
@@ -17,14 +18,17 @@ Open system tools in one tmux session (kitty overlay).
 
   sysmon               raise the last window, centered
   sysmon dock          raise the last window as a right sidebar
+  sysmon dock-left     raise the last window as a left sidebar
   sysmon processes     window 1: btop (also first start)
   sysmon disk [path]   window 2: dua interactive (default: $HOME)
   sysmon vault         window 3: nvim on $OBSIDIAN_VAULT
   sysmon stop          kill the session and overlay
 
 meh+f recenters the hub. Close it with cmd+w. cmd+opt+G docks on
-the right (~1/4). First start creates btop. Prefix and window keys
-come from ~/.tmux.conf.
+the right (~1/4). cmd+opt+V docks on the left at the same width.
+The overlay floats above whatever app is focused. First start creates
+btop and a herdr window on the default Herdr session. Prefix and
+window keys come from ~/.tmux.conf.
 EOF
 }
 
@@ -145,6 +149,27 @@ ensure_window() {
     tmux_cmd new-window -t "$SESSION:$index" -n "$name" -c "$cwd" -- "$@"
   fi
   tmux_cmd select-window -t "$SESSION:$name"
+}
+
+ensure_herdr() {
+  local herdr
+  if [[ -n "${SYSMON_HERDR:-}" ]]; then
+    herdr="$(resolve_bin herdr "$SYSMON_HERDR")" || return 1
+  elif ! herdr="$(resolve_bin herdr 2>/dev/null)"; then
+    return 0
+  fi
+  if [[ -n "${SYSMON_OPEN:-}" ]]; then
+    printf 'extra: herdr %s\n' "$herdr"
+    return 0
+  fi
+  if ! has_session || has_window herdr; then
+    return 0
+  fi
+  if tmux_cmd list-windows -t "$SESSION" -F '#{window_index}' | grep -qx 4; then
+    tmux_cmd new-window -d -n herdr -c "$HOME" -- "$herdr"
+  else
+    tmux_cmd new-window -d -t "$SESSION:4" -n herdr -c "$HOME" -- "$herdr"
+  fi
 }
 
 yabai_bin() {
@@ -337,6 +362,7 @@ attach_hub() {
   raise_or_open "$HUB_TITLE" "$tmux" -L "$SOCKET" attach -t "$SESSION"
 }
 
+
 cmd_show() {
   PLACE_GRID="${1:-$OVERLAY_GRID}"
   if [[ -n "${SYSMON_OPEN:-}" ]]; then
@@ -349,6 +375,7 @@ cmd_show() {
     cmd_processes
     return
   fi
+  ensure_herdr
   attach_hub
 }
 
@@ -356,6 +383,9 @@ open_app() {
   local name="$1" index="$2" cwd="$3"
   shift 3
   ensure_window "$index" "$name" "$cwd" "$@"
+  if [[ "$name" != herdr ]]; then
+    ensure_herdr
+  fi
   attach_hub
 }
 
@@ -441,6 +471,7 @@ main() {
   case "$cmd" in
     "" | show | center) cmd_show "$OVERLAY_GRID" ;;
     dock | sidebar) cmd_show "$OVERLAY_DOCK" ;;
+    dock-left | left) cmd_show "$OVERLAY_DOCK_LEFT" ;;
     processes) cmd_processes ;;
     disk) shift; cmd_disk "${1:-}" ;;
     vault) cmd_vault ;;

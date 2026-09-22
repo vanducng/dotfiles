@@ -28,7 +28,7 @@ All application shortcuts use the `meh` key (ctrl+alt+shift) for consistency and
 | 1 | 1 | Ghostty |
 | 2 | 1 | LibreOffice |
 | 3 | 1 | Dia (stack) |
-| 4 | 1 | Chrome, Devin |
+| 4 | 1 | Chrome, Vivaldi |
 | 5 | 1 | Cursor |
 | 6 | 1 | Preview, Foxit |
 | 7 | 1 | Alter |
@@ -59,7 +59,7 @@ All application shortcuts use the `meh` key (ctrl+alt+shift) for consistency and
 | `meh + e` | Ego | Lightweight browser on display 2, space 17 |
 | `meh + d` | Arc | Browser on space 13 |
 | `meh + z` | Zen Browser | Alternative browser |
-| `meh + c` | Vivaldi | Sticky full-screen browser on the current space |
+| `meh + c` | Vivaldi | Browser on display 1, space 4 |
 | `meh + k` | Slack | Team communication on space 9 |
 | `meh + r` | Telegram | Messaging app on space 10 |
 | `meh + u` | Zalo | Messaging app on space 11 |
@@ -121,6 +121,7 @@ SKHD integrates with Yabai for powerful window management capabilities.
 | Shortcut | Action | Description |
 |----------|--------|-------------|
 | `hyper + e` | Balance Windows | Equalize window sizes |
+| `hyper + w` | Wide Split | Left or top side of the focused split takes 80% |
 | `hyper + f` | Toggle Fullscreen | Zoom fullscreen |
 | `shift + alt + f` | Native Fullscreen | macOS native fullscreen |
 | `shift + alt + space` | Toggle Float | Float/unfloat window |

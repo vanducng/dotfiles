@@ -30,7 +30,7 @@ meh - a : previous=$(yabai -m config mouse_follows_focus); \
           if [ -n "$id" ]; then yabai -m window "$id" --focus; else open "/Applications/Ghostty.app"; sleep 0.7; fi; \
           yabai -m config mouse_follows_focus "$previous"
 meh - b : open "/Applications/Borumi.app"
-meh - c : open "/Applications/Vivaldi.app"
+meh - c : yabai -m space --focus 4; open "/Applications/Vivaldi.app"
 meh - d : yabai -m space --focus 13; open "/Applications/Arc.app"
 meh - e : yabai -m space --focus 17; open "/Applications/ego lite.app"
 meh - t : yabai -m space --focus 12; open "/System/Volumes/Data/Applications/Discord.app"
@@ -158,6 +158,8 @@ cmd + ctrl - 0x1E : id=$(yabai -m query --windows --window | jq .id); \
 # 11. Layout — balance / toggle gaps / rotate / mirror (hyper)
 # -----------------------------------------------------------------------------
 hyper - e : yabai -m space --balance
+# Left/top child of the focused split takes 80%. A lone window already fills the space.
+hyper - w : yabai -m window --ratio abs:0.8
 hyper - r : yabai -m space --rotate 90
 hyper - x : yabai -m space --mirror x-axis
 hyper - y : yabai -m space --mirror y-axis

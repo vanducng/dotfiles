@@ -27,7 +27,8 @@ tail -n 100 ~/.config/herdr/herdr-server.log
 | Key | Action | Key | Action |
 |-----|--------|-----|--------|
 | `meh + a` | Ghostty | `meh + s` | Dia |
-| `meh + f` | Sysmon center | `cmd+opt+G` | Sysmon dock (Tinycast) |
+| `meh + f` | Sysmon center | `cmd+opt+G` | Sysmon dock right |
+| `cmd+opt+V` | Sysmon dock left | | |
 | `meh + t` | Discord | `meh + x` | ChatGPT |
 | `meh + v` | Grok Bot | `meh + q` | Music |
 | `ctrl+shift+hjkl` | Focus Window | `cmd+shift+h/l` | Move Window |
