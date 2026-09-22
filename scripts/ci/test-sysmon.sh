@@ -236,7 +236,10 @@ EOF
   trap 'tmux -L "$SYSMON_TMUX_SOCKET" kill-server >/dev/null 2>&1 || true; rm -rf -- "$workdir"' EXIT
 
   "$SCRIPT" processes >/dev/null
-  sleep 0.4
+  for _ in $(seq 1 20); do
+    [[ -f "$SYSMON_ENV_LOG" ]] && break
+    sleep 0.1
+  done
   [[ -f "$SYSMON_ENV_LOG" ]] || fail "kitty did not record its environment"
   grep -q '^NO_COLOR=<unset>$' "$SYSMON_ENV_LOG" || fail "kitty inherited NO_COLOR: $(cat "$SYSMON_ENV_LOG")"
   grep -q '^FORCE_COLOR=<unset>$' "$SYSMON_ENV_LOG" || fail "kitty inherited FORCE_COLOR: $(cat "$SYSMON_ENV_LOG")"
