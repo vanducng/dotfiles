@@ -639,7 +639,8 @@ retarget_dia_side() {
 # Equal frames mean the space is stacked and the bar is a full window, not a sidebar.
 bar_is_placed() {
   local side="$1" space="$2" app="$3" yabai hub
-  yabai="$(yabai_bin)" || return 1
+  yabai="$(yabai_bin)"
+  [[ -n "$yabai" ]] || return 1
   hub="$(resolve_window_id "$BAR_TITLE" "$yabai" 2>/dev/null || true)"
   [[ -n "$hub" ]] || return 1
   "$yabai" -m query --windows | python3 -c '
@@ -683,22 +684,23 @@ focus_bar_if_placed() {
 }
 
 dia_lock_acquire() {
-  local lock="${TMPDIR:-/tmp}/sysmon.dia.lock" now mtime
+  local lock="${TMPDIR:-/tmp}/sysmon.dia.lock" pid
   if ! mkdir "$lock" 2>/dev/null; then
-    now=$(date +%s)
-    mtime=$(stat -f %m "$lock" 2>/dev/null || printf '%s' "$now")
-    if (( now - mtime < 20 )); then
+    pid="$(cat "$lock/pid" 2>/dev/null || true)"
+    if [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null; then
       return 1
     fi
-    rmdir "$lock" 2>/dev/null || return 1
+    rm -rf "$lock"
     mkdir "$lock" 2>/dev/null || return 1
   fi
+  printf '%s\n' "$$" >"$lock/pid"
   DIA_LOCK="$lock"
+  trap 'dia_lock_release' EXIT
 }
 
 dia_lock_release() {
   [[ -n "${DIA_LOCK:-}" ]] || return 0
-  rmdir "$DIA_LOCK" 2>/dev/null || true
+  rm -rf "$DIA_LOCK" 2>/dev/null || true
   DIA_LOCK=""
 }
 
@@ -708,17 +710,20 @@ cmd_dia_sync() {
   [[ -f "$state" ]] || return 0
   IFS='|' read -r _ layout side app <"$state" || return 0
   [[ -n "$app" && -n "$side" ]] || return 0
+  dia_lock_acquire || return 0
   if [[ -n "${YABAI_WINDOW_ID:-}" ]]; then
     yabai="$(yabai_bin)"
-    [[ -n "$yabai" ]] || return 0
+    [[ -n "$yabai" ]] || { dia_lock_release; return 0; }
     trigger="$("$yabai" -m query --windows --window "$YABAI_WINDOW_ID" 2>/dev/null | python3 -c 'import json,sys
 try:
     print((json.load(sys.stdin).get("app") or "").replace("\u200e", ""))
 except Exception:
     print("")')"
-    [[ "$trigger" == "$app" ]] || return 0
+    if [[ "$trigger" != "$app" ]]; then
+      dia_lock_release
+      return 0
+    fi
   fi
-  dia_lock_acquire || return 0
   if ! read -r space dia others < <(find_dia_target "$app"); then
     dia_lock_release
     return 0
@@ -742,7 +747,7 @@ except Exception:
 }
 
 cmd_dia() {
-  local side="${1:-left}" requested="${2:-}" app="" space layout active saved dia others kept_layout="" kept_space="" yabai="" status=0
+  local side="${1:-left}" requested="${2:-}" app="" space layout active saved dia others kept_layout="" kept_space="" yabai="" status=0 tries=0
   if [[ -n "${SYSMON_OPEN:-}" ]]; then
     printf 'dia: %s\n' "$DIA_HUB_RATIO"
     printf 'side: %s\n' "$side"
@@ -776,14 +781,13 @@ cmd_dia() {
       fi
     elif [[ "$app" == "$saved" && "$active" == "$side" ]]; then
       if read -r space _ _ < <(find_dia_target "$app"); then
-        :
+        if focus_bar_if_placed "$side" "$space" "$app"; then
+          printf '%s|%s|%s|%s\n' "$space" "$layout" "$side" "$app" >"$(dia_state_path)"
+          return 0
+        fi
+        kept_layout="$layout"
+        kept_space="$space"
       fi
-      if focus_bar_if_placed "$side" "$space" "$app"; then
-        printf '%s|%s|%s|%s\n' "$space" "$layout" "$side" "$app" >"$(dia_state_path)"
-        return 0
-      fi
-      kept_layout="$layout"
-      kept_space="$space"
     elif [[ "$app" == "$saved" ]]; then
       if read -r space _ _ < <(find_dia_target "$app"); then
         if bar_is_placed "$active" "$space" "$app"; then
@@ -813,7 +817,14 @@ cmd_dia() {
   if [[ -n "$kept_space" && "$space" != "$kept_space" ]]; then
     kept_layout=""
   fi
-  dia_lock_acquire || return 0
+  until dia_lock_acquire; do
+    tries=$((tries + 1))
+    if (( tries >= 10 )); then
+      echo "sysmon: dia split is busy" >&2
+      return 1
+    fi
+    sleep 0.1
+  done
   PLACE_LATER=0
   if ! attach_bar; then
     dia_lock_release
