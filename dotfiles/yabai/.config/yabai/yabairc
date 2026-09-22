@@ -108,16 +108,13 @@ for pin in "Ghostty:1" "LibreOffice:2" "Dia:3" "Google Chrome:4" "Vivaldi:4" "Cu
 done
 
 # Spaces 9-10 cannot leave the primary while desktop moves are refused.
-# Messaging windows still have to sit on the built-in display after every restart.
+# If a messaging pin still points at one of those spaces, send the window to display 2.
 for pin in "Slack:14" "Telegram:12" "Zalo:11" "Discord:12" "WhatsApp:12" "Cliq:14"; do
     app="${pin%:*}"; sp="${pin#*:}"
     disp=$(yabai -m query --spaces --space "$sp" 2>/dev/null | jq -r '.display // empty')
+    [ "$disp" = "2" ] && continue
     for id in $(yabai -m query --windows | jq -r --arg a "$app" '.[] | select((.app | gsub("\u200e"; "")) == $a) | .id'); do
-        if [ "$disp" = "2" ]; then
-            yabai -m window "$id" --space "$sp" 2>/dev/null || true
-        else
-            yabai -m window "$id" --display 2 2>/dev/null || true
-        fi
+        yabai -m window "$id" --display 2 2>/dev/null || true
     done
 done
 
