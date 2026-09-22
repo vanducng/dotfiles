@@ -194,5 +194,5 @@ echo "  cmd+shift+T  summarize"
 echo "  cmd+opt+A    switch audio"
 echo "  cmd+opt+G    sysmon dock (right sidebar)"
 echo "  cmd+opt+V    sysmon dock (left sidebar)"
-echo "  meh+f        sysmon overlay (last window, skhd)"
+echo "  meh+f        sysmon overlay (last window; first start: btop/disk/vault, skhd)"
 echo "  warning: Alter must keep its action off cmd+shift+R (use cmd+shift+D)" >&2

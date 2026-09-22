@@ -47,7 +47,7 @@ All application shortcuts use the `meh` key (ctrl+alt+shift) for consistency and
 | Shortcut | Application | Description |
 |----------|-------------|-------------|
 | `meh + a` | Ghostty | Focus the primary terminal and move the pointer to it |
-| `meh + f` | Sysmon overlay | Last tmux window, centered |
+| `meh + f` | Sysmon overlay | Last tmux window, centered (first start: btop / disk / vault) |
 | `cmd + shift + opt + v` | Sysmon left of Dia | Hub on the left quarter of Dia's space. Press again to focus it |
 | `cmd + shift + opt + g` | Sysmon right of Dia | Hub on the right quarter of Dia's space. Press again to focus it |
 | `cmd + shift + opt + r` | Sysmon left of Ego | Hub on the left quarter of Ego's space. Press again to focus it |
