@@ -39,6 +39,9 @@ grep -q 'sysmon' "$KARABINER_DOCK" && grep -q ' dock' "$KARABINER_DOCK" \
   || fail "karabiner sysmon-dock should run sysmon dock"
 grep -q '/Users/' "$KARABINER_DOCK" && fail "karabiner sysmon-dock has a personal home path"
 grep -q '1:4:3:0:1:1' "$SCRIPT" || fail "sysmon dock should use a 1/4 right grid"
+grep -q '1:4:0:0:1:1' "$SCRIPT" || fail "sysmon dock-left should use a 1/4 left grid"
+grep -q 'dock-left' "$KARABINER_DOCK" || fail "karabiner should dock left with cmd+opt+V"
+grep -q '"key_code": "v"' "$KARABINER_DOCK" || fail "karabiner left dock should bind v"
 grep -q 'app="\^kitty\$" title="\^(sysmon|notes-vault)"    manage=off sticky=on sub-layer=above grid=6:6:1:1:4:4' \
   "$ROOT/dotfiles/yabai/.config/yabai/yabairc" || fail "yabai should float the kitty overlay above other apps"
 grep -q 'app="\^kitty\$" title!="\^(sysmon.\*|notes-vault)?\$" space=15' \
@@ -56,6 +59,8 @@ grep -q 'combo 1 2304' "$SETUP" && fail "processes hotkey still on cmd+opt+S"
 grep -q 'combo 2 2304' "$SETUP" && fail "disk hotkey still on cmd+opt+D"
 grep -q 'DOCK_ID}" -string "$(combo 5 2304)"' "$SETUP" \
   || fail "dock hotkey should be Tinycast cmd+opt+G"
+grep -q 'LEFT_ID}" -string "$(combo 9 2304)"' "$SETUP" \
+  || fail "left dock hotkey should be Tinycast cmd+opt+V"
 grep -q 'combo 3 2304' "$SETUP" && fail "cmd+opt+F is still bound (Cursor replace)"
 grep -q 'VAULT_ID}" -string "$(combo 5 2304)"' "$SETUP" \
   && fail "vault hotkey should not use cmd+opt+G"
@@ -74,6 +79,7 @@ required = {
     "d9e1f3b2-8c20-4a4d-af71-3b2e9d6c5a88": ("System: Disk", "disk"),
     "e2a4c6d8-9b31-4f5e-8a72-4c3f0e7d6b99": ("Notes: Vault", "vault"),
     "a1c3e5f7-2d43-4b6a-8c94-6e5f2a9d8b11": ("System: Dock", "dock"),
+    "f3b7a9c1-4e52-4d8b-9a16-8c0d5e2b7a44": ("System: Dock Left", "dock-left"),
 }
 commands = json.loads(Path(sys.argv[1]).read_text())
 by_id = {item["id"]: item for item in commands}
@@ -146,6 +152,24 @@ printf '%s\n' "$out" | grep -q 'place: 1:4:3:0:1:1' || fail "dock place: $out"
 printf '%s\n' "$out" | grep -q 'window:' && fail "dock should not select a window: $out"
 pass "dock raises the last window on the right"
 
+out="$("$SCRIPT" dock-left)"
+printf '%s\n' "$out" | grep -q 'place: 1:4:0:0:1:1' || fail "dock-left place: $out"
+printf '%s\n' "$out" | grep -q 'window:' && fail "dock-left should not select a window: $out"
+pass "dock-left raises the last window on the left"
+
+out="$("$SCRIPT" dia)"
+printf '%s\n' "$out" | grep -q 'dia: 0.25' || fail "dia ratio: $out"
+printf '%s\n' "$out" | grep -q 'side: left' || fail "dia side: $out"
+printf '%s\n' "$out" | grep -q 'app: Dia,ego lite' || fail "split apps: $out"
+printf '%s\n' "$out" | grep -q 'open: sysmon-hub' || fail "dia should raise the hub: $out"
+out="$("$SCRIPT" dia-right)"
+printf '%s\n' "$out" | grep -q 'side: right' || fail "dia-right side: $out"
+grep -q 'cmd + shift + alt - v : "$HOME/.local/bin/sysmon" dia-left "Dia"' "$ROOT/dotfiles/skhd/.config/skhd/skhdrc" || fail "skhd V should split Dia left"
+grep -q 'cmd + shift + alt - g : "$HOME/.local/bin/sysmon" dia-right "Dia"' "$ROOT/dotfiles/skhd/.config/skhd/skhdrc" || fail "skhd G should split Dia right"
+grep -q 'cmd + shift + alt - r : "$HOME/.local/bin/sysmon" dia-left "ego lite"' "$ROOT/dotfiles/skhd/.config/skhd/skhdrc" || fail "skhd R should split Ego left"
+grep -q 'cmd + shift + alt - t : "$HOME/.local/bin/sysmon" dia-right "ego lite"' "$ROOT/dotfiles/skhd/.config/skhd/skhdrc" || fail "skhd T should split Ego right"
+pass "split works for any configured app, left or right"
+
 out="$("$SCRIPT" disk)"
 printf '%s\n' "$out" | grep -q 'session: sysmon' || fail "disk session: $out"
 printf '%s\n' "$out" | grep -q 'window: 2 disk' || fail "disk window: $out"
@@ -216,6 +240,7 @@ EOF
   export SYSMON_BTOP="$live/hold"
   export SYSMON_DUA="$live/hold"
   export SYSMON_NVIM="$live/hold"
+  export SYSMON_HERDR="$live/hold"
   export SYSMON_TMUX="$(command -v tmux)"
   export SYSMON_KITTY="$live/kitty"
   export SYSMON_YABAI="$live/missing-yabai"
@@ -260,6 +285,7 @@ EOF
   printf '%s\n' "$wins" | grep -qx '1:processes' || fail "live window 1: $wins"
   printf '%s\n' "$wins" | grep -qx '2:disk' || fail "live window 2: $wins"
   printf '%s\n' "$wins" | grep -qx '3:vault' || fail "live window 3: $wins"
+  printf '%s\n' "$wins" | grep -qx '4:herdr' || fail "live window 4: $wins"
   prefix="$(tmux -L "$SYSMON_TMUX_SOCKET" show-options -gv prefix)"
   [[ "$prefix" == "C-x" ]] || fail "tmux prefix is $prefix, expected C-x"
   current="$(tmux -L "$SYSMON_TMUX_SOCKET" display-message -p -t sysmon '#{window_name}')"
