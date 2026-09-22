@@ -108,7 +108,7 @@ done
 
 # Force-float apps that must never be tiled (manage=off rule only fires on
 # window creation; this re-floats existing windows after yabai restart).
-    for id in $(yabai -m query --windows | jq -r '.[] | select((.app=="Alter" or .app=="Structured" or .app=="superwhisper" or .app=="ZaloCall" or .app=="Vivaldi" or ((.app=="kitty" or .app=="Ghostty") and ((.title // "") | test("^(sysmon|notes-vault)")))) and ."is-floating"==false) | .id'); do
+for id in $(yabai -m query --windows | jq -r '.[] | select((.app=="Alter" or .app=="Structured" or .app=="superwhisper" or .app=="ZaloCall" or .app=="Vivaldi" or ((.app=="kitty" or .app=="Ghostty") and ((.title // "") | test("^(sysmon|notes-vault)")))) and ."is-floating"==false) | .id'); do
     yabai -m window "$id" --toggle float 2>/dev/null
 done
 for id in $(yabai -m query --windows | jq -r '.[] | select((.app=="kitty" or .app=="Ghostty") and ((.title // "") | test("^(sysmon|notes-vault)"))) | .id'); do
