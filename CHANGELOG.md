@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.24.0](https://github.com/vanducng/dotfiles/compare/v0.23.1...v0.24.0) (2026-09-23)
+
+
+### Features
+
+* **ai:** add Claude Opus 5.5 to the cliproxy catalog ([#194](https://github.com/vanducng/dotfiles/issues/194)) ([61483a1](https://github.com/vanducng/dotfiles/commit/61483a16ad694115ce6e75915e98b1c26d42185f))
+* **yabai:** kept one Dia window and dropped Superwhisper ([#191](https://github.com/vanducng/dotfiles/issues/191)) ([7367f2a](https://github.com/vanducng/dotfiles/commit/7367f2a0e93c032b754aa74293ff290258f824b1))
+
+
+### Bug Fixes
+
+* **borders:** drop the border on unfocused windows ([#192](https://github.com/vanducng/dotfiles/issues/192)) ([48db4a1](https://github.com/vanducng/dotfiles/commit/48db4a15b770ea62c553dd3c4d83045b1e41b94c))
+* **yabai:** kept herdr-bar a sidebar beside Dia and ego lite ([#189](https://github.com/vanducng/dotfiles/issues/189)) ([86269e3](https://github.com/vanducng/dotfiles/commit/86269e348e1fa77f7d6d1fe1a114ea4dcdb97dc8))
+* **yabai:** kept messaging apps on the built-in display ([#193](https://github.com/vanducng/dotfiles/issues/193)) ([d2f2444](https://github.com/vanducng/dotfiles/commit/d2f2444caf39e6a00b26fa071b0536a110d32b0e))
+
 ## [0.23.1](https://github.com/vanducng/dotfiles/compare/v0.23.0...v0.23.1) (2026-09-22)
 
 
