@@ -63,6 +63,13 @@ jq -e '
 ' "$agent_dir/models.json" >/dev/null
 jq -e '
 	.providers.cliproxyapi.models[]
+	| select(.id == "claude-opus-5-5")
+	| .contextWindow == 1000000 and .maxTokens == 65536
+	  and .thinkingLevelMap.xhigh == "xhigh" and .thinkingLevelMap.max == "max"
+	  and .thinkingLevelMap.off == null
+' "$agent_dir/models.json" >/dev/null
+jq -e '
+	.providers.cliproxyapi.models[]
 	| select(.id == "gpt-5.5")
 	| .thinkingLevelMap
 	| .xhigh == "xhigh" and .max == null
