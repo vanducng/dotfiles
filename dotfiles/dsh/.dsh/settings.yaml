@@ -178,6 +178,17 @@ llm-pi-ai:
             high: high
             xhigh: xhigh
             max: max
+        - id: claude-opus-5-5
+          name: Claude Opus 5.5
+          contextWindow: 1000000
+          maxTokens: 65536
+          reasoningEfforts:
+            off:
+            low: low
+            medium: medium
+            high: high
+            xhigh: xhigh
+            max: max
         - id: claude-haiku-4-5-20251001
           name: Claude 4.5 Haiku
           contextWindow: 200000
