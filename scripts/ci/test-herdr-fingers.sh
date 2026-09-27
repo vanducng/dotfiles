@@ -226,6 +226,8 @@ fi
 [[ "$fzf_status" == 2 ]]
 grep -q 'fzf exited with code 2' "$test_dir/fzf-error"
 
+grep -q 'OPEN_PATH_BROWSER:=Aside' "$project_root/dotfiles/bin/.local/bin/open-path"
+
 xdg_capture="$test_dir/xdg-capture"
 PATH="$test_dir:$PATH" OPEN_PATH_XDG_CAPTURE="$xdg_capture" \
   "$project_root/dotfiles/bin/.local/bin/open-path" --browser "https://example.com/docs"

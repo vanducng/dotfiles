@@ -46,7 +46,7 @@ export WLR_NO_HARDWARE_CURSORS=1
 |---|---|---|
 | meh-a | Ctrl+Alt+Shift+a | Ghostty focus/launch |
 | meh-f | Ctrl+Alt+Shift+f | kitty |
-| meh-s / d / z | Ctrl+Alt+Shift+s/d/z | Firefox (Dia/Arc/Zen stand-in) |
+| meh-s / d / z | Ctrl+Alt+Shift+s/d/z | Firefox (Aside/Arc/Zen stand-in) |
 | meh-g | Ctrl+Alt+Shift+g | Cursor / code |
 | Super+Space | Super+Space | wofi launcher (Raycast-ish) |
 | ctrl+shift h/j/k/l | Ctrl+Shift+h/j/k/l | focus |

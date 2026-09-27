@@ -86,6 +86,26 @@
           "maxTokens": 65536
         },
         {
+          "id": "grok-4.7",
+          "name": "Grok 4.7",
+          "reasoning": true,
+          "thinkingLevelMap": {
+            "off": null,
+            "minimal": null,
+            "low": "low",
+            "medium": "medium",
+            "high": "high",
+            "xhigh": "xhigh",
+            "max": null
+          },
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 500000,
+          "maxTokens": 32768
+        },
+        {
           "id": "grok-4.6",
           "name": "Grok 4.6",
           "reasoning": true,

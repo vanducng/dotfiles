@@ -2,7 +2,7 @@
 # Path/URL handler used by tmux-fingers (Ctrl+hint, Alt+hint) and Hammerspoon
 # Hyper+V. Mode is forced by the caller — no extension-sniffing on this side.
 #
-#   open-path --browser   → file-browser HTTP server in Dia (file or dir)
+#   open-path --browser   → file-browser HTTP server in Aside (file or dir)
 #   open-path --editor    → nvim in a fresh Ghostty window
 #
 # URL inputs always route to the platform's default browser regardless of
@@ -23,7 +23,7 @@ fi
 # --------------------------- configurable apps --------------------------------
 # Override via env to swap targets without touching this script:
 #   OPEN_PATH_BROWSER=Arc OPEN_PATH_EDITOR=Cursor open-path --browser FILE
-: "${OPEN_PATH_BROWSER:=Dia}"      # macOS app name passed to `open -a`
+: "${OPEN_PATH_BROWSER:=Aside}"    # macOS app name passed to `open -a`
 : "${OPEN_PATH_EDITOR:=Ghostty}"   # terminal app that runs the EDITOR_CMD
 : "${OPEN_PATH_EDITOR_CMD:=nvim}"  # cli inside the terminal app
 
@@ -120,7 +120,7 @@ fi
 # At this point: path-shaped input. Dispatch by mode whether or not $path
 # exists — the file-browser server returns a clean 404 for misses, which is
 # more useful than LaunchServices guessing an app (e.g. opening .md in
-# Antigravity instead of Dia).
+# Antigravity instead of Aside).
 
 # --------------------------- helpers ------------------------------------------
 

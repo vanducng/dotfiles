@@ -69,6 +69,7 @@ More modifiers means a bigger jump: panes, then tabs, then workspaces, then mach
 | `C-x z` | Zoom pane |
 | `C-x m` | Split right, side by side |
 | `C-x v` | Split down, stacked |
+| `C-x Shift-P` | Rename the focused pane (type a name) |
 | `C-x ,` | Name pane from its active task context |
 | `C-x 0` | Home: first workspace, first tab, first pane |
 | `C-x 1..9` | Switch tab |
@@ -88,7 +89,7 @@ More modifiers means a bigger jump: panes, then tabs, then workspaces, then mach
 | `C-x f` | Find an agent by `workspace.tab.pane` address |
 | `C-x Space` | Pick a recent path or URL |
 | `C-x [` | Copy mode |
-| `C-x Shift-G` | Open the current branch's pull request, or the repository's pull request list |
+| `C-x Shift-G` | Open this pane's current-branch pull request, or the repo PR list |
 | `C-x Shift-I` | Renumber visible tab labels from 1 in each workspace |
 | `C-x r` | Resize mode |
 | `C-x R` | Reload config |
@@ -96,13 +97,15 @@ More modifiers means a bigger jump: panes, then tabs, then workspaces, then mach
 
 Herdr keeps tab IDs stable after closes, so `C-x Shift-I` renumbers the visible label prefixes without changing IDs such as `wR:t5`.
 
+`C-x Shift-G` opens the focused pane's current-branch pull request, or the repo PR list if that branch has none. It toasts and stops when the pane is not a git checkout. Herdr's default `new worktree` chord is left unbound so this key stays on PRs.
+
 Herdr 0.9.0 has no machine key. `C-x 0` is home on the machine you are viewing: workspace 1, tab 1, first pane (the Local orchestrator when you are on Local). From another machine, `C-x g` then `Home` then `Enter` selects Local; the first navigator row is Local. `C-x Shift-Left/Right` also walks workspaces across machines. `C-x w` stays the portable workspace jump when numbered workspace chords do not reach Herdr.
 
 `Ctrl-Alt-1..9` is the direct workspace jump on macOS Ghostty. Kitty on macOS defaults Option+digit to unicode (¡™£), so the same chord never reaches Herdr during `herdr --remote` even though `Ctrl-Alt-hjkl` and `Ctrl-1..9` work. `kitty.conf` sets `macos_option_as_alt yes` and maps `ctrl+alt+1..9` to kitty CSI-u; restart Kitty after that change. Moshi/mosh still lack that protocol, so use `C-x 1..9` for tabs and `C-x w` for workspaces there. Ghostty unbinds `shift+arrows` so `C-x Shift-Left/Right` can reach Herdr instead of adjusting a terminal selection.
 
-The picker scans the latest 500 rows of the focused pane and lists matching paths and URLs newest-first. Press `Enter` to open in the file browser, `Ctrl-Y` to copy, or `Ctrl-E` to open in the editor. External URLs open in the default browser, existing localhost viewer URLs restart the file browser when needed, and relative paths resolve from the pane's working directory. Exiting the temporary picker returns to the original pane.
+The picker scans the latest 500 rows of the focused pane and lists matching paths and URLs newest-first. Press `Enter` to open in the file browser in Aside, `Ctrl-Y` to copy, or `Ctrl-E` to open in the editor. External URLs open in the default browser, existing localhost viewer URLs restart the file browser when needed, and relative paths resolve from the pane's working directory. Exiting the temporary picker returns to the original pane.
 
-`C-x ,` names the pane `<repo>:<task>` from the pane's branch, latest commit, changed files, terminal title, and recent output using the same agent CLI the pane runs - `codex exec` for Codex panes, `claude -p` (Haiku) otherwise - so it reuses the CLI's existing subscription login and needs no API key. The repository name comes from the pane's Git remote, while the model supplies only a specific task label. Common secret-like values and key blocks are redacted before context is sent, but the filter is best-effort; do not use the action while secrets are visible in the pane. Labels may use up to 80 characters and keep the repository name stable. If the preferred CLI is missing or fails it tries the other, then falls back to `<repo>:<branch>` from the pane's Git context, or the folder name outside Git. It runs only when pressed and needs no background service.
+`C-x Shift-P` opens Herdr's rename prompt so the name never goes through the pane. `C-x ,` names the pane `<repo>:<task>` from the pane's branch, latest commit, changed files, terminal title, and recent output using the same agent CLI the pane runs - `codex exec` for Codex panes, `claude -p` (Haiku) otherwise - so it reuses the CLI's existing subscription login and needs no API key. The repository name comes from the pane's Git remote, while the model supplies only a specific task label. Common secret-like values and key blocks are redacted before context is sent, but the filter is best-effort; do not use the action while secrets are visible in the pane. Labels may use up to 80 characters and keep the repository name stable. If the preferred CLI is missing or fails it tries the other, then falls back to `<repo>:<branch>` from the pane's Git context, or the folder name outside Git. It runs only when pressed and needs no background service.
 
 Use `C-x f` when the target is an agent. Each row starts with a stable address such as `1.2.30`, meaning workspace 1, tab 2, pane 30. Use `C-x g` for machines and for the native searchable tree when the target may be a shell pane. `C-x Shift-Up/Down` remains the fastest way to cycle agents without choosing a specific address.
 

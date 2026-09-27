@@ -1,14 +1,26 @@
 #!/usr/bin/env sh
 # =============================================================================
 # arrange-displays.sh
-# Keep 17 managed spaces: D1 = 1-8, D2 = 9-17 (when a 2nd monitor is attached).
+# Keep 17 managed desktops when two displays are attached:
+#   display 1 (main):     8 desktops
+#   display 2 (built-in): 9 desktops
+# With one display, keep 17 desktops on it.
+#
+# macOS drops the built-in display's desktops on restart, and moving a desktop
+# onto another display often does nothing. Missing desktops are created on the
+# display that is short. Empty surplus desktops are removed only from the
+# display that has too many, so a trim can never eat the built-in row.
+#
+# yabai on macOS 27 acknowledges space create/destroy without changing anything
+# when the scripting addition does not match Dock. A command counts only if the
+# desktop count actually changes.
 # Native-fullscreen spaces are macOS-owned and are left alone.
-# Triggered at yabai startup and on display_added / display_removed signals.
 # =============================================================================
 
 set -u
 
 TARGET_D1=8
+TARGET_D2=9
 TARGET_TOTAL=17
 
 nonzero() {
@@ -17,47 +29,114 @@ nonzero() {
     echo "$v"
 }
 
-initial_focus=$(yabai -m query --spaces --space 2>/dev/null | jq '.index')
+managed_json() {
+    yabai -m query --spaces 2>/dev/null | jq -c '[.[] | select(."is-native-fullscreen"==false) | {index, display, id}]'
+}
 
-count=$(nonzero "$(yabai -m query --spaces 2>/dev/null | jq '[.[] | select(."is-native-fullscreen"==false)] | length')")
-while [ "$count" -lt "$TARGET_TOTAL" ]; do
-    last=$(yabai -m query --spaces 2>/dev/null | jq '[.[] | select(."is-native-fullscreen"==false)] | .[-1].index')
-    [ -n "$last" ] && [ "$last" != "null" ] && yabai -m space --focus "$last" 2>/dev/null
-    yabai -m space --create 2>/dev/null || break
-    count=$((count + 1))
-done
+display_count() {
+    echo "$1" | jq --argjson d "$2" '[.[] | select(.display==$d)] | length'
+}
 
-displays=$(nonzero "$(yabai -m query --displays 2>/dev/null | jq 'length')")
-if [ "$displays" -ge 2 ]; then
-    d1_count=$(nonzero "$(yabai -m query --spaces --display 1 2>/dev/null | jq '[.[] | select(."is-native-fullscreen"==false)] | length')")
-    while [ "$d1_count" -gt "$TARGET_D1" ]; do
-        last=$(yabai -m query --spaces --display 1 2>/dev/null | jq '[.[] | select(."is-native-fullscreen"==false)] | .[-1].index')
-        { [ -z "$last" ] || [ "$last" = "null" ]; } && break
-        yabai -m space "$last" --display 2 2>/dev/null || break
-        new_d1=$(nonzero "$(yabai -m query --spaces --display 1 2>/dev/null | jq '[.[] | select(."is-native-fullscreen"==false)] | length')")
-        [ "$new_d1" -lt "$d1_count" ] || break
-        d1_count=$new_d1
+# Sticky overlays are listed on every space of their display. They must not
+# make an otherwise empty desktop look occupied, or surplus desktops can never
+# be removed and the built-in row can never be rebuilt.
+real_windows() {
+    nonzero "$(yabai -m query --windows --space "$1" 2>/dev/null | jq '[.[] | select(."is-sticky"!=true)] | length')"
+}
+
+create_on_display() {
+    display=$1
+    before=$(display_count "$(managed_json)" "$display")
+    yabai -m space --create "$display" >/dev/null 2>&1 || return 1
+    sleep 0.15
+    after=$(display_count "$(managed_json)" "$display")
+    [ "$after" -gt "$before" ]
+}
+
+destroy_space() {
+    idx=$1
+    before=$(managed_json | jq 'length')
+    focused=$(yabai -m query --spaces --space 2>/dev/null | jq -r '.index // empty')
+    if [ "$focused" = "$idx" ]; then
+        yabai -m space --focus prev >/dev/null 2>&1 || yabai -m space --focus first >/dev/null 2>&1 || return 1
+    fi
+    yabai -m space --destroy "$idx" >/dev/null 2>&1 || return 1
+    sleep 0.15
+    after=$(managed_json | jq 'length')
+    [ "$after" -lt "$before" ]
+}
+
+trim_display() {
+    display=$1
+    target=$2
+    guard=0
+    spaces=$(managed_json)
+    while [ "$(display_count "$spaces" "$display")" -gt "$target" ]; do
+        idx=$(echo "$spaces" | jq -r --argjson d "$display" '[.[] | select(.display==$d)][-1].index')
+        { [ -z "$idx" ] || [ "$idx" = "null" ]; } && break
+        n=$(real_windows "$idx")
+        [ "$n" -eq 0 ] || break
+        destroy_space "$idx" || break
+        spaces=$(managed_json)
+        guard=$((guard + 1))
+        [ "$guard" -lt 16 ] || break
     done
-    while [ "$d1_count" -lt "$TARGET_D1" ]; do
-        first=$(yabai -m query --spaces --display 2 2>/dev/null | jq '[.[] | select(."is-native-fullscreen"==false)] | .[0].index')
-        [ -z "$first" ] || [ "$first" = "null" ] && break
-        yabai -m space "$first" --display 1 2>/dev/null || break
-        d1_count=$((d1_count + 1))
+}
+
+fill_display() {
+    display=$1
+    target=$2
+    guard=0
+    spaces=$(managed_json)
+    while [ "$(display_count "$spaces" "$display")" -lt "$target" ]; do
+        create_on_display "$display" || break
+        spaces=$(managed_json)
+        guard=$((guard + 1))
+        [ "$guard" -lt 16 ] || break
+    done
+}
+
+initial_id=$(yabai -m query --spaces --space 2>/dev/null | jq -r '.id // empty')
+spaces=$(managed_json)
+[ -n "$spaces" ] || exit 0
+displays=$(nonzero "$(yabai -m query --displays 2>/dev/null | jq 'length')")
+
+if [ "$displays" -ge 2 ]; then
+    # Built-in first, so a later trim of the main display cannot be the thing
+    # that restores the missing desktops by destroying them from the tail.
+    fill_display 2 "$TARGET_D2"
+    fill_display 1 "$TARGET_D1"
+    trim_display 1 "$TARGET_D1"
+    trim_display 2 "$TARGET_D2"
+else
+    guard=0
+    count=$(echo "$spaces" | jq 'length')
+    while [ "$count" -lt "$TARGET_TOTAL" ]; do
+        yabai -m space --create >/dev/null 2>&1 || break
+        sleep 0.15
+        spaces=$(managed_json)
+        new=$(echo "$spaces" | jq 'length')
+        [ "$new" -gt "$count" ] || break
+        count=$new
+        guard=$((guard + 1))
+        [ "$guard" -lt 20 ] || break
+    done
+    guard=0
+    while [ "$count" -gt "$TARGET_TOTAL" ]; do
+        idx=$(echo "$spaces" | jq -r '.[-1].index')
+        { [ -z "$idx" ] || [ "$idx" = "null" ]; } && break
+        n=$(real_windows "$idx")
+        [ "$n" -eq 0 ] || break
+        destroy_space "$idx" || break
+        spaces=$(managed_json)
+        count=$(echo "$spaces" | jq 'length')
+        guard=$((guard + 1))
+        [ "$guard" -lt 20 ] || break
     done
 fi
 
-while [ "$count" -gt "$TARGET_TOTAL" ]; do
-    last=$(yabai -m query --spaces 2>/dev/null | jq '[.[] | select(."is-native-fullscreen"==false)] | .[-1].index')
-    [ -z "$last" ] || [ "$last" = "null" ] && break
-    nwin=$(nonzero "$(yabai -m query --spaces --space "$last" 2>/dev/null | jq '.windows | length')")
-    [ "$nwin" -gt 0 ] && break
-    focused=$(yabai -m query --spaces --space 2>/dev/null | jq '.index')
-    { [ -z "$focused" ] || [ "$focused" = "null" ]; } && break
-    if [ "$last" = "$focused" ]; then
-        yabai -m space --focus prev 2>/dev/null || yabai -m space --focus first 2>/dev/null || break
-    fi
-    yabai -m space "$last" --destroy 2>/dev/null || break
-    count=$((count - 1))
-done
-
-[ -n "$initial_focus" ] && [ "$initial_focus" != "null" ] && yabai -m space --focus "$initial_focus" 2>/dev/null
+if [ -n "$initial_id" ]; then
+    spaces=$(managed_json)
+    back=$(echo "$spaces" | jq -r --argjson id "$initial_id" '.[] | select(.id==$id) | .index' | head -1)
+    [ -n "$back" ] && yabai -m space --focus "$back" >/dev/null 2>&1 || true
+fi

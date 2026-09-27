@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+herdr_bin="${HERDR_BIN_PATH:-}"
+if [[ ! -x "$herdr_bin" ]]; then
+  herdr_bin="$(command -v herdr || true)"
+fi
+
+notify() {
+  [[ -n "${herdr_bin:-}" ]] || return 0
+  "$herdr_bin" notification show "$1" --sound none >/dev/null 2>&1 || true
+}
+
+pane_id="${1:-${HERDR_ACTIVE_PANE_ID:-${HERDR_PANE_ID:-}}}"
+cwd="${HERDR_ACTIVE_PANE_CWD:-}"
+
+if [[ -z "$cwd" && -n "$pane_id" && -n "$herdr_bin" ]] && command -v jq >/dev/null 2>&1; then
+  cwd="$("$herdr_bin" pane get "$pane_id" | jq -er 'first((.result.pane.cwd, .result.pane.foreground_cwd) | strings | select(length > 0))')" || cwd=""
+fi
+[[ -n "$cwd" ]] || cwd="${PWD:-.}"
+
+if ! git -C "$cwd" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  notify "no git project in this pane"
+  exit 0
+fi
+root="$(git -C "$cwd" rev-parse --show-toplevel)"
+
+gh_bin=""
+for candidate in $(type -ap gh 2>/dev/null || true) /opt/homebrew/bin/gh; do
+  [[ -x "$candidate" ]] || continue
+  if "$candidate" --version >/dev/null 2>&1; then
+    gh_bin="$candidate"
+    break
+  fi
+done
+if [[ -z "$gh_bin" ]]; then
+  notify "gh is not available"
+  exit 1
+fi
+
+trap 'code=$?; if (( code != 0 )); then notify "failed to open pull requests"; fi' EXIT
+
+cd "$root"
+if "$gh_bin" pr view --json url >/dev/null 2>&1; then
+  "$gh_bin" pr view --web
+else
+  "$gh_bin" pr list --web
+fi

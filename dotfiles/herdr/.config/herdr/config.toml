@@ -26,7 +26,8 @@ focus_pane_right = ["prefix+l", "ctrl+alt+l"]
 previous_tab = "prefix+p"
 switch_tab = ["prefix+1..9", "ctrl+1..9"]
 settings = "prefix+shift+s"
-rename_pane = ""
+rename_pane = "prefix+shift+p"
+new_worktree = ""
 last_pane = "prefix+a"
 split_vertical = "prefix+m"
 split_horizontal = "prefix+v"
@@ -58,8 +59,8 @@ description = "rename pane from session context"
 [[keys.command]]
 key = "prefix+shift+g"
 type = "shell"
-command = "gh pr view --web 2>/dev/null || gh pr list --web"
-description = "open current pull request or pull request list"
+command = "/bin/bash \"$HOME/.local/bin/herdr-open-pr\""
+description = "open pull requests for the focused pane repo"
 
 [[keys.command]]
 key = "prefix+shift+i"

@@ -143,6 +143,7 @@ script-test:
 	@./scripts/ci/test-herdr-fingers.sh
 	@./scripts/ci/test-herdr-agents.sh
 	@./scripts/ci/test-herdr-pane-rename.sh
+	@./scripts/ci/test-herdr-open-pr.sh
 	@./scripts/ci/test-herdr-tab-renumber.sh
 	@./scripts/ci/test-herdr-home.sh
 	@./scripts/ci/test-herdr-sessions.sh
@@ -158,6 +159,7 @@ script-test:
 	@./scripts/ci/test-linux-bootstrap.sh
 	@./scripts/ci/test-yazi-config.sh
 	@./scripts/ci/test-audio-switch.sh
+	@./scripts/ci/test-yabai-layout.sh
 	@./scripts/ci/test-sysmon.sh
 	@./scripts/ci/test-tmux-fingers-conf.sh
 	@./scripts/ci/test-release-manifest.sh

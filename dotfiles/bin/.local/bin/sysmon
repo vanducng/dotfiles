@@ -14,7 +14,7 @@ OVERLAY_DOCK_LEFT="${SYSMON_DOCK_LEFT:-1:4:0:0:1:1}"
 # Hub width as a fraction of the app's space. 0.25 is one quarter.
 DIA_HUB_RATIO="${SYSMON_DIA_RATIO:-0.25}"
 # Comma-separated yabai app names. Focus one of these, then use the split chords.
-SPLIT_APPS="${SYSMON_SPLIT_APPS:-Dia,ego lite}"
+SPLIT_APPS="${SYSMON_SPLIT_APPS:-Dia,Aside}"
 PLACE_GRID="$OVERLAY_GRID"
 PLACE_LATER=1
 
@@ -32,11 +32,13 @@ Open system tools in one tmux session (kitty overlay).
   sysmon vault         window 3: nvim on $OBSIDIAN_VAULT
   sysmon stop          kill the session and overlay
 
-meh+f recenters the hub. Close it with cmd+w. cmd+opt+G docks on
+meh+f focuses the one hub on the current desktop, or opens it there.
+A second press focuses that same window. Closing it leaves focus on
+that desktop. cmd+opt+G docks on
 the right (~1/4). cmd+opt+V docks on the left at the same width.
 The overlay floats above whatever app is focused.
 cmd+shift+opt+v / g tile a separate Kitty window running Herdr on the
-left / right quarter of Dia. cmd+shift+opt+r / t do the same for ego lite.
+left / right quarter of Dia. cmd+shift+opt+r / t do the same for Aside.
 That window is not inside tmux, so Herdr keeps its own prefix.
 Ctrl+Shift+H and Ctrl+Shift+L move between them. The same chord
 focuses the sidebar when it is already in place. Close that window
@@ -202,28 +204,105 @@ for window_id in ids:
 ' "$title" 2>/dev/null || true
 }
 
-apply_overlay() {
-  local yabai="$1" id="$2" json floating sticky
-  json="$("$yabai" -m query --windows --window "$id" 2>/dev/null || true)"
-  [[ -n "$json" ]] || return 1
-  read -r floating sticky < <(printf '%s' "$json" | python3 -c '
-import json
-import sys
+return_path() {
+  printf '%s\n' "${SYSMON_RETURN:-${TMPDIR:-/tmp}/sysmon.return}"
+}
 
+hub_lock_path() {
+  printf '%s\n' "${TMPDIR:-/tmp}/sysmon.hub.lock"
+}
+
+focused_space_index() {
+  local yabai="$1"
+  "$yabai" -m query --spaces 2>/dev/null | python3 -c '
+import json, sys
+try:
+    spaces = json.load(sys.stdin)
+except json.JSONDecodeError:
+    raise SystemExit(0)
+for space in spaces:
+    if space.get("has-focus"):
+        print(space.get("index") or "")
+        break
+' 2>/dev/null || true
+}
+
+# A sticky hub keeps a home space, and closing it focuses that other display.
+remember_return_target() {
+  local yabai="$1" space win title ctx
+  space="$(focused_space_index "$yabai")"
+  win=""
+  title=""
+  ctx="$("$yabai" -m query --windows --window 2>/dev/null || true)"
+  if [[ -n "$ctx" ]]; then
+    read -r space win title < <(printf '%s' "$ctx" | python3 -c '
+import json, sys
+try:
+    window = json.load(sys.stdin)
+except json.JSONDecodeError:
+    raise SystemExit(0)
+title = (window.get("title") or "").replace("\n", " ")
+print(window.get("space") or "", window.get("id") or "", title)
+') || true
+  fi
+  [[ -z "$title" || "$title" == "$HUB_TITLE" ]] && return 0
+  printf '%s %s\n' "$space" "$win" >"$(return_path)"
+}
+
+window_bits() {
+  local yabai="$1" id="$2"
+  "$yabai" -m query --windows --window "$id" 2>/dev/null | python3 -c '
+import json, sys
 try:
     window = json.load(sys.stdin)
 except json.JSONDecodeError:
     raise SystemExit(1)
-print("1" if window.get("is-floating") else "0", "1" if window.get("is-sticky") else "0")
-')
+print(
+    window.get("space") or "",
+    "1" if window.get("is-floating") else "0",
+    "1" if window.get("is-sticky") else "0",
+)
+' 2>/dev/null || true
+}
+
+adopt_focused_space() {
+  local yabai="$1" id="$2" space="${3:-}" current cur floating sticky
+  if [[ -z "$space" ]]; then
+    space="$(focused_space_index "$yabai")"
+  fi
+  [[ -n "$space" ]] || return 0
+  read -r cur floating sticky < <(window_bits "$yabai" "$id") || true
+  if [[ "$sticky" == 1 ]]; then
+    current="$(focused_space_index "$yabai")"
+    if [[ -n "$current" && "$current" != "$space" ]]; then
+      "$yabai" -m space --focus "$space" 2>/dev/null || true
+    fi
+    "$yabai" -m window "$id" --toggle sticky 2>/dev/null || true
+    read -r cur floating sticky < <(window_bits "$yabai" "$id") || true
+  fi
+  if [[ -n "$cur" && "$cur" != "$space" ]]; then
+    "$yabai" -m window "$id" --space "$space" 2>/dev/null || true
+  fi
+}
+
+apply_overlay() {
+  local yabai="$1" id="$2" space="${3:-}" floating
+  "$yabai" -m query --windows --window "$id" >/dev/null 2>&1 || return 1
+  adopt_focused_space "$yabai" "$id" "$space"
+  read -r _ floating _ < <(window_bits "$yabai" "$id") || true
   if [[ "$floating" != 1 ]]; then
     "$yabai" -m window "$id" --toggle float 2>/dev/null || true
   fi
-  if [[ "$sticky" != 1 ]]; then
-    "$yabai" -m window "$id" --toggle sticky 2>/dev/null || true
-  fi
   "$yabai" -m window "$id" --sub-layer above 2>/dev/null || true
   "$yabai" -m window "$id" --grid "${PLACE_GRID:-$OVERLAY_GRID}" 2>/dev/null || true
+}
+
+close_extra_hubs() {
+  local yabai="$1" keep="$2" other
+  while read -r other; do
+    [[ -n "$other" && "$other" != "$keep" ]] || continue
+    "$yabai" -m window "$other" --close 2>/dev/null || true
+  done < <(find_window_ids "$HUB_TITLE" "$yabai")
 }
 
 resolve_window_id() {
@@ -243,19 +322,20 @@ focus_window() {
   local title="$1" id yabai
   yabai="$(yabai_bin)"
   [[ -n "$yabai" ]] || return 1
-  id="$(cat "$(wid_path "$title")" 2>/dev/null || true)"
-  if [[ -n "$id" ]]; then
-    if window_matches "$yabai" "$id" "$title"; then
-      [[ "$PLACE_LATER" == 1 ]] && apply_overlay "$yabai" "$id" || true
-      "$yabai" -m window "$id" --focus 2>/dev/null && return 0
-    fi
+  if [[ "$title" == "$HUB_TITLE" ]]; then
+    remember_return_target "$yabai"
   fi
   id="$(resolve_window_id "$title" "$yabai" || true)"
   [[ -n "$id" ]] || return 1
-  if [[ "$PLACE_LATER" == 1 ]]; then
-    apply_overlay "$yabai" "$id" || return 1
+  if [[ "$title" == "$HUB_TITLE" ]]; then
+    save_window_id "$title" "$id"
+    close_extra_hubs "$yabai" "$id"
   fi
-  "$yabai" -m window "$id" --focus 2>/dev/null
+  if [[ "$PLACE_LATER" == 1 ]]; then
+    apply_overlay "$yabai" "$id" || true
+  fi
+  "$yabai" -m window "$id" --focus 2>/dev/null || true
+  return 0
 }
 
 window_matches() {
@@ -273,23 +353,51 @@ raise SystemExit(0 if window.get("app") == "kitty" and window.get("title") == sy
 }
 
 place_title_later() {
-  local title="$1"
+  local title="$1" space=""
+  if [[ "$title" == "$HUB_TITLE" ]]; then
+    space="$(awk 'NR==1 { print $1 }' "$(return_path)" 2>/dev/null || true)"
+  fi
   (
     local yabai id attempt
     yabai="$(yabai_bin)"
-    [[ -n "$yabai" ]] || exit 0
-    for attempt in 1 2 3 4 5 6; do
+    [[ -n "$yabai" ]] || { hub_lock_release; exit 0; }
+    for attempt in 1 2 3 4 5 6 7 8 9 10; do
       id="$(find_window_ids "$title" "$yabai" | tail -n 1)"
       if [[ -n "$id" ]]; then
         save_window_id "$title" "$id"
-        apply_overlay "$yabai" "$id" || true
+        if [[ "$title" == "$HUB_TITLE" ]]; then
+          close_extra_hubs "$yabai" "$id"
+        fi
+        apply_overlay "$yabai" "$id" "$space" || true
         "$yabai" -m window "$id" --focus 2>/dev/null || true
+        hub_lock_release
         exit 0
       fi
       sleep 0.08
     done
+    hub_lock_release
   ) >/dev/null 2>&1 &
   disown
+}
+
+hub_lock_acquire() {
+  local lock now mtime
+  lock="$(hub_lock_path)"
+  if mkdir "$lock" 2>/dev/null; then
+    return 0
+  fi
+  now=$(date +%s)
+  mtime=$(stat -f %m "$lock" 2>/dev/null || echo 0)
+  if [ $((now - mtime)) -gt 3 ]; then
+    rmdir "$lock" 2>/dev/null || true
+    mkdir "$lock" 2>/dev/null
+    return $?
+  fi
+  return 1
+}
+
+hub_lock_release() {
+  rmdir "$(hub_lock_path)" 2>/dev/null || true
 }
 
 detach_exec() {
@@ -336,7 +444,7 @@ open_window() {
 }
 
 raise_or_open() {
-  local title="$1"
+  local title="$1" tries=0
   shift
   if [[ -n "${SYSMON_OPEN:-}" ]]; then
     if [[ -n "${SYSMON_FOCUSED:-}" ]]; then
@@ -349,10 +457,79 @@ raise_or_open() {
   if focus_window "$title"; then
     return 0
   fi
+  until hub_lock_acquire; do
+    tries=$((tries + 1))
+    if focus_window "$title"; then
+      return 0
+    fi
+    if (( tries >= 20 )); then
+      echo "sysmon: $title is already opening" >&2
+      return 1
+    fi
+    sleep 0.05
+  done
+  if focus_window "$title"; then
+    hub_lock_release
+    return 0
+  fi
   open_window "$title" "$@"
   if [[ "$PLACE_LATER" == 1 ]]; then
     place_title_later "$title"
+  else
+    hub_lock_release
   fi
+}
+
+focus_return_target() {
+  local yabai="$1" space="$2" win="$3" id
+  if [[ -n "$win" ]] && "$yabai" -m query --windows --window "$win" >/dev/null 2>&1; then
+    "$yabai" -m window "$win" --focus 2>/dev/null && return 0
+  fi
+  [[ -n "$space" ]] || return 0
+  "$yabai" -m space --focus "$space" 2>/dev/null || true
+  id="$("$yabai" -m query --windows --space "$space" 2>/dev/null | python3 -c '
+import json, sys
+try:
+    windows = json.load(sys.stdin)
+except json.JSONDecodeError:
+    raise SystemExit(0)
+for window in windows:
+    if window.get("is-sticky") or window.get("app") == "kitty":
+        continue
+    if window.get("id"):
+        print(window["id"])
+        break
+' 2>/dev/null || true)"
+  [[ -n "$id" ]] && "$yabai" -m window "$id" --focus 2>/dev/null || true
+}
+
+cmd_restore_focus() {
+  local destroyed saved yabai space win
+  if [[ -n "${SYSMON_OPEN:-}" ]]; then
+    printf 'restore: focus\n'
+    return 0
+  fi
+  destroyed="${YABAI_WINDOW_ID:-}"
+  saved="$(cat "$(wid_path "$HUB_TITLE")" 2>/dev/null || true)"
+  [[ -n "$destroyed" && "$destroyed" == "$saved" ]] || return 0
+  rm -f "$(wid_path "$HUB_TITLE")"
+  space=""
+  win=""
+  if [[ -f "$(return_path)" ]]; then
+    read -r space win <"$(return_path)" || true
+    rm -f "$(return_path)"
+  fi
+  yabai="$(yabai_bin)"
+  [[ -n "$yabai" ]] || return 0
+  focus_return_target "$yabai" "$space" "$win"
+  (
+    sleep 0.35
+    yabai="$(yabai_bin)"
+    [[ -n "$yabai" ]] || exit 0
+    [[ -n "$space" && "$(focused_space_index "$yabai")" == "$space" ]] && exit 0
+    focus_return_target "$yabai" "$space" "$win"
+  ) >/dev/null 2>&1 &
+  disown
 }
 
 attach_hub() {
@@ -1004,6 +1181,7 @@ main() {
       raise_or_open "$title" "$@"
       ;;
     stop) cmd_stop ;;
+    restore-focus) cmd_restore_focus ;;
     -h | --help | help) usage ;;
     *)
       echo "sysmon: unknown command: $cmd" >&2
