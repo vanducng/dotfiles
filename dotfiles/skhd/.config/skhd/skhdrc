@@ -30,7 +30,7 @@ meh - a : previous=$(yabai -m config mouse_follows_focus); \
           if [ -n "$id" ]; then yabai -m window "$id" --focus; else open "/Applications/Ghostty.app"; sleep 0.7; fi; \
           yabai -m config mouse_follows_focus "$previous"
 meh - b : open "/Applications/Borumi.app"
-meh - c : yabai -m space --focus 4; open "/Applications/Vivaldi.app"
+meh - c : "$HOME/.config/yabai/dia-one.sh" focus
 meh - d : yabai -m space --focus 13; open "/Applications/Arc.app"
 meh - e : yabai -m space --focus 17; open "/Applications/ego lite.app"
 meh - t : yabai -m space --focus 12; open "/System/Volumes/Data/Applications/Discord.app"
@@ -44,12 +44,12 @@ meh - v : yabai -m space --focus 16; open "/Applications/Grok Bot.app"
 meh - q : open -a "Music"
 meh - p : yabai -m space --focus 6; open "/Applications/Foxit PDF Reader.app"
 meh - r : yabai -m space --focus 12; open "/Applications/Telegram.app"
-meh - s : "$HOME/.config/yabai/dia-one.sh" focus
+meh - s : yabai -m space --focus 4; open "/Applications/Aside.app"
 meh - f : "$HOME/.local/bin/sysmon" center
 cmd + shift + alt - v : "$HOME/.local/bin/sysmon" dia-left "Dia"
 cmd + shift + alt - g : "$HOME/.local/bin/sysmon" dia-right "Dia"
-cmd + shift + alt - r : "$HOME/.local/bin/sysmon" dia-left "ego lite"
-cmd + shift + alt - t : "$HOME/.local/bin/sysmon" dia-right "ego lite"
+cmd + shift + alt - r : "$HOME/.local/bin/sysmon" dia-left "Aside"
+cmd + shift + alt - t : "$HOME/.local/bin/sysmon" dia-right "Aside"
 meh - u : yabai -m space --focus 11; open "/System/Volumes/Data/Applications/Zalo.app"
 meh - g : yabai -m space --focus 5; open "/Applications/Cursor.app"
 meh - w : yabai -m space --focus 2; open "/Applications/LibreOffice.app"

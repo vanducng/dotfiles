@@ -28,7 +28,7 @@ All application shortcuts use the `meh` key (ctrl+alt+shift) for consistency and
 | 1 | 1 | Ghostty |
 | 2 | 1 | LibreOffice |
 | 3 | 1 | Dia (stack) |
-| 4 | 1 | Chrome, Vivaldi |
+| 4 | 1 | Chrome, Aside |
 | 5 | 1 | Cursor |
 | 6 | 1 | Preview, Foxit |
 | 7 | 1 | Alter |
@@ -50,8 +50,8 @@ All application shortcuts use the `meh` key (ctrl+alt+shift) for consistency and
 | `meh + f` | Sysmon overlay | Last tmux window, centered (first start: btop / disk / vault) |
 | `cmd + shift + opt + v` | Sysmon left of Dia | Hub on the left quarter of Dia's space. Press again to focus it |
 | `cmd + shift + opt + g` | Sysmon right of Dia | Hub on the right quarter of Dia's space. Press again to focus it |
-| `cmd + shift + opt + r` | Sysmon left of Ego | Hub on the left quarter of Ego's space. Press again to focus it |
-| `cmd + shift + opt + t` | Sysmon right of Ego | Hub on the right quarter of Ego's space. Press again to focus it |
+| `cmd + shift + opt + r` | Sysmon left of Aside | Hub on the left quarter of Aside's space. Press again to focus it |
+| `cmd + shift + opt + t` | Sysmon right of Aside | Hub on the right quarter of Aside's space. Press again to focus it |
 | `meh + x` | ChatGPT | AI assistant on display 2, space 16 |
 | `meh + g` | Cursor | AI-powered code editor on space 5 |
 | `meh + h` | Alter | Chat hub on space 7 |
@@ -59,11 +59,11 @@ All application shortcuts use the `meh` key (ctrl+alt+shift) for consistency and
 ### Browsers & Communication
 | Shortcut | Application | Description |
 |----------|-------------|-------------|
-| `meh + s` | Dia | Focus the existing Dia window on space 3 |
+| `meh + s` | Aside | Browser on display 1, space 4 |
 | `meh + e` | Ego | Lightweight browser on display 2, space 17 |
 | `meh + d` | Arc | Browser on space 13 |
 | `meh + z` | Zen Browser | Alternative browser |
-| `meh + c` | Vivaldi | Browser on display 1, space 4 |
+| `meh + c` | Dia | Focus the existing Dia window on space 3 |
 | `meh + k` | Slack | Team communication on display 2, space 14 |
 | `meh + r` | Telegram | Messaging app on display 2, space 12 |
 | `meh + u` | Zalo | Messaging app on space 11 |

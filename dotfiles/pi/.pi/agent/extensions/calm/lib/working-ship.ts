@@ -225,9 +225,16 @@ export function createCalmWorkingShipWidget(
   animation: CalmWorkingShipAnimation = createCalmWorkingShipAnimation(),
 ): Component & { dispose(): void } {
   let disposed = false;
+  let lastRender = 0;
+  // requestRender walks the whole transcript. A 220ms cadence pegs a core
+  // on a long session, so the boat keeps ticking and the screen updates slowly.
+  const RENDER_INTERVAL_MS = 1500;
   const timer = setInterval(() => {
     if (disposed) return;
     animation.tick();
+    const now = Date.now();
+    if (now - lastRender < RENDER_INTERVAL_MS) return;
+    lastRender = now;
     tui.requestRender();
   }, CALM_WORKING_SHIP_TICK_MS);
   // The animation must never keep Pi's process alive on its own.

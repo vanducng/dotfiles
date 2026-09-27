@@ -5,6 +5,7 @@
 - Never use the em dash character. Use plain dash "-" instead.
 - Keep status updates, PR descriptions, review summaries, tickets, and operational messages concise, factual, and action-oriented. Lead with the outcome, blocker, or next action.
 - Outbound email and chat as Duc, to a coworker: write like him, not a runbook. Short, warm, one or two beats. Match their register. No numbered playbook in a reply unless they asked how to do it. Do not restate an attachment they already have. Ban: "No mistake.", "say the word", "which is expected", "the correct X path", "If you want me to X". If it could be a chatbot closing, cut it.
+- Pronouns in Vietnamese chat: Duc is older than Phan Đình Quân, so with Quân he is "anh" and Quân is "em". With Nguyễn Nhất Duy he is "tui" (friends, not anh/em). Do not address Quân as "anh".
 
 ## Work schedule
 
