@@ -44,15 +44,15 @@ yabai -m config insert_feedback_color       0x00010101
 # yabai -m config external_bar              all:5:5
 
 # -----------------------------------------------------------------------------
-# Multi-display reconcile — 17 spaces. Display 2 should hold 9 (spaces 9-17).
-# Desktop moves are often refused; messaging windows are placed on display 2 after the pin loop.
-# Re-runs on monitor hot-plug via display_added / display_removed signals.
+# Multi-display reconcile — 17 spaces. Display 1 holds 1-8, display 2 holds 9-17.
+# The built-in display loses desktops on restart. apply-layout.sh creates the
+# missing ones on that display and re-pins windows. It also runs on hot-plug,
+# and once more after login because the built-in display shows up late.
 # -----------------------------------------------------------------------------
-"$HOME/.config/yabai/arrange-displays.sh"
 yabai -m signal --add event=display_added \
-    action="$HOME/.config/yabai/arrange-displays.sh"
+    action="$HOME/.config/yabai/apply-layout.sh"
 yabai -m signal --add event=display_removed \
-    action="$HOME/.config/yabai/arrange-displays.sh"
+    action="$HOME/.config/yabai/apply-layout.sh"
 
 # -----------------------------------------------------------------------------
 # App rules — managed=off (float) unless noted
@@ -61,29 +61,29 @@ yabai -m signal --add event=display_removed \
 yabai -m rule --add app=".*"                          sub-layer=normal
 
 # Pin apps to specific spaces (by index). 17 spaces: D1=1-8, D2=9-17.
-# 1 Ghostty  2 LibreOffice  3 Dia  4 Chrome+Vivaldi  5 Cursor  6 PDF  7 Alter  8 Obsidian
-# 9-10 stay on display 1 until macOS allows moving desktops.
-# Display 2: 11 Zalo  12 Telegram+Discord+WhatsApp  13 Arc  14 Slack+Cliq  15 kitty  16 AI  17 ego
-yabai -m rule --add app="^Ghostty$" title="^(sysmon|notes-vault)"  manage=off sticky=on sub-layer=above grid=6:6:1:1:4:4
+# 1 Ghostty  2 LibreOffice  3 Dia  4 Chrome+Aside  5 Cursor  6 PDF  7 Alter  8 Obsidian
+# Display 2: Zalo and Telegram (their own desktops), Discord+WhatsApp, 13 Arc, 14 Slack+Cliq, 15 kitty, 16 AI, 17 ego
+yabai -m rule --add app="^Ghostty$" title="^(sysmon|notes-vault)"  manage=off sub-layer=above grid=6:6:1:1:4:4
 yabai -m rule --add app="^Ghostty$" title!="^(sysmon.*|notes-vault)?$" space=1
 yabai -m rule --add app="^LibreOffice$"               space=2
+yabai -m rule --add app="^soffice$"                   space=2
 yabai -m rule --add app="^Dia$"                       space=3
 yabai -m rule --add app="^Google Chrome$"             space=4
-yabai -m rule --add app="^Vivaldi$"                   space=4
+yabai -m rule --add app="^Aside$"                     space=4
 yabai -m rule --add app="^Cursor$"                    space=5
 yabai -m rule --add app="^Preview$"                   space=6
 yabai -m rule --add app="^Foxit PDF Reader$"          space=6
 yabai -m rule --add app="^Alter$"                     space=7 manage=off
 yabai -m rule --add app="^Obsidian$"                  space=8
 yabai -m rule --add app="^Slack$"                     space=14
-yabai -m rule --add app="^Telegram$"                  space=12
-yabai -m rule --add app="^Zalo$"                      space=11
+yabai -m rule --add app="^Telegram$"                  display=2
+yabai -m rule --add app="^Zalo$"                      display=2
 yabai -m rule --add app="^ZaloCall$"                  manage=off
 yabai -m rule --add app="^Discord$"                   space=12
 yabai -m rule --add app="WhatsApp$"                   space=12
 yabai -m rule --add app="^Arc$"                       space=13
 yabai -m rule --add app="^Cliq$"                      space=14
-yabai -m rule --add app="^kitty$" title="^(sysmon|notes-vault)"    manage=off sticky=on sub-layer=above grid=6:6:1:1:4:4
+yabai -m rule --add app="^kitty$" title="^(sysmon|notes-vault)"    manage=off sub-layer=above grid=6:6:1:1:4:4
 yabai -m rule --add app="^kitty$" title!="^(sysmon.*|notes-vault|herdr-bar.*)?$" space=15
 yabai -m rule --add app="^Codex$"                     space=16
 yabai -m rule --add app="^ChatGPT$"                   space=16
@@ -91,34 +91,12 @@ yabai -m rule --add app="^Claude$"                    space=16
 yabai -m rule --add app="^Grok Bot$"                  space=16
 yabai -m rule --add app="^ego lite$"                  space=17
 
-# Discord and AI stay stacked. Dia stacks only while herdr-bar is not its sidebar.
-yabai -m space 12 --layout stack 2>/dev/null
-yabai -m space 14 --layout stack 2>/dev/null
-yabai -m space 16 --layout stack 2>/dev/null
+# Rules only fire on window creation. apply-layout.sh moves windows that are
+# already open, stacks the shared desktops, and rebuilds the built-in row.
+"$HOME/.config/yabai/apply-layout.sh"
+(sleep 8; "$HOME/.config/yabai/apply-layout.sh") >/dev/null 2>&1 &
 
-# Enforce app→space pinning for windows already open when yabai (re)starts.
-# Rules above only fire on window creation, so existing windows would otherwise
-# stay on whatever space they were on at restart. Mirror the pin rules here.
-for pin in "Ghostty:1" "LibreOffice:2" "Dia:3" "Google Chrome:4" "Vivaldi:4" "Cursor:5" "Preview:6" "Foxit PDF Reader:6" "Alter:7" "Obsidian:8" "Slack:14" "Telegram:12" "Zalo:11" "Discord:12" "WhatsApp:12" "Arc:13" "Cliq:14" "kitty:15" "Codex:16" "ChatGPT:16" "Claude:16" "Grok Bot:16" "ego lite:17"; do
-    app="${pin%:*}"; sp="${pin#*:}"
-    # yabai rules cannot strip U+200E; some apps report it in .app
-    for id in $(yabai -m query --windows | jq -r --arg a "$app" '.[] | select((.app | gsub("\u200e"; "")) == $a and ((.title // "") | test("^(sysmon|notes-vault|herdr-bar)") | not)) | .id'); do
-        yabai -m window "$id" --space "$sp" 2>/dev/null
-    done
-done
-
-# Spaces 9-10 cannot leave the primary while desktop moves are refused.
-# If a messaging pin still points at one of those spaces, send the window to display 2.
-for pin in "Slack:14" "Telegram:12" "Zalo:11" "Discord:12" "WhatsApp:12" "Cliq:14"; do
-    app="${pin%:*}"; sp="${pin#*:}"
-    disp=$(yabai -m query --spaces --space "$sp" 2>/dev/null | jq -r '.display // empty')
-    [ "$disp" = "2" ] && continue
-    for id in $(yabai -m query --windows | jq -r --arg a "$app" '.[] | select((.app | gsub("\u200e"; "")) == $a) | .id'); do
-        yabai -m window "$id" --display 2 2>/dev/null || true
-    done
-done
-
-# herdr-bar follows Dia or ego lite onto that app's live space; stacking Dia while the split is on makes the bar a full window.
+# herdr-bar follows Dia or Aside onto that app's live space; stacking Dia while the split is on makes the bar a full window.
 "$HOME/.config/yabai/dia-one.sh" || true
 if [ -f "${TMPDIR:-/tmp}/sysmon.dia" ]; then
     "$HOME/.local/bin/sysmon" dia-sync >/dev/null 2>&1 || true
@@ -136,17 +114,11 @@ for id in $(yabai -m query --windows | jq -r '.[] | select((.app=="Alter" or .ap
     yabai -m window "$id" --toggle float 2>/dev/null
 done
 for id in $(yabai -m query --windows | jq -r '.[] | select((.app=="kitty" or .app=="Ghostty") and ((.title // "") | test("^(sysmon|notes-vault)"))) | .id'); do
-    [ "$(yabai -m query --windows --window "$id" | jq -r '."is-sticky"')" = "false" ] && yabai -m window "$id" --toggle sticky 2>/dev/null
+    [ "$(yabai -m query --windows --window "$id" | jq -r '."is-sticky"')" = "true" ] && yabai -m window "$id" --toggle sticky 2>/dev/null
+    [ "$(yabai -m query --windows --window "$id" | jq -r '."is-floating"')" = "false" ] && yabai -m window "$id" --toggle float 2>/dev/null
     yabai -m window "$id" --sub-layer above 2>/dev/null
     yabai -m window "$id" --grid 6:6:1:1:4:4 2>/dev/null
 done
-for id in $(yabai -m query --windows | jq -r '.[] | select(.app=="Vivaldi") | .id'); do
-    [ "$(yabai -m query --windows --window "$id" | jq -r '."is-sticky"')" = "true" ] && yabai -m window "$id" --toggle sticky 2>/dev/null
-    [ "$(yabai -m query --windows --window "$id" | jq -r '."is-floating"')" = "true" ] && yabai -m window "$id" --toggle float 2>/dev/null
-    yabai -m window "$id" --sub-layer normal 2>/dev/null
-    yabai -m window "$id" --space 4 2>/dev/null
-done
-
 # Sticky overlays (pinned across spaces, above tiled windows)
 yabai -m rule --add app="^Activity Monitor$"          sticky=on layer=above manage=off
 yabai -m rule --add app="^Disk Utility$"              sticky=on layer=above manage=off
@@ -193,6 +165,9 @@ yabai -m signal --add event=application_activated app="^ChatGPT$" \
 yabai -m signal --add event=application_activated app="^Claude$" \
     action='id=$(yabai -m query --windows | jq -r ".[] | select(.app==\"Claude\") | .id" | head -1); [ -n "$id" ] && yabai -m window "$id" --focus 2>/dev/null'
 
+# Closing the hub would otherwise focus whichever display last held a window.
+yabai -m signal --add event=window_destroyed app="^kitty$" \
+    action="$HOME/.local/bin/sysmon restore-focus"
 yabai -m signal --add event=window_created app="^kitty$" \
     action='title=$(yabai -m query --windows --window $YABAI_WINDOW_ID | jq -r ".title // empty"); \
             case "$title" in sysmon*|notes-vault) yabai -m window $YABAI_WINDOW_ID --grid 6:6:1:1:4:4 2>/dev/null ;; esac'
@@ -210,9 +185,9 @@ yabai -m signal --add event=window_moved app="^Dia$" \
     action="$HOME/.local/bin/sysmon dia-sync"
 yabai -m signal --add event=window_created app="^Dia$" \
     action="$HOME/.config/yabai/dia-one.sh wait; $HOME/.local/bin/sysmon dia-sync"
-yabai -m signal --add event=window_moved app="^ego lite$" \
+yabai -m signal --add event=window_moved app="^Aside$" \
     action="$HOME/.local/bin/sysmon dia-sync"
-yabai -m signal --add event=window_created app="^ego lite$" \
+yabai -m signal --add event=window_created app="^Aside$" \
     action="$HOME/.local/bin/sysmon dia-sync"
 yabai -m signal --add event=window_created app="^Alter$" \
     action='sleep 0.2 && [ "$(yabai -m query --windows --window $YABAI_WINDOW_ID | jq .\"is-floating\")" = "false" ] && yabai -m window $YABAI_WINDOW_ID --toggle float'

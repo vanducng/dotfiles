@@ -10,8 +10,9 @@
 #
 # Resolution is derived from the install itself: pi lives at
 # <node-prefix>/lib/node_modules/..., so <node-prefix>/bin/node is by definition a
-# Node that satisfied it at install time. That self-heals across pi/node upgrades —
-# nothing here is pinned to a version number.
+# Node that satisfied it at install time. Pick the newest pi version first, then
+# the highest Node major — otherwise a stale copy on a newer Node wins forever
+# and `pi update` looks like it did nothing.
 set -euo pipefail
 
 PKG="@earendil-works/pi-coding-agent"
@@ -19,20 +20,31 @@ MISE_NODE_ROOT="${MISE_DATA_DIR:-$HOME/.local/share/mise}/installs/node"
 
 best_node=""
 best_cli=""
+best_ver=""
 best_major=0
+
+pi_ver_gt() {
+    [ -z "${2:-}" ] && return 0
+    [ "$1" = "$2" ] && return 1
+    [ "$(printf '%s\n%s\n' "$1" "$2" | sort -V | tail -1)" = "$1" ]
+}
 
 for cli in "$MISE_NODE_ROOT"/*/lib/node_modules/"$PKG"/dist/cli.js; do
     [ -f "$cli" ] || continue
     prefix="${cli%/lib/node_modules/*}"
     node="$prefix/bin/node"
-    [ -x "$node" ] || continue
+    pkgjson="$prefix/lib/node_modules/$PKG/package.json"
+    [ -x "$node" ] && [ -f "$pkgjson" ] || continue
     # Real version, not the directory name: mise aliases (20, lts-iron, ...) are
     # symlinks, so several paths resolve to the same install.
     major=$("$node" -p 'process.versions.node.split(".")[0]' 2>/dev/null) || continue
     # A non-numeric reply (stray warning, odd build) would make the arithmetic
     # test fail and, under `set -e`, kill the wrapper — breaking pi entirely.
     case $major in ''|*[!0-9]*) continue ;; esac
-    if [ "$major" -gt "$best_major" ]; then
+    ver=$("$node" -e 'process.stdout.write(String(require(process.argv[1]).version||""))' "$pkgjson" 2>/dev/null) || continue
+    case $ver in ''|*[!0-9A-Za-z.+-]*) continue ;; esac
+    if pi_ver_gt "$ver" "$best_ver" || { [ "$ver" = "$best_ver" ] && [ "$major" -gt "$best_major" ]; }; then
+        best_ver=$ver
         best_major=$major
         best_node=$node
         best_cli=$cli
