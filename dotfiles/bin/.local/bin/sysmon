@@ -245,7 +245,7 @@ title = (window.get("title") or "").replace("\n", " ")
 print(window.get("space") or "", window.get("id") or "", title)
 ') || true
   fi
-  [[ "$title" == "$HUB_TITLE" ]] && return 0
+  [[ -z "$title" || "$title" == "$HUB_TITLE" ]] && return 0
   printf '%s %s\n' "$space" "$win" >"$(return_path)"
 }
 
@@ -353,8 +353,10 @@ raise SystemExit(0 if window.get("app") == "kitty" and window.get("title") == sy
 }
 
 place_title_later() {
-  local title="$1" space
-  space="$(awk 'NR==1 { print $1 }' "$(return_path)" 2>/dev/null || true)"
+  local title="$1" space=""
+  if [[ "$title" == "$HUB_TITLE" ]]; then
+    space="$(awk 'NR==1 { print $1 }' "$(return_path)" 2>/dev/null || true)"
+  fi
   (
     local yabai id attempt
     yabai="$(yabai_bin)"
