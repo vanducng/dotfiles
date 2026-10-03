@@ -1,0 +1,3 @@
+model_provider = "cli_proxy"
+model = "claude-opus-5-5"
+model_reasoning_effort = "high"
