@@ -159,6 +159,7 @@ script-test:
 	@./scripts/ci/test-linux-bootstrap.sh
 	@./scripts/ci/test-yazi-config.sh
 	@./scripts/ci/test-audio-switch.sh
+	@./scripts/ci/test-tailscale-toggle.sh
 	@./scripts/ci/test-yabai-layout.sh
 	@./scripts/ci/test-sysmon.sh
 	@./scripts/ci/test-tmux-fingers-conf.sh

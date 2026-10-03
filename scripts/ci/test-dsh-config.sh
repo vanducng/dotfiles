@@ -23,12 +23,16 @@ import sys
 text = Path(sys.argv[1]).read_text()
 required = [
     "provider: cliproxyapi",
-    "model: grok-4.6",
+    "model: grok-4.7",
     "cliproxyapi:",
     "api: openai-responses",
     "baseURL: https://cli-proxy.dataplanelabs.com/v1",
     "apiKeyEnv: CLI_PROXY_API_KEY",
+    "id: grok-4.7",
     "id: grok-4.6",
+    "id: gpt-6.1-sol",
+    "id: gpt-6-sol",
+    "id: gpt-6-luna",
     "id: gpt-5.6-sol",
     "id: gpt-6-astra",
     "id: claude-fable-5",
@@ -47,10 +51,14 @@ if missing:
 if "sk-" in text or "apiKey:" in text:
     raise SystemExit("managed settings must not contain inline secrets")
 windows = {
+    "grok-4.7": ("500000", "32768"),
     "grok-4.6": ("500000", "32768"),
     "claude-fable-5": ("1000000", "65536"),
     "claude-fable-5-1": ("1000000", "65536"),
     "claude-opus-5-5": ("1000000", "65536"),
+    "gpt-6.1-sol": ("272000", "65536"),
+    "gpt-6-sol": ("272000", "65536"),
+    "gpt-6-luna": ("272000", "65536"),
     "gpt-6-astra": ("272000", "65536"),
     "gpt-5.6-sol": ("272000", "65536"),
     "claude-sonnet-4-6": ("1000000", "65536"),

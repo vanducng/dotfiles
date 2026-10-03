@@ -1,0 +1,4 @@
+# Host routes installed via the VPN gateway after the full tunnel is removed.
+# Names are resolved to A records at apply time.
+18.210.49.223
+cdljobnow.com

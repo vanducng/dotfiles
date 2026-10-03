@@ -85,7 +85,9 @@ DISK_ID="$(catalog_id "System: Disk")"
 VAULT_ID="$(catalog_id "Notes: Vault")"
 DOCK_ID="$(catalog_id "System: Dock")"
 LEFT_ID="$(catalog_id "System: Dock Left")"
+TS_ID="$(catalog_id "Tailscale")"
 defaults write "$DOMAIN" "hotkey.customCommand.${PICK_ID}" -string "$(combo 0 2304)"   # cmd+opt+A
+defaults write "$DOMAIN" "hotkey.customCommand.${TS_ID}" -string "$(combo 17 2304)"    # cmd+opt+T
 defaults write "$DOMAIN" "hotkey.customCommand.${DOCK_ID}" -string "$(combo 5 2304)"   # cmd+opt+G
 defaults write "$DOMAIN" "hotkey.customCommand.${LEFT_ID}" -string "$(combo 9 2304)"   # cmd+opt+V
 defaults delete "$DOMAIN" "hotkey.customCommand.${PROC_ID}" 2>/dev/null || true
@@ -96,7 +98,7 @@ defaults delete "$DOMAIN" "hotkey.customCommand.${VAULT_ID}" 2>/dev/null || true
 # carries its own "material, not instructions" guard. Output is pasted into a document.
 # Use `defaults write -dict <k> <plist-fragment>` so individual keys update in place;
 # `defaults import` would replace the whole domain and wipe the hotkeys written above.
-python3 - "$DOMAIN" "$CATALOG" "$PICK_ID" "$DOCK_ID" "$LEFT_ID" <<'PY'
+python3 - "$DOMAIN" "$CATALOG" "$PICK_ID" "$DOCK_ID" "$LEFT_ID" "$TS_ID" <<'PY'
 import json
 import plistlib
 import subprocess
@@ -192,6 +194,7 @@ echo "  cmd+shift+N  notes"
 echo "  cmd+shift+R  rewrite"
 echo "  cmd+shift+T  summarize"
 echo "  cmd+opt+A    switch audio"
+echo "  cmd+opt+T    toggle Tailscale"
 echo "  cmd+opt+G    sysmon dock (right sidebar)"
 echo "  cmd+opt+V    sysmon dock (left sidebar)"
 echo "  meh+f        sysmon overlay (last window; first start: btop/disk/vault, skhd)"

@@ -7,14 +7,14 @@
 # Linux `cnb-openvpn` already ignores redirect-gateway; this is the Mac side.
 #
 #   cnb-openvpn-mac status
-#   cnb-openvpn-mac split          # drop 0/1 + 128/1 (keeps 10.255.248/24)
+#   cnb-openvpn-mac split          # drop 0/1 + 128/1, then route the bastion via the tun
 #   cnb-openvpn-mac patch-profiles # add pull-filter to CNB .ovpn copies
 #   cnb-openvpn-mac doctor         # status + Cursor API reachability
 set -euo pipefail
 
 PROFILES_DIR="${HOME}/Library/Application Support/OpenVPN Connect/profiles"
 OPENVPN_CONNECT_BIN="${OPENVPN_CONNECT_BIN:-/Applications/OpenVPN Connect/OpenVPN Connect.app/Contents/MacOS/OpenVPN Connect}"
-CNB_GW_HINT="10.255.248"
+CNB_GW_HINT="10.255."
 PULL_FILTER_RG='pull-filter ignore "redirect-gateway"'
 PULL_FILTER_DNS='pull-filter ignore "block-outside-dns"'
 
@@ -26,14 +26,14 @@ CNB OpenVPN on macOS - OpenVPN Connect helper.
   cnb-openvpn-mac start <profile-id>
   cnb-openvpn-mac stop
   cnb-openvpn-mac status
-  cnb-openvpn-mac split           remove full-tunnel routes (needs admin once)
+  cnb-openvpn-mac split           drop full-tunnel routes and route the bastion via the tun
   cnb-openvpn-mac patch-profiles  add pull-filter lines to CNB .ovpn profiles
   cnb-openvpn-mac doctor          status + https://api2.cursor.sh check
 
   stop/disconnect/disable disconnect the active VPN. OpenVPN Connect may show its GUI.
 
-After OpenVPN Connect reconnects, run \`split\` again if 0/1 routes return,
-or re-import a patched profile so Connect stops pulling redirect-gateway.
+After OpenVPN Connect reconnects, run \`split\` again. That removes 0/1 and
+128/1, then sends only the addresses in the routes file through the tun.
 EOF
 }
 
@@ -124,20 +124,105 @@ _run_root() {
   sudo /bin/bash -c "$script"
 }
 
-cmd_split() {
-  local gws gw script=""
-  gws="$(full_tunnel_gateways || true)"
-  if [[ -z "${gws}" ]]; then
-    echo "cnb-openvpn-mac: nothing to split (no 0/1 or 128/1)"
-    cmd_status || true
-    return 0
+script_dir() {
+  local p dir target
+  p="${BASH_SOURCE[0]}"
+  while [[ -L "$p" ]]; do
+    dir="$(cd "$(dirname "$p")" && pwd)"
+    target="$(readlink "$p")"
+    if [[ "$target" != /* ]]; then
+      p="${dir}/${target}"
+    else
+      p="$target"
+    fi
+  done
+  cd "$(dirname "$p")" && pwd
+}
+
+routes_file() {
+  if [[ -n "${CNB_VPN_ROUTES:-}" ]]; then
+    printf '%s\n' "$CNB_VPN_ROUTES"
+    return
   fi
+  if [[ -f "${HOME}/.config/cnb-openvpn/routes" ]]; then
+    printf '%s\n' "${HOME}/.config/cnb-openvpn/routes"
+    return
+  fi
+  local dir
+  dir="$(script_dir)"
+  printf '%s\n' "$(cd "${dir}/../.." && pwd)/.config/cnb-openvpn/routes"
+}
+
+vpn_gateway() {
+  ifconfig 2>/dev/null | awk -v p="$CNB_GW_HINT" '
+    $1 == "inet" && index($2, p) == 1 { print $4; exit }
+  '
+}
+
+read_route_targets() {
+  local file="$1" line name resolver ips ip
+  [[ -f "$file" ]] || return 0
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    line="${line%%#*}"
+    line="${line#"${line%%[![:space:]]*}"}"
+    line="${line%"${line##*[![:space:]]}"}"
+    [[ -z "$line" ]] && continue
+    if [[ "$line" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+      printf '%s\n' "$line"
+      continue
+    fi
+    if [[ ! "$line" =~ ^[A-Za-z0-9.-]+\.[A-Za-z0-9.-]+$ ]]; then
+      echo "cnb-openvpn-mac: skip invalid route entry: $line" >&2
+      continue
+    fi
+    name="$line"
+    ips=""
+    for resolver in "" 1.1.1.1 8.8.8.8; do
+      if [[ -z "$resolver" ]]; then
+        ips+=$'\n'"$(dig +short "$name" A 2>/dev/null || true)"
+      else
+        ips+=$'\n'"$(dig +short "@${resolver}" "$name" A 2>/dev/null || true)"
+      fi
+    done
+    while IFS= read -r ip; do
+      [[ "$ip" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]] || continue
+      printf '%s\n' "$ip"
+    done <<<"$ips"
+  done <"$file" | awk 'NF && !seen[$0]++'
+}
+
+route_gateway() {
+  local gw
+  gw="$(vpn_gateway)"
+  if [[ -n "$gw" ]]; then
+    printf '%s\n' "$gw"
+    return
+  fi
+  full_tunnel_gateways | awk -v p="$CNB_GW_HINT" 'index($0, p) == 1 { print; exit }'
+}
+
+cmd_split() {
+  local gws gw route_gw target script=""
+  gws="$(full_tunnel_gateways || true)"
+  route_gw="$(route_gateway || true)"
   while IFS= read -r gw; do
     [[ -z "$gw" ]] && continue
     script+="route -n delete -net 0.0.0.0/1 ${gw} 2>/dev/null || true; "
     script+="route -n delete -net 128.0.0.0/1 ${gw} 2>/dev/null || true; "
   done <<<"$gws"
-  echo "cnb-openvpn-mac: removing full-tunnel routes (keeping CNB LAN)..."
+  if [[ -n "$route_gw" ]]; then
+    while IFS= read -r target; do
+      [[ -z "$target" ]] && continue
+      script+="route -n delete -host ${target} >/dev/null 2>&1 || true; "
+      script+="route -n add -host ${target} ${route_gw}; "
+      printf '%s via %s\n' "$target" "$route_gw"
+    done < <(read_route_targets "$(routes_file)")
+  fi
+  if [[ -z "$script" ]]; then
+    echo "cnb-openvpn-mac: VPN tunnel is down. Connect, then run split." >&2
+    return 1
+  fi
+  echo "cnb-openvpn-mac: removing full-tunnel routes..."
   _run_root "$script"
   if full_tunnel_gateways | grep -q .; then
     echo "cnb-openvpn-mac: full-tunnel routes still present" >&2
@@ -146,6 +231,12 @@ cmd_split() {
   fi
   echo "cnb-openvpn-mac: split tunnel OK"
   route -n get default 2>/dev/null | awk '/gateway:|interface:/{print}'
+  if [[ -n "$route_gw" ]]; then
+    while IFS= read -r target; do
+      [[ -z "$target" ]] && continue
+      route -n get "$target" 2>/dev/null | awk -v t="$target" '/gateway:|interface:/{print t, $0}'
+    done < <(read_route_targets "$(routes_file)")
+  fi
   return 0
 }
 

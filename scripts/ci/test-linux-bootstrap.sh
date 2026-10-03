@@ -67,6 +67,15 @@ else
   fail "cnb-openvpn-mac start/stop commands are incorrect"
 fi
 rm -f "$mock_openvpn"
+routes_file="$ROOT/dotfiles/bin/.config/cnb-openvpn/routes"
+if grep -q 'read_route_targets' "$mac_ovpn" \
+  && grep -qx '18.210.49.223' "$routes_file" \
+  && grep -qx 'cdljobnow.com' "$routes_file" \
+  && ! grep -q 'snowflake' "$routes_file"; then
+  pass "cnb-openvpn-mac routes bastion and cdljobnow.com"
+else
+  fail "cnb-openvpn-mac routes file must list the bastion and cdljobnow.com"
+fi
 bash -n "$ROOT/dotfiles/bin/.local/bin/dpl-remote" && pass "dpl-remote parses" || fail "dpl-remote syntax"
 bash -n "$ROOT/dotfiles/homelab/.config/homelab/cdp-chrome" && pass "cdp-chrome parses" || fail "cdp-chrome syntax"
 bash -n "$ROOT/dotfiles/homelab/.config/homelab/install-chrome" && pass "install-chrome parses" || fail "install-chrome syntax"

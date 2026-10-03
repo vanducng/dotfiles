@@ -66,6 +66,66 @@
           "maxTokens": 65536
         },
         {
+          "id": "gpt-6.1-sol",
+          "name": "GPT 6.1 Sol",
+          "reasoning": true,
+          "thinkingLevelMap": {
+            "off": "none",
+            "minimal": null,
+            "low": "low",
+            "medium": "medium",
+            "high": "high",
+            "xhigh": "xhigh",
+            "max": "max"
+          },
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 272000,
+          "maxTokens": 65536
+        },
+        {
+          "id": "gpt-6-sol",
+          "name": "GPT 6 Sol",
+          "reasoning": true,
+          "thinkingLevelMap": {
+            "off": "none",
+            "minimal": null,
+            "low": "low",
+            "medium": "medium",
+            "high": "high",
+            "xhigh": "xhigh",
+            "max": "max"
+          },
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 272000,
+          "maxTokens": 65536
+        },
+        {
+          "id": "gpt-6-luna",
+          "name": "GPT 6 Luna",
+          "reasoning": true,
+          "thinkingLevelMap": {
+            "off": "none",
+            "minimal": null,
+            "low": "low",
+            "medium": "medium",
+            "high": "high",
+            "xhigh": "xhigh",
+            "max": "max"
+          },
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 272000,
+          "maxTokens": 65536
+        },
+        {
           "id": "gpt-6-astra",
           "name": "GPT 6 Astra",
           "reasoning": true,
@@ -512,6 +572,15 @@
     },
     "openai-codex": {
       "modelOverrides": {
+        "gpt-6-luna": {
+          "contextWindow": 272000
+        },
+        "gpt-6.1-sol": {
+          "contextWindow": 272000
+        },
+        "gpt-6-sol": {
+          "contextWindow": 272000
+        },
         "gpt-5.6-luna": {
           "contextWindow": 272000
         },

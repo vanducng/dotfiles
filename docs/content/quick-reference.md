@@ -33,8 +33,8 @@ tail -n 100 ~/.config/herdr/herdr-server.log
 | `meh + v` | Grok Bot | `meh + q` | Music |
 | `ctrl+shift+hjkl` | Focus Window | `cmd+shift+h/l` | Move Window |
 | `hyper + arrows` | Resize Window | `hyper + f` | Fullscreen |
-| `cmd+opt+A` | Switch audio (Tinycast) | `cmd+space` | Tinycast palette |
-| `cmd+shift+N` | Tinycast notes | | |
+| `cmd+opt+A` | Switch audio (Tinycast) | `cmd+opt+T` | Toggle Tailscale |
+| `cmd+space` | Tinycast palette | `cmd+shift+N` | Tinycast notes |
 
 ### Herdr (Prefix: C-x)
 | Key | Action | Key | Action |
