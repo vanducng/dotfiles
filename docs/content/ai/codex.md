@@ -105,19 +105,19 @@ Use these exact gateway model IDs for the requested choices:
 | Opus 5.5 | `claude-opus-5-5` | `high` |
 | Sonnet 5.5 | `claude-sonnet-5-5` | `medium` |
 | GLM 5.3 | `glm-5.3` | `high` |
-| Muse Spark 1.3 | `muse-spark-1.3` | `high` |
+| Muse Spark 1.3 Contributor | `muse-spark-1.3-contributor` | `high` |
 | Sol 6.1 | `gpt-6.1-sol` | `high` |
 | Astra 6 | `gpt-6-astra` | `high` |
 
-For Muse, add `--disable apps` because the gateway rejects Codex's Apps tool schema for that model:
+For Muse Contributor, add `--disable apps` because the gateway rejects Codex's Apps tool schema for that model:
 
 ```bash
-codex -p cliproxy -m muse-spark-1.3 -c model_reasoning_effort='"high"' --disable apps
+codex -p cliproxy -m muse-spark-1.3-contributor -c model_reasoning_effort='"high"' --disable apps
 ```
 
 For a single non-interactive prompt, use `codex exec -p cliproxy -m claude-opus-5-5 -c model_reasoning_effort='"high"' 'Summarize this repository'`.
 
-Pi's `cliproxyapi` and Codex's `cli_proxy` use the same gateway model IDs, but their local model lists are independent. Pi currently lists five of the seven IDs above; it does not list `claude-sonnet-5-5` or plain `muse-spark-1.3`.
+Pi's `cliproxyapi` and Codex's `cli_proxy` use the same gateway model IDs, but their local model lists are independent. Pi currently lists six of the seven IDs above; it does not list `claude-sonnet-5-5`.
 
 In Codex CLI 0.160.0, `/model` shows the bundled GPT catalog, not the proxy's full model list. It can also save a selected GPT model into the symlinked profile. Use `-m` to choose a proxy model explicitly.
 
@@ -151,10 +151,10 @@ The CLI Proxy `/v1/models` endpoint returned these 57 IDs on 2026-10-04:
 | Muse | `muse-spark-1.1`, `muse-spark-1.2`, `muse-spark-1.2-contributor`, `muse-spark-1.3`, `muse-spark-1.3-contributor` |
 | Specialized | `codex-auto-review`, `gpt-image-1.5`, `gpt-image-2`, `gpt-image-2.5`, `gpt-image-2.5-flare`, `gpt-image-2.5-sunburst`, `grok-imagine-image`, `grok-imagine-image-2.0`, `grok-imagine-image-quality`, `grok-imagine-video`, `grok-imagine-video-1.5`, `grok-imagine-video-1.5-preview` |
 
-The endpoint lists availability, not Codex compatibility or supported effort levels. Image, video, and `codex-auto-review` IDs are specialized models, not general Codex chat choices. To see the current catalog, run:
+The endpoint lists availability, not Codex compatibility or supported effort levels. Image, video, and `codex-auto-review` IDs are specialized models, not general Codex chat choices. Use the CLIProxyAPI key and URL to check the current catalog:
 
 ```bash
-curl -fsS -H "Authorization: Bearer $CLI_PROXY_API_KEY" "${CLI_PROXY_BASE_URL:?Set CLI_PROXY_BASE_URL}/v1/models" | jq -r '.data[].id' | sort
+curl -fsS -H "Authorization: Bearer $CLI_PROXY_API_KEY" 'https://cli-proxy.dataplanelabs.com/v1/models' | jq -r '.data[].id' | sort
 ```
 
 ### API key for Desktop
