@@ -15,13 +15,13 @@ name = "xAI Official"
 git = "https://github.com/xai-org/plugin-marketplace.git"
 
 [models]
-default = "grok-4.5"
-web_search = "grok-4.5"
+default = "grok-4.7"
+web_search = "grok-4.7"
 
 [ui]
 permission_mode = "auto"
 max_thoughts_width = 120
-fork_secondary_model = "grok-4.5"
+fork_secondary_model = "grok-4.7"
 yolo = false
 compact_mode = false
 simple_mode = true

@@ -7,13 +7,13 @@ default_provider = 'zai'
 [providers.openai]
 kind = 'openai'
 base_url = 'https://api.openai.com/v1'
-model = 'gpt-5.5'
+model = 'gpt-6-sol'
 auth = 'oauth'
 
 [providers.zai]
 kind = 'anthropic'
 base_url = 'https://cli-proxy.dataplanelabs.com'
-model = 'glm-5.2'
+model = 'glm-5.3'
 auth_env = 'CLI_PROXY_API_KEY'
 auth_command = ['sh', '-lc', 'direnv exec ~ printenv CLI_PROXY_API_KEY']
 auth = 'bearer'

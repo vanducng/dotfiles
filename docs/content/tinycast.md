@@ -22,6 +22,7 @@ make setup-tinycast
 | `cmd+shift+R` | Rewrite selected text |
 | `cmd+shift+T` | Summarize selected text |
 | `cmd+opt+A` | Switch audio output (skips the full login zsh) |
+| `cmd+opt+T` | Toggle Tailscale (connect or disconnect, then a notification) |
 | `meh+f` | Sysmon overlay, centered (last window; first start creates `btop` / disk / vault) |
 | `cmd+opt+G` | Overlay docked on the right (~1/4) |
 | `cmd+opt+V` | Overlay docked on the left (~1/4) |
@@ -54,6 +55,17 @@ audio-switch unhide kuycon
 The picker hides display and virtual devices (Kuycon, Microsoft Teams, Jump Desktop) by default. `hide` / `unhide` edit `~/.config/audio-switch/hidden` (substring match). Those devices stay installed; they are only omitted from the list.
 
 Needs `switchaudio-osx` and `blueutil` from `scripts/macos-deps.sh`. Switching output does not disconnect Bluetooth; use Audio: Disconnect for that.
+
+## Tailscale
+
+`cmd+opt+T` runs `tailscale-toggle` the same way Switch Audio runs: a Tinycast Custom Command, no login zsh. It disconnects when Tailscale is running and connects again with `tailscale up`, which keeps the saved profile. A second press while that is in flight is ignored. The menu bar is not opened.
+
+```bash
+tailscale-toggle
+tailscale-toggle status
+```
+
+Needs the Tailscale app. Palette search finds `tailscale`.
 
 ## System monitor
 

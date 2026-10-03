@@ -13,6 +13,19 @@
     "iconSymbol": "hifispeaker"
   },
   {
+    "id": "6f1a9c3e-8b24-4d70-a5e2-1c7d4b9e0f33",
+    "name": "Tailscale",
+    "command": "exec \"$HOME/.local/bin/tailscale-toggle\"",
+    "isEnabled": true,
+    "loadsShellEnvironment": false,
+    "requiresConfirmation": false,
+    "showsConfirmation": false,
+    "arguments": [],
+    "showsOutput": false,
+    "workingDirectory": null,
+    "iconSymbol": "network"
+  },
+  {
     "id": "3a9f2d81-6c14-4e08-b7a5-21d0e84c9f33",
     "name": "Audio: Mac Speakers",
     "command": "exec \"$HOME/.local/bin/audio-switch\" speakers",

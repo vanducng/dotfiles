@@ -23,7 +23,7 @@ If `~/.grok/config.toml` already exists as a real file, back it up before the fi
 
 ## Managed Settings
 
-- Default model `grok-4.5` with auto permission mode (fewer prompts, deny rules and hooks still apply).
+- Default model `grok-4.7` (web search and fork secondary use the same model) with auto permission mode (fewer prompts, deny rules and hooks still apply).
 - Vim scrollback navigation on (`vim_mode = true`); prompt stays readline (`simple_mode = true`).
 - Attention sounds and Telegram notify fire from native lifecycle hooks (`Stop` / `Notification`).
 - Claude/Cursor **skills, rules, agents, and MCPs** stay enabled via `[compat.*]`.

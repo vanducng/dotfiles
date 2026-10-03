@@ -1,0 +1,176 @@
+#!/bin/bash
+set -euo pipefail
+
+usage() {
+  cat <<'EOF'
+Toggle the macOS Tailscale connection.
+
+  tailscale-toggle           disconnect if running, otherwise connect
+  tailscale-toggle status    print BackendState
+  tailscale-toggle up
+  tailscale-toggle down
+
+Uses the Tailscale.app CLI. A second press while a toggle is in flight is ignored.
+EOF
+}
+
+resolve_tailscale() {
+  local candidate
+  if [[ -n "${TAILSCALE_BIN:-}" ]]; then
+    if [[ -x "$TAILSCALE_BIN" ]]; then
+      printf '%s\n' "$TAILSCALE_BIN"
+      return 0
+    fi
+    echo "tailscale-toggle: not executable: $TAILSCALE_BIN" >&2
+    return 1
+  fi
+  for candidate in \
+    "/Applications/Tailscale.app/Contents/MacOS/Tailscale" \
+    "/opt/homebrew/bin/tailscale" \
+    "/usr/local/bin/tailscale"
+  do
+    if [[ -x "$candidate" ]]; then
+      printf '%s\n' "$candidate"
+      return 0
+    fi
+  done
+  if command -v tailscale >/dev/null 2>&1; then
+    command -v tailscale
+    return 0
+  fi
+  echo "tailscale-toggle: Tailscale.app is not installed" >&2
+  return 1
+}
+
+notify() {
+  local title="$1" message="$2"
+  if [[ "${TAILSCALE_TOGGLE_QUIET:-}" == "1" ]]; then
+    printf '%s\n' "$title" "$message"
+    return 0
+  fi
+  python3 - "$title" "$message" <<'PY' || true
+import subprocess
+import sys
+
+def q(value: str) -> str:
+    return '"' + value.replace("\\", "\\\\").replace('"', '\\"') + '"'
+
+title, message = sys.argv[1], sys.argv[2]
+subprocess.run(
+    ["osascript", "-e", f"display notification {q(message)} with title {q(title)}"],
+    check=False,
+    stdout=subprocess.DEVNULL,
+    stderr=subprocess.DEVNULL,
+)
+PY
+}
+
+backend_state() {
+  local json
+  if ! json="$("$TAILSCALE" status --json 2>/dev/null)"; then
+    printf '%s\n' "Unreachable"
+    return 0
+  fi
+  python3 -c 'import json,sys; print(json.load(sys.stdin).get("BackendState") or "Unknown")' <<<"$json"
+}
+
+lock_dir() {
+  printf '%s\n' "${TAILSCALE_TOGGLE_LOCK:-${TMPDIR:-/tmp}/tailscale-toggle.lock}"
+}
+
+acquire_lock() {
+  local dir pidfile pid
+  dir="$(lock_dir)"
+  pidfile="$dir/pid"
+  if mkdir "$dir" 2>/dev/null; then
+    printf '%s\n' "$$" >"$pidfile"
+    LOCK_DIR="$dir"
+    return 0
+  fi
+  if [[ -f "$pidfile" ]]; then
+    pid="$(cat "$pidfile" 2>/dev/null || true)"
+    if [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null; then
+      return 1
+    fi
+  fi
+  rm -rf "$dir"
+  if mkdir "$dir" 2>/dev/null; then
+    printf '%s\n' "$$" >"$pidfile"
+    LOCK_DIR="$dir"
+    return 0
+  fi
+  return 1
+}
+
+release_lock() {
+  if [[ -n "${LOCK_DIR:-}" ]]; then
+    rm -rf "$LOCK_DIR"
+    LOCK_DIR=""
+  fi
+}
+
+cmd_up() {
+  "$TAILSCALE" up --timeout 20s
+}
+
+cmd_down() {
+  "$TAILSCALE" down
+}
+
+connected_message() {
+  local ip
+  ip="$("$TAILSCALE" ip -4 2>/dev/null | head -n 1 || true)"
+  if [[ -n "$ip" ]]; then
+    printf 'Connected %s\n' "$ip"
+  else
+    printf 'Connected\n'
+  fi
+}
+
+cmd_toggle() {
+  local state
+  if ! acquire_lock; then
+    return 0
+  fi
+  trap release_lock EXIT
+  state="$(backend_state)"
+  case "$state" in
+    Running|Starting)
+      cmd_down
+      notify "Tailscale" "Disconnected"
+      ;;
+    NeedsLogin|NeedsMachineAuth)
+      open -g -a Tailscale >/dev/null 2>&1 || true
+      notify "Tailscale" "Needs login"
+      return 1
+      ;;
+    Unreachable)
+      open -g -a Tailscale >/dev/null 2>&1 || true
+      notify "Tailscale" "Tailscale is not running"
+      return 1
+      ;;
+    *)
+      if ! cmd_up; then
+        notify "Tailscale" "Could not connect"
+        return 1
+      fi
+      notify "Tailscale" "$(connected_message)"
+      ;;
+  esac
+}
+
+TAILSCALE="$(resolve_tailscale)"
+LOCK_DIR=""
+
+case "${1:-toggle}" in
+  -h|--help|help) usage ;;
+  status) backend_state ;;
+  up) cmd_up ;;
+  down) cmd_down ;;
+  toggle|"") cmd_toggle ;;
+  *)
+    echo "tailscale-toggle: unknown command: $1" >&2
+    usage >&2
+    exit 1
+    ;;
+esac

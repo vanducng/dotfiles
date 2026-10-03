@@ -67,6 +67,15 @@ else
   fail "work-vpn-mac start/stop commands are incorrect"
 fi
 rm -f "$mock_openvpn"
+routes_file="$ROOT/dotfiles/bin/.config/work-vpn/routes"
+if grep -q 'read_route_targets' "$mac_ovpn" \
+  && grep -qx '203.0.113.10' "$routes_file" \
+  && grep -qx 'jobs.example.com' "$routes_file" \
+  && ! grep -q 'snowflake' "$routes_file"; then
+  pass "work-vpn-mac routes bastion and jobs.example.com"
+else
+  fail "work-vpn-mac routes file must list the bastion and jobs.example.com"
+fi
 bash -n "$ROOT/dotfiles/bin/.local/bin/lab-remote" && pass "lab-remote parses" || fail "lab-remote syntax"
 bash -n "$ROOT/dotfiles/homelab/.config/homelab/cdp-chrome" && pass "cdp-chrome parses" || fail "cdp-chrome syntax"
 bash -n "$ROOT/dotfiles/homelab/.config/homelab/install-chrome" && pass "install-chrome parses" || fail "install-chrome syntax"
