@@ -10,11 +10,11 @@ Codex CLI configuration is managed from this repository with GNU Stow.
 make stow-codex
 ```
 
-This links `dotfiles/codex/.codex/config.toml` to `~/.codex/config.toml` and installs the managed hook scripts under `~/.codex/hooks/`.
+This links `dotfiles/codex/.codex/config.toml` and the model profiles into `~/.codex/`, along with the managed attention-sound hook.
 
 ## Managed Settings
 
-- High reasoning effort and pragmatic personality. The managed config does not pin `model` or `model_provider`, so Codex keeps the ChatGPT account default. The CLI Proxy catalog's current GPT flagship is `gpt-6.1-sol`.
+- High reasoning effort and pragmatic personality. The managed config does not pin `model` or `model_provider`, so Codex keeps the ChatGPT account default.
 - `web_search = "cached"` for default web access with lower live-page prompt-injection exposure.
 - `/goal` is pinned on with `features.goals = true`.
 - Agent workflow features are pinned on, including multi-agent tools, hooks, shell snapshots, workspace dependencies, browser use, computer use, image generation, and plugin support.
@@ -61,6 +61,8 @@ Codex does not currently expose Claude Code's `Notification` hook event. The clo
 Restart Codex after changing hooks. If Codex prompts to trust hooks for a workspace, accept the trust prompt before expecting hook execution.
 :::
 
+The other commands in `hooks.json` use Python scripts installed separately under `~/.codex/hooks/`. After changing a hook command, review it in Codex with `/hooks`. Codex skips changed hooks until they are trusted.
+
 ## Feature Checks
 
 ```bash
@@ -85,7 +87,63 @@ goals  stable  true
 
 Restart Codex after changing feature flags because TUI command availability is loaded at startup.
 
-## CLI Proxy API key (Desktop vs CLI)
+## CLI Proxy
+
+### Select a CLI Proxy model
+
+The base config keeps ChatGPT OAuth as the default. These profiles use the same `model_providers.cli_proxy` gateway:
+
+| Profile | Default model | Effort |
+| --- | --- | --- |
+| `grok` | `grok-4.7` | `high` |
+| `opus` | `claude-opus-5-5` | `high` |
+| `sonnet` | `claude-sonnet-5-5` | `medium` |
+| `glm` | `glm-5.3` | `high` |
+| `muse` | `muse-spark-1.3` | `high` |
+| `sol` | `gpt-6.1-sol` | `high` |
+| `astra` | `gpt-6-astra` | `high` |
+
+The Muse profile sets `features.apps = false` because the gateway rejects Codex's Apps tool schema for that model. Shell tools still work.
+
+Start Codex with a profile, or override its model with `-m` and effort with `-c`. `-m` alone does not switch providers:
+
+```bash
+codex -p grok
+codex -p opus
+codex -p sonnet
+codex -p glm
+codex -p muse
+codex -p sol
+codex -p astra
+codex -p grok -m grok-4.6 -c model_reasoning_effort='"medium"'
+```
+
+For a single non-interactive prompt, use `codex exec -p opus 'Summarize this repository'`.
+
+In Codex CLI 0.160.0, `/model` shows the bundled GPT catalog, not the proxy's full model list. It can also save a selected GPT model into the symlinked profile. To change between the named proxy models, leave the current session and start Codex with the desired profile. Use `-m` when you need another ID from the proxy catalog.
+
+If Claude returns `not supported when using Codex with a ChatGPT account`, Codex selected the default `openai` provider. Add `-p opus` or `-p sonnet` and check that `CLI_PROXY_API_KEY` is set. Codex reads the key from the environment; it does not store the key in the profile. [Codex configuration reference](https://learn.chatgpt.com/docs/config-file/config-reference)
+
+Effort support depends on the model and gateway. Start with `low`, `medium`, or `high`. Try `xhigh` or `max` only when the model supports them.
+
+The CLI Proxy `/v1/models` endpoint returned these 57 IDs on 2026-10-04:
+
+| Family | Model IDs |
+| --- | --- |
+| Claude | `claude-3-5-haiku-20241022`, `claude-3-7-sonnet-20250219`, `claude-fable-5`, `claude-fable-5-1`, `claude-haiku-4-5-20251001`, `claude-opus-4-1-20250805`, `claude-opus-4-20250514`, `claude-opus-4-5-20251101`, `claude-opus-4-6`, `claude-opus-4-7`, `claude-opus-4-8`, `claude-opus-5`, `claude-opus-5-5`, `claude-sonnet-4-20250514`, `claude-sonnet-4-5-20250929`, `claude-sonnet-4-6`, `claude-sonnet-5`, `claude-sonnet-5-5` |
+| GLM | `glm-5.2`, `glm-5.3` |
+| GPT | `gpt-5.5`, `gpt-5.6-luna`, `gpt-5.6-sol`, `gpt-5.6-terra`, `gpt-6-astra`, `gpt-6-luna`, `gpt-6-sol`, `gpt-6.1-sol` |
+| Grok | `grok-3-mini`, `grok-3-mini-fast`, `grok-4.20-0309-non-reasoning`, `grok-4.20-0309-reasoning`, `grok-4.20-multi-agent-0309`, `grok-4.3`, `grok-4.5`, `grok-4.6`, `grok-4.7`, `grok-4.7-build-fast`, `grok-build-0.1`, `grok-composer-2.5-fast` |
+| Muse | `muse-spark-1.1`, `muse-spark-1.2`, `muse-spark-1.2-contributor`, `muse-spark-1.3`, `muse-spark-1.3-contributor` |
+| Specialized | `codex-auto-review`, `gpt-image-1.5`, `gpt-image-2`, `gpt-image-2.5`, `gpt-image-2.5-flare`, `gpt-image-2.5-sunburst`, `grok-imagine-image`, `grok-imagine-image-2.0`, `grok-imagine-image-quality`, `grok-imagine-video`, `grok-imagine-video-1.5`, `grok-imagine-video-1.5-preview` |
+
+The endpoint lists availability, not Codex compatibility or supported effort levels. Image, video, and `codex-auto-review` IDs are specialized models, not general Codex chat choices. To see the current catalog, run:
+
+```bash
+curl -fsS -H "Authorization: Bearer $CLI_PROXY_API_KEY" "${CLI_PROXY_BASE_URL:?Set CLI_PROXY_BASE_URL}/v1/models" | jq -r '.data[].id' | sort
+```
+
+### API key for Desktop
 
 Custom provider `cli_proxy` reads `CLI_PROXY_API_KEY` from the **process environment** (`env_key` in `config.toml`). Codex CLI inherits your shell exports; **Codex Desktop** (ChatGPT.app launched from Dock/Spotlight) does not.
 
@@ -130,7 +188,7 @@ Then fully quit and reopen ChatGPT/Codex Desktop.
 
 ## Local State
 
-Only `config.toml` and hook scripts under `~/.codex/hooks/` are repo-managed.
+The base config, seven profiles, `hooks.json`, `hooks/attention-sound.sh`, and `bin/node-repl-mcp.sh` are repo-managed.
 
 :::danger
 Do not commit `~/.codex/auth.json`, account files, SQLite databases, history, logs, generated images, model caches, or temporary plugin snapshots.
