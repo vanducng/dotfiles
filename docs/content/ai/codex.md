@@ -10,7 +10,7 @@ Codex CLI configuration is managed from this repository with GNU Stow.
 make stow-codex
 ```
 
-This links `dotfiles/codex/.codex/config.toml` and the model profiles into `~/.codex/`, along with the managed attention-sound hook.
+This links `dotfiles/codex/.codex/config.toml` and `cliproxy.config.toml` into `~/.codex/`, along with the managed attention-sound hook.
 
 ## Managed Settings
 
@@ -91,38 +91,52 @@ Restart Codex after changing feature flags because TUI command availability is l
 
 ### Select a CLI Proxy model
 
-The base config keeps ChatGPT OAuth as the default. These profiles use the same `model_providers.cli_proxy` gateway:
-
-| Profile | Default model | Effort |
-| --- | --- | --- |
-| `grok` | `grok-4.7` | `high` |
-| `opus` | `claude-opus-5-5` | `high` |
-| `sonnet` | `claude-sonnet-5-5` | `medium` |
-| `glm` | `glm-5.3` | `high` |
-| `muse` | `muse-spark-1.3` | `high` |
-| `sol` | `gpt-6.1-sol` | `high` |
-| `astra` | `gpt-6-astra` | `high` |
-
-The Muse profile sets `features.apps = false` because the gateway rejects Codex's Apps tool schema for that model. Shell tools still work.
-
-Start Codex with a profile, or override its model with `-m` and effort with `-c`. `-m` alone does not switch providers:
+The base config keeps ChatGPT OAuth as the default. The single `cliproxy` profile selects the `cli_proxy` provider and defaults to Grok 4.7 with high effort. Override the model with `-m` and effort with lowercase `-c`. Uppercase `-C` sets the working directory.
 
 ```bash
-codex -p grok
-codex -p opus
-codex -p sonnet
-codex -p glm
-codex -p muse
-codex -p sol
-codex -p astra
-codex -p grok -m grok-4.6 -c model_reasoning_effort='"medium"'
+codex -p cliproxy -m claude-opus-5-5 -c model_reasoning_effort='"high"'
 ```
 
-For a single non-interactive prompt, use `codex exec -p opus 'Summarize this repository'`.
+Use these exact gateway model IDs for the requested choices:
 
-In Codex CLI 0.160.0, `/model` shows the bundled GPT catalog, not the proxy's full model list. It can also save a selected GPT model into the symlinked profile. To change between the named proxy models, leave the current session and start Codex with the desired profile. Use `-m` when you need another ID from the proxy catalog.
+| Model | ID | Effort |
+| --- | --- | --- |
+| Grok 4.7 | `grok-4.7` | `high` |
+| Opus 5.5 | `claude-opus-5-5` | `high` |
+| Sonnet 5.5 | `claude-sonnet-5-5` | `medium` |
+| GLM 5.3 | `glm-5.3` | `high` |
+| Muse Spark 1.3 | `muse-spark-1.3` | `high` |
+| Sol 6.1 | `gpt-6.1-sol` | `high` |
+| Astra 6 | `gpt-6-astra` | `high` |
 
-If Claude returns `not supported when using Codex with a ChatGPT account`, Codex selected the default `openai` provider. Add `-p opus` or `-p sonnet` and check that `CLI_PROXY_API_KEY` is set. Codex reads the key from the environment; it does not store the key in the profile. [Codex configuration reference](https://learn.chatgpt.com/docs/config-file/config-reference)
+For Muse, add `--disable apps` because the gateway rejects Codex's Apps tool schema for that model:
+
+```bash
+codex -p cliproxy -m muse-spark-1.3 -c model_reasoning_effort='"high"' --disable apps
+```
+
+For a single non-interactive prompt, use `codex exec -p cliproxy -m claude-opus-5-5 -c model_reasoning_effort='"high"' 'Summarize this repository'`.
+
+Pi's `cliproxyapi` and Codex's `cli_proxy` use the same gateway model IDs, but their local model lists are independent. Pi currently lists five of the seven IDs above; it does not list `claude-sonnet-5-5` or plain `muse-spark-1.3`.
+
+In Codex CLI 0.160.0, `/model` shows the bundled GPT catalog, not the proxy's full model list. It can also save a selected GPT model into the symlinked profile. Use `-m` to choose a proxy model explicitly.
+
+### Resume a stopped session with another model
+
+Run these from the same project directory as the saved session:
+
+```bash
+codex resume -p cliproxy -m claude-sonnet-5-5 -c model_reasoning_effort='"medium"' --last
+codex resume -p cliproxy -m gpt-6-astra -c model_reasoning_effort='"high"' "<session-id>"
+```
+
+`--last` resumes the most recent session in the current directory. Use a session ID to select a specific conversation, or run `codex resume -p cliproxy -m claude-opus-5-5` to pick one. Add `--all` to the picker if the session was started in another directory. Codex prints the session ID when you exit. After an interrupted turn, tell the new model what work to continue. [Codex resume reference](https://learn.chatgpt.com/docs/developer-commands)
+
+This keeps the saved conversation while changing the model for the next turn. A Grok to Sonnet switch and a Sonnet to Sol switch both kept context in CLI 0.160.0. All models in this profile share the same CLI Proxy gateway, so a gateway outage or provider-wide quota limit affects them all. Switching a CLI Proxy session to ChatGPT OAuth failed in a local test with `invalid_encrypted_content`; [Codex tracks this cross-provider history issue](https://github.com/openai/codex/issues/17541). Keep the saved session and retry when the gateway is available.
+
+If Claude returns `not supported when using Codex with a ChatGPT account`, Codex selected the default `openai` provider. Add `-p cliproxy` and check that `CLI_PROXY_API_KEY` is set. Codex reads the key from the environment; it does not store the key in the profile. [Codex configuration reference](https://learn.chatgpt.com/docs/config-file/config-reference)
+
+The profile pins `model_provider = "cli_proxy"`. An invalid proxy key returned HTTP 401 in a live test, without falling back to ChatGPT OAuth.
 
 Effort support depends on the model and gateway. Start with `low`, `medium`, or `high`. Try `xhigh` or `max` only when the model supports them.
 
@@ -188,7 +202,7 @@ Then fully quit and reopen ChatGPT/Codex Desktop.
 
 ## Local State
 
-The base config, seven profiles, `hooks.json`, `hooks/attention-sound.sh`, and `bin/node-repl-mcp.sh` are repo-managed.
+The base config, `cliproxy.config.toml`, `hooks.json`, `hooks/attention-sound.sh`, and `bin/node-repl-mcp.sh` are repo-managed.
 
 :::danger
 Do not commit `~/.codex/auth.json`, account files, SQLite databases, history, logs, generated images, model caches, or temporary plugin snapshots.
