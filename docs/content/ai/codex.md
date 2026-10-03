@@ -154,7 +154,7 @@ The CLI Proxy `/v1/models` endpoint returned these 57 IDs on 2026-10-04:
 The endpoint lists availability, not Codex compatibility or supported effort levels. Image, video, and `codex-auto-review` IDs are specialized models, not general Codex chat choices. Use the CLIProxyAPI key and URL to check the current catalog:
 
 ```bash
-curl -fsS -H "Authorization: Bearer $CLI_PROXY_API_KEY" 'https://cli-proxy.dataplanelabs.com/v1/models' | jq -r '.data[].id' | sort
+curl -fsS -H "Authorization: Bearer ${CLI_PROXY_API_KEY:?Set CLI_PROXY_API_KEY}" "${CLI_PROXY_BASE_URL:?Set CLI_PROXY_BASE_URL}/v1/models" | jq -r '.data[].id' | sort
 ```
 
 ### API key for Desktop
