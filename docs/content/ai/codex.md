@@ -10,7 +10,7 @@ Codex CLI configuration is managed from this repository with GNU Stow.
 make stow-codex
 ```
 
-This links `dotfiles/codex/.codex/config.toml` and `cliproxy.config.toml` into `~/.codex/`, along with the managed attention-sound hook.
+This links `dotfiles/codex/.codex/config.toml`, `cliproxy.config.toml`, and `cliproxy-muse.config.toml` into `~/.codex/`, along with the managed attention-sound hook.
 
 ## Managed Settings
 
@@ -114,6 +114,8 @@ For Muse Contributor, add `--disable apps` because the gateway rejects Codex's A
 ```bash
 codex -p cliproxy -m muse-spark-1.3-contributor -c model_reasoning_effort='"high"' --disable apps
 ```
+
+The `cliproxy-muse` profile does the same without the flag, for launchers that cannot pass it, such as OpenRig seats: `codex -p cliproxy-muse`.
 
 For a single non-interactive prompt, use `codex exec -p cliproxy -m claude-opus-5-5 -c model_reasoning_effort='"high"' 'Summarize this repository'`.
 
