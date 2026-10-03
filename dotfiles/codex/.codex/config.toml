@@ -32,9 +32,6 @@ trust_level = "trusted"
 [projects."/Users/vanducng/git/work/cnb/cnb-rnd-bridge"]
 trust_level = "trusted"
 
-[projects."/Users/vanducng/git/work/cnb/products/cnb-ai"]
-trust_level = "trusted"
-
 [projects."/Users/vanducng/git/work/bhcoe/harmony"]
 trust_level = "trusted"
 
