@@ -1,0 +1,7 @@
+# The gateway rejects Codex's Apps tool schema for Muse.
+model_provider = "cli_proxy"
+model = "muse-spark-1.3-contributor"
+model_reasoning_effort = "high"
+
+[features]
+apps = false
