@@ -1,3 +1,0 @@
-model_provider = "cli_proxy"
-model = "grok-4.7"
-model_reasoning_effort = "high"
