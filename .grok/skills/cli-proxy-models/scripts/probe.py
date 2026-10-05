@@ -43,10 +43,23 @@ def probe_launch(command):
         reply = redact(out or err)[:160] or "no reply"
     else:
         status = "ok"
-    return {"command": command, "status": status, "detail": reply}
+    return {"command": command, "status": status, "detail": redact(reply)}
 
 
 def self_test():
+    key = "unit-test-key-value"
+    previous = os.environ.get("CLI_PROXY_API_KEY")
+    os.environ["CLI_PROXY_API_KEY"] = key
+    try:
+        _self_test(key)
+    finally:
+        if previous is None:
+            os.environ.pop("CLI_PROXY_API_KEY", None)
+        else:
+            os.environ["CLI_PROXY_API_KEY"] = previous
+
+
+def _self_test(key):
     rows = [
         {"id": "gpt-6.1-sol", "channel": "ccx", "status": "ok", "detail": "hi"},
         {"id": "claude-3-5-haiku-20241022", "channel": "ccx", "status": "missing", "detail": "not_found"},
@@ -55,9 +68,12 @@ def self_test():
         {"id": "grok-imagine-video", "channel": "video", "status": "accepted", "detail": "request id"},
     ]
     launches = [{"command": "ccx gpt-6.1-sol --effort high", "status": "ok", "detail": "hi"}]
+    rows[0]["detail"] = redact("token " + key)
     page = render("2026-10-05", rows, launches)
-    assert "super-secret-token" not in page
+    assert key not in page
+    assert key not in redact("bearer " + key)
     assert 'title: "CLI Proxy model status"' in page
+    assert "## Videos" not in render("2026-10-05", rows[:3], launches)
     for row in rows:
         assert f"`{row['id']}`" in page
     commands = documented()

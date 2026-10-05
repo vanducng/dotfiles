@@ -73,9 +73,10 @@ def render(checked, rows, launches):
         for row in image_bad:
             lines.append(f"| `{row['id']}` | {row['status']} | {cell(row.get('detail'))} |")
         lines.append("")
-    lines.extend(["## Videos", "", "| ID | Status | Detail |", "| --- | --- | --- |"])
-    for row in videos:
-        lines.append(f"| `{row['id']}` | {row['status']} | {cell(row.get('detail'))} |")
+    if videos:
+        lines.extend(["## Videos", "", "| ID | Status | Detail |", "| --- | --- | --- |"])
+        for row in videos:
+            lines.append(f"| `{row['id']}` | {row['status']} | {cell(row.get('detail'))} |")
     lines.extend(["", "## Documented launches", "", "| Command | Status | Reply |", "| --- | --- | --- |"])
     for row in launches:
         lines.append(f"| `{row['command']}` | {row['status']} | {cell(row.get('detail'))} |")

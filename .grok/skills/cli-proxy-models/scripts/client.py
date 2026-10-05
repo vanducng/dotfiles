@@ -118,12 +118,12 @@ def message_kind(code, raw):
         return "chat", " ".join(parts)[:80]
     message = str((payload.get("error") or {}).get("message", payload))
     low = message.lower()
+    if code == 401 or "invalid bearer" in low:
+        return "auth", redact(message)[:180]
     if "/v1/images/" in message:
         return "image", ""
     if "video model" in low or "/v1/videos/" in message:
         return "video", ""
-    if code == 401 or "invalid bearer" in low:
-        return "auth", redact(message)[:180]
     if "not_found" in low or code == 503:
         return "missing", redact(message)[:180]
     return "error", redact(message)[:180]
@@ -144,7 +144,7 @@ def probe_ccx(model):
         status = "blank"
     else:
         status = "ok"
-    return status, reply
+    return status, redact(reply)
 
 
 def probe_model(model):
