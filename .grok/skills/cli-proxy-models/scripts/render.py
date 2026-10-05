@@ -24,7 +24,7 @@ def family(model):
 
 
 def cell(text):
-    return (text or "").replace("|", "/")
+    return " ".join((text or "").split()).replace("|", "/")
 
 
 def render(checked, rows, launches):
@@ -86,5 +86,9 @@ def render(checked, rows, launches):
 def write_doc(text):
     DOC.parent.mkdir(parents=True, exist_ok=True)
     tmp = DOC.with_suffix(".md.tmp")
-    tmp.write_text(text)
-    tmp.replace(DOC)
+    try:
+        tmp.write_text(text)
+        tmp.replace(DOC)
+    finally:
+        if tmp.exists():
+            tmp.unlink()

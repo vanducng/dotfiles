@@ -4,6 +4,7 @@ import os
 import signal
 import subprocess
 import urllib.error
+import urllib.parse
 import urllib.request
 from pathlib import Path
 
@@ -23,7 +24,7 @@ def base_url():
 def redact(text):
     key = os.environ.get("CLI_PROXY_API_KEY", "")
     if key and text:
-        text = text.replace(key, "[redacted]")
+        text = text.replace(key, "[redacted]").replace(urllib.parse.quote(key, safe=""), "[redacted]")
     lines = []
     for line in (text or "").splitlines():
         low = line.lower()
@@ -31,6 +32,10 @@ def redact(text):
             continue
         lines.append(line)
     return "\n".join(lines)[-400:]
+
+
+def is_auth(blob):
+    return "Invalid bearer" in blob or "API Error: 401" in blob
 
 
 def request(path, payload, timeout):
@@ -49,6 +54,8 @@ def request(path, payload, timeout):
             return resp.status, resp.read()
     except urllib.error.HTTPError as exc:
         return exc.code, exc.read()
+    except (urllib.error.URLError, TimeoutError, OSError) as exc:
+        return 0, str(exc).encode()
 
 
 def catalog():
@@ -56,8 +63,15 @@ def catalog():
         base_url() + "/v1/models",
         headers={"Authorization": "Bearer " + os.environ["CLI_PROXY_API_KEY"]},
     )
-    with urllib.request.urlopen(req, timeout=30) as resp:
-        data = json.load(resp)
+    try:
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            data = json.load(resp)
+    except urllib.error.HTTPError as exc:
+        if exc.code == 401:
+            raise SystemExit("Auth failed on /v1/models. Status page was not changed.")
+        raise SystemExit("Could not list /v1/models. Status page was not changed.")
+    except (urllib.error.URLError, TimeoutError, OSError):
+        raise SystemExit("Could not list /v1/models. Status page was not changed.")
     return sorted(item["id"] for item in data.get("data", []))
 
 
@@ -119,7 +133,7 @@ def probe_ccx(model):
     code, out, err, timed_out = run_ccx([model, "-p", PROMPT, "--tools", "", "--bare"])
     blob = out + "\n" + err
     reply = " ".join(out.split())[:120]
-    if "401" in blob or "Invalid bearer" in blob:
+    if is_auth(blob):
         status = "auth"
     elif timed_out:
         status, reply = "error", "timeout"
@@ -143,8 +157,10 @@ def probe_model(model):
     if kind == "auth":
         return {"id": model, "channel": "ccx", "status": "auth", "detail": detail}
     if kind == "image":
+        from media import probe_image
         return probe_image(model)
     if kind == "video":
+        from media import probe_video
         return probe_video(model)
     status, reply = probe_ccx(model)
     if status == "blank" and kind == "chat" and detail:
@@ -154,46 +170,3 @@ def probe_model(model):
     return {"id": model, "channel": "ccx", "status": status, "detail": reply}
 
 
-def probe_image(model):
-    code, raw = request(
-        "/v1/images/generations",
-        {"model": model, "prompt": "a solid red circle", "n": 1, "size": "1024x1024"},
-        90,
-    )
-    ok = False
-    detail = ""
-    try:
-        payload = json.loads(raw.decode(errors="replace"))
-        data = payload.get("data") or []
-        if code == 200 and data and (data[0].get("b64_json") or data[0].get("url")):
-            ok = True
-        else:
-            detail = redact(str(payload.get("error") or payload)[:180])
-    except json.JSONDecodeError:
-        detail = redact(raw.decode(errors="replace"))[:180]
-    return {"id": model, "channel": "image", "status": "ok" if ok else "error", "detail": detail}
-
-
-def probe_video(model):
-    code, raw = request(
-        "/v1/videos/generations",
-        {"model": model, "prompt": "a red circle"},
-        45,
-    )
-    ok = False
-    detail = ""
-    try:
-        payload = json.loads(raw.decode(errors="replace"))
-        if code == 200 and payload.get("request_id"):
-            ok = True
-            detail = "Accepted. Request id returned. The file was not downloaded."
-        else:
-            detail = redact(str(payload.get("error") or payload)[:180])
-    except json.JSONDecodeError:
-        detail = redact(raw.decode(errors="replace"))[:180]
-    return {
-        "id": model,
-        "channel": "video",
-        "status": "accepted" if ok else "error",
-        "detail": detail,
-    }

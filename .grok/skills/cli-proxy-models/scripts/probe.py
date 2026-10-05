@@ -12,7 +12,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from pathlib import Path
 
-from client import catalog, probe_model, redact, run_ccx
+from client import catalog, is_auth, probe_model, redact, run_ccx
 from render import DOC, render, write_doc
 
 EXAMPLES = Path(__file__).resolve().parents[4] / "docs/content/ai/claude-code.md"
@@ -22,7 +22,11 @@ WORKERS = 4
 def documented():
     if not EXAMPLES.is_file():
         return []
-    launch = re.compile(r"^ccx [A-Za-z0-9][A-Za-z0-9._-]*(?: |$)")
+    launch = re.compile(
+        r"^ccx [A-Za-z0-9][A-Za-z0-9._-]*"
+        r"(?: --autocompact [0-9]+[kKmM])?"
+        r"(?: --effort (?:low|medium|high|xhigh|max))?$"
+    )
     return [line.strip() for line in EXAMPLES.read_text().splitlines() if launch.match(line.strip())]
 
 
@@ -32,7 +36,7 @@ def probe_launch(command):
     code, out, err, timed_out = run_ccx(args)
     blob = out + "\n" + err
     reply = " ".join(out.split())[:80]
-    if "401" in blob or "Invalid bearer" in blob:
+    if is_auth(blob):
         status = "auth"
     elif timed_out or code != 0 or not reply:
         status = "error"
@@ -72,9 +76,18 @@ def main():
     models = catalog()
     rows = []
     with ThreadPoolExecutor(max_workers=WORKERS) as pool:
-        futures = [pool.submit(probe_model, model) for model in models]
+        futures = {pool.submit(probe_model, model): model for model in models}
         for future in as_completed(futures):
-            row = future.result()
+            model = futures[future]
+            try:
+                row = future.result()
+            except Exception as exc:
+                row = {
+                    "id": model,
+                    "channel": "ccx",
+                    "status": "error",
+                    "detail": redact(str(exc))[:180],
+                }
             rows.append(row)
             print(f"{row['status']:9} {row['channel']:6} {row['id']}", flush=True)
     if any(row["status"] == "auth" for row in rows):
