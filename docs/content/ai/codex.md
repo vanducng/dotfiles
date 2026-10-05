@@ -153,7 +153,7 @@ The CLI Proxy `/v1/models` endpoint returned these 57 IDs on 2026-10-04:
 | Muse | `muse-spark-1.1`, `muse-spark-1.2`, `muse-spark-1.2-contributor`, `muse-spark-1.3`, `muse-spark-1.3-contributor` |
 | Specialized | `codex-auto-review`, `gpt-image-1.5`, `gpt-image-2`, `gpt-image-2.5`, `gpt-image-2.5-flare`, `gpt-image-2.5-sunburst`, `grok-imagine-image`, `grok-imagine-image-2.0`, `grok-imagine-image-quality`, `grok-imagine-video`, `grok-imagine-video-1.5`, `grok-imagine-video-1.5-preview` |
 
-The endpoint lists availability, not Codex compatibility or supported effort levels. Image, video, and `codex-auto-review` IDs are specialized models, not general Codex chat choices. Use the CLIProxyAPI key and URL to check the current catalog:
+The endpoint lists availability, not Codex compatibility or supported effort levels. Image, video, and `codex-auto-review` IDs are specialized models, not general Codex chat choices. Which ids complete is tracked on **[CLI Proxy model status](/ai/cli-proxy-models/)**. Use the CLIProxyAPI key and URL to check the current catalog:
 
 ```bash
 curl -fsS -H "Authorization: Bearer ${CLI_PROXY_API_KEY:?Set CLI_PROXY_API_KEY}" "${CLI_PROXY_BASE_URL:?Set CLI_PROXY_BASE_URL}/v1/models" | jq -r '.data[].id' | sort
