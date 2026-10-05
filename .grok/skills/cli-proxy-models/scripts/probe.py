@@ -13,6 +13,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from client import catalog, is_auth, probe_model, redact, run_ccx
+from media import _result
 from render import DOC, render, write_doc
 
 EXAMPLES = Path(__file__).resolve().parents[4] / "docs/content/ai/claude-code.md"
@@ -79,6 +80,15 @@ def _self_test(key):
     commands = documented()
     assert "ccx <model-id> [claude args...]" not in commands
     assert any(command.startswith("ccx gpt-6.1-sol ") for command in commands)
+    broken = _result(
+        "gpt-image-1.5",
+        "image",
+        "ok",
+        200,
+        b'{"data":{"url":"x"}}',
+        lambda payload: (payload.get("data") or [{}])[0].get("b64_json"),
+    )
+    assert broken["channel"] == "image" and broken["status"] == "error"
     print("self-test ok")
 
 

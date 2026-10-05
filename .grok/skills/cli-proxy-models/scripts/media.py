@@ -40,4 +40,6 @@ def _result(model, channel, ok_status, code, raw, accept):
             detail = redact(str(payload.get("error") or payload)[:180])
     except json.JSONDecodeError:
         detail = redact(raw.decode(errors="replace"))[:180]
+    except Exception as exc:
+        detail = redact(str(exc))[:180]
     return {"id": model, "channel": channel, "status": status, "detail": detail}
