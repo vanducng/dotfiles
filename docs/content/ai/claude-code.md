@@ -50,7 +50,7 @@ ccx muse-spark-1.3-contributor --autocompact 1M --effort high
 
 `grok-4.7` is the same 500k model at normal speed. Grok 4.7 also accepts `xhigh`. GLM 5.3 accepts `low`, `high`, and `max`, and reasoning stays on. Opus 5.5 and Sol 6.1 also accept `xhigh` and `max`.
 
-Other catalog ids work the same way. List the live set with:
+Which catalog ids answer through `ccx`, and which image or video ids need their own endpoint, is tracked on **[CLI Proxy model status](/ai/cli-proxy-models/)**. Invoke `/cli-proxy-models` in this repo to refresh that page. List the live set with:
 
 ```bash
 curl -fsS -H "Authorization: Bearer ${CLI_PROXY_API_KEY:?Set CLI_PROXY_API_KEY}" \
