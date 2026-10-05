@@ -1,0 +1,40 @@
+#!/bin/bash
+# Claude Code appends /v1/messages itself, so a CLI_PROXY_BASE_URL that ends in /v1 is stripped.
+set -euo pipefail
+
+if [[ $# -lt 1 || "$1" == "-h" || "$1" == "--help" ]]; then
+  echo "Usage: ccx <model-id> [claude args...]" >&2
+  echo "Requires CLI_PROXY_API_KEY. Plain claude keeps the logged-in user." >&2
+  exit 2
+fi
+
+model="$1"
+shift
+
+if [[ -z "${CLI_PROXY_API_KEY:-}" ]]; then
+  echo "ccx: set CLI_PROXY_API_KEY" >&2
+  exit 1
+fi
+
+base="${CLI_PROXY_BASE_URL:-https://cli-proxy.dataplanelabs.com}"
+base="${base%/}"
+base="${base%/v1}"
+
+# An empty ANTHROPIC_BASE_URL in user settings overrides the process env and 401s on Anthropic.
+escaped="${base//\\/\\\\}"
+escaped="${escaped//\"/\\\"}"
+settings="$(printf '{"env":{"ANTHROPIC_BASE_URL":"%s"}}' "$escaped")"
+
+exec env \
+  -u ANTHROPIC_API_KEY \
+  -u CLAUDE_CODE_USE_BEDROCK \
+  -u CLAUDE_CODE_USE_VERTEX \
+  -u CLAUDE_CODE_USE_FOUNDRY \
+  ANTHROPIC_BASE_URL="$base" \
+  ANTHROPIC_AUTH_TOKEN="$CLI_PROXY_API_KEY" \
+  ANTHROPIC_DEFAULT_OPUS_MODEL="$model" \
+  ANTHROPIC_DEFAULT_SONNET_MODEL="$model" \
+  ANTHROPIC_DEFAULT_HAIKU_MODEL="$model" \
+  ANTHROPIC_DEFAULT_FABLE_MODEL="$model" \
+  CLAUDE_CODE_SUBAGENT_MODEL="$model" \
+  claude --model "$model" --dangerously-skip-permissions --settings "$settings" "$@"
