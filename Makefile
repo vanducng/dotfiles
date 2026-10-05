@@ -155,6 +155,7 @@ script-test:
 	@./scripts/ci/test-dsh-config.sh
 	@./scripts/ci/test-cli-proxy-gui-env.sh
 	@./scripts/ci/test-ccx.sh
+	@./scripts/ci/test-cli-proxy-models-skill.sh
 	@./scripts/ci/test-gpg-lazygit.sh
 	@./scripts/ci/test-nvim-jsonl.sh
 	@./scripts/ci/test-linux-bootstrap.sh
