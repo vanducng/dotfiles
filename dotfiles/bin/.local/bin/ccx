@@ -20,6 +20,11 @@ base="${CLI_PROXY_BASE_URL:-https://cli-proxy.dataplanelabs.com}"
 base="${base%/}"
 base="${base%/v1}"
 
+if [[ "$base" =~ [[:cntrl:]] ]]; then
+  echo "ccx: CLI_PROXY_BASE_URL must not contain control characters" >&2
+  exit 1
+fi
+
 # An empty ANTHROPIC_BASE_URL in user settings overrides the process env and 401s on Anthropic.
 escaped="${base//\\/\\\\}"
 escaped="${escaped//\"/\\\"}"

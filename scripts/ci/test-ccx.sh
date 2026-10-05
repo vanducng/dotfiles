@@ -57,6 +57,12 @@ else
   pass "ccx requires a model id"
 fi
 
+if CLI_PROXY_API_KEY=test-key CLI_PROXY_BASE_URL=$'https://cli-proxy.example\n' PATH="$tmp:$PATH" "$SCRIPT" grok-4.7 >/dev/null 2>&1; then
+  fail "ccx accepted a base URL with a newline"
+else
+  pass "ccx rejects a base URL with a control character"
+fi
+
 out="$(
   CLI_PROXY_API_KEY=test-key \
   CLI_PROXY_BASE_URL=https://cli-proxy.example/v1 \
