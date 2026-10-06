@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.25.0](https://github.com/vanducng/dotfiles/compare/v0.24.0...v0.25.0) (2026-10-05)
+
+
+### Features
+
+* **ai:** added ccx for Claude Code via CLI Proxy ([#197](https://github.com/vanducng/dotfiles/issues/197)) ([d0c7d15](https://github.com/vanducng/dotfiles/commit/d0c7d153e5a3f31b0436547e3356249f42a81d26))
+* **ai:** tracked which CLI Proxy models answer ([#198](https://github.com/vanducng/dotfiles/issues/198)) ([8ba992e](https://github.com/vanducng/dotfiles/commit/8ba992ee8f0f9477cc14d79da675d9cb7594ccfb))
+* **codex:** add cliproxy-muse profile with apps disabled ([a05ed2b](https://github.com/vanducng/dotfiles/commit/a05ed2bc848b6b8f573da1ee39ff39f7dcca7547))
+* **codex:** add named CLI proxy model profiles ([5b0bb95](https://github.com/vanducng/dotfiles/commit/5b0bb9585083186572f61de0ab760c6b3215c887))
+
 ## [0.24.0](https://github.com/vanducng/dotfiles/compare/v0.23.1...v0.24.0) (2026-09-27)
 
 
