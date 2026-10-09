@@ -25,7 +25,7 @@ If `~/.grok/config.toml` already exists as a real file, back it up before the fi
 
 - Default model `grok-4.7` (web search and fork secondary use the same model) with auto permission mode (fewer prompts, deny rules and hooks still apply).
 - Vim scrollback navigation on (`vim_mode = true`); prompt stays readline (`simple_mode = true`).
-- Attention sounds and Telegram notify fire from native lifecycle hooks (`Stop` / `Notification`).
+- Attention sounds and Telegram notify are not wired. Lifecycle hooks do not call `afplay` or `agent-notify.py`.
 - Claude/Cursor **skills, rules, agents, and MCPs** stay enabled via `[compat.*]`.
 - Claude/Cursor **hooks** are disabled (`hooks = false`) so native `~/.grok/hooks` own lifecycle automation and do not double-fire.
 - Extra skill root: `~/skills`.
@@ -39,11 +39,8 @@ Native hooks live in `~/.grok/hooks/lifecycle.json` (official discovery path: `~
 |-------|---------|
 | `SessionStart` | `session-init.py`, herdr agent-state |
 | `UserPromptSubmit` | herdr pane rename, dev-rules reminder |
-| `PreToolUse` | `pr-merge-guard`, `scout-block` (via camelCase adapter), ask-user sound |
+| `PreToolUse` | `pr-merge-guard`, `scout-block` (via camelCase adapter) |
 | `SubagentStart` | team context + subagent init |
-| `Stop` | langfuse trace; Telegram notify only if `AGENT_NOTIFY_STOP=always` (no per-turn sound by default) |
-| `SessionEnd` | langfuse trace |
-| `Notification` | single sound + Telegram on permission/idle only (not every notification type) |
 
 Grok emits camelCase tool envelopes. `hooks/bin/claude-compat-stdin.py` normalizes them to the Claude Code shape so shared scripts under `~/.claude/hooks` keep working.
 
