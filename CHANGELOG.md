@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.25.1](https://github.com/vanducng/dotfiles/compare/v0.25.0...v0.25.1) (2026-10-09)
+
+
+### Bug Fixes
+
+* **hooks:** disabled agent sound and telegram notify ([#199](https://github.com/vanducng/dotfiles/issues/199)) ([f9aa924](https://github.com/vanducng/dotfiles/commit/f9aa924ef44c6c3e0ba54beeb00740a57cec28ad))
+
 ## [0.25.0](https://github.com/vanducng/dotfiles/compare/v0.24.0...v0.25.0) (2026-10-05)
 
 
