@@ -10,7 +10,7 @@ Codex CLI configuration is managed from this repository with GNU Stow.
 make stow-codex
 ```
 
-This links `dotfiles/codex/.codex/config.toml`, `cliproxy.config.toml`, and `cliproxy-muse.config.toml` into `~/.codex/`, along with the managed attention-sound hook.
+This links `dotfiles/codex/.codex/config.toml`, `cliproxy.config.toml`, and `cliproxy-muse.config.toml` into `~/.codex/`. Attention sounds and Telegram notify are not wired.
 
 ## Managed Settings
 
@@ -51,11 +51,7 @@ Restart the host after changing MCP configuration.
 
 ## Attention Sounds
 
-Codex does not currently expose Claude Code's `Notification` hook event. The closest user-attention event is `PermissionRequest`, which fires before Codex asks for approval. Turn completion uses `Stop`.
-
-- `PermissionRequest` runs `~/.codex/hooks/attention-sound.sh permission` and plays `~/.claude/notification.mp3` when available, falling back to the macOS `Pop.aiff` sound.
-- `Stop` runs `~/.codex/hooks/attention-sound.sh stop` and plays the macOS `Glass.aiff` sound.
-- Native TUI notifications are also enabled through `tui.notifications = true`, `tui.notification_condition = "always"`, and `tui.notification_method = "auto"`.
+Sound and Telegram hooks are off. `hooks.json` does not call `attention-sound.sh`, `afplay`, or `agent-notify.py`, and `config.toml` does not set `notify` to the Telegram script. `hooks/attention-sound.sh` remains in the package and is not wired.
 
 :::note
 Restart Codex after changing hooks. If Codex prompts to trust hooks for a workspace, accept the trust prompt before expecting hook execution.
