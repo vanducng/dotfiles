@@ -59,16 +59,6 @@
             "timeout": 15
           }
         ]
-      },
-      {
-        "matcher": "AskUserQuestion|ask_user_question",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "/usr/bin/afplay /System/Library/Sounds/Pop.aiff",
-            "timeout": 5
-          }
-        ]
       }
     ],
     "SubagentStart": [
@@ -84,30 +74,6 @@
             "type": "command",
             "command": "python3 \"$HOME/.claude/hooks/subagent-init.py\"",
             "timeout": 15
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "matcher": ".*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 \"$HOME/skills/hooks/agent-notify.py\" grok stop",
-            "timeout": 10
-          }
-        ]
-      }
-    ],
-    "Notification": [
-      {
-        "matcher": "permission_prompt|idle_prompt|approval_required|action_required",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 \"$HOME/skills/hooks/agent-notify.py\" grok notification",
-            "timeout": 10
           }
         ]
       }
