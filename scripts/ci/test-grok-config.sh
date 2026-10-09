@@ -50,8 +50,6 @@ required_events = {
     "UserPromptSubmit",
     "PreToolUse",
     "SubagentStart",
-    "Stop",
-    "Notification",
 }
 missing = sorted(required_events - set(hooks))
 if missing:
@@ -62,19 +60,13 @@ for needle in (
     "claude-compat-stdin.py",
     "pr-merge-guard.py",
     "scout-block.py",
-    "agent-notify.py",
 ):
     if needle not in blob:
         raise SystemExit(f"hooks missing reference: {needle}")
 
-# Sound anti-spam: no always-on Stop ding, no Notification catch-all, no double sound path
-if "attention-sound.sh" in blob:
-    raise SystemExit("attention-sound.sh must not be wired (double-dings with agent-notify)")
-notif = data.get("hooks", {}).get("Notification") or []
-for block in notif:
-    matcher = block.get("matcher") or ""
-    if matcher.endswith("|.*") or matcher == ".*":
-        raise SystemExit(f"Notification matcher too broad: {matcher!r}")
+for banned in ("agent-notify.py", "afplay", "attention-sound.sh"):
+    if banned in blob:
+        raise SystemExit(f"sound or telegram hook still wired: {banned}")
 print("lifecycle.json: ok")
 PY
 

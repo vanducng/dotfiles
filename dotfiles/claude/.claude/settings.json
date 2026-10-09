@@ -7,40 +7,6 @@
   },
   "includeCoAuthoredBy": false,
   "hooks": {
-    "Stop": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "/usr/bin/env ATTENTION_APP_NAME='Claude Code' ATTENTION_STOP_MESSAGE='The current turn has completed' /bin/bash /Users/vanducng/.codex/hooks/attention-sound.sh stop",
-            "timeout": 5
-          }
-        ]
-      }
-    ],
-    "Notification": [
-      {
-        "matcher": "permission_prompt|idle_prompt",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "/usr/bin/afplay /Users/vanducng/.claude/notification.mp3"
-          }
-        ]
-      }
-    ],
-    "PreToolUse": [
-      {
-        "matcher": "AskUserQuestion",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "/usr/bin/afplay /System/Library/Sounds/Pop.aiff"
-          }
-        ]
-      }
-    ],
     "SessionStart": [
       {
         "matcher": "*",
