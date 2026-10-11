@@ -26,6 +26,8 @@ Chat ids are probed with `ccx <id> -p` and tools turned off. Image ids use `POST
 
 `grok-3-mini`, `grok-3-mini-fast`, `grok-4.20-0309-non-reasoning`, `grok-4.20-0309-reasoning`, `grok-4.3`, `grok-4.5`, `grok-4.6`, `grok-4.7`, `grok-4.7-build-fast`, `grok-build-0.1`, `grok-composer-2.5-fast`
 
+Owner check 2026-10-12: `grok-4.7` and `grok-4.7-build-fast` are the xAI account. Cursor-only chat ids on that day were `composer-2` and `composer-2.5`. `claude-opus-5-5` stayed on the Anthropic account.
+
 ### Muse
 
 `muse-spark-1.1`, `muse-spark-1.2`, `muse-spark-1.2-contributor`, `muse-spark-1.3`, `muse-spark-1.3-contributor`

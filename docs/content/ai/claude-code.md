@@ -50,6 +50,8 @@ ccx muse-spark-1.3-contributor --autocompact 1M --effort high
 
 `grok-4.7` is the same 500k model at normal speed. Grok 4.7 also accepts `xhigh`. GLM 5.3 accepts `low`, `high`, and `max`, and reasoning stays on. Opus 5.5 and Sol 6.1 also accept `xhigh` and `max`.
 
+The proxy keeps one account per model id. `ccx` does not choose between providers. `grok-4.7` and `grok-4.7-build-fast` are the xAI account. `claude-opus-5-5` is the Anthropic account. A Cursor-only id, such as `composer-2.5`, bills the Cursor account.
+
 Which catalog ids answer through `ccx`, and which image or video ids need their own endpoint, is tracked on **[CLI Proxy model status](/ai/cli-proxy-models/)**. Invoke `/cli-proxy-models` in this repo to refresh that page. List the live set with:
 
 ```bash
