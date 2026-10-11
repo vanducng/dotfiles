@@ -11,5 +11,9 @@
     "overflow": "wrap",
     "lineBgIntensity": "subtle",
     "lineDiffType": "word-alt"
+  },
+  "reviewAnalysis": {
+    "semanticDiff": true,
+    "callFlow": false
   }
 }
