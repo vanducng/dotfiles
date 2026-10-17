@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.25.2](https://github.com/vanducng/dotfiles/compare/v0.25.1...v0.25.2) (2026-10-17)
+
+
+### Bug Fixes
+
+* **homelab:** name the Ubuntu dev box linux01 ([7a9c493](https://github.com/vanducng/dotfiles/commit/7a9c4935e51a5b7abc3447c586da16602b112931))
+
 ## [0.25.1](https://github.com/vanducng/dotfiles/compare/v0.25.0...v0.25.1) (2026-10-09)
 
 
