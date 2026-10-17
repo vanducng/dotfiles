@@ -22,31 +22,122 @@ main_root=""
 [[ "${git_common_dir##*/}" == ".git" ]] && main_root="${git_common_dir%/.git}"
 extensions='md|markdown|mdx|png|jpe?g|gif|webp|heic|heif|pdf|csv|tsv|xlsx|txt|json|ya?ml|toml|lua|sh|zsh|fish|py|js|jsx|ts|tsx|go|rs|java|kt|swift|c|cc|cpp|h|hpp'
 url_pattern='https?://[^[:space:]<>\"]+'
-path_prefix='(?:~|/|\./|\.\./)?'
+# Prefixed paths keep shell escapes (\ ) and literal spaces, and stop before a new path or URL.
+path_prefix='(?:~/|/|\./|\.\./)'
 segment='[[:alnum:]_@%+=,.-]'
+escaped='\\.'
+piece="(?:${segment}|${escaped})"
+gap=' +(?!https?://|[/~])'
+spaced="${piece}+(?:${gap}${piece}+)*"
+tight="${piece}+"
 location='(?::[0-9]+(?::[0-9]+)?)?'
-path_pattern="${path_prefix}(?:${segment}+/)+${segment}*${location}"
-file_pattern="${path_prefix}${segment}+\\.(?:${extensions})${location}"
+prefixed="${path_prefix}${spaced}(?:/+${spaced})+"
+unprefixed="(?:${tight}/+)+(?:${tight})?"
+path_pattern="(?:${prefixed}|${unprefixed})${location}"
+file_pattern="(?:${path_prefix}${spaced}|${tight})\\.(?:${extensions})${location}"
 quoted_pattern="\"[^\"\\r\\n]+(?:/|\\.(?:${extensions})${location})\"|'[^'\\r\\n]+(?:/|\\.(?:${extensions})${location})'"
 bare_pattern='(?:Makefile|Dockerfile|Justfile|Taskfile|LICENSE|README|CHANGELOG)'
 pattern="${url_pattern}|${quoted_pattern}|${path_pattern}|${file_pattern}|${bare_pattern}"
 
-# These two are called once per candidate. Capturing their output with $(...)
+# Called once per candidate. Capturing their output with $(...)
 # forks a subshell each time, which dominated the runtime: ~1.85ms per candidate,
 # so a dense 500-line pane spent ~950ms here versus ~30ms in ripgrep. Both are
 # pure parameter expansion, so they now publish through a global and the hot loop
 # forks nothing.
-normalize_candidate() {
-  local previous
-  NORMALIZED="$1"
+strip_trailing_punct() {
+  local previous value="$1"
   while true; do
-    previous="$NORMALIZED"
-    NORMALIZED="${NORMALIZED%[.,;:!?\)\]\>]}"
-    [[ "$NORMALIZED" == "$previous" ]] && break
+    previous="$value"
+    value="${value%[.,;:!?\)\]\>]}"
+    [[ "$value" == "$previous" ]] && break
   done
+  STRIPPED="$value"
+}
+
+normalize_candidate() {
+  strip_trailing_punct "$1"
+  NORMALIZED="$STRIPPED"
   if [[ "$NORMALIZED" == \"*\" || "$NORMALIZED" == \'*\' ]]; then
     NORMALIZED="${NORMALIZED:1:${#NORMALIZED}-2}"
   fi
+}
+
+unescape_shell() {
+  local input="$1" out="" i=0 char len bs='\'
+  UNESCAPED="$input"
+  [[ "$input" == *\\* ]] || return 0
+  len=${#input}
+  while ((i < len)); do
+    char="${input:i:1}"
+    if [[ "$char" == "$bs" && $((i + 1)) -lt len ]]; then
+      out+="${input:i+1:1}"
+      i=$((i + 2))
+      continue
+    fi
+    out+="$char"
+    i=$((i + 1))
+  done
+  UNESCAPED="$out"
+}
+
+cut_last_unescaped_token() {
+  local s="$1" i=0 char last=-1 bs='\'
+  local len=${#s}
+  CUT=""
+  while ((i < len)); do
+    char="${s:i:1}"
+    if [[ "$char" == "$bs" && $((i + 1)) -lt len ]]; then
+      i=$((i + 2))
+      continue
+    fi
+    if [[ "$char" == ' ' ]]; then
+      last=$i
+    fi
+    i=$((i + 1))
+  done
+  ((last < 0)) && return 0
+  CUT="${s:0:last}"
+}
+
+first_unescaped_split() {
+  local s="$1" i=0 char bs='\'
+  local len=${#s}
+  TAIL=""
+  while ((i < len)); do
+    char="${s:i:1}"
+    if [[ "$char" == "$bs" && $((i + 1)) -lt len ]]; then
+      i=$((i + 2))
+      continue
+    fi
+    if [[ "$char" == ' ' ]]; then
+      TAIL="${s:i}"
+      return 0
+    fi
+    i=$((i + 1))
+  done
+}
+
+# Longest existing prefix wins, so a trailing word is not part of the path.
+pick_existing_path() {
+  local raw="$1" candidate="$1"
+  DISPLAY=""
+  SUFFIX=""
+  while [[ -n "$candidate" ]]; do
+    candidate="${candidate%"${candidate##*[![:space:]]}"}"
+    [[ -n "$candidate" ]] || break
+    strip_trailing_punct "$candidate"
+    [[ -n "$STRIPPED" ]] || break
+    unescape_shell "$STRIPPED"
+    if resolve_candidate "$UNESCAPED"; then
+      DISPLAY="$UNESCAPED"
+      SUFFIX="${raw:${#candidate}}"
+      return 0
+    fi
+    cut_last_unescaped_token "$candidate"
+    [[ -n "$CUT" && "$CUT" != "$candidate" ]] || break
+    candidate="$CUT"
+  done
+  return 1
 }
 
 resolve_candidate() {
@@ -76,6 +167,56 @@ resolve_candidate() {
     fi
   done
   return 1
+}
+
+maybe_rescan() {
+  local suffix="$1"
+  [[ -n "$suffix" ]] || return 0
+  [[ "$suffix" == *'/'* || "$suffix" == *http://* || "$suffix" == *https://* || "$suffix" == *'~/'* ]] || return 0
+  if ((RESCAN_DEPTH >= 8)); then
+    return 0
+  fi
+  RESCAN_DEPTH=$((RESCAN_DEPTH + 1))
+  scan_block "$suffix"
+  RESCAN_DEPTH=$((RESCAN_DEPTH - 1))
+}
+
+scan_block() {
+  local text="$1" found status candidate
+  [[ -n "$text" ]] || return 0
+  set +e
+  found="$(printf '%s\n' "$text" | rg --only-matching --no-line-number --no-filename --pcre2 "$pattern")"
+  status=$?
+  set -e
+  if ((status > 1)); then
+    printf 'herdr-fingers: ripgrep exited with code %s\n' "$status" >&2
+    exit "$status"
+  fi
+  [[ -n "$found" ]] || return 0
+  while IFS= read -r candidate; do
+    handle_candidate "$candidate"
+  done <<<"$found"
+}
+
+handle_candidate() {
+  local candidate="$1"
+  [[ -n "$candidate" ]] || return 0
+  normalize_candidate "$candidate"
+  candidate="$NORMALIZED"
+  [[ -n "$candidate" ]] || return 0
+  if [[ "$candidate" == http://* || "$candidate" == https://* ]]; then
+    printf '%s\t%s\n' "$candidate" "$candidate"
+    return 0
+  fi
+  if pick_existing_path "$candidate"; then
+    if [[ -n "$RESOLVED" && "$RESOLVED" != "${HOME%/}" ]]; then
+      printf '%s\t%s\n' "$RESOLVED" "$DISPLAY"
+    fi
+    maybe_rescan "$SUFFIX"
+    return 0
+  fi
+  first_unescaped_split "$candidate"
+  maybe_rescan "$TAIL"
 }
 
 copy_value() {
@@ -295,18 +436,9 @@ if ((match_status > 1)); then
   printf 'herdr-fingers: ripgrep exited with code %s\n' "$match_status" >&2
   exit "$match_status"
 fi
+RESCAN_DEPTH=0
 matches="$(while IFS= read -r candidate; do
-  [[ -n "$candidate" ]] || continue
-  normalize_candidate "$candidate"
-  candidate="$NORMALIZED"
-  [[ -n "$candidate" ]] || continue
-  if [[ "$candidate" == http://* || "$candidate" == https://* ]]; then
-    printf '%s\t%s\n' "$candidate" "$candidate"
-    continue
-  fi
-  resolve_candidate "$candidate" || continue
-  [[ -n "$RESOLVED" && "$RESOLVED" != "${HOME%/}" ]] || continue
-  printf '%s\t%s\n' "$RESOLVED" "$candidate"
+  handle_candidate "$candidate"
 done <<<"$candidates" | awk -F '\t' '!seen[$1]++ { sub(/^[^\t]*\t/, ""); print }')"
 
 if [[ -z "$matches" ]]; then
