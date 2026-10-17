@@ -31,7 +31,7 @@ WAN IPv4 is NAT (`222.253.112.200`). WAN IPv6 on this NIC (may rotate):
 Paste this (or re-print with `dpl-remote mac-config` if IPv6 changed):
 
 ```
-Host dpl dpl-v6 dpl-ts
+Host linux01 linux01-v6 linux01-ts dpl dpl-v6 dpl-ts
   User ubuntu
   Port 2222
   IdentityFile ~/.ssh/id_rsa
@@ -39,16 +39,16 @@ Host dpl dpl-v6 dpl-ts
   ServerAliveInterval 30
   ServerAliveCountMax 3
 
-Host dpl
+Host linux01 dpl
   HostName 192.168.1.193
 
-Host dpl-v6
+Host linux01-v6 dpl-v6
   HostName 2001:ee0:4fc4:60f0:22d2:d132:ce3e:2e88
 
-Host dpl-ts
+Host linux01-ts dpl-ts
   HostName 100.111.142.22
 
-Host dpl-tunnel dpl-v6-tunnel dpl-ts-tunnel
+Host linux01-tunnel linux01-v6-tunnel linux01-ts-tunnel dpl-tunnel dpl-v6-tunnel dpl-ts-tunnel
   User ubuntu
   Port 2222
   IdentityFile ~/.ssh/id_rsa
@@ -62,13 +62,13 @@ Host dpl-tunnel dpl-v6-tunnel dpl-ts-tunnel
   LocalForward 127.0.0.1:9222 127.0.0.1:9222
   LocalForward 127.0.0.1:13389 127.0.0.1:3389
 
-Host dpl-tunnel
+Host linux01-tunnel dpl-tunnel
   HostName 192.168.1.193
 
-Host dpl-v6-tunnel
+Host linux01-v6-tunnel dpl-v6-tunnel
   HostName 2001:ee0:4fc4:60f0:22d2:d132:ce3e:2e88
 
-Host dpl-ts-tunnel
+Host linux01-ts-tunnel dpl-ts-tunnel
   HostName 100.111.142.22
 ```
 
@@ -137,7 +137,7 @@ After the one-time sudo root script:
 systemctl --user stop homelab-tailscale.service homelab-tailscale-up.service
 rm -f ~/.config/systemd/user/default.target.wants/homelab-tailscale.service
 rm -f ~/.config/systemd/user/default.target.wants/homelab-tailscale-up.service
-sudo tailscale up --hostname=dpl --accept-dns=false
+sudo tailscale up --hostname=linux01 --accept-dns=false
 ```
 
 Leave Tailscale SSH off so Moshi key auth reaches OpenSSH on `:2222`.

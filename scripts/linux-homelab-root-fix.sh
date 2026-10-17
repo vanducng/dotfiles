@@ -43,5 +43,5 @@ echo "docker=$(systemctl is-active docker) data-root=$(docker info -f '{{.Docker
 echo "Then as ${TARGET_USER}:"
 echo "  newgrp docker   # or log out/in"
 echo "  cnb-openvpn start"
-echo "  sudo /usr/bin/tailscale up --hostname=dpl --accept-dns=false"
+echo "  sudo /usr/bin/tailscale up --hostname=linux01 --accept-dns=false"
 echo "  (open the login URL; Moshi uses :2222 so leave Tailscale SSH off)"

@@ -40,7 +40,7 @@ Mounts disks via udisks, inhibits sleep, starts **sshd on :2222**, clones last-3
 
 ```bash
 sudo -E ~/.dotfiles/scripts/linux-homelab-root.sh
-sudo tailscale up --hostname=dpl --accept-dns=false
+sudo tailscale up --hostname=linux01 --accept-dns=false
 ```
 
 That installs sshd `:22`, docker (data-root on NVMe), tailscale, fstab, and masks suspend. Leave Tailscale SSH off so Moshi key auth reaches OpenSSH on `:2222`. Prefer the tailnet over forwarding `:22` to the WAN.

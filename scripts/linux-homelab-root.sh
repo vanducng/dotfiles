@@ -93,7 +93,7 @@ if ! command -v tailscale >/dev/null || [[ ! -x /usr/sbin/tailscaled && ! -x /us
   curl -fsSL https://tailscale.com/install.sh | sh
 fi
 systemctl enable --now tailscaled || true
-echo "Tailscale installed. As ${TARGET_USER} run: sudo tailscale up --hostname=dpl --accept-dns=false"
+echo "Tailscale installed. As ${TARGET_USER} run: sudo tailscale up --hostname=linux01 --accept-dns=false"
 echo "Leave Tailscale SSH off so Moshi key auth reaches OpenSSH on :2222."
 
 # --- persistent tun for user-space CNB OpenVPN (no sudo on each connect) ---
@@ -127,5 +127,5 @@ done
 echo
 echo "sshd=$(systemctl is-active ssh) docker=$(systemctl is-active docker) linger=$(loginctl show-user "$TARGET_USER" -p Linger --value)"
 echo "LAN: ssh ${TARGET_USER}@192.168.1.193"
-echo "Then: sudo tailscale up --hostname=dpl --accept-dns=false"
+echo "Then: sudo tailscale up --hostname=linux01 --accept-dns=false"
 echo "Reserve 192.168.1.193 on the router, port-forward 22 only if you must skip Tailscale."
