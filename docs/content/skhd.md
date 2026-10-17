@@ -21,7 +21,7 @@ All application shortcuts use the `meh` key (ctrl+alt+shift) for consistency and
 
 ### Space map
 
-17 spaces. Display 1 holds 1-10. Display 2 (built-in) holds 11-17, including every messaging app.
+18 spaces. The primary display holds 1-9. The built-in display holds 10-18, including every messaging app.
 
 | Space | Display | App |
 |-------|---------|-----|
@@ -33,8 +33,8 @@ All application shortcuts use the `meh` key (ctrl+alt+shift) for consistency and
 | 6 | 1 | Preview, Foxit |
 | 7 | 1 | Alter |
 | 8 | 1 | Obsidian |
-| 9 | 1 | (desktop stays on the primary; no pinned app) |
-| 10 | 1 | (desktop stays on the primary; no pinned app) |
+| 9 | 1 | Screen Sharing (Mac Mini) |
+| 10 | 2 | (first built-in desktop; no pinned app) |
 | 11 | 2 | Zalo |
 | 12 | 2 | Telegram, Discord, WhatsApp (stack) |
 | 13 | 2 | Arc |
@@ -75,6 +75,7 @@ All application shortcuts use the `meh` key (ctrl+alt+shift) for consistency and
 | Shortcut | Application | Description |
 |----------|-------------|-------------|
 | `meh + 1` | 1Password | Password manager |
+| `meh + 2` | Screen Sharing | Mac Mini on the primary display, space 9 |
 | `meh + v` | Grok Bot | Grok desktop app on space 16 |
 | `meh + l` | Perplexity | AI search engine |
 | `meh + i` | Structured | Task and time management |
