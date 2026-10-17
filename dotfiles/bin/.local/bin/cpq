@@ -1,0 +1,83 @@
+#!/usr/bin/env bash
+# cpq: quota for every CLIProxyAPI account (Claude, Codex) through the proxy's management API.
+# Reads usage only; never resets limits. The admin UI sits behind SSO, so this talks to the proxy host.
+set -euo pipefail
+
+usage() {
+  cat >&2 <<'EOF'
+Usage: cpq [--json] [filter]
+  filter   substring of the account file name (e.g. claude, codex)
+  --json   one JSON object per window instead of the table
+
+Env: CLI_PROXY_BASE_URL (default https://cli-proxy.dataplanelabs.com)
+     CLI_PROXY_MANAGEMENT_KEY, else gopass show -o $CLI_PROXY_MANAGEMENT_GOPASS_PATH
+     (default personal/saas/cli-proxy/management-key)
+Columns: used/left now, hours to reset, PACE = projected % used at reset at the current rate,
+         BUDGET = % per hour you can still spend to reach reset without running out.
+EOF
+  exit 2
+}
+
+json=false filter=""
+for arg in "$@"; do
+  case "$arg" in
+    --json) json=true ;;
+    -h|--help) usage ;;
+    *) filter="$arg" ;;
+  esac
+done
+
+base="${CLI_PROXY_BASE_URL:-https://cli-proxy.dataplanelabs.com}"
+base="${base%/}"; base="${base%/v1}"
+api="$base/v0/management"
+key="${CLI_PROXY_MANAGEMENT_KEY:-$(gopass show -o "${CLI_PROXY_MANAGEMENT_GOPASS_PATH:-personal/saas/cli-proxy/management-key}")}"
+[[ -n "$key" ]] || { echo "cpq: no management key" >&2; exit 1; }
+
+mgmt() { curl -fsS --max-time 20 -H "Authorization: Bearer $key" "$@"; }
+
+call() { # auth_index url [extra header json]
+  local body
+  body=$(jq -nc --arg i "$1" --arg u "$2" --argjson h "${3:-{\}}" \
+    '{authIndex:$i, method:"GET", url:$u, header:({Authorization:"Bearer $TOKEN$"} + $h)}')
+  mgmt -X POST -H "Content-Type: application/json" -d "$body" "$api/api-call"
+}
+
+now=$(date +%s)
+rows=()
+while IFS=$'\t' read -r idx provider name; do
+  [[ -z "$filter" || "$name" == *"$filter"* ]] || continue
+  label=$(sed -E 's/^(claude|codex)-[0-9a-f]+-//; s/\.json$//; s/^(..)[^@]*@/\1…@/' <<<"$name")
+  case "$provider" in
+    claude)
+      res=$(call "$idx" "https://api.anthropic.com/api/oauth/usage" '{"anthropic-beta":"oauth-2025-04-20"}') || res=""
+      rows+=("$(jq -c --arg p claude --arg a "$label" '
+        if .status_code != 200 then {p:$p,a:$a,err:"HTTP \(.status_code)"}
+        else (.body | fromjson | .limits[]? | {p:$p, a:$a,
+          w:(if .kind=="session" then "5h" elif .kind=="weekly_all" then "7d"
+             else "7d \(.scope.model.display_name // .kind)" end),
+          used:.percent, reset:(.resets_at | sub("\\.[0-9]+";"") | sub("\\+00:00$";"Z") | fromdateiso8601),
+          len:(if .group=="session" then 18000 else 604800 end)}) end' <<<"${res:-{\"status_code\":0\}}")")
+      ;;
+    codex)
+      res=$(call "$idx" "https://chatgpt.com/backend-api/wham/usage") || res=""
+      rows+=("$(jq -c --arg p codex --arg a "$label" '
+        if .status_code != 200 then {p:$p,a:$a,err:"HTTP \(.status_code)"}
+        else (.body | fromjson | .rate_limit | [.primary_window, .secondary_window][] | select(. != null) |
+          {p:$p, a:$a, w:(if .limit_window_seconds <= 18000 then "5h" else "7d" end),
+           used:.used_percent, reset:.reset_at, len:.limit_window_seconds}) end' <<<"${res:-{\"status_code\":0\}}")")
+      ;;
+  esac
+done < <(mgmt "$api/auth-files" | jq -r '.files[] | [.auth_index, (.provider // .type), (.name // .id)] | @tsv')
+
+all=$(printf '%s\n' "${rows[@]}" | jq -sc --argjson now "$now" '[.[] | if type=="array" then .[] else . end] |
+  map(if .err then . else
+    . + {left:(100-.used), hours:(((.reset-$now)/3600)*10|round/10)} |
+    (.len - (.reset-$now)) as $el |
+    . + {pace:(if $el > 600 then (.used * .len / $el | round) else null end),
+         budget:(if .hours > 0 then ((.left/.hours)*10|round/10) else null end)} end)')
+
+if $json; then jq -c '.[]' <<<"$all"; exit 0; fi
+jq -r '(["PROVIDER","ACCOUNT","WINDOW","USED","LEFT","RESET_H","PACE","BUDGET/H"] | @tsv),
+  (.[] | if .err then [.p,.a,"-","-","-","-",.err,"-"] else
+    [.p,.a,.w,"\(.used)%","\(.left)%",.hours,(if .pace then "\(.pace)%" else "-" end),(if .budget then "\(.budget)%" else "-" end)] end | @tsv)' \
+  <<<"$all" | column -t -s $'\t'
