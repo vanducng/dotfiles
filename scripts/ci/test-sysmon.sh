@@ -31,8 +31,10 @@ grep -q 'remember_window_size no' "$SCRIPT" || fail "sysmon overlay should not r
 grep -q 'cmd_scratch' "$SCRIPT" && fail "sysmon should not expose a scratch session"
 grep -q 'meh - f : "$HOME/.local/bin/sysmon" center' "$ROOT/dotfiles/skhd/.config/skhd/skhdrc" \
   || fail "skhd meh-f should raise the sysmon overlay"
-grep -q '"screen sharing"' "$ROOT/dotfiles/skhd/.config/skhd/skhdrc" \
-  && grep -q '"jump desktop"' "$ROOT/dotfiles/skhd/.config/skhd/skhdrc" \
+# Names must sit inside .blacklist. A comment that mentions them must not pass.
+blacklist="$(awk '/^\.blacklist \[/,/^\]/' "$ROOT/dotfiles/skhd/.config/skhd/skhdrc")"
+printf '%s\n' "$blacklist" | grep -q '"screen sharing"' \
+  && printf '%s\n' "$blacklist" | grep -q '"jump desktop"' \
   || fail "skhd should pass chords through Screen Sharing and Jump Desktop"
 grep -q 'set visible of' "$SCRIPT" && fail "hiding the kitty process activates the next app"
 grep -q 'cmd + alt - f' "$ROOT/dotfiles/skhd/.config/skhd/skhdrc" \
