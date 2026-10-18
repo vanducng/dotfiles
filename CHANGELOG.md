@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.26.0](https://github.com/vanducng/dotfiles/compare/v0.25.1...v0.26.0) (2026-10-18)
+
+
+### Features
+
+* **bin:** add cpq for CLI Proxy account quota ([4d2d9aa](https://github.com/vanducng/dotfiles/commit/4d2d9aa2d8b24cccad9042055e372bc2d64b6240))
+* **desktop:** pinned Screen Sharing, path matching, and cpq ([202a517](https://github.com/vanducng/dotfiles/commit/202a5170ad2cc11ec4bb584c0d5fc97a050c79c8))
+* **yabai:** pin Screen Sharing on space 2 and Aside on space 3 ([#206](https://github.com/vanducng/dotfiles/issues/206)) ([bbd5a71](https://github.com/vanducng/dotfiles/commit/bbd5a719c6ee53a590040ebb66ef7abbbfcf2777))
+* **yabai:** pin Screen Sharing on space 9 ([7a97e2a](https://github.com/vanducng/dotfiles/commit/7a97e2a5003d973b628cef4d5edfd77c21e026c8))
+
+
+### Bug Fixes
+
+* **herdr-fingers:** match paths that contain spaces ([3659f84](https://github.com/vanducng/dotfiles/commit/3659f843921bbedc683a4864f15676e0f3d4d8ea))
+* **homelab:** name the Ubuntu dev box linux01 ([7a9c493](https://github.com/vanducng/dotfiles/commit/7a9c4935e51a5b7abc3447c586da16602b112931))
+* **mise:** stow the Linux toolset only on Linux ([6be331e](https://github.com/vanducng/dotfiles/commit/6be331e30fa8e9cf0b2f6362b85bc1146c29a0a9))
+* **mise:** stow the Linux toolset only on Linux ([ac77085](https://github.com/vanducng/dotfiles/commit/ac7708572786898aee795c90fe14482a59808b85))
+* **skhd:** pass hotkeys through remote viewers ([4d3b2b4](https://github.com/vanducng/dotfiles/commit/4d3b2b4fb5c749c3a163f90670bad6f70997d698))
+* **skhd:** passed hotkeys through remote viewers ([0923638](https://github.com/vanducng/dotfiles/commit/0923638d533aeeffa9fdf429a01ade5a90ae6344))
+
 ## [0.25.1](https://github.com/vanducng/dotfiles/compare/v0.25.0...v0.25.1) (2026-10-09)
 
 
