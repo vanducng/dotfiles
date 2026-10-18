@@ -9,7 +9,9 @@ fail() { echo "FAIL: $*" >&2; FAIL=1; }
 pass() { echo "OK: $*"; }
 
 [[ -f "$ROOT/scripts/linux-deps.sh" ]] && pass "linux-deps.sh exists" || fail "missing scripts/linux-deps.sh"
-[[ -f "$ROOT/dotfiles/mise/.config/mise/conf.d/linux.toml" ]] && pass "linux.toml exists" || fail "missing linux.toml"
+[[ -f "$ROOT/dotfiles/shell-linux/.config/mise/conf.d/linux.toml" ]] && pass "linux.toml exists" || fail "missing linux.toml"
+# mise loads every conf.d file, so a Linux toolset in the common mise package would apply on macOS too.
+[[ ! -e "$ROOT/dotfiles/mise/.config/mise/conf.d/linux.toml" ]] && pass "linux.toml is not in the common mise package" || fail "linux.toml is back in the common mise package"
 [[ -f "$ROOT/dotfiles/shell-linux/.config/shell/linux.sh" ]] && pass "linux.sh exists" || fail "missing linux.sh"
 [[ -f "$ROOT/dotfiles/git/.config/git/work.gitconfig" ]] && pass "work.gitconfig exists" || fail "missing work.gitconfig"
 [[ -f "$ROOT/dotfiles/git/.config/git/work-crashchat.gitconfig" ]] && pass "work-crashchat.gitconfig exists" || fail "missing work-crashchat.gitconfig"
@@ -187,13 +189,13 @@ else
   fail "autotile python"
 fi
 
-if grep -vE '^[[:space:]]*#' "$ROOT/dotfiles/mise/.config/mise/conf.d/linux.toml" | grep -q 'aqua:tmux/tmux'; then
+if grep -vE '^[[:space:]]*#' "$ROOT/dotfiles/shell-linux/.config/mise/conf.d/linux.toml" | grep -q 'aqua:tmux/tmux'; then
   fail "linux.toml still uses aqua:tmux/tmux (not in aqua registry)"
 else
   pass "linux.toml does not use aqua:tmux/tmux"
 fi
 
-if grep -vE '^[[:space:]]*#' "$ROOT/dotfiles/mise/.config/mise/conf.d/linux.toml" | grep -qE '^[[:space:]]*git-delta[[:space:]]*='; then
+if grep -vE '^[[:space:]]*#' "$ROOT/dotfiles/shell-linux/.config/mise/conf.d/linux.toml" | grep -qE '^[[:space:]]*git-delta[[:space:]]*='; then
   fail "linux.toml uses git-delta (not a mise registry name)"
 else
   pass "linux.toml does not use git-delta"
