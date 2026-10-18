@@ -21,22 +21,22 @@ while ! mkdir "$lockdir" 2>/dev/null; do
 done
 trap 'rmdir "$lockdir" 2>/dev/null || true' EXIT INT TERM
 
-# app:space. Spaces 1-9 are the main display. Space 9 is Screen Sharing.
+# app:space. Spaces 1-9 are the main display. Space 2 is Screen Sharing.
 # Names contain spaces, so the list is one pin per line.
 read_pins() {
     cat <<'EOF'
 Ghostty:1
-LibreOffice:2
-soffice:2
-Dia:3
+LibreOffice:9
+soffice:9
+Dia:4
 Google Chrome:4
-Aside:4
+Aside:3
 Cursor:5
 Preview:6
 Foxit PDF Reader:6
 Alter:7
 Obsidian:8
-Screen Sharing:9
+Screen Sharing:2
 Discord:12
 WhatsApp:12
 Arc:13
@@ -68,8 +68,8 @@ window_ids() {
 
 # Stack the shared desktops before the moves so a new neighbor does not
 # bsp-split the window already there.
-yabai -m space 9 --label mac-mini >/dev/null 2>&1 || true
-yabai -m space 9 --layout stack >/dev/null 2>&1 || true
+yabai -m space 2 --label mac-mini >/dev/null 2>&1 || true
+yabai -m space 2 --layout stack >/dev/null 2>&1 || true
 yabai -m space 12 --layout stack >/dev/null 2>&1 || true
 yabai -m space 14 --layout stack >/dev/null 2>&1 || true
 yabai -m space 16 --layout stack >/dev/null 2>&1 || true
