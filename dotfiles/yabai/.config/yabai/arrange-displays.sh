@@ -1,10 +1,10 @@
 #!/usr/bin/env sh
 # =============================================================================
 # arrange-displays.sh
-# Keep 17 managed desktops when two displays are attached:
-#   display 1 (main):     8 desktops
+# Keep 18 managed desktops when two displays are attached:
+#   display 1 (main):     9 desktops (the 9th is Screen Sharing)
 #   display 2 (built-in): 9 desktops
-# With one display, keep 17 desktops on it.
+# With one display, keep 18 desktops on it.
 #
 # macOS drops the built-in display's desktops on restart, and moving a desktop
 # onto another display often does nothing. Missing desktops are created on the
@@ -19,9 +19,9 @@
 
 set -u
 
-TARGET_D1=8
+TARGET_D1=9
 TARGET_D2=9
-TARGET_TOTAL=17
+TARGET_TOTAL=18
 
 nonzero() {
     v=${1:-0}

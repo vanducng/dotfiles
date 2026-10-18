@@ -10,6 +10,10 @@ cat >"$test_dir/herdr" <<'EOF'
 set -euo pipefail
 [[ "$*" == "pane read pane-1 --source recent-unwrapped --lines 500 --format text" ]] || exit 1
 [[ "${HERDR_FINGERS_HERDR_FAIL:-0}" == 0 ]] || exit 7
+if [[ -n "${HERDR_FINGERS_PANE_FILE:-}" ]]; then
+  cat "$HERDR_FINGERS_PANE_FILE"
+  exit 0
+fi
 if [[ "${HERDR_FINGERS_EXPECT_WRAPPED:-0}" == 1 ]]; then
   printf '%s\n' \
     '12345678901234567890123 [link](http' \
@@ -33,6 +37,10 @@ cat >"$HERDR_FINGERS_CHOICES"
 [[ "${HERDR_FINGERS_FZF_STATUS:-0}" == 0 ]] || exit "$HERDR_FINGERS_FZF_STATUS"
 printf '%s\n' "$HERDR_FINGERS_TEST_ACTION"
 [[ "${HERDR_FINGERS_EMPTY_SELECTION:-0}" == 0 ]] || exit 0
+if [[ "${HERDR_FINGERS_SKIP_FZF_ASSERT:-0}" == 1 ]]; then
+  head -n 1 "$HERDR_FINGERS_CHOICES"
+  exit 0
+fi
 if [[ "${HERDR_FINGERS_EXPECT_WRAPPED:-0}" == 1 ]]; then
   grep -m1 '^https://github.com/example/repo/issues/1206$' "$HERDR_FINGERS_CHOICES"
 else
@@ -259,4 +267,51 @@ else
 fi
 [[ "$missing_editor_status" == 1 ]]
 grep -q 'editor command not found' "$test_dir/editor-error"
+
+real_rg="$(command -v rg)"
+space_root="$test_dir/space-root"
+mkdir -p "$space_root/Library/Application Support/CleanShot/media/id" "$space_root/widget/demo" "$space_root/docs"
+printf 'decoy\n' >"$space_root/Library/Application"
+printf 'jpg\n' >"$space_root/Library/Application Support/CleanShot/media/id/CleanShot 2026-10-12 at 20.46.11@2x.jpg"
+printf 'shot\n' >"$space_root/Library/Application Support/Shot 1.jpg"
+printf 'guide\n' >"$space_root/docs/guide.md"
+jpg="$space_root/Library/Application Support/CleanShot/media/id/CleanShot 2026-10-12 at 20.46.11@2x.jpg"
+shot="$space_root/Library/Application Support/Shot 1.jpg"
+decoy="$space_root/Library/Application"
+pane_file="$test_dir/pane.txt"
+tilde_demo='~'
+{
+  printf '%s\n' "${tilde_demo}/widget/demo"
+  printf '%s\n' 'notes in docs/guide.md please'
+  printf '%s END https://example.com/after\n' "$jpg"
+  printf '%s/%s\n' "$space_root" 'Library/Application\ Support/Shot\ 1.jpg'
+} >"$pane_file"
+mkdir -p "$test_dir/realbin"
+ln -s "$real_rg" "$test_dir/realbin/rg"
+: >"$choices"
+HOME="$space_root" \
+HERDR_FINGERS_PANE_FILE="$pane_file" \
+HERDR_FINGERS_SKIP_FZF_ASSERT=1 \
+HERDR_FINGERS_TEST_ACTION="enter" \
+  PATH="$test_dir/realbin:$test_dir:$PATH" \
+  HERDR_BIN_PATH="$test_dir/herdr" \
+  HERDR_ACTIVE_PANE_ID="pane-1" \
+  HERDR_ACTIVE_PANE_CWD="$space_root" \
+  HERDR_FINGERS_CAPTURE="$capture" \
+  HERDR_FINGERS_CHOICES="$choices" \
+  HERDR_FINGERS_CLIPBOARD_CAPTURE="$clipboard_capture" \
+  "$project_root/dotfiles/bin/.local/bin/herdr-fingers"
+grep -Fxq "${tilde_demo}/widget/demo" "$choices"
+grep -Fxq 'docs/guide.md' "$choices"
+grep -Fxq "$jpg" "$choices"
+grep -Fxq "$shot" "$choices"
+grep -Fxq 'https://example.com/after' "$choices"
+if grep -Fxq "$decoy" "$choices"; then
+  printf 'decoy path was offered:\n%s\n' "$(cat "$choices")" >&2
+  exit 1
+fi
+if grep -Fq "${jpg} END" "$choices"; then
+  printf 'trailing word stayed on the path:\n%s\n' "$(cat "$choices")" >&2
+  exit 1
+fi
 printf 'herdr-fingers test: ok\n'
