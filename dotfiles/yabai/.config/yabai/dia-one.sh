@@ -5,7 +5,7 @@ set -eu
 mode="${1:-dedupe}"
 
 if [ "$mode" = focus ]; then
-  yabai -m space --focus 3 2>/dev/null || true
+  yabai -m space --focus 4 2>/dev/null || true
   id="$(yabai -m query --windows | jq -r '[.[] | select((.app | gsub("\u200e"; "")) == "Dia")] | if length == 0 then empty else (first(.[] | select(."has-focus")) // min_by(.id)).id end')"
   if [ -n "$id" ]; then
     yabai -m window "$id" --focus

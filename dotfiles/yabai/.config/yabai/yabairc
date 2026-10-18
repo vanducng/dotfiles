@@ -44,7 +44,7 @@ yabai -m config insert_feedback_color       0x00010101
 # yabai -m config external_bar              all:5:5
 
 # -----------------------------------------------------------------------------
-# Multi-display reconcile — 17 spaces. Display 1 holds 1-8, display 2 holds 9-17.
+# Multi-display reconcile - 18 spaces. Display 1 holds 1-9, display 2 holds 10-18.
 # The built-in display loses desktops on restart. apply-layout.sh creates the
 # missing ones on that display and re-pins windows. It also runs on hot-plug,
 # and once more after login because the built-in display shows up late.
@@ -61,22 +61,22 @@ yabai -m signal --add event=display_removed \
 yabai -m rule --add app=".*"                          sub-layer=normal
 
 # Pin apps to specific spaces (by index). 18 spaces: D1=1-9, D2=10-18.
-# 1 Ghostty  2 LibreOffice  3 Dia  4 Chrome+Aside  5 Cursor  6 PDF  7 Alter  8 Obsidian
-# 9 Screen Sharing (Mac Mini), on the primary display
+# 1 Ghostty  2 Screen Sharing  3 Aside  4 Chrome+Dia  5 Cursor  6 PDF  7 Alter  8 Obsidian
+# 9 LibreOffice, on the primary display
 # Display 2: Zalo and Telegram (their own desktops), Discord+WhatsApp, 13 Arc, 14 Slack+Cliq, 15 kitty, 16 AI, 17 ego
 yabai -m rule --add app="^Ghostty$" title="^(sysmon|notes-vault)"  manage=off sub-layer=above grid=6:6:1:1:4:4
 yabai -m rule --add app="^Ghostty$" title!="^(sysmon.*|notes-vault)?$" space=1
-yabai -m rule --add app="^LibreOffice$"               space=2
-yabai -m rule --add app="^soffice$"                   space=2
-yabai -m rule --add app="^Dia$"                       space=3
+yabai -m rule --add app="^LibreOffice$"               space=9
+yabai -m rule --add app="^soffice$"                   space=9
+yabai -m rule --add app="^Dia$"                       space=4
 yabai -m rule --add app="^Google Chrome$"             space=4
-yabai -m rule --add app="^Aside$"                     space=4
+yabai -m rule --add app="^Aside$"                     space=3
 yabai -m rule --add app="^Cursor$"                    space=5
 yabai -m rule --add app="^Preview$"                   space=6
 yabai -m rule --add app="^Foxit PDF Reader$"          space=6
 yabai -m rule --add app="^Alter$"                     space=7 manage=off
 yabai -m rule --add app="^Obsidian$"                  space=8
-yabai -m rule --add app="^Screen Sharing$"            space=9
+yabai -m rule --add app="^Screen Sharing$"            space=2
 yabai -m rule --add app="^Slack$"                     space=14
 yabai -m rule --add app="^Telegram$"                  display=2
 yabai -m rule --add app="^Zalo$"                      display=2

@@ -30,14 +30,14 @@ All application shortcuts use the `meh` key (ctrl+alt+shift) for consistency and
 | Space | Display | App |
 |-------|---------|-----|
 | 1 | 1 | Ghostty |
-| 2 | 1 | LibreOffice |
-| 3 | 1 | Dia (stack) |
-| 4 | 1 | Chrome, Aside |
+| 2 | 1 | Screen Sharing (Mac Mini) |
+| 3 | 1 | Aside |
+| 4 | 1 | Chrome, Dia |
 | 5 | 1 | Cursor |
 | 6 | 1 | Preview, Foxit |
 | 7 | 1 | Alter |
 | 8 | 1 | Obsidian |
-| 9 | 1 | Screen Sharing (Mac Mini) |
+| 9 | 1 | LibreOffice |
 | 10 | 2 | (first built-in desktop; no pinned app) |
 | 11 | 2 | Zalo |
 | 12 | 2 | Telegram, Discord, WhatsApp (stack) |
@@ -63,11 +63,11 @@ All application shortcuts use the `meh` key (ctrl+alt+shift) for consistency and
 ### Browsers & Communication
 | Shortcut | Application | Description |
 |----------|-------------|-------------|
-| `meh + s` | Aside | Browser on display 1, space 4 |
+| `meh + s` | Aside | Browser on display 1, space 3 |
 | `meh + e` | Ego | Lightweight browser on display 2, space 17 |
 | `meh + d` | Arc | Browser on space 13 |
 | `meh + z` | Zen Browser | Alternative browser |
-| `meh + c` | Dia | Focus the existing Dia window on space 3 |
+| `meh + c` | Dia | Focus the existing Dia window on space 4 |
 | `meh + k` | Slack | Team communication on display 2, space 14 |
 | `meh + r` | Telegram | Messaging app on display 2, space 12 |
 | `meh + u` | Zalo | Messaging app on space 11 |
@@ -79,11 +79,11 @@ All application shortcuts use the `meh` key (ctrl+alt+shift) for consistency and
 | Shortcut | Application | Description |
 |----------|-------------|-------------|
 | `meh + 1` | 1Password | Password manager |
-| `meh + 2` | Screen Sharing | Mac Mini on the primary display, space 9 |
+| `meh + 2` | Screen Sharing | Mac Mini on the primary display, space 2 |
 | `meh + v` | Grok Bot | Grok desktop app on space 16 |
 | `meh + l` | Perplexity | AI search engine |
 | `meh + i` | Structured | Task and time management |
-| `meh + w` | LibreOffice | Office suite on space 2 |
+| `meh + w` | LibreOffice | Office suite on space 9 |
 | `meh + p` | Foxit PDF Reader | PDF reader on space 6 |
 | `meh + o` | Preview | macOS preview app on space 6 |
 | `meh + n` | Obsidian | Notes on space 8 |

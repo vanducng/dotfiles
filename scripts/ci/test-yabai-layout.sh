@@ -17,7 +17,9 @@ pass "yabai scripts parse"
 
 grep -q 'TARGET_D1=9' "$ARRANGE" || fail "main display target is not 9"
 grep -q 'TARGET_TOTAL=18' "$ARRANGE" || fail "single-display total is not 18"
-grep -q 'Screen Sharing:9' "$APPLY" || fail "Screen Sharing pin missing"
+grep -q 'Screen Sharing:2' "$APPLY" || fail "Screen Sharing pin missing"
+grep -q 'LibreOffice:9' "$APPLY" || fail "LibreOffice pin missing"
+grep -q 'Dia:4' "$APPLY" || fail "Dia pin missing"
 grep -q 'app="^Screen Sharing$"' "$RC" || fail "Screen Sharing rule missing"
 grep -q 'TARGET_D2=9' "$ARRANGE" || fail "built-in display target is not 9"
 grep -q 'space --create "$display"' "$ARRANGE" || fail "missing desktops are not created on the short display"
@@ -44,7 +46,7 @@ grep -q 'rule --apply' "$APPLY" || fail "reload does not reapply yabai rules"
 if grep -q 'target_disp' "$APPLY"; then
   fail "reload still skips a pin when the desktop is on the other display"
 fi
-grep -q 'Aside:4' "$APPLY" || fail "Aside pin missing"
+grep -q 'Aside:3' "$APPLY" || fail "Aside pin missing"
 grep -q 'ego lite:17' "$APPLY" || fail "ego lite pin missing"
 if grep -q 'Vivaldi' "$APPLY" || grep -q 'Vivaldi' "$RC"; then
   fail "Vivaldi is still pinned"
