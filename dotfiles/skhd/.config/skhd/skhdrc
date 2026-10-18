@@ -53,7 +53,7 @@ meh - v : yabai -m space --focus 16; open "/Applications/Grok Bot.app"
 meh - q : open -a "Music"
 meh - p : yabai -m space --focus 6; open "/Applications/Foxit PDF Reader.app"
 meh - r : yabai -m space --focus 12; open "/Applications/Telegram.app"
-meh - s : yabai -m space --focus 4; open "/Applications/Aside.app"
+meh - s : yabai -m space --focus 3; open "/Applications/Aside.app"
 meh - f : "$HOME/.local/bin/sysmon" center
 cmd + shift + alt - v : "$HOME/.local/bin/sysmon" dia-left "Dia"
 cmd + shift + alt - g : "$HOME/.local/bin/sysmon" dia-right "Dia"
@@ -61,23 +61,23 @@ cmd + shift + alt - r : "$HOME/.local/bin/sysmon" dia-left "Aside"
 cmd + shift + alt - t : "$HOME/.local/bin/sysmon" dia-right "Aside"
 meh - u : yabai -m space --focus 11; open "/System/Volumes/Data/Applications/Zalo.app"
 meh - g : yabai -m space --focus 5; open "/Applications/Cursor.app"
-meh - w : yabai -m space --focus 2; open "/Applications/LibreOffice.app"
+meh - w : yabai -m space --focus 9; open "/Applications/LibreOffice.app"
 meh - x : yabai -m space --focus 16; open "/Applications/ChatGPT.app"
 meh - y : yabai -m space --focus 12; open "/Applications/WhatsApp.app"
 meh - z : open "/Applications/Zen Browser.app"
 meh - n : yabai -m space --focus 8; open "/Applications/Obsidian.app"
 meh - o : yabai -m space --focus 6; open -a "Preview"
 meh - 1 : open "/Applications/1Password.app"
-# Mac Mini Screen Sharing on primary space 9. Reuse an open window, or connect.
-meh - 2 : yabai -m space 9 --layout stack; \
+# Mac Mini Screen Sharing on primary space 2. Reuse an open window, or connect.
+meh - 2 : yabai -m space 2 --layout stack; \
           ids=$(yabai -m query --windows | jq -r '.[] | select(.app=="Screen Sharing" and ."has-ax-reference"==true) | .id'); \
           if [ -n "$ids" ]; then \
-            for id in $ids; do yabai -m window "$id" --space 9; done; \
-            yabai -m space --focus 9; \
+            for id in $ids; do yabai -m window "$id" --space 2; done; \
+            yabai -m space --focus 2; \
             mac=$(yabai -m query --windows | jq -r '[.[] | select(.app=="Screen Sharing" and ."has-ax-reference"==true and (.title | test("mac01";"i")))][0].id // empty'); \
             if [ -n "$mac" ]; then yabai -m window --focus "$mac"; else yabai -m window --focus "$(printf '%s\n' "$ids" | head -1)"; fi; \
           else \
-            yabai -m space --focus 9; \
+            yabai -m space --focus 2; \
             open "vnc://dplmac01@192.168.1.21"; \
           fi
 
