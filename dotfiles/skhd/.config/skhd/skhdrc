@@ -16,6 +16,15 @@
 #  11. Layout — balance/gaps/rotate/mirror  (hyper)
 # =============================================================================
 
+# While a remote desktop viewer is focused, let every chord through so the
+# other Mac's skhd handles it. Otherwise meh+s / meh+f fire on the machine
+# where the keyboard is, not the machine shown in the session.
+# Names are lowercase: skhd lowercases the frontmost app before this lookup.
+.blacklist [
+    "screen sharing"
+    "jump desktop"
+]
+
 # -----------------------------------------------------------------------------
 # 1. Service control
 # -----------------------------------------------------------------------------

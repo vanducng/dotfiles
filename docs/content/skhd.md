@@ -15,6 +15,10 @@ SKHD (Simple Hotkey Daemon) is a lightweight hotkey daemon for macOS that enable
 - **Window Management**: Integration with Yabai tiling
 - **Modifier Keys**: Uses `meh` (ctrl+alt+shift) and `hyper` (ctrl+alt+cmd+shift)
 
+### Shared config across Macs
+
+The same `skhdrc` is installed on every Mac. While Screen Sharing or Jump Desktop is the focused window, skhd ignores every chord. The keys go into that session, and the other Mac runs this same file. Click a local window and the chord runs on the Mac where the keyboard is. Viewer names in the blacklist are lowercase because skhd lowercases the frontmost app.
+
 ## 🚀 Application Shortcuts
 
 All application shortcuts use the `meh` key (ctrl+alt+shift) for consistency and to avoid conflicts.
