@@ -61,7 +61,7 @@ yabai -m signal --add event=display_removed \
 yabai -m rule --add app=".*"                          sub-layer=normal
 
 # Pin apps to specific spaces (by index). 18 spaces: D1=1-9, D2=10-18.
-# 1 Ghostty  2 Screen Sharing  3 Aside  4 Chrome+Dia  5 Cursor  6 PDF  7 Alter  8 Obsidian
+# 1 Ghostty  2 Jump Desktop  3 Aside  4 Chrome+Dia  5 Cursor  6 PDF  7 Alter  8 Obsidian
 # 9 LibreOffice, on the primary display
 # Display 2: Zalo and Telegram (their own desktops), Discord+WhatsApp, 13 Arc, 14 Slack+Cliq, 15 kitty, 16 AI, 17 ego
 yabai -m rule --add app="^Ghostty$" title="^(sysmon|notes-vault)"  manage=off sub-layer=above grid=6:6:1:1:4:4
@@ -76,7 +76,7 @@ yabai -m rule --add app="^Preview$"                   space=6
 yabai -m rule --add app="^Foxit PDF Reader$"          space=6
 yabai -m rule --add app="^Alter$"                     space=7 manage=off
 yabai -m rule --add app="^Obsidian$"                  space=8
-yabai -m rule --add app="^Screen Sharing$"            space=2
+yabai -m rule --add app="^Jump Desktop$"              space=2
 yabai -m rule --add app="^Slack$"                     space=14
 yabai -m rule --add app="^Telegram$"                  display=2
 yabai -m rule --add app="^Zalo$"                      display=2

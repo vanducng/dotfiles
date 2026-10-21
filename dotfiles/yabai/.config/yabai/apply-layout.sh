@@ -21,7 +21,7 @@ while ! mkdir "$lockdir" 2>/dev/null; do
 done
 trap 'rmdir "$lockdir" 2>/dev/null || true' EXIT INT TERM
 
-# app:space. Spaces 1-9 are the main display. Space 2 is Screen Sharing.
+# app:space. Spaces 1-9 are the main display. Space 2 is Jump Desktop.
 # Names contain spaces, so the list is one pin per line.
 read_pins() {
     cat <<'EOF'
@@ -36,7 +36,7 @@ Preview:6
 Foxit PDF Reader:6
 Alter:7
 Obsidian:8
-Screen Sharing:2
+Jump Desktop:2
 Discord:12
 WhatsApp:12
 Arc:13
