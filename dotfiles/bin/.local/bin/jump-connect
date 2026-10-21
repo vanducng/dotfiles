@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# Jump Desktop helper lives in the jump-desktop skill; this keeps it on PATH.
+exec "$HOME/skills/skills/jump-desktop/scripts/jump-connect" "$@"
