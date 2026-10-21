@@ -26,64 +26,21 @@ WAN IPv4 is NAT (`222.253.112.200`). WAN IPv6 on this NIC (may rotate):
 
 ---
 
-## 1. Mac `~/.ssh/config`
+## 1. SSH from any machine
 
-Paste this (or re-print with `dpl-remote mac-config` if IPv6 changed):
-
-```
-Host linux01 linux01-v6 linux01-ts dpl dpl-v6 dpl-ts
-  User ubuntu
-  Port 2222
-  IdentityFile ~/.ssh/id_rsa
-  IdentitiesOnly yes
-  ServerAliveInterval 30
-  ServerAliveCountMax 3
-
-Host linux01 dpl
-  HostName 192.168.1.193
-
-Host linux01-v6 dpl-v6
-  HostName 2001:ee0:4fc4:60f0:22d2:d132:ce3e:2e88
-
-Host linux01-ts dpl-ts
-  HostName 100.111.142.22
-
-Host linux01-tunnel linux01-v6-tunnel linux01-ts-tunnel dpl-tunnel dpl-v6-tunnel dpl-ts-tunnel
-  User ubuntu
-  Port 2222
-  IdentityFile ~/.ssh/id_rsa
-  IdentitiesOnly yes
-  ServerAliveInterval 30
-  ServerAliveCountMax 3
-  ExitOnForwardFailure yes
-  ControlMaster auto
-  ControlPersist 10m
-  ControlPath ~/.ssh/cm-%n-%p-%r
-  LocalForward 127.0.0.1:9222 127.0.0.1:9222
-  LocalForward 127.0.0.1:13389 127.0.0.1:3389
-
-Host linux01-tunnel dpl-tunnel
-  HostName 192.168.1.193
-
-Host linux01-v6-tunnel dpl-v6-tunnel
-  HostName 2001:ee0:4fc4:60f0:22d2:d132:ce3e:2e88
-
-Host linux01-ts-tunnel dpl-ts-tunnel
-  HostName 100.111.142.22
-```
-
-Pubkey must already be in `~/.ssh/authorized_keys` on dpl (it is, from the Mac).
+The `ssh` stow package ships `~/.ssh/config.d/home-hosts.conf`; each machine's
+`~/.ssh/config` has `Include ~/.ssh/config.d/*.conf` near the top. Hosts use the
+Tailscale IPv4, so the same name works at home and away:
 
 ```bash
-ssh dpl                 # LAN shell
-ssh dpl-v6              # IPv6 shell fallback
-ssh dpl-ts              # Tailscale shell
-ssh -N dpl-tunnel       # LAN CDP + RDP tunnels
-ssh -N dpl-v6-tunnel    # IPv6 CDP + RDP tunnels
-ssh -N dpl-ts-tunnel    # Tailscale CDP + RDP tunnels
+ssh linux-01            # this box (old names linux01, dpl, dpl-ts still work)
+ssh mini-01             # Mac mini
+ssh macpro              # MacBook Pro
+ssh linux-01-lan        # LAN fallback when Tailscale is down
+ssh -N linux-01-tunnel  # CDP + RDP forwards (old dpl-tunnel names still work)
 ```
 
-Cursor / VS Code Remote SSH: host `192.168.1.193`, port `2222`, user `ubuntu`.
+Cursor / VS Code Remote SSH: host `linux-01`.
 
 ---
 

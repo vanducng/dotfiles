@@ -1,4 +1,4 @@
-COMMON_STOW_FOLDERS=tmux herdr pi starship bin vrapperrc yazi zathura lazygit nvim-vscode task nvim mise miu agents atuin direnv diffnav gh-dash agent-deck wtf delta git plannotator dsh
+COMMON_STOW_FOLDERS=tmux herdr pi ssh starship bin vrapperrc yazi zathura lazygit nvim-vscode task nvim mise miu agents atuin direnv diffnav gh-dash agent-deck wtf delta git plannotator dsh
 MACOS_STOW_FOLDERS=zsh kitty skhd yabai borders ghostty claude codex grok cursor hammerspoon karabiner rift vscode launchd gopass gnupg
 # Portable extras for Linux. Do not auto-stow `grok`: the Grok TUI installer owns ~/.grok.
 # Opt in with `make stow-grok` after backing up auth.json / sessions.
