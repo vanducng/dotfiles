@@ -30,7 +30,7 @@ jump-connect access 50         # who connected, from where, and whether auth pas
 jump-connect list              # the entries above
 jump-connect open linux-01     # connect now
 jump-connect import            # save the fallback entries into Jump Desktop's list
-jump-connect names             # apply the display names (restarts Jump Desktop)
+jump-connect names             # apply the display names (quit Jump Desktop first)
 ```
 
 ## Set up a Mac
@@ -38,7 +38,7 @@ jump-connect names             # apply the display names (restarts Jump Desktop)
 1. `brew install --cask jump-desktop-connect`, then `make stow-bin`.
 2. Sign Connect in with the Apple account, or create a Connect Code while signed in to the Jump dashboard with it and run `jump-connect add-user <code>`.
 3. Allow Screen Recording, Accessibility, and Remote Desktop for Jump Desktop Connect (`jump-connect perms-ui`), then check `jump-connect perms`. Full Disk Access (`SystemPolicyAllFiles`) stays off; remote control does not need it.
-4. In the Jump Desktop viewer: sign in with the Apple account, allow Local Network when macOS asks, then `jump-connect import` and `jump-connect names`.
+4. In the Jump Desktop viewer: sign in with the Apple account, allow Local Network when macOS asks, run `jump-connect import`, quit Jump Desktop, then `jump-connect names`.
 5. For the VNC fallback, turn on System Settings > General > Sharing > Screen Sharing.
 6. On the MacBook, run `cnb-openvpn-mac install-repair` once (sudo) so the CNB full tunnel never captures Jump or Tailscale traffic.
 7. For unattended use, log in with the macOS account from the viewer instead of waiting for someone to click Allow (`Type:Interactive ... Timedout` in `jump-connect access`).
