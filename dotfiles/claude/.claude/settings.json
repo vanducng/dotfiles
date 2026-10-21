@@ -6,6 +6,7 @@
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
   },
   "includeCoAuthoredBy": false,
+  "model": "opus",
   "hooks": {
     "SessionStart": [
       {
@@ -18,6 +19,26 @@
           }
         ]
       }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/skills/hooks/agent-notify.py\" claude stop"
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/skills/hooks/agent-notify.py\" claude notification"
+          }
+        ]
+      }
     ]
   },
   "statusLine": {
@@ -27,7 +48,8 @@
   "enabledPlugins": {
     "docker-mcp-toolkit@docker": false,
     "ralph-loop@claude-plugins-official": true,
-    "plannotator@plannotator": true
+    "plannotator@plannotator": true,
+    "typescript-lsp@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
     "plannotator": {
@@ -38,9 +60,19 @@
     }
   },
   "alwaysThinkingEnabled": true,
+  "modelSettings": {
+    "claude-fable-5-1": {
+      "effortLevel": "xhigh"
+    },
+    "claude-opus-5-5": {
+      "effortLevel": "high"
+    }
+  },
   "autoUpdatesChannel": "stable",
   "skipDangerousModePermissionPrompt": true,
+  "theme": "dark",
   "teammateMode": "in-process",
+  "agentPushNotifEnabled": true,
   "feedbackSurveyState": {
     "lastShownTime": 1754065071861
   }
