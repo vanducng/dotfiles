@@ -2,7 +2,7 @@
 # =============================================================================
 # arrange-displays.sh
 # Keep 18 managed desktops when two displays are attached:
-#   display 1 (main):     9 desktops (the 2nd is Screen Sharing)
+#   display 1 (main):     9 desktops (the 2nd is Jump Desktop)
 #   display 2 (built-in): 9 desktops
 # With one display, keep 18 desktops on it.
 #
