@@ -351,6 +351,10 @@ supports_websockets = true
 env_key = "CLI_PROXY_API_KEY"
 env_key_instructions = "Export CLI_PROXY_API_KEY from gopass: gopass show -o personal/saas/cli-proxy/code-01-api-key"
 
+[mcp_servers.jump-cli]
+command = "jump-cli"
+args = ["mcp"]
+
 # BEGIN OPENRIG MANAGED CODEX CONFIG FRAGMENT: shared:codex-default-config
 [mcp_servers.exa]
 url = "https://mcp.exa.ai/mcp"
