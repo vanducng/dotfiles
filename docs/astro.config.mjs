@@ -52,6 +52,7 @@ export default defineConfig({
             'skhd',
             'tinycast',
             'jump-desktop',
+            'openvpn',
             'zen-mode',
           ],
         },
