@@ -18,6 +18,8 @@ cnb-openvpn-mac patch-profiles   # once per profile import
 cnb-openvpn-mac split            # drop full-tunnel routes; keep CNB LAN
 ```
 
+Profile copy and import steps are in [OpenVPN](/openvpn/).
+
 **2. Herdr panes lost macOS DNS (`scutil --dns` → "No DNS configuration available")**
 
 After VPN route changes, a long-lived Herdr server can leave pane shells unable to resolve via `getaddrinfo` while `dig` still works. Symptom in the pane: `curl: (6) Could not resolve host`. Restart the Herdr server so panes respawn with a fresh configd session:

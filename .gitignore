@@ -79,6 +79,11 @@ dotfiles/git/.config/git/*.local.gitconfig
 .env.*
 !.env.example
 
+# OpenVPN profiles contain inline private keys and certificates.
+# Keep them in OpenVPN Connect's profile folder, never in this repo.
+*.ovpn
+*.tblk
+
 # Python virtual environments
 .venv/
 __pycache__/
