@@ -7,7 +7,7 @@ Remote desktop across the home machines with [Jump Desktop](https://jumpdesktop.
 | Name in Jump | Machine (hostname) | How Jump reaches it | Fallback entry |
 | --- | --- | --- | --- |
 | `mini-01` | Mac mini (`mac01`) | Jump Desktop Connect (Fluid, cloud, from anywhere) | `mini-01.jump`: VNC `192.168.1.21:5900` (LAN) |
-| `linux-01` | Ubuntu (`dpl`, ssh `linux01`) | Jump Desktop Connect for Linux (Fluid, cloud, from anywhere) | `linux-01.jump`: RDP `192.168.1.193:3389` (LAN), user `ubuntu` |
+| `linux-01` | Ubuntu (`dpl`, ssh `linux01`) | Jump Desktop Connect for Linux (Fluid, cloud, from anywhere) - not working yet, see below | none: Jump cannot RDP to GNOME Remote Desktop 42 |
 | `macpro` | MacBook Pro (`Ducs-MacBook-Pro`) | Jump Desktop Connect (Fluid, cloud, from anywhere) | `macpro.jump`: VNC `ducs-macbook-pro:5900` (Tailscale, works off the LAN) |
 
 Connect reports each host by its hostname. The names above are set per viewer from `names` by `jump-connect names`; the hostnames stay unchanged because Tailscale, ssh, and skhd use them.
@@ -28,7 +28,7 @@ All hosts and viewers use the one Jump account bought through the Apple App Stor
 jump-connect status            # service, device id, TCC grants, viewer Local Network grant, last connections
 jump-connect access 50         # who connected, from where, and whether auth passed
 jump-connect list              # the entries above
-jump-connect open linux-01     # connect now
+jump-connect open mini-01      # connect now
 jump-connect import            # save the fallback entries into Jump Desktop's list
 jump-connect names             # apply the display names (quit Jump Desktop first)
 ```
@@ -45,7 +45,12 @@ jump-connect names             # apply the display names (quit Jump Desktop firs
 
 ## linux01
 
-Jump Desktop Connect runs as `jump-connect.service` (package `jump-connect`, logs in `/var/log/jump-connect/`); `ssh linux01 jump-connect status` checks it; `sudo jump-connect sessions` lists live sessions. The RDP fallback is GNOME Remote Desktop (`grdctl status`), credentials via `grdctl rdp set-credentials`. From outside the LAN use the `dpl` Connect entry or `linux01` (Tailscale); see [Linux homelab](/linux-homelab/).
+Jump Desktop Connect runs as `jump-connect.service` (package `jump-connect`, logs in `/var/log/jump-connect/`, agent log `~/.local/state/jump-connect/logs/`); `ssh linux01 jump-connect status` checks it; `sudo jump-connect sessions` lists live sessions. See [Linux homelab](/linux-homelab/).
+
+Known issues on Ubuntu 22.04 (GNOME 42, Wayland):
+
+- Fluid connects and authenticates as `ubuntu`, then stays on "connecting": the service logs `Dropping request to view desktop because client does not have access` and the viewer gets no video. Same since the first session on 2026-10-18.
+- RDP from Jump to GNOME Remote Desktop 42 cannot work: it accepts only NLA and rejects Jump's NTLM negotiate flags (`NegotiateFlags invalid flags ... 0x00000205 required`), so the window closes right after the password. Use Microsoft Remote Desktop or FreeRDP for RDP to linux01.
 
 ## Troubleshooting
 
