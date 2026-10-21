@@ -30,7 +30,7 @@ All application shortcuts use the `meh` key (ctrl+alt+shift) for consistency and
 | Space | Display | App |
 |-------|---------|-----|
 | 1 | 1 | Ghostty |
-| 2 | 1 | Screen Sharing (Mac Mini) |
+| 2 | 1 | Jump Desktop (Mac Mini) |
 | 3 | 1 | Aside |
 | 4 | 1 | Chrome, Dia |
 | 5 | 1 | Cursor |
@@ -79,7 +79,7 @@ All application shortcuts use the `meh` key (ctrl+alt+shift) for consistency and
 | Shortcut | Application | Description |
 |----------|-------------|-------------|
 | `meh + 1` | 1Password | Password manager |
-| `meh + 2` | Screen Sharing | Mac Mini on the primary display, space 2 |
+| `meh + 2` | Jump Desktop | Mac Mini (`mini-01`, Fluid) on the primary display, space 2 |
 | `meh + v` | Grok Bot | Grok desktop app on space 16 |
 | `meh + l` | Perplexity | AI search engine |
 | `meh + i` | Structured | Task and time management |
