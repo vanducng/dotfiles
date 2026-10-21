@@ -2,7 +2,7 @@
   "ClipboardRedirection": true,
   "ColorDepthCode": 3,
   "ConnectionTypeCode": 0,
-  "DisplayName": "ducs-macbook-pro (VNC, Tailscale)",
+  "DisplayName": "mini-01 (VNC, LAN)",
   "MatchScreenResolution": true,
   "MouseCursorUpdates": true,
   "ProtocolTypeCode": 1,
@@ -11,12 +11,12 @@
   "StartInFullscreen": false,
   "Tags": [
     "mac",
-    "tailscale"
+    "lan"
   ],
-  "TcpHostName": "ducs-macbook-pro",
+  "TcpHostName": "192.168.1.21",
   "TcpPort": 5900,
   "TypeCode": 1,
-  "UniqueId": "C65F7AC9-5C9D-4D14-A89B-62C73750C0ED",
+  "UniqueId": "31537ECD-4FEB-4B32-ACBA-D3776A8D3E0A",
   "UseDynamicResolutionUpdate": true,
   "Username": ""
 }

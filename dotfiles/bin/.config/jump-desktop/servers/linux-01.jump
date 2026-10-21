@@ -2,7 +2,7 @@
   "ClipboardRedirection": true,
   "ColorDepthCode": 3,
   "ConnectionTypeCode": 0,
-  "DisplayName": "linux01 (RDP, LAN)",
+  "DisplayName": "linux-01 (RDP, LAN)",
   "MatchScreenResolution": true,
   "MouseCursorUpdates": true,
   "ProtocolTypeCode": 0,
