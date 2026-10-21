@@ -51,6 +51,7 @@ export default defineConfig({
             'atuin',
             'skhd',
             'tinycast',
+            'jump-desktop',
             'zen-mode',
           ],
         },
