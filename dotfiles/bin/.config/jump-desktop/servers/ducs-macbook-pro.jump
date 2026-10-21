@@ -1,0 +1,22 @@
+{
+  "ClipboardRedirection": true,
+  "ColorDepthCode": 3,
+  "ConnectionTypeCode": 0,
+  "DisplayName": "ducs-macbook-pro (VNC, Tailscale)",
+  "MatchScreenResolution": true,
+  "MouseCursorUpdates": true,
+  "ProtocolTypeCode": 1,
+  "RDGatewayUniqueId": null,
+  "SshServerUniqueId": null,
+  "StartInFullscreen": false,
+  "Tags": [
+    "mac",
+    "tailscale"
+  ],
+  "TcpHostName": "ducs-macbook-pro",
+  "TcpPort": 5900,
+  "TypeCode": 1,
+  "UniqueId": "C65F7AC9-5C9D-4D14-A89B-62C73750C0ED",
+  "UseDynamicResolutionUpdate": true,
+  "Username": ""
+}

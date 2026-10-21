@@ -1,0 +1,22 @@
+{
+  "ClipboardRedirection": true,
+  "ColorDepthCode": 3,
+  "ConnectionTypeCode": 0,
+  "DisplayName": "mac01 (VNC, LAN)",
+  "MatchScreenResolution": true,
+  "MouseCursorUpdates": true,
+  "ProtocolTypeCode": 1,
+  "RDGatewayUniqueId": null,
+  "SshServerUniqueId": null,
+  "StartInFullscreen": false,
+  "Tags": [
+    "mac",
+    "lan"
+  ],
+  "TcpHostName": "192.168.1.21",
+  "TcpPort": 5900,
+  "TypeCode": 1,
+  "UniqueId": "31537ECD-4FEB-4B32-ACBA-D3776A8D3E0A",
+  "UseDynamicResolutionUpdate": true,
+  "Username": ""
+}
