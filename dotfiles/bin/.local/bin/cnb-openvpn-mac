@@ -27,6 +27,8 @@ CNB OpenVPN on macOS - OpenVPN Connect helper.
   cnb-openvpn-mac stop
   cnb-openvpn-mac status
   cnb-openvpn-mac split           drop full-tunnel routes and route the bastion via the tun
+  cnb-openvpn-mac repair          reapply those routes when the tun is up and they are missing
+  cnb-openvpn-mac install-repair  reapply every 15s after a reconnect
   cnb-openvpn-mac patch-profiles  add pull-filter lines to CNB .ovpn profiles
   cnb-openvpn-mac doctor          status + https://api2.cursor.sh check
 
@@ -105,6 +107,10 @@ cmd_status() {
 _run_root() {
   local script="$1"
   local tmp
+  if [[ "$(id -u)" -eq 0 ]]; then
+    /bin/bash -c "$script"
+    return
+  fi
   if sudo -n true 2>/dev/null; then
     sudo -n /bin/bash -c "$script"
     return
@@ -153,69 +159,107 @@ routes_file() {
   printf '%s\n' "$(cd "${dir}/../.." && pwd)/.config/cnb-openvpn/routes"
 }
 
-vpn_gateway() {
+vpn_iface() {
+  # The utun that owns the CNB address. Host routes must use -interface.
+  # `route add -host $ip $peer` binds to en0 on macOS: the peer is not an
+  # on-link gateway, so the packet never enters the tunnel.
   ifconfig 2>/dev/null | awk -v p="$CNB_GW_HINT" '
-    $1 == "inet" && index($2, p) == 1 { print $4; exit }
+    $1 ~ /:$/ { iface=$1; sub(":$", "", iface) }
+    $1 == "inet" && index($2, p) == 1 { print iface; exit }
   '
 }
 
+trim_route_line() {
+  local line="$1"
+  line="${line%%#*}"
+  line="${line#"${line%%[![:space:]]*}"}"
+  line="${line%"${line##*[![:space:]]}"}"
+  printf '%s\n' "$line"
+}
+
+resolve_hostname() {
+  local name="$1" resolver ips ip
+  ips=""
+  for resolver in "" 1.1.1.1 8.8.8.8; do
+    if [[ -z "$resolver" ]]; then
+      ips+=$'\n'"$(dig +short "$name" A 2>/dev/null || true)"
+    else
+      ips+=$'\n'"$(dig +short "@${resolver}" "$name" A 2>/dev/null || true)"
+    fi
+  done
+  while IFS= read -r ip; do
+    [[ "$ip" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]] || continue
+    printf '%s\n' "$ip"
+  done <<<"$ips"
+}
+
+wildcard_names() {
+  local zone="$1" routes="$2" labels line name
+  printf '%s\n' "$zone"
+  labels="$(dirname "$(python3 -c 'import os,sys; print(os.path.realpath(sys.argv[1]))' "$routes")")/labels/${zone}"
+  [[ -f "$labels" ]] || return 0
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    line="$(trim_route_line "$line")"
+    [[ -z "$line" ]] && continue
+    if [[ "$line" == *.* ]]; then
+      name="$line"
+    else
+      name="${line}.${zone}"
+    fi
+    printf '%s\n' "$name"
+  done <"$labels"
+}
+
 read_route_targets() {
-  local file="$1" line name resolver ips ip
+  local file="$1" line zone name
   [[ -f "$file" ]] || return 0
   while IFS= read -r line || [[ -n "$line" ]]; do
-    line="${line%%#*}"
-    line="${line#"${line%%[![:space:]]*}"}"
-    line="${line%"${line##*[![:space:]]}"}"
+    line="$(trim_route_line "$line")"
     [[ -z "$line" ]] && continue
     if [[ "$line" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
       printf '%s\n' "$line"
+      continue
+    fi
+    if [[ "$line" =~ ^\*\.(.+)$ ]]; then
+      zone="${BASH_REMATCH[1]}"
+      if [[ ! "$zone" =~ ^[A-Za-z0-9.-]+\.[A-Za-z0-9.-]+$ ]]; then
+        echo "cnb-openvpn-mac: skip invalid route entry: $line" >&2
+        continue
+      fi
+      while IFS= read -r name; do
+        [[ -z "$name" ]] && continue
+        resolve_hostname "$name"
+      done < <(wildcard_names "$zone" "$file")
       continue
     fi
     if [[ ! "$line" =~ ^[A-Za-z0-9.-]+\.[A-Za-z0-9.-]+$ ]]; then
       echo "cnb-openvpn-mac: skip invalid route entry: $line" >&2
       continue
     fi
-    name="$line"
-    ips=""
-    for resolver in "" 1.1.1.1 8.8.8.8; do
-      if [[ -z "$resolver" ]]; then
-        ips+=$'\n'"$(dig +short "$name" A 2>/dev/null || true)"
-      else
-        ips+=$'\n'"$(dig +short "@${resolver}" "$name" A 2>/dev/null || true)"
-      fi
-    done
-    while IFS= read -r ip; do
-      [[ "$ip" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]] || continue
-      printf '%s\n' "$ip"
-    done <<<"$ips"
+    resolve_hostname "$line"
   done <"$file" | awk 'NF && !seen[$0]++'
 }
 
-route_gateway() {
-  local gw
-  gw="$(vpn_gateway)"
-  if [[ -n "$gw" ]]; then
-    printf '%s\n' "$gw"
-    return
-  fi
-  full_tunnel_gateways | awk -v p="$CNB_GW_HINT" 'index($0, p) == 1 { print; exit }'
-}
-
 cmd_split() {
-  local gws gw route_gw target script=""
+  local gws gw iface lan_if target script="" added="" bad=0 got
   gws="$(full_tunnel_gateways || true)"
-  route_gw="$(route_gateway || true)"
+  iface="$(vpn_iface || true)"
   while IFS= read -r gw; do
     [[ -z "$gw" ]] && continue
     script+="route -n delete -net 0.0.0.0/1 ${gw} 2>/dev/null || true; "
     script+="route -n delete -net 128.0.0.0/1 ${gw} 2>/dev/null || true; "
   done <<<"$gws"
-  if [[ -n "$route_gw" ]]; then
+  if [[ -n "$iface" ]]; then
     while IFS= read -r target; do
       [[ -z "$target" ]] && continue
       script+="route -n delete -host ${target} >/dev/null 2>&1 || true; "
-      script+="route -n add -host ${target} ${route_gw}; "
-      printf '%s via %s\n' "$target" "$route_gw"
+      while IFS= read -r lan_if; do
+        [[ -z "$lan_if" ]] && continue
+        script+="route -n delete -ifscope ${lan_if} -host ${target} >/dev/null 2>&1 || true; "
+      done < <(netstat -rn -f inet 2>/dev/null | awk '$1=="default" && $NF !~ /^utun/ { print $NF }' | sort -u)
+      script+="route -n add -host ${target} -interface ${iface}; "
+      printf '%s via %s\n' "$target" "$iface"
+      added+="${target}"$'\n'
     done < <(read_route_targets "$(routes_file)")
   fi
   if [[ -z "$script" ]]; then
@@ -229,15 +273,96 @@ cmd_split() {
     cmd_status || true
     return 1
   fi
+  while IFS= read -r target; do
+    [[ -z "$target" ]] && continue
+    got="$(route -n get "$target" 2>/dev/null | awk '/interface:/{print $2; exit}')"
+    echo "$target interface: ${got:-missing}"
+    if [[ -n "$iface" && "$got" != "$iface" ]]; then
+      bad=1
+    fi
+  done <<<"$added"
+  if [[ "$bad" -ne 0 ]]; then
+    echo "cnb-openvpn-mac: host routes are not on ${iface}" >&2
+    return 1
+  fi
   echo "cnb-openvpn-mac: split tunnel OK"
   route -n get default 2>/dev/null | awk '/gateway:|interface:/{print}'
-  if [[ -n "$route_gw" ]]; then
-    while IFS= read -r target; do
-      [[ -z "$target" ]] && continue
-      route -n get "$target" 2>/dev/null | awk -v t="$target" '/gateway:|interface:/{print t, $0}'
-    done < <(read_route_targets "$(routes_file)")
-  fi
   return 0
+}
+
+routes_need_repair() {
+  local iface target got
+  iface="$(vpn_iface || true)"
+  [[ -n "$iface" ]] || return 1
+  while IFS= read -r target; do
+    [[ -z "$target" ]] && continue
+    got="$(route -n get "$target" 2>/dev/null | awk '/interface:/{print $2; exit}')"
+    if [[ "$got" != "$iface" ]]; then
+      return 0
+    fi
+  done < <(read_route_targets "$(routes_file)")
+  return 1
+}
+
+cmd_repair() {
+  if routes_need_repair; then
+    cmd_split
+  fi
+}
+
+cmd_install_repair() {
+  local home user helper label dest
+  home="${CNB_REPAIR_HOME:-$HOME}"
+  user="${CNB_REPAIR_USER:-$USER}"
+  helper="${home}/.local/bin/cnb-openvpn-mac"
+  label="com.vanducng.cnb-openvpn-mac-repair"
+  dest="/Library/LaunchDaemons/${label}.plist"
+  if [[ "$(id -u)" -ne 0 ]]; then
+    _run_root "CNB_REPAIR_HOME='${home}' CNB_REPAIR_USER='${user}' '${helper}' install-repair"
+    return
+  fi
+  [[ -n "$home" && -x "$helper" ]] || {
+    echo "cnb-openvpn-mac: install-repair needs CNB_REPAIR_HOME and the helper" >&2
+    return 1
+  }
+  cat >"$dest" <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>${label}</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>${helper}</string>
+    <string>repair</string>
+  </array>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>HOME</key>
+    <string>${home}</string>
+    <key>USER</key>
+    <string>${user}</string>
+    <key>PATH</key>
+    <string>/usr/bin:/bin:/usr/sbin:/sbin:/opt/homebrew/bin</string>
+  </dict>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>StartInterval</key>
+  <integer>15</integer>
+  <key>StandardOutPath</key>
+  <string>/Library/Logs/${label}.log</string>
+  <key>StandardErrorPath</key>
+  <string>/Library/Logs/${label}.log</string>
+</dict>
+</plist>
+EOF
+  chown root:wheel "$dest"
+  chmod 644 "$dest"
+  launchctl bootout "system/${label}" >/dev/null 2>&1 || true
+  launchctl bootstrap system "$dest"
+  launchctl enable "system/${label}"
+  echo "cnb-openvpn-mac: ${label} installed for ${user}"
 }
 
 _is_cnb_profile() {
@@ -330,6 +455,8 @@ main() {
     stop|disconnect|disable) shift; cmd_disconnect "$@" ;;
     status) cmd_status ;;
     split) cmd_split ;;
+    repair) cmd_repair ;;
+    install-repair) shift; cmd_install_repair "$@" ;;
     patch-profiles) cmd_patch_profiles ;;
     doctor) cmd_doctor ;;
     -h|--help|help|"") usage; [[ -n "$cmd" ]] || return 0 ;;

@@ -2,7 +2,7 @@
   "ClipboardRedirection": true,
   "ColorDepthCode": 3,
   "ConnectionTypeCode": 0,
-  "DisplayName": "mac01 (VNC, LAN)",
+  "DisplayName": "mini-01 (VNC, LAN)",
   "MatchScreenResolution": true,
   "MouseCursorUpdates": true,
   "ProtocolTypeCode": 1,

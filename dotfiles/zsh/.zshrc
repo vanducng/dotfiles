@@ -1,6 +1,11 @@
 # Tinycast runs /bin/zsh -lc; .zprofile also sources this file.
 [[ -n ${TINYCAST:-} ]] && return
 
+# LaunchAgent shells can start on an external volume without permission to read it.
+if ! pwd -P >/dev/null 2>&1; then
+  builtin cd -q "$HOME" 2>/dev/null || true
+fi
+
 # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
 # Initialization code that may require console input (password prompts, [y/n]
 # confirmations, etc.) must go above this block; everything else may go below.
@@ -28,6 +33,12 @@ zsh-syntax-highlighting
 zsh-vi-mode
 )
 source $ZSH/oh-my-zsh.sh
+
+# Default path style is underline, so `cd ~/work` draws a line under the path.
+ZSH_HIGHLIGHT_STYLES[path]=none
+ZSH_HIGHLIGHT_STYLES[path_prefix]=none
+ZSH_HIGHLIGHT_STYLES[autodirectory]=fg=green
+
 source <(gopass completion zsh)
 
 # 1Password CLI. Unlock comes from the desktop app (Settings > Developer >
@@ -65,7 +76,7 @@ export JIRA_DOMAIN="https://cnbacrylic.atlassian.net"
 export JIRA_EMAIL="me@vanducng.dev"
 export JIRA_API_KEY="$(gopass show -o work/cnb/atlassian-api-key 2>/dev/null)"
 
-# Aliases now managed by atuin dotfiles
+# Aliases live in ~/.config/shell/aliases.zsh (sourced at the bottom).
 
 # pyenv init
 export PYENV_ROOT="$HOME/.pyenv"
@@ -323,8 +334,11 @@ if [ -f "$HOME/google-cloud-sdk/completion.zsh.inc" ]; then . "$HOME/google-clou
 export PATH="$HOME/.antigravity/antigravity/bin:$PATH"
 
 
-# Load Angular CLI autocompletion.
-source <(ng completion script)
+# Load Angular CLI autocompletion. ng calls getcwd at startup and dumps a stack
+# trace when the shell was launched in a directory macOS will not let it read.
+if command -v ng >/dev/null 2>&1 && pwd -P >/dev/null 2>&1; then
+  source <(ng completion script)
+fi
 
 # Cortex CLI completion (disable via /settings in cortex)
 [[ -s ~/.zsh/completions/cortex.zsh ]] && source ~/.zsh/completions/cortex.zsh
@@ -400,9 +414,4 @@ export HERD_PHP_84_INI_SCAN_DIR="${HOME}/Library/Application Support/Herd/config
 export HERD_PHP_85_INI_SCAN_DIR="${HOME}/Library/Application Support/Herd/config/php/85"
 
 
-# Herd injected PHP 8.4 configuration.
-export HERD_PHP_84_INI_SCAN_DIR="/Users/vanducng/Library/Application Support/Herd/config/php/84"
-
-
-# Herd injected PHP 8.5 configuration.
-export HERD_PHP_85_INI_SCAN_DIR="/Users/vanducng/Library/Application Support/Herd/config/php/85"
+[[ -f $HOME/.config/shell/aliases.zsh ]] && source "$HOME/.config/shell/aliases.zsh"

@@ -1,0 +1,5 @@
+# Jump Desktop display names, applied to a viewer's saved list by `jump-connect names`.
+# <name Jump Connect reports (the host's hostname)>  <name to show>
+mac01             mini-01
+dpl               linux-01
+Ducs-MacBook-Pro  macpro

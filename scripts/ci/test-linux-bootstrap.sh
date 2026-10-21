@@ -51,10 +51,11 @@ mac_ovpn="$ROOT/dotfiles/bin/.local/bin/cnb-openvpn-mac"
 bash -n "$mac_ovpn" && pass "cnb-openvpn-mac parses" || fail "cnb-openvpn-mac syntax"
 if grep -qE '^(split|cmd_split)\(\)|case .*split' "$mac_ovpn" \
   && grep -q '0/1' "$mac_ovpn" \
-  && grep -q 'redirect-gateway' "$mac_ovpn"; then
+  && grep -q 'redirect-gateway' "$mac_ovpn" \
+  && grep -q -- '-interface' "$mac_ovpn"; then
   pass "cnb-openvpn-mac can strip redirect-gateway full-tunnel routes"
 else
-  fail "cnb-openvpn-mac must implement split against 0/1 full-tunnel"
+  fail "cnb-openvpn-mac must implement split against 0/1 full-tunnel and pin host routes to the tun interface"
 fi
 mock_openvpn="$(mktemp)"
 cat >"$mock_openvpn" <<'EOF'
@@ -71,8 +72,11 @@ fi
 rm -f "$mock_openvpn"
 routes_file="$ROOT/dotfiles/bin/.config/cnb-openvpn/routes"
 if grep -q 'read_route_targets' "$mac_ovpn" \
+  && grep -q 'wildcard_names' "$mac_ovpn" \
   && grep -qx '18.210.49.223' "$routes_file" \
   && grep -qx 'cdljobnow.com' "$routes_file" \
+  && grep -qx '*.cdljobnow.com' "$routes_file" \
+  && grep -qx 'staging' "$ROOT/dotfiles/bin/.config/cnb-openvpn/labels/cdljobnow.com" \
   && ! grep -q 'snowflake' "$routes_file"; then
   pass "cnb-openvpn-mac routes bastion and cdljobnow.com"
 else

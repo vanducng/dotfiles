@@ -2,21 +2,21 @@
   "ClipboardRedirection": true,
   "ColorDepthCode": 3,
   "ConnectionTypeCode": 0,
-  "DisplayName": "linux01 (RDP, LAN)",
+  "DisplayName": "macpro (VNC, Tailscale)",
   "MatchScreenResolution": true,
   "MouseCursorUpdates": true,
-  "ProtocolTypeCode": 0,
+  "ProtocolTypeCode": 1,
   "RDGatewayUniqueId": null,
   "SshServerUniqueId": null,
   "StartInFullscreen": false,
   "Tags": [
-    "linux",
-    "lan"
+    "mac",
+    "tailscale"
   ],
-  "TcpHostName": "192.168.1.193",
-  "TcpPort": 3389,
+  "TcpHostName": "ducs-macbook-pro",
+  "TcpPort": 5900,
   "TypeCode": 1,
-  "UniqueId": "15791CD9-C4C1-4E58-AA0E-A488680AF3BA",
+  "UniqueId": "C65F7AC9-5C9D-4D14-A89B-62C73750C0ED",
   "UseDynamicResolutionUpdate": true,
-  "Username": "ubuntu"
+  "Username": ""
 }
