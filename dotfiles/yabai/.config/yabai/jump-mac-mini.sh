@@ -12,6 +12,7 @@ yabai -m space 2 --layout stack 2>/dev/null || true
 id="$(session)"
 
 if [ -z "$id" ]; then
+  yabai -m space --focus 2 2>/dev/null || true
   # Found by Connect hostname, which viewer renames keep. A file named like a saved
   # computer gets a "Different Computers With Same Name" confirm, so open a renamed copy.
   entry="$(jq -r 'select(.ConnectDisplayName == "mac01") | input_filename' "$servers"/*.jump 2>/dev/null | head -1)"
