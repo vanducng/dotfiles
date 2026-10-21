@@ -56,7 +56,7 @@ yabai -m signal --add event=display_removed \
 
 # -----------------------------------------------------------------------------
 # App rules — managed=off (float) unless noted
-# Sorted alphabetically. Sticky+layer=above pins app on all spaces above tiles.
+# Sorted alphabetically. Sticky+sub-layer=above pins app on all spaces above tiles.
 # -----------------------------------------------------------------------------
 yabai -m rule --add app=".*"                          sub-layer=normal
 
@@ -122,10 +122,10 @@ for id in $(yabai -m query --windows | jq -r '.[] | select((.app=="kitty" or .ap
     yabai -m window "$id" --grid 6:6:1:1:4:4 2>/dev/null
 done
 # Sticky overlays (pinned across spaces, above tiled windows)
-yabai -m rule --add app="^Activity Monitor$"          sticky=on layer=above manage=off
-yabai -m rule --add app="^Disk Utility$"              sticky=on layer=above manage=off
-yabai -m rule --add app="^System Information$"        sticky=on layer=above manage=off
-yabai -m rule --add app="^System Preferences$"        sticky=on layer=above manage=off
+yabai -m rule --add app="^Activity Monitor$"          sticky=on sub-layer=above manage=off
+yabai -m rule --add app="^Disk Utility$"              sticky=on sub-layer=above manage=off
+yabai -m rule --add app="^System Information$"        sticky=on sub-layer=above manage=off
+yabai -m rule --add app="^System Preferences$"        sticky=on sub-layer=above manage=off
 
 # Floating apps (do not tile)
 yabai -m rule --add app="^Borumi$"                    manage=off

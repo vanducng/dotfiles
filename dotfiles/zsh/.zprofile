@@ -1,6 +1,11 @@
 # Tinycast runs custom commands as /bin/zsh -lc; skip the full login shell.
 [[ -n ${TINYCAST:-} ]] && return
 
+# LaunchAgent shells can start on an external volume without permission to read it.
+if ! pwd -P >/dev/null 2>&1; then
+  builtin cd -q "$HOME" 2>/dev/null || true
+fi
+
 ##
 # Your previous $HOME/.zprofile file was backed up as $HOME/.zprofile.macports-saved_2022-08-02_at_01:17:23
 ##
@@ -22,7 +27,10 @@ export PATH=/opt/snowflake/snowcd:$PATH
 
 eval "$(/opt/homebrew/bin/brew shellenv)"
 
-source ~/.zshrc
+# Interactive login shells source .zshrc themselves. Doing it here runs startup twice.
+if [[ ! -o interactive ]]; then
+  source ~/.zshrc
+fi
 
 # Added by OrbStack: command-line tools and integration
 # This won't be added again if you remove it.

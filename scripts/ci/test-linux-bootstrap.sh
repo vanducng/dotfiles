@@ -51,10 +51,11 @@ mac_ovpn="$ROOT/dotfiles/bin/.local/bin/work-vpn-mac"
 bash -n "$mac_ovpn" && pass "work-vpn-mac parses" || fail "work-vpn-mac syntax"
 if grep -qE '^(split|cmd_split)\(\)|case .*split' "$mac_ovpn" \
   && grep -q '0/1' "$mac_ovpn" \
-  && grep -q 'redirect-gateway' "$mac_ovpn"; then
+  && grep -q 'redirect-gateway' "$mac_ovpn" \
+  && grep -q -- '-interface' "$mac_ovpn"; then
   pass "work-vpn-mac can strip redirect-gateway full-tunnel routes"
 else
-  fail "work-vpn-mac must implement split against 0/1 full-tunnel"
+  fail "work-vpn-mac must implement split against 0/1 full-tunnel and pin host routes to the tun interface"
 fi
 mock_openvpn="$(mktemp)"
 cat >"$mock_openvpn" <<'EOF'
@@ -71,8 +72,11 @@ fi
 rm -f "$mock_openvpn"
 routes_file="$ROOT/dotfiles/bin/.config/work-vpn/routes"
 if grep -q 'read_route_targets' "$mac_ovpn" \
+  && grep -q 'wildcard_names' "$mac_ovpn" \
   && grep -qx '203.0.113.10' "$routes_file" \
   && grep -qx 'jobs.example.com' "$routes_file" \
+  && grep -qx '*.jobs.example.com' "$routes_file" \
+  && grep -qx 'staging' "$ROOT/dotfiles/bin/.config/work-vpn/labels/jobs.example.com" \
   && ! grep -q 'snowflake' "$routes_file"; then
   pass "work-vpn-mac routes bastion and jobs.example.com"
 else
