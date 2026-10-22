@@ -2,11 +2,7 @@
 # BrowserOS and BrowserOS neo (`browseros-neo` links here); extracted AppImages under
 # ~/work/store/opt/<name>/current. chrome_sandbox is not setuid here, so --no-sandbox.
 app="$(basename "$0")"
-# Units may hard-code Wayland; follow the real session (NVIDIA makes GDM fall back to Xorg).
-if [[ ! -S "${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/${WAYLAND_DISPLAY:-wayland-0}" ]]; then
-  unset WAYLAND_DISPLAY
-  export XDG_SESSION_TYPE=x11 DISPLAY="${DISPLAY:-:0}"
-  [[ -z "${XAUTHORITY:-}" && -f "/run/user/$(id -u)/gdm/Xauthority" ]] && XAUTHORITY="/run/user/$(id -u)/gdm/Xauthority" && export XAUTHORITY
-fi
+# shellcheck source=/dev/null
+. "${HOME}/.config/homelab/session-env"
 # --class sets the Wayland app_id; both builds report chromium-browser otherwise.
 exec "$HOME/work/store/opt/${app}/current/AppRun" --no-sandbox --ozone-platform-hint=auto --class="$app" "$@"

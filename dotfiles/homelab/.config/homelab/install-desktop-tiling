@@ -19,7 +19,8 @@ if [[ ! -d "${EXT}/pop-shell@system76.com" || "$FORCE" == 1 ]]; then
   [[ -d "${SRC}/pop-shell" ]] || git clone -q --depth 1 -b "$POP_BRANCH" https://github.com/pop-os/shell.git "${SRC}/pop-shell"
   (
     cd "${SRC}/pop-shell"
-    git pull -q --ff-only || true
+    git fetch -q --depth 1 origin "$POP_BRANCH"
+    git reset -q --hard FETCH_HEAD
     mise exec node@24 -- npm install --silent --no-fund --no-audit --prefix .tools typescript@5
     # `make local-install` logs the session out on Wayland; compile + install only.
     PATH="${PWD}/.tools/node_modules/.bin:${PATH}" mise exec node@24 -- make compile install
@@ -27,21 +28,22 @@ if [[ ! -d "${EXT}/pop-shell@system76.com" || "$FORCE" == 1 ]]; then
   log "pop-shell installed"
 fi
 
-# uuid + extensions.gnome.org version_tag for GNOME 46.
+# uuid, extensions.gnome.org version_tag for GNOME 46, sha256 of that zip.
 GNOME_EXTS=(
-  "run-or-raise@edvard.cz 75680"
-  "space-bar@luchrioh 65181"
-  "Vitals@CoreCoding.com 76696"
-  "just-perfection-desktop@just-perfection 74466"
-  "aztaskbar@aztaskbar.gitlab.com 75024"
-  "window-title-is-back@fthx 66352"
+  "run-or-raise@edvard.cz 75680 1ecbd59c5fce2d2e3c6b43505e0f603a67560fe89705747a2fb051d703d162f9"
+  "space-bar@luchrioh 65181 6ade875e4423903e73d006139b28af9e98d85e64e7eb9272d98e640390ee60f1"
+  "Vitals@CoreCoding.com 76696 0c7df95d7ad2ab509d9bd892622e8df501f9f719cc079af28b29c936d1d8b97a"
+  "just-perfection-desktop@just-perfection 74466 c54ccd627540d86e6baf06c699f624ba7d5229aedfc8b00b0dc7182c6538eda8"
+  "aztaskbar@aztaskbar.gitlab.com 75024 dee68715177baee01422ccd5688c62596417cd65e8778c3df7ec93115d3c399f"
+  "window-title-is-back@fthx 66352 76d4b468534e8c370d826e7563f2ccae33c50e6def05ad5b10c241dd72a9483f"
 )
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
 for entry in "${GNOME_EXTS[@]}"; do
-  read -r uuid tag <<<"$entry"
+  read -r uuid tag sha <<<"$entry"
   [[ -d "${EXT}/${uuid}" && "$FORCE" != 1 ]] && continue
   curl -fsSL -o "${tmp}/ext.zip" "https://extensions.gnome.org/download-extension/${uuid}.shell-extension.zip?version_tag=${tag}"
+  echo "${sha}  ${tmp}/ext.zip" | sha256sum -c --status - || { log "checksum mismatch: ${uuid} (version_tag ${tag})"; exit 1; }
   # `gnome-extensions install` fails to overwrite an existing dir; unpack directly.
   rm -rf "${EXT:?}/${uuid}"
   unzip -q "${tmp}/ext.zip" -d "${EXT}/${uuid}"
@@ -55,8 +57,12 @@ install_appimage() {
   local d="${OPT}/${name}"
   [[ -x "${d}/${ver}/AppRun" && "$FORCE" != 1 ]] && return 0
   mkdir -p "$d"
-  [[ -f "${d}/${img}" ]] || curl -fsSL -o "${d}/${img}" "https://github.com/browseros-ai/BrowserOS/releases/download/${tag}/${img}"
-  echo "${sha}  ${d}/${img}" | sha256sum -c - >/dev/null
+  if ! echo "${sha}  ${d}/${img}" | sha256sum -c - >/dev/null 2>&1; then
+    # Verify before keeping, so an interrupted download is retried next run.
+    curl -fsSL -o "${d}/${img}.part" "https://github.com/browseros-ai/BrowserOS/releases/download/${tag}/${img}"
+    echo "${sha}  ${d}/${img}.part" | sha256sum -c --status - || { log "checksum mismatch: ${img}"; exit 1; }
+    mv "${d}/${img}.part" "${d}/${img}"
+  fi
   chmod +x "${d}/${img}"
   (cd "$d" && rm -rf squashfs-root "$ver" && "./${img}" --appimage-extract >/dev/null && mv squashfs-root "$ver")
   ln -sfn "$ver" "${d}/current"

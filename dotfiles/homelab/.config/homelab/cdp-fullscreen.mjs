@@ -6,13 +6,19 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 async function cdp(wsUrl, method, params = {}) {
   const ws = new WebSocket(wsUrl);
-  await new Promise((res, rej) => { ws.onopen = res; ws.onerror = rej; });
-  const out = await new Promise((res, rej) => {
-    ws.onmessage = (e) => { const m = JSON.parse(e.data); if (m.id === 1) m.error ? rej(new Error(m.error.message)) : res(m.result); };
-    ws.send(JSON.stringify({ id: 1, method, params }));
-  });
-  ws.close();
-  return out;
+  // Chrome can restart mid-call; reject on close or after 5s so the retry loop keeps going.
+  const timer = setTimeout(() => ws.close(), 5000);
+  try {
+    await new Promise((res, rej) => { ws.onopen = res; ws.onerror = rej; ws.onclose = rej; });
+    return await new Promise((res, rej) => {
+      ws.onclose = () => rej(new Error(`${method}: socket closed`));
+      ws.onmessage = (e) => { const m = JSON.parse(e.data); if (m.id === 1) m.error ? rej(new Error(m.error.message)) : res(m.result); };
+      ws.send(JSON.stringify({ id: 1, method, params }));
+    });
+  } finally {
+    clearTimeout(timer);
+    ws.close();
+  }
 }
 
 // Re-apply until the page really fills the screen for 10s: Chrome can report windowState

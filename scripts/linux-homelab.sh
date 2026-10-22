@@ -188,7 +188,9 @@ install_remote() {
   bash "${HOME}/.config/homelab/install-tailscale" \
     || bash "${REPO_ROOT}/dotfiles/homelab/.config/homelab/install-tailscale"
   if have gnome-shell; then
-    bash "${HOME}/.config/homelab/install-desktop-tiling" || log "WARN: desktop tiling not installed"
+    bash "${HOME}/.config/homelab/install-desktop-tiling" \
+      || bash "${REPO_ROOT}/dotfiles/homelab/.config/homelab/install-desktop-tiling" \
+      || log "WARN: desktop tiling not installed"
   fi
   mkdir -p "${STORE_ROOT}/chrome-cdp" "${STORE_ROOT}/chrome-profiles"
   chmod 700 "${STORE_ROOT}/chrome-cdp" "${STORE_ROOT}/chrome-profiles" 2>/dev/null || true
