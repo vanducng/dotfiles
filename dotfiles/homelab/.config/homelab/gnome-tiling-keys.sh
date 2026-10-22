@@ -81,7 +81,7 @@ wm switch-to-workspace-last "['<Hyper>Tab', '${HYPER}Tab']"
 SB=org.gnome.shell.extensions.space-bar
 ext space-bar@luchrioh "$SB.behavior" position 'left'
 ext space-bar@luchrioh "$SB.behavior" position-index 0
-ext space-bar@luchrioh "$SB.behavior" show-empty-workspaces false
+ext space-bar@luchrioh "$SB.behavior" show-empty-workspaces true
 ext space-bar@luchrioh "$SB.behavior" smart-workspace-names false
 ext space-bar@luchrioh "$SB.behavior" enable-custom-label true
 ext space-bar@luchrioh "$SB.behavior" custom-label-unnamed '{{number}}'
