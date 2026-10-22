@@ -1168,7 +1168,8 @@ main() {
       fi
       cmd_dia_sync
       ;;
-    hub) ensure_hub_windows && tmux_cmd attach -t "$SESSION" ;;
+    # Separate -L socket, so attaching from inside another tmux is safe.
+    hub) ensure_hub_windows && TMUX='' tmux_cmd attach -t "$SESSION" ;;
     processes) cmd_processes ;;
     disk) shift; cmd_disk "${1:-}" ;;
     vault) cmd_vault ;;
