@@ -85,3 +85,6 @@ keybind = cmd+s>e=equalize_splits
 keybind = super+s>z=toggle_split_zoom
 keybind = super+s>x=close_surface
 keybind = super+s>e=equalize_splits
+
+# Per-machine overrides (optional; e.g. Linux needs window decorations to drag windows).
+config-file = ?local.conf
