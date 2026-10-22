@@ -99,6 +99,9 @@ ext aztaskbar@aztaskbar.gitlab.com "$AZ" indicator-color-focused 'rgb(212, 164, 
 WT=org.gnome.shell.extensions.window-title-is-back
 ext window-title-is-back@fthx "$WT" show-icon false
 ext window-title-is-back@fthx "$WT" show-title false
+# Each app opens on its own workspace (Mac: yabai space rules). The wall Chrome parks on 9.
+ext auto-move-windows@gnome-shell-extensions.gcampax.github.com org.gnome.shell.extensions.auto-move-windows \
+  application-list "['ghostty.desktop:1', 'google-chrome.desktop:2', 'browserclaw.desktop:3', 'grok-bot.desktop:4', 'chrome-wall.desktop:9']"
 JP=org.gnome.shell.extensions.just-perfection
 for k in activities-button dash workspace-popup weather world-clock events-button accessibility-menu keyboard-layout; do
   ext just-perfection-desktop@just-perfection "$JP" "$k" false
@@ -132,7 +135,8 @@ get = lambda k: ast.literal_eval(subprocess.check_output(["gsettings", "get", "o
 on, off = get("enabled-extensions"), get("disabled-extensions")
 want_on = ["pop-shell@system76.com", "run-or-raise@edvard.cz", "space-bar@luchrioh",
            "Vitals@CoreCoding.com", "just-perfection-desktop@just-perfection",
-           "aztaskbar@aztaskbar.gitlab.com", "window-title-is-back@fthx"]
+           "aztaskbar@aztaskbar.gitlab.com", "window-title-is-back@fthx",
+           "auto-move-windows@gnome-shell-extensions.gcampax.github.com"]
 want_off = ["tiling-assistant@ubuntu.com", "ubuntu-dock@ubuntu.com", "ding@rastersoft.com"]
 on = [e for e in on if e not in want_off] + [e for e in want_on if e not in on]
 off = [e for e in off if e not in want_on] + [e for e in want_off if e not in off]
