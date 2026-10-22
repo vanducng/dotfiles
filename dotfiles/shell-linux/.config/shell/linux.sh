@@ -44,6 +44,11 @@ fi
 export BROWSER_PROFILE_ROOT="${BROWSER_PROFILE_ROOT:-$HOME/work/store/chrome-profiles}"
 # API key: export CLI_PROXY_API_KEY, or `gopass show -o personal/saas/cli-proxy/code-01-api-key`
 
+# 1Password service account for agents (read-only vaults; token file is 0600, not in git).
+_op_token="${XDG_CONFIG_HOME:-$HOME/.config}/op/service-account-token"
+[ -r "$_op_token" ] && OP_SERVICE_ACCOUNT_TOKEN="$(cat "$_op_token")" && export OP_SERVICE_ACCOUNT_TOKEN
+unset _op_token
+
 # rustup writes this file; it is a no-op until cargo exists.
 # shellcheck disable=SC1091
 [ -f "${HOME}/.cargo/env" ] && . "${HOME}/.cargo/env"
