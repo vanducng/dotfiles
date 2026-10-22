@@ -10,6 +10,31 @@ URL="${CHROME_DEB_URL:-https://dl.google.com/linux/direct/google-chrome-stable_c
 
 mkdir -p "${HOME}/.local/opt" "$BIN"
 
+# Desktop entries so GNOME (app search, Auto Move Windows) can match the windows.
+desktop_entries() {
+  local apps="${XDG_DATA_HOME:-$HOME/.local/share}/applications"
+  mkdir -p "$apps"
+  cat >"${apps}/google-chrome.desktop" <<EOF
+[Desktop Entry]
+Type=Application
+Name=Google Chrome
+Exec=${BIN}/google-chrome %U
+Icon=${OPT}/product_logo_128.png
+StartupWMClass=google-chrome
+Categories=Network;WebBrowser;
+EOF
+  cat >"${apps}/chrome-wall.desktop" <<EOF
+[Desktop Entry]
+Type=Application
+Name=Chrome Wall
+Exec=systemctl --user restart homelab-cdp.service
+Icon=${OPT}/product_logo_128.png
+StartupWMClass=chrome-wall
+NoDisplay=true
+EOF
+}
+trap desktop_entries EXIT
+
 if [[ -x "${OPT}/google-chrome" && "${CHROME_FORCE:-0}" != 1 ]]; then
   echo "install-chrome: already present ($("${OPT}/google-chrome" --version 2>/dev/null || echo ok))"
   ln -sfn "${OPT}/google-chrome" "${BIN}/google-chrome"
@@ -17,7 +42,7 @@ if [[ -x "${OPT}/google-chrome" && "${CHROME_FORCE:-0}" != 1 ]]; then
 fi
 
 tmp="$(mktemp -d)"
-trap 'rm -rf "$tmp"' EXIT
+trap 'rm -rf "$tmp"; desktop_entries' EXIT
 echo "install-chrome: downloading"
 curl -fL --retry 3 -o "${tmp}/chrome.deb" "$URL"
 dpkg-deb -x "${tmp}/chrome.deb" "${tmp}/root"

@@ -35,6 +35,7 @@ fi
 # chrome-sandbox in the extracted tree is not root-owned, so --no-sandbox.
 # --remote-debugging-address keeps DevTools off the LAN/WAN.
 # --remote-allow-origins=* is required for attach via an SSH tunnel.
+# --class keeps the wall apart from everyday Chrome for workspace rules and meh+d.
 exec "$CHROME" \
   --user-data-dir="$USER_DATA" \
   --remote-debugging-port="$PORT" \
@@ -44,6 +45,7 @@ exec "$CHROME" \
   --no-default-browser-check \
   --disable-features=ChromeWhatsNewUI \
   --ozone-platform-hint=auto \
+  --class="${CDP_WM_CLASS:-chrome-wall}" \
   --no-sandbox \
   --disable-gpu-sandbox \
   --disable-dev-shm-usage \

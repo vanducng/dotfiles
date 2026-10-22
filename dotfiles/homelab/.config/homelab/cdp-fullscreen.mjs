@@ -23,17 +23,32 @@ async function cdp(wsUrl, method, params = {}) {
 
 // Re-apply until the page really fills the screen for 10s: Chrome can report windowState
 // "fullscreen" while GNOME still shows it maximized under the top bar.
-const fillsScreen = (page) =>
-  cdp(page.webSocketDebuggerUrl, "Runtime.evaluate", { expression: "innerHeight >= screen.height && innerWidth >= screen.width", returnByValue: true })
-    .then((r) => r.result.value === true);
+const STATE = `({
+  full: innerHeight >= screen.height && innerWidth >= screen.width,
+  blank: document.readyState === "complete" && !document.body?.innerText.trim() && !document.querySelector("iframe"),
+})`;
+const pageState = (page) =>
+  cdp(page.webSocketDebuggerUrl, "Runtime.evaluate", { expression: STATE, returnByValue: true }).then((r) => r.result.value);
 
+// A page loaded while the network is still coming up at boot (ERR_NETWORK_CHANGED)
+// can stay an empty shell; reload it once it has been blank for ~15s.
 let held = 0;
+let blankSince = 0;
+let reloads = 0;
 for (let i = 0; i < 120; i++) {
   try {
     const { webSocketDebuggerUrl: ws } = await (await fetch(`${base}/json/version`)).json();
     const page = (await (await fetch(`${base}/json/list`)).json()).find((t) => t.type === "page" && t.title && t.title !== "about:blank");
     if (page) {
-      if (await fillsScreen(page)) {
+      const { full, blank } = await pageState(page);
+      blankSince = blank ? blankSince || Date.now() : 0;
+      if (blank) held = 0;
+      if (blankSince && Date.now() - blankSince > 15000 && reloads < 3) {
+        console.log(`cdp-fullscreen: ${page.title} is blank, reloading`);
+        await cdp(page.webSocketDebuggerUrl, "Page.reload", { ignoreCache: true });
+        blankSince = 0;
+        reloads++;
+      } else if (full) {
         if (++held >= 10) { console.log(`cdp-fullscreen: ${page.title} fills the screen`); process.exit(0); }
       } else {
         held = 0;

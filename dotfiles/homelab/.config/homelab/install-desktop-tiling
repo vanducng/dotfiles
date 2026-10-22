@@ -36,6 +36,7 @@ GNOME_EXTS=(
   "just-perfection-desktop@just-perfection 74466 c54ccd627540d86e6baf06c699f624ba7d5229aedfc8b00b0dc7182c6538eda8"
   "aztaskbar@aztaskbar.gitlab.com 75024 dee68715177baee01422ccd5688c62596417cd65e8778c3df7ec93115d3c399f"
   "window-title-is-back@fthx 66352 76d4b468534e8c370d826e7563f2ccae33c50e6def05ad5b10c241dd72a9483f"
+  "auto-move-windows@gnome-shell-extensions.gcampax.github.com 61740 c48abda527dde92b405d07889cf00cca33f3e0118fd8f029c6b59bbe19d54a43"
 )
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
