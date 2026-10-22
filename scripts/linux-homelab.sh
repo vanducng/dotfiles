@@ -187,6 +187,9 @@ install_remote() {
     || bash "${REPO_ROOT}/dotfiles/homelab/.config/homelab/install-chrome"
   bash "${HOME}/.config/homelab/install-tailscale" \
     || bash "${REPO_ROOT}/dotfiles/homelab/.config/homelab/install-tailscale"
+  if have gnome-shell; then
+    bash "${HOME}/.config/homelab/install-desktop-tiling" || log "WARN: desktop tiling not installed"
+  fi
   mkdir -p "${STORE_ROOT}/chrome-cdp" "${STORE_ROOT}/chrome-profiles"
   chmod 700 "${STORE_ROOT}/chrome-cdp" "${STORE_ROOT}/chrome-profiles" 2>/dev/null || true
 }
@@ -230,6 +233,9 @@ EOF
   fi
   if [[ -x "${HOME}/.local/opt/google-chrome/google-chrome" ]]; then
     systemctl --user enable --now homelab-cdp.service || true
+  fi
+  if [[ -x "${HOME}/work/store/opt/browseros/current/AppRun" ]]; then
+    systemctl --user enable --now browseros.service || true
   fi
   if [[ -f "${HOME}/.config/systemd/user/git-sync-repos.timer" ]]; then
     systemctl --user enable --now git-sync-repos.timer 2>/dev/null || true
@@ -361,6 +367,9 @@ stow_homelab() {
     "${HOME}/.config/homelab/install-chrome" \
     "${HOME}/.config/homelab/install-tailscale" \
     "${HOME}/.config/homelab/cdp-chrome" \
+    "${HOME}/.config/homelab/install-desktop-tiling" \
+    "${HOME}/.config/homelab/gnome-tiling-keys.sh" \
+    "${HOME}/.local/bin/browseros" \
     "${HOME}/.local/bin/dpl-remote" 2>/dev/null || true
 }
 
