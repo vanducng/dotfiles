@@ -10,10 +10,10 @@ wm() { gsettings set org.gnome.desktop.wm.keybindings "$@"; }
 
 HYPER='<Primary><Alt><Shift><Super>'
 
-# --- Pop Shell: tiling behaviour (yabai: layout bsp, padding/gap 5) ---
+# --- Pop Shell: tiling behaviour (yabai: layout bsp, padding/gap 5). Pop gaps are units of 4px. ---
 pop tile-by-default true
-pop gap-inner 'uint32 5'
-pop gap-outer 'uint32 5'
+pop gap-inner 'uint32 1'
+pop gap-outer 'uint32 1'
 pop smart-gaps false
 pop show-title true
 pop active-hint true
