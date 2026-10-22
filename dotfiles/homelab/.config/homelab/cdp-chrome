@@ -12,12 +12,8 @@ ADDR="${CDP_ADDR:-127.0.0.1}"
 START_URL="${CDP_START_URL:-about:blank}"
 read -r -a EXTRA_FLAGS <<< "${CDP_EXTRA_FLAGS:-}"
 
-# Units may hard-code Wayland; follow the real session (NVIDIA makes GDM fall back to Xorg).
-if [[ ! -S "${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/${WAYLAND_DISPLAY:-wayland-0}" ]]; then
-  unset WAYLAND_DISPLAY
-  export XDG_SESSION_TYPE=x11 DISPLAY="${DISPLAY:-:0}"
-  [[ -z "${XAUTHORITY:-}" && -f "/run/user/$(id -u)/gdm/Xauthority" ]] && XAUTHORITY="/run/user/$(id -u)/gdm/Xauthority" && export XAUTHORITY
-fi
+# shellcheck source=/dev/null
+. "${HOME}/.config/homelab/session-env"
 
 if [[ ! -x "$CHROME" ]]; then
   echo "cdp-chrome: chrome missing at $CHROME (run: ~/.config/homelab/install-chrome)" >&2

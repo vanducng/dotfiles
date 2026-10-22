@@ -4,8 +4,10 @@
 # Re-runnable. Takes effect on the next login (new extensions only load at login on Wayland).
 set -euo pipefail
 
-POP_DIR="$HOME/.local/share/gnome-shell/extensions/pop-shell@system76.com/schemas"
-pop() { gsettings --schemadir "$POP_DIR" set org.gnome.shell.extensions.pop-shell "$@"; }
+EXT="${XDG_DATA_HOME:-$HOME/.local/share}/gnome-shell/extensions"
+pop() { gsettings --schemadir "$EXT/pop-shell@system76.com/schemas" set org.gnome.shell.extensions.pop-shell "$@"; }
+# Skip settings for an extension that is not installed yet (install-desktop-tiling adds it).
+ext() { [[ -d "$EXT/$1/schemas" ]] || return 0; gsettings --schemadir "$EXT/$1/schemas" set "$2" "${@:3}"; }
 wm() { gsettings set org.gnome.desktop.wm.keybindings "$@"; }
 
 HYPER='<Primary><Alt><Shift><Super>'
@@ -25,6 +27,12 @@ pop focus-left  "['<Primary><Shift>h', '<Super>Left']"
 pop focus-down  "['<Primary><Shift>j', '<Super>Down']"
 pop focus-up    "['<Primary><Shift>k', '<Super>Up']"
 pop focus-right "['<Primary><Shift>l', '<Super>Right']"
+
+# GNOME binds super+arrows to half-tiling and maximize; Pop Shell owns them here.
+gsettings set org.gnome.mutter.keybindings toggle-tiled-left "@as []"
+gsettings set org.gnome.mutter.keybindings toggle-tiled-right "@as []"
+wm maximize "@as []"
+wm unmaximize "['<Alt>F5']"
 
 # --- Move/warp window: cmd+shift+hjkl (skhd: cmd+shift-h/l --warp) ---
 pop tile-move-left-global  "['<Super><Shift>h']"
@@ -66,8 +74,6 @@ done
 wm switch-to-workspace-last "['<Hyper>Tab', '${HYPER}Tab']"
 
 # --- Lean panel: no dock or desktop icons; workspaces left, clock centre, stats right ---
-ext() { gsettings --schemadir "$EXT/$1/schemas" set "$2" "${@:3}"; }
-EXT="$HOME/.local/share/gnome-shell/extensions"
 SB=org.gnome.shell.extensions.space-bar
 ext space-bar@luchrioh "$SB.behavior" position 'left'
 ext space-bar@luchrioh "$SB.behavior" position-index 0
@@ -105,11 +111,17 @@ gsettings set org.gnome.mutter center-new-windows true
 python3 - <<'PY'
 import json, os
 p = os.path.expanduser("~/.config/pop-shell/config.json")
-c = json.load(open(p)) if os.path.exists(p) else {"float": [], "skiptaskbarhidden": [], "log_on_focus": False}
-if {"class": "sysmon"} not in c["float"]:
-    c["float"].append({"class": "sysmon"})
+c = {}
+if os.path.exists(p):
+    with open(p) as f:
+        c = json.load(f)
+rules = c.setdefault("float", [])
+if {"class": "sysmon"} not in rules:
+    rules.append({"class": "sysmon"})
 os.makedirs(os.path.dirname(p), exist_ok=True)
-json.dump(c, open(p, "w"), indent=2)
+with open(p, "w") as f:
+    json.dump(c, f, indent=2)
+    f.write("\n")
 PY
 
 # --- Extensions: tiling, app keys and panel on; dock, desktop icons and tiling-assistant off ---

@@ -1,0 +1,10 @@
+# Sourced by GUI launchers. Units may hard-code Wayland; follow the real session
+# (NVIDIA makes GDM fall back to Xorg).
+if [[ ! -S "${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/${WAYLAND_DISPLAY:-wayland-0}" ]]; then
+  unset WAYLAND_DISPLAY
+  export XDG_SESSION_TYPE=x11 DISPLAY="${DISPLAY:-:0}"
+  if [[ -z "${XAUTHORITY:-}" && -f "/run/user/$(id -u)/gdm/Xauthority" ]]; then
+    XAUTHORITY="/run/user/$(id -u)/gdm/Xauthority"
+    export XAUTHORITY
+  fi
+fi
