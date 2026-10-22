@@ -65,13 +65,37 @@ for i in $(seq 1 9); do
 done
 wm switch-to-workspace-last "['<Hyper>Tab', '${HYPER}Tab']"
 
-# --- Extensions: Pop Shell + Run or Raise on, Ubuntu's tiling-assistant off (it fights Pop Shell) ---
+# --- Lean panel: no dock or desktop icons; workspaces left, clock centre, stats right ---
+ext() { gsettings --schemadir "$EXT/$1/schemas" set "$2" "${@:3}"; }
+EXT="$HOME/.local/share/gnome-shell/extensions"
+SB=org.gnome.shell.extensions.space-bar
+ext space-bar@luchrioh "$SB.behavior" position 'left'
+ext space-bar@luchrioh "$SB.behavior" position-index 0
+ext space-bar@luchrioh "$SB.behavior" show-empty-workspaces false
+ext space-bar@luchrioh "$SB.behavior" smart-workspace-names false
+ext space-bar@luchrioh "$SB.behavior" enable-custom-label true
+ext space-bar@luchrioh "$SB.behavior" custom-label-unnamed '{{number}}'
+ext space-bar@luchrioh "$SB.behavior" toggle-overview false
+ext space-bar@luchrioh "$SB.appearance" active-workspace-background-color 'rgba(212, 164, 255, 0.35)'
+VT=org.gnome.shell.extensions.vitals
+ext Vitals@CoreCoding.com "$VT" hot-sensors "['_processor_usage_', '_memory_usage_', '__network-rx_max__', '__network-tx_max__']"
+ext Vitals@CoreCoding.com "$VT" include-public-ip false
+ext Vitals@CoreCoding.com "$VT" position-in-panel 2
+JP=org.gnome.shell.extensions.just-perfection
+for k in activities-button dash workspace-popup weather world-clock events-button accessibility-menu keyboard-layout; do
+  ext just-perfection-desktop@just-perfection "$JP" "$k" false
+done
+ext just-perfection-desktop@just-perfection "$JP" startup-status 0
+ext just-perfection-desktop@just-perfection "$JP" window-demands-attention-focus true
+
+# --- Extensions: tiling, app keys and panel on; dock, desktop icons and tiling-assistant off ---
 python3 - <<'PY'
 import ast, subprocess
 get = lambda k: ast.literal_eval(subprocess.check_output(["gsettings", "get", "org.gnome.shell", k], text=True).replace("@as ", ""))
 on, off = get("enabled-extensions"), get("disabled-extensions")
-want_on = ["pop-shell@system76.com", "run-or-raise@edvard.cz"]
-want_off = ["tiling-assistant@ubuntu.com"]
+want_on = ["pop-shell@system76.com", "run-or-raise@edvard.cz", "space-bar@luchrioh",
+           "Vitals@CoreCoding.com", "just-perfection-desktop@just-perfection"]
+want_off = ["tiling-assistant@ubuntu.com", "ubuntu-dock@ubuntu.com", "ding@rastersoft.com"]
 on = [e for e in on if e not in want_off] + [e for e in want_on if e not in on]
 off = [e for e in off if e not in want_on] + [e for e in want_off if e not in off]
 subprocess.check_call(["gsettings", "set", "org.gnome.shell", "enabled-extensions", str(on)])
