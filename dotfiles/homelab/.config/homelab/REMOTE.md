@@ -192,6 +192,38 @@ Units (user systemd, linger=yes):
 - `homelab-cdp.service` — headed Chrome CDP
 - `homelab-tailscale.service` — userspace Tailscale (leave off once kernel tailscaled is up)
 - `homelab-nosleep.service` / `homelab-disks.service`
+- `browseros.service` - BrowserOS, started before the CDP Chrome
+
+### Wall dashboard (machine-local)
+
+`cdp-chrome` opens `CDP_START_URL` with `CDP_EXTRA_FLAGS`. Keep the URL in a local drop-in,
+not in this repo, e.g. `~/.config/systemd/user/homelab-cdp.service.d/wall-dashboard.conf`:
+
+```ini
+[Service]
+Environment=CDP_START_URL=https://<grafana-host>/d/<uid>?kiosk&refresh=30s
+Environment="CDP_EXTRA_FLAGS=--test-type --hide-crash-restore-bubble"
+ExecStartPost=/bin/sh -c "%h/.local/bin/mise exec node@24 -- node %h/.config/homelab/cdp-fullscreen.mjs &"
+```
+
+`--test-type` hides the `--no-sandbox` warning bar; `cdp-fullscreen.mjs` re-applies
+fullscreen until the page fills the screen (GNOME ignores `--start-fullscreen`).
+
+### Tiling desktop (GNOME + Pop Shell)
+
+`install-desktop-tiling` builds Pop Shell, installs Run or Raise and BrowserOS, then runs
+`gnome-tiling-keys.sh`. Log out and back in to load the extensions. Keys mirror the Mac
+yabai/skhd setup over Jump (cmd = Super, meh = ctrl+alt+shift):
+
+| Keys | Action |
+|---|---|
+| ctrl+shift+hjkl | focus window |
+| cmd+shift+hjkl | move window |
+| meh+letter | open or raise app (`~/.config/run-or-raise/shortcuts.conf`) |
+| cmd+tab | app search (GNOME overview) |
+| alt+1..9 / hyper+1..9 | switch to / send window to workspace |
+| hyper+space, hyper+r, hyper+f | float, rotate, maximize |
+| cmd+return | resize mode (shift+hjkl, enter) |
 
 ---
 

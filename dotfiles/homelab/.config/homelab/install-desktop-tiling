@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+# User-space GNOME tiling (no sudo): Pop Shell built from source, Run or Raise for
+# meh+<letter> app keys, BrowserOS AppImage. Then applies gnome-tiling-keys.sh.
+# Extensions load on the next login (GNOME Wayland cannot reload the shell).
+set -euo pipefail
+
+EXT="${XDG_DATA_HOME:-$HOME/.local/share}/gnome-shell/extensions"
+SRC="${HOME}/work/store/src"
+OPT="${HOME}/work/store/opt"
+POP_BRANCH="${POP_SHELL_BRANCH:-master_noble}"
+ROR_TAG="${RUN_OR_RAISE_VERSION_TAG:-75680}"
+BOS_VER="${BROWSEROS_VERSION:-v0.51.0}"
+BOS_SHA256="${BROWSEROS_SHA256:-b586df72083c046e2ea2d1cc1b6463325ed4cb0c31975d48e09cc14215e3e7bf}"
+FORCE="${DESKTOP_TILING_FORCE:-0}"
+
+log() { printf 'install-desktop-tiling: %s\n' "$*"; }
+mkdir -p "$EXT" "$SRC" "$OPT"
+
+if [[ ! -d "${EXT}/pop-shell@system76.com" || "$FORCE" == 1 ]]; then
+  [[ -d "${SRC}/pop-shell" ]] || git clone -q --depth 1 -b "$POP_BRANCH" https://github.com/pop-os/shell.git "${SRC}/pop-shell"
+  (
+    cd "${SRC}/pop-shell"
+    git pull -q --ff-only || true
+    mise exec node@24 -- npm install --silent --no-fund --no-audit --prefix .tools typescript@5
+    # `make local-install` logs the session out on Wayland; compile + install only.
+    PATH="${PWD}/.tools/node_modules/.bin:${PATH}" mise exec node@24 -- make compile install
+  )
+  log "pop-shell installed"
+fi
+
+if [[ ! -d "${EXT}/run-or-raise@edvard.cz" || "$FORCE" == 1 ]]; then
+  tmp="$(mktemp -d)"
+  trap 'rm -rf "$tmp"' EXIT
+  curl -fsSL -o "${tmp}/ror.zip" "https://extensions.gnome.org/download-extension/run-or-raise@edvard.cz.shell-extension.zip?version_tag=${ROR_TAG}"
+  # `gnome-extensions install` fails to overwrite an existing dir; unpack directly.
+  rm -rf "${EXT}/run-or-raise@edvard.cz"
+  unzip -q "${tmp}/ror.zip" -d "${EXT}/run-or-raise@edvard.cz"
+  glib-compile-schemas "${EXT}/run-or-raise@edvard.cz/schemas"
+  log "run-or-raise installed"
+fi
+
+if [[ ! -x "${OPT}/browseros/${BOS_VER}/AppRun" || "$FORCE" == 1 ]]; then
+  d="${OPT}/browseros"
+  img="BrowserOS_${BOS_VER}_x64.AppImage"
+  mkdir -p "$d"
+  [[ -f "${d}/${img}" ]] || curl -fsSL -o "${d}/${img}" "https://github.com/browseros-ai/BrowserOS/releases/download/${BOS_VER}/${img}"
+  echo "${BOS_SHA256}  ${d}/${img}" | sha256sum -c - >/dev/null
+  chmod +x "${d}/${img}"
+  # Extracted AppImage: Ubuntu 24.04 ships no FUSE2.
+  (cd "$d" && rm -rf squashfs-root "$BOS_VER" && "./${img}" --appimage-extract >/dev/null && mv squashfs-root "$BOS_VER")
+  ln -sfn "$BOS_VER" "${d}/current"
+  log "browseros ${BOS_VER} installed"
+fi
+
+bash "${HOME}/.config/homelab/gnome-tiling-keys.sh"
