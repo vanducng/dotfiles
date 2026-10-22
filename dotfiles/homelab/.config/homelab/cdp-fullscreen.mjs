@@ -25,7 +25,7 @@ async function cdp(wsUrl, method, params = {}) {
 // "fullscreen" while GNOME still shows it maximized under the top bar.
 const STATE = `({
   full: innerHeight >= screen.height && innerWidth >= screen.width,
-  blank: document.readyState === "complete" && !document.body?.innerText.trim(),
+  blank: document.readyState === "complete" && !document.body?.innerText.trim() && !document.querySelector("iframe"),
 })`;
 const pageState = (page) =>
   cdp(page.webSocketDebuggerUrl, "Runtime.evaluate", { expression: STATE, returnByValue: true }).then((r) => r.result.value);
@@ -34,6 +34,7 @@ const pageState = (page) =>
 // can stay an empty shell; reload it once it has been blank for ~15s.
 let held = 0;
 let blankSince = 0;
+let reloads = 0;
 for (let i = 0; i < 120; i++) {
   try {
     const { webSocketDebuggerUrl: ws } = await (await fetch(`${base}/json/version`)).json();
@@ -42,13 +43,14 @@ for (let i = 0; i < 120; i++) {
       const { full, blank } = await pageState(page);
       blankSince = blank ? blankSince || Date.now() : 0;
       if (blank) held = 0;
-      if (blankSince && Date.now() - blankSince > 15000) {
+      if (blankSince && Date.now() - blankSince > 15000 && reloads < 3) {
         console.log(`cdp-fullscreen: ${page.title} is blank, reloading`);
         await cdp(page.webSocketDebuggerUrl, "Page.reload", { ignoreCache: true });
         blankSince = 0;
-      } else if (full && !blank) {
+        reloads++;
+      } else if (full) {
         if (++held >= 10) { console.log(`cdp-fullscreen: ${page.title} fills the screen`); process.exit(0); }
-      } else if (!full) {
+      } else {
         held = 0;
         const { windowId } = await cdp(ws, "Browser.getWindowForTarget", { targetId: page.id });
         await cdp(ws, "Browser.setWindowBounds", { windowId, bounds: { windowState: "normal" } });
