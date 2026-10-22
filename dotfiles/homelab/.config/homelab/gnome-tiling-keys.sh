@@ -57,7 +57,11 @@ wm toggle-maximized "['<Super>m', '${HYPER}f', '<Hyper>f']"
 
 # --- App search: cmd+tab opens GNOME's overview search (type to find apps); alt+tab still switches apps ---
 # (Pop's own launcher needs the separate pop-launcher backend, which is not installed.)
-gsettings set org.gnome.shell.keybindings toggle-overview "['<Super>Tab']"
+# cmd+space too (Spotlight habit); free it from input-source switching (GNOME and ibus).
+gsettings set org.gnome.shell.keybindings toggle-overview "['<Super>Tab', '<Super>space']"
+wm switch-input-source "['XF86Keyboard']"
+wm switch-input-source-backward "['<Shift>XF86Keyboard']"
+gsettings set org.freedesktop.ibus.general.hotkey triggers "@as []" 2>/dev/null || true
 pop activate-launcher "@as []"
 wm switch-applications "['<Alt>Tab']"
 wm switch-applications-backward "['<Shift><Alt>Tab']"

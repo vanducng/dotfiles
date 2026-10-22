@@ -12,6 +12,15 @@ ADDR="${CDP_ADDR:-127.0.0.1}"
 START_URL="${CDP_START_URL:-about:blank}"
 read -r -a EXTRA_FLAGS <<< "${CDP_EXTRA_FLAGS:-}"
 
+# At login the network is still settling; a page loaded then comes up broken
+# (ERR_NETWORK_CHANGED: blank shell or Grafana "Not found"). Wait for the URL to answer.
+if [[ "$START_URL" == http* ]]; then
+  for _ in $(seq 1 60); do
+    curl -sS -o /dev/null --max-time 5 "$START_URL" 2>/dev/null && break
+    sleep 2
+  done
+fi
+
 # shellcheck source=/dev/null
 . "${HOME}/.config/homelab/session-env"
 
