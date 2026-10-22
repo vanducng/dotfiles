@@ -43,7 +43,7 @@ for entry in "${GNOME_EXTS[@]}"; do
   read -r uuid tag sha <<<"$entry"
   [[ -d "${EXT}/${uuid}" && "$FORCE" != 1 ]] && continue
   curl -fsSL -o "${tmp}/ext.zip" "https://extensions.gnome.org/download-extension/${uuid}.shell-extension.zip?version_tag=${tag}"
-  echo "${sha}  ${tmp}/ext.zip" | sha256sum -c - >/dev/null
+  echo "${sha}  ${tmp}/ext.zip" | sha256sum -c --status - || { log "checksum mismatch: ${uuid} (version_tag ${tag})"; exit 1; }
   # `gnome-extensions install` fails to overwrite an existing dir; unpack directly.
   rm -rf "${EXT:?}/${uuid}"
   unzip -q "${tmp}/ext.zip" -d "${EXT}/${uuid}"
@@ -60,7 +60,7 @@ install_appimage() {
   if ! echo "${sha}  ${d}/${img}" | sha256sum -c - >/dev/null 2>&1; then
     # Verify before keeping, so an interrupted download is retried next run.
     curl -fsSL -o "${d}/${img}.part" "https://github.com/browseros-ai/BrowserOS/releases/download/${tag}/${img}"
-    echo "${sha}  ${d}/${img}.part" | sha256sum -c - >/dev/null
+    echo "${sha}  ${d}/${img}.part" | sha256sum -c --status - || { log "checksum mismatch: ${img}"; exit 1; }
     mv "${d}/${img}.part" "${d}/${img}"
   fi
   chmod +x "${d}/${img}"

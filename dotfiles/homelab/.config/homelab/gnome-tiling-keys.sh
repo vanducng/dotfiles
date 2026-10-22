@@ -5,9 +5,9 @@
 set -euo pipefail
 
 EXT="${XDG_DATA_HOME:-$HOME/.local/share}/gnome-shell/extensions"
-pop() { gsettings --schemadir "$EXT/pop-shell@system76.com/schemas" set org.gnome.shell.extensions.pop-shell "$@"; }
 # Skip settings for an extension that is not installed yet (install-desktop-tiling adds it).
 ext() { [[ -d "$EXT/$1/schemas" ]] || return 0; gsettings --schemadir "$EXT/$1/schemas" set "$2" "${@:3}"; }
+pop() { ext pop-shell@system76.com org.gnome.shell.extensions.pop-shell "$@"; }
 wm() { gsettings set org.gnome.desktop.wm.keybindings "$@"; }
 
 HYPER='<Primary><Alt><Shift><Super>'
@@ -111,10 +111,11 @@ gsettings set org.gnome.mutter center-new-windows true
 python3 - <<'PY'
 import json, os
 p = os.path.expanduser("~/.config/pop-shell/config.json")
-c = {}
-if os.path.exists(p):
+try:
     with open(p) as f:
         c = json.load(f)
+except (OSError, ValueError):
+    c = {"skiptaskbarhidden": [], "log_on_focus": False}
 rules = c.setdefault("float", [])
 if {"class": "sysmon"} not in rules:
     rules.append({"class": "sysmon"})
