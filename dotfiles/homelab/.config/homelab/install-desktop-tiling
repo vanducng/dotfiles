@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # User-space GNOME tiling (no sudo): Pop Shell built from source, Run or Raise for
-# meh+<letter> app keys, a lean top bar (Space Bar, Vitals, Just Perfection) and the
+# meh+<letter> app keys, a lean top bar (Space Bar, App Icons Taskbar,
+# Window Title Is Back, Vitals, Just Perfection) and the
 # BrowserOS / BrowserOS neo AppImages. Then applies gnome-tiling-keys.sh.
 # Extensions load on the next login (GNOME Wayland cannot reload the shell).
 set -euo pipefail
@@ -32,6 +33,8 @@ GNOME_EXTS=(
   "space-bar@luchrioh 65181"
   "Vitals@CoreCoding.com 76696"
   "just-perfection-desktop@just-perfection 74466"
+  "aztaskbar@aztaskbar.gitlab.com 75024"
+  "window-title-is-back@fthx 66352"
 )
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT

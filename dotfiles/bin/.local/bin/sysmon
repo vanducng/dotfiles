@@ -30,6 +30,7 @@ Open system tools in one tmux session (kitty overlay).
   sysmon processes     window 1: btop
   sysmon disk [path]   window 2: dua interactive (default: $HOME)
   sysmon vault         window 3: nvim on $OBSIDIAN_VAULT
+  sysmon hub           ensure the hub windows and attach here (Linux: run inside kitty)
   sysmon stop          kill the session and overlay
 
 meh+f focuses the one hub on the current desktop, or opens it there.
@@ -1039,7 +1040,7 @@ ensure_vault_window() {
     return 1
   fi
   nvim="$(resolve_bin nvim "${SYSMON_NVIM:-}")"
-  zsh="${SYSMON_ZSH:-/bin/zsh}"
+  zsh="${SYSMON_ZSH:-$(command -v zsh || echo /bin/zsh)}"
   ensure_window 3 vault "$vault" "$zsh" -lc "source \"\$HOME/.zshrc\" >/dev/null 2>&1 || true; exec \"$nvim\" ."
 }
 
@@ -1167,6 +1168,7 @@ main() {
       fi
       cmd_dia_sync
       ;;
+    hub) ensure_hub_windows && tmux_cmd attach -t "$SESSION" ;;
     processes) cmd_processes ;;
     disk) shift; cmd_disk "${1:-}" ;;
     vault) cmd_vault ;;

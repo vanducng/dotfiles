@@ -81,6 +81,18 @@ VT=org.gnome.shell.extensions.vitals
 ext Vitals@CoreCoding.com "$VT" hot-sensors "['_processor_usage_', '_memory_usage_', '__network-rx_max__', '__network-tx_max__']"
 ext Vitals@CoreCoding.com "$VT" include-public-ip false
 ext Vitals@CoreCoding.com "$VT" position-in-panel 2
+# Running apps of this workspace after the numbers, then the focused app's name.
+AZ=org.gnome.shell.extensions.aztaskbar
+ext aztaskbar@aztaskbar.gitlab.com "$AZ" favorites false
+ext aztaskbar@aztaskbar.gitlab.com "$AZ" isolate-workspaces true
+ext aztaskbar@aztaskbar.gitlab.com "$AZ" show-panel-activities-button false
+ext aztaskbar@aztaskbar.gitlab.com "$AZ" icon-size 18
+ext aztaskbar@aztaskbar.gitlab.com "$AZ" main-panel-height '(true, 32)'
+ext aztaskbar@aztaskbar.gitlab.com "$AZ" position-offset 1
+ext aztaskbar@aztaskbar.gitlab.com "$AZ" indicator-color-focused 'rgb(212, 164, 255)'
+WT=org.gnome.shell.extensions.window-title-is-back
+ext window-title-is-back@fthx "$WT" show-icon false
+ext window-title-is-back@fthx "$WT" show-title false
 JP=org.gnome.shell.extensions.just-perfection
 for k in activities-button dash workspace-popup weather world-clock events-button accessibility-menu keyboard-layout; do
   ext just-perfection-desktop@just-perfection "$JP" "$k" false
@@ -88,13 +100,26 @@ done
 ext just-perfection-desktop@just-perfection "$JP" startup-status 0
 ext just-perfection-desktop@just-perfection "$JP" window-demands-attention-focus true
 
+# --- Floating windows open centred; the meh+f sysmon kitty always floats (Mac: yabai grid overlay) ---
+gsettings set org.gnome.mutter center-new-windows true
+python3 - <<'PY'
+import json, os
+p = os.path.expanduser("~/.config/pop-shell/config.json")
+c = json.load(open(p)) if os.path.exists(p) else {"float": [], "skiptaskbarhidden": [], "log_on_focus": False}
+if {"class": "sysmon"} not in c["float"]:
+    c["float"].append({"class": "sysmon"})
+os.makedirs(os.path.dirname(p), exist_ok=True)
+json.dump(c, open(p, "w"), indent=2)
+PY
+
 # --- Extensions: tiling, app keys and panel on; dock, desktop icons and tiling-assistant off ---
 python3 - <<'PY'
 import ast, subprocess
 get = lambda k: ast.literal_eval(subprocess.check_output(["gsettings", "get", "org.gnome.shell", k], text=True).replace("@as ", ""))
 on, off = get("enabled-extensions"), get("disabled-extensions")
 want_on = ["pop-shell@system76.com", "run-or-raise@edvard.cz", "space-bar@luchrioh",
-           "Vitals@CoreCoding.com", "just-perfection-desktop@just-perfection"]
+           "Vitals@CoreCoding.com", "just-perfection-desktop@just-perfection",
+           "aztaskbar@aztaskbar.gitlab.com", "window-title-is-back@fthx"]
 want_off = ["tiling-assistant@ubuntu.com", "ubuntu-dock@ubuntu.com", "ding@rastersoft.com"]
 on = [e for e in on if e not in want_off] + [e for e in want_on if e not in on]
 off = [e for e in off if e not in want_on] + [e for e in want_off if e not in off]
