@@ -173,8 +173,9 @@ if [[ -n "$VSCODE_ENV_REPLACE" && -n "$VIRTUAL_ENV" ]]; then
   unset VIRTUAL_ENV_PROMPT
 fi
 
-# Set atuin PATH first
+# env no-ops when ~/.atuin/bin is already on PATH, so Homebrew's older atuin stays first.
 . "$HOME/.atuin/bin/env"
+export PATH="$HOME/.atuin/bin:$PATH"
 
 # Initialize atuin before zsh-vi-mode
 export ATUIN_NOBIND="true"
