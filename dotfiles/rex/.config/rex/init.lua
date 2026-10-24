@@ -85,7 +85,9 @@ px("[BracketLeft]", "copy_mode")
 px("ctrl+x", "pane.send_key", { key = "ctrl+x" })
 bind("cmd+up", "client.prompt.previous")
 bind("cmd+down", "client.prompt.next")
-bind("cmd+escape", "client.notice.dismiss")
+-- One key dismisses a notice: alt+cmd+. replaces Rex's own shift+cmd+.
+rex.unbind("shift+cmd+.", "client.notice.dismiss")
+bind("alt+cmd+[Period]", "client.notice.dismiss")
 
 rex.mode("resize", { exclusive = true })
 for k, dir in pairs(dirs) do
