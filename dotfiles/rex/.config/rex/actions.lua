@@ -48,7 +48,7 @@ if cli_file then cli_file:close() else rex_cli = "rex" end
 local function local_sessions(ctx)
   if not ctx.server then return sessions() end
   local r, err = rex.exec({ rex_cli, "ls", "--json" }, { env = env, timeout = 5 })
-  if not (r and r.ok) then error(err or r.stderr, 0) end
+  if not (r and r.ok) then error(err or (r.stderr ~= "" and r.stderr) or "rex ls failed", 0) end
   return rex.json.decode(r.stdout).sessions or {}
 end
 
@@ -113,7 +113,7 @@ local function set_label(ctx, host, session_id, label)
   if not ctx.server then return rex.call("session.set_label", args) end
   local r, err = rex.exec({ rex_cli, "session", "rename", session_id, label }, { env = env, timeout = 5 })
   if r and r.ok then return true end
-  return nil, err or r.stderr
+  return nil, err or (r.stderr ~= "" and r.stderr) or "rex session rename failed"
 end
 
 -- Prefixes each session label with its ctrl+N number ("3-api"), like Herdr's
@@ -129,7 +129,7 @@ rex.action{
       if not r then rex.log("warn", "session_renumber: " .. host .. " skipped: " .. tostring(err)) end
       groups[#groups + 1] = { host = host, sessions = r and r.sessions or {} }
     end
-    local n = 0
+    local n, failed = 0, {}
     for _, g in ipairs(groups) do
       if g.host then
         rex.server(g.host).call("session.attach_all", { event_scope = "session" })
@@ -141,10 +141,11 @@ rex.action{
         local label = n .. "-" .. (s.label or ""):gsub("^%d+%-", "")
         if label ~= s.label then
           local ok, err = set_label(ctx, g.host, s.session_id, label)
-          if not ok then error(err, 0) end
+          if not ok then failed[#failed + 1] = label .. ": " .. tostring(err) end
         end
       end
     end
+    if #failed > 0 then error("not renamed: " .. table.concat(failed, "; "), 0) end
   end,
 }
 
@@ -229,15 +230,24 @@ rex.action{
   end,
 }
 
--- Overlay scripts read the pane with the rex CLI on whichever host owns it, then
--- refocus the pane they were opened from when they quit.
-local function overlay(bounds, script, ...)
+-- Overlay scripts read the pane with the rex CLI on whichever host owns it. A new
+-- layer unzooms the window, so on quit they refocus the pane, zoomed if it was.
+local overlay_tail = [=[
+if [ -n "$2" ]; then "$REX_BIN_DIR/rex" zoom --on "$1"; else "$REX_BIN_DIR/rex" focus "$1"; fi >/dev/null 2>&1]=]
+
+-- Script args: $1 the pane, $2 "1" if it was zoomed, then the caller's.
+local function overlay(ctx, bounds, script, ...)
+  local zoomed = ""
+  local v = rex.session.view{ session_id = ctx.session_id }
+  for _, w in ipairs(v and v.windows or {}) do
+    if w.zoomed_block_id == ctx.block_id then zoomed = "1" end
+  end
   local _, err = rex.session.new_layer{
     bounds = bounds,
     focus = true,
     layout = rex.layout.block{
       flavor = "com.superlogical.terminal.shell",
-      options = { shell = "none", command = { "/bin/sh", "-c", script, "sh", ... } },
+      options = { shell = "none", command = { "/bin/sh", "-c", script .. "\n" .. overlay_tail, "sh", ctx.block_id, zoomed, ... } },
     },
   }
   if err then error(err, 0) end
@@ -246,8 +256,7 @@ end
 local copy_script = [=[f=$(mktemp) || exit; trap 'rm -f "$f"' EXIT HUP INT TERM
 PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
 "$REX_BIN_DIR/rex" capture -b "$1" --unwrap 2>&1 | sed 's/[[:space:]]*$//' >"$f"
-NOTE="$2" nvim -n -R + -c "set clipboard=unnamedplus" -c "nnoremap <buffer> q <cmd>qa!<cr>" -c "let &winbar = \$NOTE" "$f"
-"$REX_BIN_DIR/rex" focus "$1" >/dev/null 2>&1]=]
+NOTE="$3" nvim -n -R + -c "set clipboard=unnamedplus" -c "nnoremap <buffer> q <cmd>qa!<cr>" -c "let &winbar = \$NOTE" "$f"]=]
 
 rex.action{
   name = "copy_mode",
@@ -259,15 +268,21 @@ rex.action{
     -- which has no scrollback, so only what is visible comes back.
     local m = rex.block.call(term, "modes", { block_id = ctx.block_id })
     local note = m and m.screen == "alternate" and " Full-screen app: only the visible screen is here" or ""
-    overlay({ 0, 0, 1, 1 }, copy_script, ctx.block_id, note)
+    overlay(ctx, { 0, 0, 1, 1 }, copy_script, note)
   end,
 }
 
+-- A popup shows the pane below wherever its program paints no background, so
+-- fzf paints one (merino-dark's raised surface).
 local fingers_script = [=[f=$(mktemp) || exit; trap 'rm -f "$f"' EXIT HUP INT TERM
 PATH="$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"
-"$REX_BIN_DIR/rex" capture -b "$1" --unwrap 2>&1 | tail -n 500 >"$f"
-HERDR_FINGERS_TEXT_FILE="$f" HERDR_ACTIVE_PANE_CWD="$2" herdr-fingers || { printf '\nPress Enter to close.'; read -r _; }
-"$REX_BIN_DIR/rex" focus "$1" >/dev/null 2>&1]=]
+export FZF_DEFAULT_OPTS="${FZF_DEFAULT_OPTS:-} --color=bg:#1e2023,bg+:#2b2f34"
+if text=$("$REX_BIN_DIR/rex" capture -b "$1" --unwrap 2>&1); then
+  printf '%s\n' "$text" | tail -n 500 >"$f"
+  HERDR_FINGERS_TEXT_FILE="$f" HERDR_ACTIVE_PANE_CWD="$3" herdr-fingers || { printf '\nPress Enter to close.'; read -r _; }
+else
+  printf '%s\n\nPress Enter to close.' "$text"; read -r _
+fi]=]
 
 -- Herdr's prefix+space picker on the pane's latest 500 lines, newest first:
 -- Enter opens, Ctrl-Y copies, Ctrl-E edits.
@@ -277,7 +292,7 @@ rex.action{
   category = "Pane",
   run = function(ctx)
     local ok, dir = pcall(pane_dir, ctx.block_id)
-    overlay({ 0.1, 0.1, 0.8, 0.8 }, fingers_script, ctx.block_id, ok and dir or "")
+    overlay(ctx, { 0.1, 0.1, 0.8, 0.8 }, fingers_script, ok and dir or "")
   end,
 }
 
