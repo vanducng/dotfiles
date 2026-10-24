@@ -27,7 +27,8 @@ for id in 34 35; do
     <key>value</key><dict><key>parameters</key><array><integer>65535</integer><integer>$((id == 34 ? 126 : 125))</integer>
     <integer>8781824</integer></array><key>type</key><string>standard</string></dict></dict>"
 done
-/System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -u
+/System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -u 2>/dev/null \
+  || echo "Log out and back in to free ctrl+shift+up/down for Rex"
 # Everything below needs the tailnet, so stop before writing any of it.
 TS=/Applications/Tailscale.app/Contents/MacOS/Tailscale
 [ -x "$TS" ] || TS=tailscale
