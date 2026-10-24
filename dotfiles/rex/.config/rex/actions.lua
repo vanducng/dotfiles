@@ -14,15 +14,16 @@ local function attach_all()
   if err then error(err, 0) end
 end
 
-local function pane_dir(block_id)
-  local r = rex.block.call(term, "pwd", { block_id = block_id })
+-- session_id is needed for a pane outside the action's own session.
+local function pane_dir(block_id, session_id)
+  local r = rex.block.call(term, "pwd", { block_id = block_id, session_id = session_id })
   if r and r.pwd then
     return (r.pwd:gsub("^file://[^/]*", ""):gsub("%%(%x%x)", function(h)
       return string.char(tonumber(h, 16))
     end))
   end
   -- A program that never reports its directory still runs in one.
-  local p, err = rex.block.call(term, "process", { block_id = block_id })
+  local p, err = rex.block.call(term, "process", { block_id = block_id, session_id = session_id })
   local cwd = p and p.foreground and p.foreground.cwd
   if not cwd then error(err or "pane has no working directory", 0) end
   return cwd
@@ -149,6 +150,36 @@ rex.action{
         if label ~= s.label then
           local ok, err = set_label(ctx, g.host, s.session_id, label)
           if not ok then failed[#failed + 1] = label .. ": " .. tostring(err) end
+        end
+      end
+    end
+    if #failed > 0 then error("not renamed: " .. table.concat(failed, "; "), 0) end
+  end,
+}
+
+-- Prefixes each tab label with its cmd+N number ("2-api") in every session on
+-- the Mac being viewed. A tab still on its default "Window 1a2b3c4d" label (or
+-- only a number) is named after its focused pane's folder instead.
+rex.action{
+  name = "tab_renumber",
+  title = "Number Tabs for Cmd+N",
+  category = "Tab",
+  run = function(ctx)
+    attach_all()
+    local failed = {}
+    for _, s in ipairs(sessions()) do
+      local v = rex.session.view{ session_id = s.session_id }
+      for i, w in ipairs(v and v.windows or {}) do
+        local base = (w.label or ""):gsub("^%d+%-", "")
+        if base:match("^%d*$") or base:match("^Window %x+$") then
+          local ok, dir = pcall(pane_dir, w.focused_block_id, s.session_id)
+          if not ok then rex.log("warn", "tab_renumber: tab " .. i .. " has no folder: " .. tostring(dir)) end
+          base = not ok and "" or dir == os.getenv("HOME") and "~" or basename(dir)
+        end
+        local label = base == "" and tostring(i) or i .. "-" .. base
+        if label ~= w.label then
+          local _, err = rex.call("session.set_window_label", { session_id = s.session_id, window_id = w.window_id, label = label })
+          if err then failed[#failed + 1] = label .. ": " .. tostring(err) end
         end
       end
     end
