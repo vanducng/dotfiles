@@ -36,6 +36,8 @@ icons = {"mini-01": "macmini", "macpro": "laptopcomputer"}
 prefs = plistlib.loads(subprocess.run(
     ["defaults", "export", "com.superlogical.rex", "-"], check=True, capture_output=True).stdout)
 data = json.loads(prefs.get("RexSync.servers") or b'{"formatVersion":1,"records":[]}')
+if data.get("formatVersion") != 1:
+    sys.exit("RexSync.servers has an unknown formatVersion; add the hosts in the app instead")
 records = data.setdefault("records", [])
 have = {r.get("name") for r in records}
 added = False
