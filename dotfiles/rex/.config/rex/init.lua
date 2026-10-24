@@ -48,6 +48,9 @@ px("shift+x", "client.tab.close")
 -- Rex's own ctrl+shift+up/down never reach it; these replace its shift+cmd+arrow splits (C-x m/v split).
 for _, k in ipairs({ "up", "left" }) do bind("shift+cmd+" .. k, "client.tab.move.backward") end
 for _, k in ipairs({ "down", "right" }) do bind("shift+cmd+" .. k, "client.tab.move.forward") end
+-- ctrl+alt+< and > walk every tab in sidebar order, across sessions and hosts.
+bind("ctrl+alt+[Comma]", "tab_cycle", { back = true })
+bind("ctrl+alt+[Period]", "tab_cycle")
 
 -- cmd+N is a tab in this session, ctrl+N a session on this host, ctrl+alt+N a host.
 for i = 1, 9 do

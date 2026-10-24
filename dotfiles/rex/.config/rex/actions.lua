@@ -165,6 +165,85 @@ rex.action{
   end,
 }
 
+-- A session's tabs; host is a remote label, or nil for this Mac. While the app shows another
+-- host, rex.session.view goes there, so this Mac's tabs come from the CLI.
+local function session_windows(ctx, host, session_id)
+  local v
+  if host then
+    local srv = rex.server(host)
+    srv.call("session.attach_all", { event_scope = "session" })
+    v = srv.call("session.view", { session_id = session_id })
+  elseif ctx.server then
+    local r = rex.exec({ rex_cli, "session", "inspect", session_id, "--json" }, { env = env, timeout = 5 })
+    local ok, d = pcall(rex.json.decode, r and r.ok and r.stdout or "")
+    v = ok and d or nil
+  else
+    attach_all()
+    v = rex.session.view{ session_id = session_id }
+  end
+  return v and v.windows or {}
+end
+
+-- Next or previous tab in sidebar order: this Mac's sessions, then each remote host's, wrapping
+-- at the end. Other sessions and hosts are only asked once the walk leaves the current one.
+rex.action{
+  name = "tab_cycle",
+  title = "Next Tab Across Sessions",
+  category = "Tab",
+  args = { back = "boolean?" },
+  run = function(ctx, args)
+    local dir = args and args.back and -1 or 1
+    local hostlist = { false }
+    for _, h in ipairs(rex.servers()) do hostlist[#hostlist + 1] = h end
+    local cache = {}
+    local function sessions_on(h)
+      if cache[h] == nil then
+        local ok, list = pcall(host_sessions, ctx, h or nil)
+        cache[h] = ok and list or {}
+      end
+      return cache[h]
+    end
+    local function go(h, session_id, window_id)
+      remember(ctx, session_id)
+      select_session(session_id, h or nil, window_id)
+    end
+
+    local hi, si, wi = 1, 0, nil
+    for i, h in ipairs(hostlist) do
+      if h == (ctx.server or false) then hi = i end
+    end
+    for i, s in ipairs(sessions_on(hostlist[hi])) do
+      if s.session_id == ctx.session_id then si = i end
+    end
+    local wins = session_windows(ctx, ctx.server, ctx.session_id)
+    for i, w in ipairs(wins) do
+      for _, l in ipairs(w.layers or {}) do
+        for _, b in ipairs(l.blocks or {}) do
+          if b.block_id == ctx.block_id then wi = i end
+        end
+      end
+    end
+    if wi and wins[wi + dir] then return go(hostlist[hi], ctx.session_id, wins[wi + dir].window_id) end
+
+    for _ = 1, 64 do
+      si = si + dir
+      local list = sessions_on(hostlist[hi])
+      if si < 1 or si > #list then
+        hi = (hi - 1 + dir) % #hostlist + 1
+        list = sessions_on(hostlist[hi])
+        si = dir == 1 and 1 or #list
+      end
+      local s = list[si]
+      if s then
+        local ws = session_windows(ctx, hostlist[hi] or nil, s.session_id)
+        local w = dir == 1 and ws[1] or ws[#ws]
+        if w then return go(hostlist[hi], s.session_id, w.window_id) end
+      end
+    end
+    error("no other tab", 0)
+  end,
+}
+
 -- This machine's sessions go through its own socket while ctx.server points
 -- rex.call at another host.
 local function set_label(ctx, host, session_id, label)
