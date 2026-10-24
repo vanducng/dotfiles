@@ -30,6 +30,7 @@ If `~/.grok/config.toml` already exists as a real file, back it up before the fi
 - Claude/Cursor **hooks** are disabled (`hooks = false`) so native `~/.grok/hooks` own lifecycle automation and do not double-fire.
 - Extra skill root: `~/skills`.
 - Native MCP servers: `miudb`, `playwright` (no secrets in the managed file).
+- Status line: `[ui.status_line]` runs `~/.local/bin/agent-statusline`, the same line as Claude Code (see [Claude Code](/ai/claude-code/#status-line)). Grok reads it at startup, and the row shows once the first prompt opens the agent view.
 
 ## Hooks
 

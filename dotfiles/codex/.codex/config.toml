@@ -190,7 +190,8 @@ notification_condition = "always"
 notification_method = "auto"
 notifications = true
 status_line_use_colors = true
-status_line = ["run-state", "current-dir", "git-branch", "model-with-reasoning", "context-remaining", "context-used", "task-progress", "five-hour-limit", "weekly-limit", "context-window-size", "used-tokens", "total-input-tokens", "total-output-tokens", "fast-mode"]
+# Same order as agent-statusline (Claude Code, Grok, pi); Codex only takes built-in items.
+status_line = ["model-with-reasoning", "context-used", "current-dir", "git-branch", "fast-mode", "run-state"]
 terminal_title = [
   "activity",
   "project",

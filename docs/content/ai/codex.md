@@ -20,7 +20,7 @@ This links `dotfiles/codex/.codex/config.toml`, `cliproxy.config.toml`, and `cli
 - Agent workflow features are pinned on, including multi-agent tools, hooks, shell snapshots, workspace dependencies, browser use, computer use, image generation, and plugin support.
 - TUI Vim mode starts enabled with `tui.vim_mode_default = true`.
 - TUI notifications are enabled and set to fire even when the terminal is focused.
-- The status line is ordered for workflow state first: run state, current directory, git branch, model/reasoning, context remaining, context used, and task progress.
+- The status line follows the shared agent layout (see [Claude Code](/ai/claude-code/#status-line)) with Codex's built-in items: model and reasoning, context used, current directory, git branch, fast mode, and run state.
 - The terminal title shows activity, project, and model.
 - Sound hooks play on approval requests and turn completion.
 - OpenAI developer docs MCP is configured as `openaiDeveloperDocs`.

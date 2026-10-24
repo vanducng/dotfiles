@@ -7,10 +7,18 @@ stowed to `~/.pi/agent/settings.json`, so the default provider/model, theme, and
 `packages` list (extensions) are all reproducible. Sessions, auth, and installed
 package artifacts stay local.
 
+## Footer
+
+The stowed `statusline` extension replaces pi's stock footer with the status line
+Claude Code and Grok show (see [Claude Code](/ai/claude-code/#status-line)): it sends
+pi's model, thinking level, context use, folder and branch to
+`~/.local/bin/agent-statusline`. Status text from other extensions (the standby
+badge, ponytail, MCP) shows on a second row. It does nothing in RPC mode, which is
+how OpenRig runs pi seats.
+
 ## Footer standby
 
-There is no built-in footer setting for "the captain is waiting on a crew." Pi's
-stock footer shows this session only (model, tokens, ponytail). When this pane is
+There is no built-in footer setting for "the captain is waiting on a crew." When this pane is
 idle and another named Herdr agent is `working` or `blocked`, the stowed
 `standby-status` extension writes `standby · <crew>` into the footer. No badge
 means this session is idle and no sibling crew is running.

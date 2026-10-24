@@ -191,7 +191,8 @@ for agent in scout worker reviewer oracle; do
 done
 PI_CODING_AGENT_DIR="$test_dir" PI_OFFLINE=1 pi --no-skills --no-prompt-templates --no-themes \
   --extension "$agent_dir/extensions/calm/index.ts" \
-  --extension "$agent_dir/extensions/subagent/index.ts" --list-models >/dev/null
+  --extension "$agent_dir/extensions/subagent/index.ts" \
+  --extension "$agent_dir/extensions/statusline.ts" --list-models >/dev/null
 
 if [[ -e "${HOME}/.pi" || -L "${HOME}/.pi" ]]; then
 	if [[ -L "${HOME}/.pi" ]]; then
