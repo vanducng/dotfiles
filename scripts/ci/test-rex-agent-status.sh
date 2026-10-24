@@ -27,6 +27,9 @@ assert seq.startswith("\x1bPtmux;\x1b\x1b]7501;") and seq.endswith("\x07\x1b\\")
 msg = seq.split("msg=")[1].split("\x07")[0]
 assert base64.b64decode(msg).decode() == "two lines", msg
 assert ":kind=permission" in r.sequence("claude-code", "blocked", "permission", None)
+pairs = r.fields("claude-code", "done", None, "Done")
+assert pairs == "app=claude-code:state=done:msg=RG9uZQ==", pairs
+assert r.wrap(pairs) == r.sequence("claude-code", "done", None, "Done")
 PY
 
 # Outside tmux, and with bad input, it writes nothing and never fails the hook.
