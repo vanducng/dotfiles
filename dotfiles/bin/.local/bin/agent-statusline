@@ -1,0 +1,106 @@
+#!/usr/bin/env python3
+# One status line for coding agents. Claude Code and Grok pipe their status JSON on
+# stdin (the same field names); the pi footer extension sends that shape too.
+# Prints: model effort  context%  dir  branch[*]  [fast]
+import json
+import os
+import re
+import subprocess
+import sys
+
+COLOR = "NO_COLOR" not in os.environ
+
+
+def paint(code, text):
+    return f"\x1b[{code}m{text}\x1b[0m" if COLOR else text
+
+
+def context_percent(d):
+    cw = d.get("context_window") or {}
+    pct = cw.get("used_percentage")
+    if isinstance(pct, (int, float)):
+        return pct
+    size = cw.get("context_window_size")
+    used = cw.get("context_tokens")
+    if used is None and isinstance(cw.get("current_usage"), dict):
+        u = cw["current_usage"]
+        used = sum(u.get(k) or 0 for k in ("input_tokens", "cache_creation_input_tokens", "cache_read_input_tokens"))
+    if isinstance(size, (int, float)) and size > 0 and isinstance(used, (int, float)):
+        return used * 100 / size
+    return None
+
+
+def context_segment(d):
+    pct = context_percent(d)
+    if pct is None:
+        return None
+    red = (d.get("context_window") or {}).get("auto_compact_threshold_percent") or 85
+    color = "31" if pct >= red else "33" if pct >= 70 else "32"
+    pie = "○◔◑◕●"[min(4, int((pct + 12.5) // 25))]
+    return paint(color, f"{pie} {round(pct)}%")
+
+
+def short_dir(path):
+    home = os.path.expanduser("~")
+    if path == home or path.startswith(home + "/"):
+        path = "~" + path[len(home):]
+    parts = path.split("/")
+    return "…/" + "/".join(parts[-2:]) if len(path) > 32 and len(parts) > 3 else path
+
+
+def git_state(cwd, branch):
+    """(branch, dirty) from one git call; tracked changes only, so it stays fast in big repos."""
+    try:
+        out = subprocess.run(
+            ["git", "--no-optional-locks", "status", "--porcelain=v1", "--branch", "-uno"],
+            cwd=cwd, capture_output=True, text=True, timeout=0.5,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return branch, False
+    if out.returncode != 0:
+        return branch, False
+    lines = out.stdout.splitlines()
+    head = lines[0][3:] if lines and lines[0].startswith("## ") else ""
+    if not branch:
+        head = re.sub(r"^No commits yet on ", "", head)
+        branch = None if head.startswith("HEAD (no branch)") else head.split("...")[0].split(" ")[0] or None
+    return branch, len(lines) > 1
+
+
+def visible_len(s):
+    return len(re.sub(r"\x1b\[[0-9;]*m", "", s))
+
+
+def render(d, width=None):
+    model = d.get("model") or {}
+    name = (model.get("display_name") or model.get("id")) if isinstance(model, dict) else model
+    effort = (d.get("effort") or {}).get("level")
+    ws = d.get("workspace") or {}
+    cwd = ws.get("current_dir") or d.get("cwd") or os.getcwd()
+
+    head = paint("1", name or "?") + (" " + paint("2", effort) if effort else "")
+    branch, dirty = git_state(cwd, ws.get("branch"))
+    where = [paint("34", short_dir(cwd))]
+    if branch:
+        where.append(paint("35", branch) + (paint("33", "*") if dirty else ""))
+    tail = [paint("33", "↯ fast")] if d.get("fast_mode") is True else []
+
+    ctx = context_segment(d)
+    line = "  ".join(s for s in [head, ctx, *where, *tail] if s)
+    if width and visible_len(line) > width:
+        where[0] = paint("34", os.path.basename(cwd.rstrip("/")) or "/")
+        line = "  ".join(s for s in [head, ctx, *where, *tail] if s)
+    return line
+
+
+def main():
+    try:
+        d = json.loads(sys.stdin.read() or "{}")
+    except ValueError:
+        d = {}
+    cols = os.environ.get("COLUMNS", "")
+    print(render(d if isinstance(d, dict) else {}, int(cols) if cols.isdigit() else None))
+
+
+if __name__ == "__main__":
+    main()
