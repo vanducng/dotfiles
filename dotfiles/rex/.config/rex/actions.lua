@@ -321,7 +321,8 @@ local function capture_file(ctx, last_lines)
     session_id = ctx.session_id, block_id = ctx.block_id, format = "text", trim = true, unwrap = true,
   })
   if not (r and r.content) then return "" end
-  local text = r.content
+  -- trim drops blank cells, not spaces a program printed, so strip those too.
+  local text = r.content:gsub("[ \t]+\n", "\n"):gsub("[ \t]+$", ""):gsub("\n$", "")
   if last_lines then
     local lines = {}
     for line in (text .. "\n"):gmatch("(.-)\n") do lines[#lines + 1] = line end
@@ -330,8 +331,12 @@ local function capture_file(ctx, last_lines)
   local path = os.tmpname()
   local f = io.open(path, "w")
   if not f then return "" end
-  f:write(text, "\n")
+  local ok = f:write(text, "\n")
   f:close()
+  if not ok then
+    os.remove(path)
+    return ""
+  end
   return path
 end
 
@@ -342,8 +347,12 @@ if [ -z "$3" ]; then
   text=$("$REX_BIN_DIR/rex" capture -b "$1" --unwrap 2>&1) || set -- "$1" "$2" "" " rex capture failed"
   printf '%s\n' "$text" | sed 's/[[:space:]]*$//' >"$f"
 fi
-init="$HOME/.config/rex/copy-mode.nvim.lua"; [ -r "$init" ] || init=NONE
-REX_COPY_NOTE="$4" nvim -u "$init" -i NONE -n -R + "$f"]=]
+init="$HOME/.config/rex/copy-mode.nvim.lua"
+if [ -r "$init" ]; then
+  REX_COPY_NOTE="$4" nvim -u "$init" -i NONE -n -R + "$f"
+else
+  nvim -u NONE -i NONE -n -R + -c "set clipboard=unnamedplus" -c "nnoremap q <cmd>qa!<cr>" -c "nnoremap <C-c> <cmd>qa!<cr>" "$f"
+fi]=]
 
 rex.action{
   name = "copy_mode",

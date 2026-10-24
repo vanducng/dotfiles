@@ -30,7 +30,7 @@ load_git_roots() {
   out="$(git -C "$base_dir" rev-parse --show-toplevel --path-format=absolute --git-common-dir 2>/dev/null)" || return 0
   repo_root="${out%%$'\n'*}"
   common="${out#*$'\n'}"
-  [[ "${common##*/}" == ".git" ]] && main_root="${common%/.git}"
+  [[ "$common" != "$out" && "${common##*/}" == ".git" ]] && main_root="${common%/.git}"
   return 0
 }
 extensions='md|markdown|mdx|png|jpe?g|gif|webp|heic|heif|pdf|csv|tsv|xlsx|txt|json|ya?ml|toml|lua|sh|zsh|fish|py|js|jsx|ts|tsx|go|rs|java|kt|swift|c|cc|cpp|h|hpp'
