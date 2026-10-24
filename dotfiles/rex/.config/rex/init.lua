@@ -45,6 +45,9 @@ px("space", "fingers")
 px("c", "client.tab.new")
 px("shift+t", "client.tab.rename")
 px("shift+x", "client.tab.close")
+-- Rex's own ctrl+shift+up/down never reach it; these replace its shift+cmd+arrow splits (C-x m/v split).
+for _, k in ipairs({ "up", "left" }) do bind("shift+cmd+" .. k, "client.tab.move.backward") end
+for _, k in ipairs({ "down", "right" }) do bind("shift+cmd+" .. k, "client.tab.move.forward") end
 
 -- cmd+N is a tab in this session, ctrl+N is a session.
 for i = 1, 9 do
