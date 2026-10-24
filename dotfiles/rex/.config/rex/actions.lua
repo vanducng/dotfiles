@@ -283,27 +283,35 @@ end
 
 -- Script args: $1 the pane, $2 "1" if it was zoomed, $3 a file holding the
 -- pane's text ("" when the overlay must capture it), then the caller's.
--- With no bounds the overlay covers exactly the pane it was opened from.
+-- With no bounds the overlay covers the pane it was opened from, or the window.
 local function overlay(ctx, bounds, script, file, ...)
   local function fail(msg)
     if file ~= "" then os.remove(file) end
     error(msg, 0)
   end
-  local zoomed, rect = "", nil
+  local zoomed, rect, win = "", nil, nil
   local v, verr = rex.session.view{ session_id = ctx.session_id }
   if not v then rex.log("warn", "overlay: zoom state unknown: " .. tostring(verr)) end
   for _, w in ipairs(v and v.windows or {}) do
     if w.zoomed_block_id == ctx.block_id then zoomed = "1" end
     for _, l in ipairs(w.layers or {}) do
-      if l.kind == "tiled" then rect = rect or pane_rect(l.layout, ctx.block_id) end
+      if l.kind == "tiled" and not rect then
+        rect = pane_rect(l.layout, ctx.block_id)
+        if rect then win = w.window_id end
+      end
       -- A popup over a popup traps focus: directional keys cannot leave a floating layer.
       for _, b in ipairs(l.kind == "floating" and l.blocks or {}) do
         if b.block_id == ctx.block_id then fail("already in a popup; close it first") end
       end
     end
   end
+  local area = zoomed == "1" and { 0, 0, 1, 1 } or bounds or rect or { 0, 0, 1, 1 }
+  -- Rex Beta 1408 draws bounds as [left, top, right, bottom]; only a rect at the origin shows right.
+  if area[1] > 0 or area[2] > 0 then area = { 0, 0, 1, 1 } end
+  -- Without window_id the layer goes to the session's active tab, not always the pane's.
   local _, err = rex.session.new_layer{
-    bounds = zoomed == "1" and { 0, 0, 1, 1 } or bounds or rect or { 0, 0, 1, 1 },
+    window_id = win,
+    bounds = area,
     focus = true,
     layout = rex.layout.block{
       flavor = "com.superlogical.terminal.shell",
