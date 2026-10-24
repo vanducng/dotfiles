@@ -7,7 +7,7 @@ Rex (Rex Beta) is the native macOS multiplexer that replaces Ghostty on space 1 
 ## Source of truth
 
 - `dotfiles/rex/.config/rex/init.lua` - key bindings and the resize mode
-- `dotfiles/rex/.config/rex/actions.lua` - Lua actions: `session_goto`, `session_renumber`, `tab_goto`, `home`, `fingers`, `agent_attention`, `copy_mode`, `pane_label`, `open_pr`
+- `dotfiles/rex/.config/rex/actions.lua` - Lua actions: `session_goto`, `session_renumber`, `tab_renumber`, `tab_goto`, `home`, `fingers`, `agent_attention`, `copy_mode`, `pane_label`, `open_pr`
 - `dotfiles/rex/.config/rex/hosts.lua` - the other machines, one Rex host per ssh alias
 - `scripts/rex-setup.sh` (`make setup-rex`) - app settings that live in UserDefaults: Option as Alt, vertical tabs, compact panes, the Tailscale node name, and the app's Remote Hosts list. The app reads them at launch, so quit and reopen Rex Beta after a run; sessions live in the server and survive
 
@@ -40,6 +40,7 @@ Rex uses Herdr's `C-x` prefix and letters, so moving between the two needs no re
 | `C-x Shift-N` | New session |
 | `C-x Shift-S` / `C-x Shift-W` | Rename session |
 | `C-x Shift-I` | Number every session's label with its `Ctrl-1..9` number (`3-api`), here and on remote hosts; rerun after adding, closing, or renaming one |
+| `C-x i` | Number every tab's label with its `Cmd-1..9` number (`2-api`) in each session on the Mac you are viewing; a tab without a name of its own takes its pane's folder |
 | `C-x Shift-D` | Close session |
 | `C-x Shift-M` | Switch machine (host) |
 | `C-x Shift-Down` / `C-x o` | Next agent that needs you: blocked, then error, done, idle |

@@ -41,3 +41,8 @@ source ~/.orbstack/shell/init.zsh 2>/dev/null || :
 
 # added by Snowflake SnowflakeCLI installer v1.0
 export PATH=/Applications/SnowflakeCLI.app/Contents/MacOS/:$PATH
+
+# The rex CLI ships inside the Rex Beta app. Rex panes put it on PATH; ssh and other shells don't.
+rex_bin="$HOME/Library/Application Support/com.superlogical.rex/RexServer/Versions/Current/Rex Server.app/Contents/MacOS"
+[[ -x "$rex_bin/rex" ]] && export PATH="$PATH:$rex_bin"
+unset rex_bin
