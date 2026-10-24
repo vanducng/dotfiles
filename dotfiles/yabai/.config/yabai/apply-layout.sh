@@ -21,14 +21,14 @@ while ! mkdir "$lockdir" 2>/dev/null; do
 done
 trap 'rmdir "$lockdir" 2>/dev/null || true' EXIT INT TERM
 
-# app:space. Spaces 1-9 are the main display. Space 10 is Jump Desktop.
+# app:space. Spaces 1-9 are the main display; 9 is Jump Desktop. Space 10 is LibreOffice.
 # Names contain spaces, so the list is one pin per line.
 read_pins() {
     cat <<'EOF'
 Rex Beta:1
 Ghostty:2
-LibreOffice:9
-soffice:9
+LibreOffice:10
+soffice:10
 Dia:4
 Google Chrome:4
 Aside:3
@@ -37,7 +37,7 @@ Preview:6
 Foxit PDF Reader:6
 Alter:7
 Obsidian:8
-Jump Desktop:10
+Jump Desktop:9
 Discord:12
 WhatsApp:12
 Arc:13
@@ -69,8 +69,8 @@ window_ids() {
 
 # Stack the shared desktops before the moves so a new neighbor does not
 # bsp-split the window already there.
-yabai -m space 10 --label mac-mini >/dev/null 2>&1 || true
-yabai -m space 10 --layout stack >/dev/null 2>&1 || true
+yabai -m space 9 --label mac-mini >/dev/null 2>&1 || true
+yabai -m space 9 --layout stack >/dev/null 2>&1 || true
 yabai -m space 12 --layout stack >/dev/null 2>&1 || true
 yabai -m space 14 --layout stack >/dev/null 2>&1 || true
 yabai -m space 16 --layout stack >/dev/null 2>&1 || true
@@ -93,7 +93,7 @@ yabai -m rule --apply >/dev/null 2>&1 || true
 
 # Zalo and Telegram belong on the built-in display. Their numbered desktops
 # (11 and 12) count only when those desktops are actually on display 2.
-# Otherwise each gets its own empty built-in desktop, skipping Jump Desktop, Slack, kitty,
+# Otherwise each gets its own empty built-in desktop, skipping LibreOffice, Slack, kitty,
 # the AI apps, and ego.
 place_on_builtin() {
     app=$1

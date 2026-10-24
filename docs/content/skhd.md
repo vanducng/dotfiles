@@ -37,8 +37,8 @@ All application shortcuts use the `meh` key (ctrl+alt+shift) for consistency and
 | 6 | 1 | Preview, Foxit |
 | 7 | 1 | Alter |
 | 8 | 1 | Obsidian |
-| 9 | 1 | LibreOffice |
-| 10 | 2 | Jump Desktop (Mac Mini) |
+| 9 | 1 | Jump Desktop (Mac Mini) |
+| 10 | 2 | LibreOffice |
 | 11 | 2 | Zalo |
 | 12 | 2 | Telegram, Discord, WhatsApp (stack) |
 | 13 | 2 | Arc |
@@ -79,11 +79,11 @@ All application shortcuts use the `meh` key (ctrl+alt+shift) for consistency and
 | Shortcut | Application | Description |
 |----------|-------------|-------------|
 | `meh + 1` | 1Password | Password manager |
-| `meh + 2` | Jump Desktop | Mac Mini (`mini-01`, Fluid) on the built-in display, space 10 |
+| `meh + 2` | Jump Desktop | Mac Mini (`mini-01`, Fluid) on the main display, space 9 |
 | `meh + v` | Grok Bot | Grok desktop app on space 16 |
 | `meh + l` | Perplexity | AI search engine |
 | `meh + i` | Structured | Task and time management |
-| `meh + w` | LibreOffice | Office suite on space 9 |
+| `meh + w` | LibreOffice | Office suite on space 10 |
 | `meh + p` | Foxit PDF Reader | PDF reader on space 6 |
 | `meh + o` | Preview | macOS preview app on space 6 |
 | `meh + n` | Obsidian | Notes on space 8 |
