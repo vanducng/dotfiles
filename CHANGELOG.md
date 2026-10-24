@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.28.0](https://github.com/vanducng/dotfiles/compare/v0.27.0...v0.28.0) (2026-10-24)
+
+
+### Features
+
+* **atuin:** switched search to the daemon's fuzzy mode and enabled AI ([#232](https://github.com/vanducng/dotfiles/issues/232)) ([794b398](https://github.com/vanducng/dotfiles/commit/794b3985ecef9e5ae87ca167d56634f12390a771))
+* **herdr:** dropped the C-x n/p tab keys for the direct Ctrl-1..9 jump ([#228](https://github.com/vanducng/dotfiles/issues/228)) ([8c4217b](https://github.com/vanducng/dotfiles/commit/8c4217b1efc0b9ae76a47e192ad4bfd90d7c4350))
+* **nix:** set Structured to its side layout through home-manager ([#229](https://github.com/vanducng/dotfiles/issues/229)) ([f62ecb6](https://github.com/vanducng/dotfiles/commit/f62ecb64e324ff608178251f81cd872a45939d86))
+* **rex:** numbered tab labels for cmd+N on C-x i ([#226](https://github.com/vanducng/dotfiles/issues/226)) ([93fcf59](https://github.com/vanducng/dotfiles/commit/93fcf59973143379d5d6f28c30d8916d8dea7643))
+
+
+### Bug Fixes
+
+* **rex:** cut copy mode and picker startup lag ([#231](https://github.com/vanducng/dotfiles/issues/231)) ([4316937](https://github.com/vanducng/dotfiles/commit/4316937d269b2841ddbe859e9a265e4e4a70699b))
+* **zsh:** cut new shell startup from 10-20s to under a second ([#230](https://github.com/vanducng/dotfiles/issues/230)) ([04b7abc](https://github.com/vanducng/dotfiles/commit/04b7abc4e9094253a9a20b6a06910f3a9369f39c))
+
 ## [0.27.0](https://github.com/vanducng/dotfiles/compare/v0.26.0...v0.27.0) (2026-10-24)
 
 
