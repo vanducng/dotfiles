@@ -345,7 +345,7 @@ nvim
 ### Test Core Functionality
 ```bash
 # Test window manager
-# Press: meh + a (should open Ghostty)
+# Press: meh + a (should open Rex Beta)
 # Press: ctrl + shift + h (should focus left window)
 
 # Test Herdr

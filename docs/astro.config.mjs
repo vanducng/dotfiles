@@ -46,6 +46,7 @@ export default defineConfig({
           label: 'Core Tools',
           items: [
             'neovim',
+            { label: 'Rex - Native Multiplexer', link: '/rex/' },
             { label: 'Herdr - Agent Workspace Manager', link: '/herdr/' },
             { label: 'Tmux - Legacy Multiplexer', link: '/tmux/' },
             'atuin',
