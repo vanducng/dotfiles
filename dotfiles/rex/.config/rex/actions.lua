@@ -41,7 +41,12 @@ end
 -- The server's PATH has no rex; on macOS the CLI ships inside the server app.
 local rex_cli = (os.getenv("HOME") or "") .. "/Library/Application Support/com.superlogical.rex/RexServer/Versions/Current/Rex Server.app/Contents/MacOS/rex"
 local cli_file = io.open(rex_cli)
-if cli_file then cli_file:close() else rex_cli = "rex" end
+if cli_file then
+  cli_file:close()
+else
+  rex_cli = "rex"
+  rex.log("warn", "actions: no bundled rex CLI, using rex from PATH")
+end
 
 -- While the app shows another host's session, ctx.server names that host and
 -- rex.call goes there, so this machine's sessions come from its own socket.
@@ -241,7 +246,8 @@ if [ -n "$2" ]; then "$REX_BIN_DIR/rex" zoom --on "$1"; else "$REX_BIN_DIR/rex" 
 -- Script args: $1 the pane, $2 "1" if it was zoomed, then the caller's.
 local function overlay(ctx, bounds, script, ...)
   local zoomed = ""
-  local v = rex.session.view{ session_id = ctx.session_id }
+  local v, verr = rex.session.view{ session_id = ctx.session_id }
+  if not v then rex.log("warn", "overlay: zoom state unknown: " .. tostring(verr)) end
   for _, w in ipairs(v and v.windows or {}) do
     if w.zoomed_block_id == ctx.block_id then zoomed = "1" end
   end
@@ -258,7 +264,8 @@ end
 
 local copy_script = [=[f=$(mktemp) || exit; trap 'rm -f "$f"' EXIT HUP INT TERM
 PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
-"$REX_BIN_DIR/rex" capture -b "$1" --unwrap 2>&1 | sed 's/[[:space:]]*$//' >"$f"
+text=$("$REX_BIN_DIR/rex" capture -b "$1" --unwrap 2>&1) || set -- "$1" "$2" " rex capture failed"
+printf '%s\n' "$text" | sed 's/[[:space:]]*$//' >"$f"
 NOTE="$3" nvim -n -R + -c "set clipboard=unnamedplus" -c "nnoremap <buffer> q <cmd>qa!<cr>" -c "let &winbar = \$NOTE" "$f"]=]
 
 rex.action{
