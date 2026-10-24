@@ -8,7 +8,8 @@ Rex (Rex Beta) is the native macOS multiplexer that replaces Ghostty on space 1 
 
 - `dotfiles/rex/.config/rex/init.lua` - key bindings and the resize mode
 - `dotfiles/rex/.config/rex/actions.lua` - Lua actions: `session_goto`, `session_toggle`, `session_renumber`, `tab_renumber`, `tab_goto`, `home`, `fingers`, `agent_attention`, `copy_mode`, `pane_label`, `open_pr`
-- `dotfiles/rex/.config/rex/hosts.lua` - the other machines, one Rex host per ssh alias
+- `dotfiles/rex/.config/rex/hosts.json` - every machine that runs Rex, defined once: `label`, `device`, macOS `hostname`, and the app `icon`. Its order is the `Ctrl-Alt-1..9` number
+- `dotfiles/rex/.config/rex/hosts.lua` - reads `hosts.json`, works out which entry is this Mac, and declares the others as Rex hosts
 - `dotfiles/rex/.config/rex/copy-mode.nvim.lua` - the small Neovim config copy mode starts with (`nvim -u`), so it opens in tens of milliseconds instead of loading the full Neovim setup
 - `scripts/rex-setup.sh` (`make setup-rex`) - app settings that live in UserDefaults: Option as Alt, vertical tabs, compact panes, the Tailscale node name, and the app's Remote Hosts list. The app reads them at launch, so quit and reopen Rex Beta after a run; sessions live in the server and survive
 
@@ -40,7 +41,7 @@ Rex uses Herdr's `C-x` prefix and letters, so moving between the two needs no re
 | `C-x Shift-N` | New session |
 | `C-x Shift-S` | Rename session |
 | `C-x Shift-W` | Open the session on the web |
-| `C-x Shift-I` | Number every session's label with its `Ctrl-1..9` number (`3-api`), here and on remote hosts; rerun after adding, closing, or renaming one |
+| `C-x Shift-I` | Number every session's label with its `Ctrl-1..9` number on its own host (`3-api`), on this Mac and the remote hosts; rerun after adding, closing, or renaming one |
 | `C-x i` | Number every tab's label with its `Cmd-1..9` number (`2-api`) in each session on the Mac you are viewing; a tab without a name of its own takes its pane's folder |
 | `C-x Shift-D` | Close session |
 | `C-x Shift-M` | Switch machine (host) |
@@ -67,7 +68,8 @@ Herdr's `C-x a` (last pane) has no equivalent, since Rex config Lua cannot track
 | `Cmd-t` | New tab |
 | `Shift-Cmd-]` / `Shift-Cmd-[` | Next / previous tab |
 | `Shift-Cmd-Up` / `Shift-Cmd-Down` (also `Left` / `Right`) | Move tab up / down. Replaces Rex's `Ctrl-Shift-Up/Down`, which never reached the app, and its `Shift-Cmd-arrow` splits (`C-x m` / `C-x v` split) |
-| `Ctrl-1..9` | Go to session |
+| `Ctrl-1..9` | Go to session N on the host you are viewing |
+| `Ctrl-Alt-1..9` | Go to host N: 1 MacBook Pro (`mbp-01`), 2 `mini-01`, 3 kept for `linux-01`; lands on the session you last had there, else its first |
 | `Alt-Cmd-]` | Next session |
 | `Cmd-k` | Session picker |
 | `Shift-Cmd-k` | Switch machine (host) |
@@ -79,7 +81,7 @@ Herdr's `C-x a` (last pane) has no equivalent, since Rex config Lua cannot track
 | `Cmd-Up` / `Cmd-Down` | Previous / next shell prompt |
 | `Shift-Cmd-p` | Command palette |
 
-`Ctrl-1..9` numbers sessions like the session picker: this Mac's first, then each remote host's, so `Ctrl-7` can open a session on `mini-01`. Remote sessions count only when the key is pressed in the app, because an action sees the hosts of the client that ran it. The numbers stay the same while you view a session on another Mac. To open a remote session, the action asks that host to have your app select it, so keep Remote Control on (Settings, Server, Client Info). `Ctrl-Shift-Tab` never reaches Rex because skhd uses it for yabai stacks, so use `Shift-Cmd-[` for the previous tab.
+Each host numbers its own sessions, so `Ctrl-1..9` stays short however many machines there are: pick the machine with `Ctrl-Alt-1..9`, then the session with `Ctrl-1..9`. The host numbers follow the order of `hosts.json` and are the same on every Mac. `Ctrl-Alt-N` remembers the session you left on each host, per app, until a config reload. To open a session on another Mac, the action asks that host to have your app select it, so keep Remote Control on (Settings, Server, Client Info). `Ctrl-Shift-Tab` never reaches Rex because skhd uses it for yabai stacks, so use `Shift-Cmd-[` for the previous tab.
 
 ## Machines
 
@@ -94,7 +96,7 @@ rex server status   # first run only: open the Tailscale sign-in link it prints
 rex -S mini-01 ls
 ```
 
-`hosts.lua` declares every other Mac as a host. It reads the tailnet domain from the Tailscale app at load, so the domain stays out of this repository, and it skips the Mac it runs on. A new machine needs its label in `hosts.lua` and in two places in `rex-setup.sh`: the `case` and the `icons` map.
+Host labels follow `<kind>-<nn>`: `mbp`, `mini` or `linux`, then a two-digit number, the same as the machine's ssh alias (`mbp-01`, `mini-01`, `linux-01`). Each Mac's Rex server joins Tailscale as `rex-<label>`. `hosts.lua` reads `hosts.json`, finds this Mac's entry by its macOS `LocalHostName` (`scutil --get LocalHostName`), and declares every other entry as a Rex host at `https://rex-<label>.<tailnet domain>`. It reads the tailnet domain from the Tailscale app at load, so the domain stays out of this repository. `rex hosts` lists what it declared. A new machine needs only an entry in `hosts.json`; `rex-setup.sh` reads the same file for this Mac's label and the app icons.
 
 The Mac app ignores `hosts.lua` and keeps its own Remote Hosts list in the `RexSync.servers` preference. `rex-setup.sh` adds each missing Mac there with the same address and leaves existing records alone, since the app fills in their IDs on first connect. Quit and reopen Rex Beta after it reports "Remote Hosts updated".
 

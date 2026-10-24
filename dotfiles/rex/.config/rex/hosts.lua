@@ -1,9 +1,28 @@
--- Labels match the ssh aliases; scripts/rex-setup.sh names each Mac's Tailscale node rex-<label>.
-local labels = { "mini-01", "macpro" }
-
+-- Machines that run Rex come from hosts.json, which scripts/rex-setup.sh reads too. Each entry:
+--   label     <kind>-<nn> (mbp, mini, linux), the same as its ssh alias. Its Rex server joins
+--             Tailscale as rex-<label>, and its place in the list is its ctrl+alt+N.
+--   hostname  macOS LocalHostName (scutil --get LocalHostName); tells each Mac which entry it is.
+--   device, icon  what it is, and the SF Symbol the Rex app shows for it.
 local function run(argv, env)
   local r = rex.exec(argv, { timeout = 5, env = env })
   if r and r.ok then return (r.stdout:gsub("%s+$", "")) end
+end
+
+local dir = (os.getenv("REX_CONFIG") or ((os.getenv("HOME") or "") .. "/.config/rex/init.lua")):match("^(.*)/")
+local file = io.open(dir .. "/hosts.json")
+local entries = {}
+if file then
+  local ok, decoded = pcall(rex.json.decode, file:read("*a"))
+  file:close()
+  if ok and type(decoded) == "table" then entries = decoded end
+end
+if #entries == 0 then rex.log("warn", "hosts.lua: no hosts in " .. dir .. "/hosts.json") end
+
+local hosts = { order = {} }
+local me = run({ "scutil", "--get", "LocalHostName" })
+for i, h in ipairs(entries) do
+  hosts.order[i] = h.label
+  if h.hostname == me then hosts.self = h.label end
 end
 
 -- The tailnet domain is read at load so it stays out of the repo. Without
@@ -15,13 +34,12 @@ local suffix = ok and decoded and decoded.MagicDNSSuffix
 -- MagicDNSSuffix is empty until Tailscale connects.
 if not suffix or suffix == "" then
   rex.log("warn", "hosts.lua: no tailnet found, skipping remote hosts")
-  return
+  return hosts
 end
 
-local self = run({ "defaults", "read", "com.superlogical.rex", "rex.server.tailnet-hostname" })
-for _, label in ipairs(labels) do
-  local node = "rex-" .. label
-  if node ~= self then
-    rex.host{ label = label, endpoint = "https://" .. node .. "." .. suffix }
+for _, label in ipairs(hosts.order) do
+  if label ~= hosts.self then
+    rex.host{ label = label, endpoint = "https://rex-" .. label .. "." .. suffix }
   end
 end
+return hosts

@@ -1,0 +1,4 @@
+[
+  { "label": "mbp-01", "device": "MacBook Pro", "hostname": "MacBookPro", "icon": "laptopcomputer" },
+  { "label": "mini-01", "device": "Mac mini", "hostname": "mac01", "icon": "macmini" }
+]

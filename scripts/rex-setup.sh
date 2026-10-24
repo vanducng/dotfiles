@@ -8,12 +8,15 @@ REX="$HOME/Library/Application Support/com.superlogical.rex/RexServer/Versions/C
 command -v defaults >/dev/null || { echo "macOS only"; exit 1; }
 [ -x "$REX" ] || { echo "Rex server missing; open Rex Beta.app once"; exit 1; }
 
-# Labels match the ssh aliases and dotfiles/rex/.config/rex/hosts.lua.
-case "$(scutil --get LocalHostName)" in
-  MacBookPro) label=macpro ;;
-  mac01) label=mini-01 ;;
-  *) echo "unknown Mac; add its label to this case, the icons map below, and hosts.lua"; exit 1 ;;
-esac
+# Every machine is defined once, in hosts.json (see hosts.lua for its fields).
+HOSTS="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/dotfiles/rex/.config/rex/hosts.json"
+label="$(/usr/bin/python3 - "$HOSTS" "$(scutil --get LocalHostName)" <<'PY'
+import json, sys
+path, me = sys.argv[1], sys.argv[2]
+found = [h["label"] for h in json.load(open(path)) if h.get("hostname") == me]
+sys.exit(f"{me} is not in {path}; add an entry for this Mac") if not found else print(found[0])
+PY
+)"
 node="rex-$label"
 
 # Option sends Alt (alt+p is not π), the same as Ghostty's macos-option-as-alt.
@@ -29,11 +32,11 @@ suffix="$(TAILSCALE_BE_CLI=1 "$TS" status --json \
 
 # The app's Remote Hosts list ignores hosts.lua. Add each other Mac once; the app
 # fills in its IDs on first connect, so existing records are left alone.
-hosts_hex="$(/usr/bin/python3 - "$label" "$suffix" <<'PY'
+hosts_hex="$(/usr/bin/python3 - "$label" "$suffix" "$HOSTS" <<'PY'
 import json, plistlib, subprocess, sys, uuid
 
 me, suffix = sys.argv[1], sys.argv[2]
-icons = {"mini-01": "macmini", "macpro": "laptopcomputer"}
+icons = {h["label"]: h.get("icon", "desktopcomputer") for h in json.load(open(sys.argv[3]))}
 prefs = plistlib.loads(subprocess.run(
     ["defaults", "export", "com.superlogical.rex", "-"], check=True, capture_output=True).stdout)
 data = json.loads(prefs.get("RexSync.servers") or b'{"formatVersion":1,"records":[]}')
@@ -62,6 +65,7 @@ defaults write "$DOMAIN" rex.server.tailnet-hostname -string "$node"
 "$REX" server tailscale on --hostname "$node" >/dev/null
 current="$("$REX" server status --json | /usr/bin/python3 -c 'import json,sys; print((json.load(sys.stdin).get("tailscale") or {}).get("dns_name", "").split(".")[0])')"
 [ "$current" = "$node" ] || "$REX" server tailscale rename "$node" >/dev/null
+"$REX" config check >/dev/null || { echo "Rex config has problems; run: rex config check"; exit 1; }
 "$REX" config reload >/dev/null
 echo "Rex: $node, Option acts as Alt, vertical tabs, compact panes, config reloaded (quit and reopen Rex Beta to apply app settings)"
 [ -z "$hosts_hex" ] || echo "Remote Hosts updated; quit and reopen Rex Beta to see them"

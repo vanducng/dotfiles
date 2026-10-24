@@ -35,7 +35,7 @@ Tailscale IPv4, so the same name works at home and away:
 ```bash
 ssh linux-01            # this box (old names linux01, dpl, dpl-ts still work)
 ssh mini-01             # Mac mini
-ssh macpro              # MacBook Pro
+ssh mbp-01              # MacBook Pro (old name macpro still works)
 ssh linux-01-lan        # LAN fallback when Tailscale is down
 ssh -N linux-01-tunnel  # CDP + RDP forwards (old dpl-tunnel names still work)
 ```
