@@ -65,6 +65,7 @@ px("shift+n", "session.new")
 px("shift+s", "session.rename")
 px("shift+w", "session.rename")
 px("shift+i", "session_renumber")
+px("i", "tab_renumber")
 px("shift+d", "session.close")
 
 px("shift+m", "client.host.switch")
