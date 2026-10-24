@@ -101,6 +101,16 @@ local function select_session(session_id, host, window_id)
   error("this Mac's Rex app is not connected to " .. host, 0)
 end
 
+-- The session each app left on its last jump by key, for session_toggle. Memory only: a config
+-- reload forgets it, and jumps through cmd+k or the sidebar are not seen.
+local came_from = {}
+
+local function remember(ctx, target_id)
+  if ctx.client_id and target_id ~= ctx.session_id then
+    came_from[ctx.client_id] = { id = ctx.session_id, host = ctx.server }
+  end
+end
+
 rex.action{
   name = "session_goto",
   title = "Go to Session N",
@@ -109,7 +119,21 @@ rex.action{
   run = function(ctx, args)
     local s, host = session_at(ctx, args.index)
     if not s then error("no session " .. args.index, 0) end
+    remember(ctx, s.session_id)
     select_session(s.session_id, host)
+  end,
+}
+
+rex.action{
+  name = "session_toggle",
+  title = "Toggle Last Session",
+  description = "Goes back to the session you left with Ctrl-1..9, C-x 0 or this key; press again to return.",
+  category = "Session",
+  run = function(ctx)
+    local back = ctx.client_id and came_from[ctx.client_id]
+    if not back or back.id == ctx.session_id then error("no session to go back to yet", 0) end
+    remember(ctx, back.id)
+    select_session(back.id, back.host)
   end,
 }
 
@@ -211,6 +235,7 @@ rex.action{
   run = function(ctx)
     local s = local_sessions(ctx)[1]
     if not s then error("no sessions", 0) end
+    remember(ctx, s.session_id)
     -- The tab and pane calls below would go to the other host.
     if ctx.server then return select_session(s.session_id) end
     attach_all()

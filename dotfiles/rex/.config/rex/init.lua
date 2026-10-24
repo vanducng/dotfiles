@@ -57,7 +57,7 @@ for i = 1, 9 do
 end
 px("0", "home")
 -- The session picker stays on Rex's cmd+k.
-px("a", "session.previous")
+px("a", "session_toggle")
 px("shift+right", "session.next")
 bind("alt+cmd+[BracketRight]", "session.next")
 px("shift+n", "session.new")
