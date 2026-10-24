@@ -36,6 +36,9 @@ expect "older claude usage" "Opus 5.5  ◕ 81%  $test_dir" \
 COLUMNS_OVERRIDE=20 expect "narrow row keeps the folder name" "Opus 5.5  $(basename "$test_dir")" \
   "{\"model\":{\"display_name\":\"Opus 5.5\"},\"workspace\":{\"current_dir\":\"$test_dir\"}}"
 
+COLUMNS_OVERRIDE=24 expect "too narrow drops folder then branch" "Opus 5.5 high  ◔ 23%" \
+  "{\"model\":{\"display_name\":\"Opus 5.5\"},\"effort\":\"high\",\"workspace\":{\"current_dir\":\"$test_dir\",\"branch\":\"feature/very-long-branch-name\"},\"context_window\":{\"used_percentage\":23}}"
+
 printf 'not json' | (cd "$test_dir" && NO_COLOR=1 "$script") | grep -q '^?' || { echo "error: bad input printed nothing" >&2; exit 1; }
 
 echo "agent-statusline: ok"

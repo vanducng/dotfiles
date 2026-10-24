@@ -74,23 +74,30 @@ def visible_len(s):
 def render(d, width=None):
     model = d.get("model") or {}
     name = (model.get("display_name") or model.get("id")) if isinstance(model, dict) else model
-    effort = (d.get("effort") or {}).get("level")
+    e = d.get("effort")
+    effort = e.get("level") if isinstance(e, dict) else e
     ws = d.get("workspace") or {}
     cwd = ws.get("current_dir") or d.get("cwd") or os.getcwd()
-
-    head = paint("1", name or "?") + (" " + paint("2", effort) if effort else "")
     branch, dirty = git_state(cwd, ws.get("branch"))
-    where = [paint("34", short_dir(cwd))]
-    if branch:
-        where.append(paint("35", branch) + (paint("33", "*") if dirty else ""))
-    tail = [paint("33", "↯ fast")] if d.get("fast_mode") is True else []
 
-    ctx = context_segment(d)
-    line = "  ".join(s for s in [head, ctx, *where, *tail] if s)
-    if width and visible_len(line) > width:
-        where[0] = paint("34", os.path.basename(cwd.rstrip("/")) or "/")
-        line = "  ".join(s for s in [head, ctx, *where, *tail] if s)
-    return line
+    seg = {
+        "head": paint("1", name or "?") + (" " + paint("2", effort) if effort else ""),
+        "ctx": context_segment(d),
+        "dir": paint("34", short_dir(cwd)),
+        "branch": branch and paint("35", branch) + (paint("33", "*") if dirty else ""),
+        "fast": paint("33", "↯ fast") if d.get("fast_mode") is True else None,
+    }
+
+    def line():
+        return "  ".join(s for s in seg.values() if s)
+
+    # Too wide: folder name only, then drop the folder, the branch, and fast mode.
+    shrink = [("dir", paint("34", os.path.basename(cwd.rstrip("/")) or "/")), ("dir", None), ("branch", None), ("fast", None)]
+    for key, value in shrink:
+        if not width or visible_len(line()) <= width:
+            break
+        seg[key] = value
+    return line()
 
 
 def main():
