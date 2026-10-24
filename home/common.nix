@@ -27,4 +27,9 @@
   };
 
   programs.home-manager.enable = true;
+
+  xdg.configFile."structured/config.toml".text = ''
+    layout = "side"
+    detail_percent = 46
+  '';
 }
