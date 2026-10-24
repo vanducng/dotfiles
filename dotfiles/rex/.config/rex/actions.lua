@@ -15,11 +15,17 @@ local function attach_all()
 end
 
 local function pane_dir(block_id)
-  local r, err = rex.block.call(term, "pwd", { block_id = block_id })
-  if not (r and r.pwd) then error(err or "pane has no working directory", 0) end
-  return (r.pwd:gsub("^file://[^/]*", ""):gsub("%%(%x%x)", function(h)
-    return string.char(tonumber(h, 16))
-  end))
+  local r = rex.block.call(term, "pwd", { block_id = block_id })
+  if r and r.pwd then
+    return (r.pwd:gsub("^file://[^/]*", ""):gsub("%%(%x%x)", function(h)
+      return string.char(tonumber(h, 16))
+    end))
+  end
+  -- A program that never reports its directory still runs in one.
+  local p, err = rex.block.call(term, "process", { block_id = block_id })
+  local cwd = p and p.foreground and p.foreground.cwd
+  if not cwd then error(err or "pane has no working directory", 0) end
+  return cwd
 end
 
 local function git(dir, ...)
@@ -32,11 +38,27 @@ local function basename(path)
   return path:match("([^/]+)/*$") or path
 end
 
+-- The server's PATH has no rex; on macOS the CLI ships inside the server app.
+local rex_cli = (os.getenv("HOME") or "") .. "/Library/Application Support/com.superlogical.rex/RexServer/Versions/Current/Rex Server.app/Contents/MacOS/rex"
+local cli_file = io.open(rex_cli)
+if cli_file then cli_file:close() else rex_cli = "rex" end
+
+-- While the app shows another host's session, ctx.server names that host and
+-- rex.call goes there, so this machine's sessions come from its own socket.
+local function local_sessions(ctx)
+  if not ctx.server then return sessions() end
+  local r, err = rex.exec({ rex_cli, "ls", "--json" }, { env = env, timeout = 5 })
+  if not (r and r.ok) then error(err or (r.stderr ~= "" and r.stderr) or "rex ls failed", 0) end
+  local ok, d = pcall(rex.json.decode, r.stdout)
+  if not ok then error("rex ls returned unreadable output", 0) end
+  return d.sessions or {}
+end
+
 -- Same numbering as the session picker: this Mac first, then each remote host.
 -- Remote hosts are asked only when the index runs past the local sessions.
 -- Returns the session and, for a remote one, its host label.
-local function session_at(index)
-  local list = sessions()
+local function session_at(ctx, index)
+  local list = local_sessions(ctx)
   if list[index] then return list[index] end
   for _, label in ipairs(rex.servers()) do
     local r, err = rex.server(label).call("session.list")
@@ -48,26 +70,29 @@ local function session_at(index)
   end
 end
 
--- session.select only finds sessions on the server that queued it, so a remote
--- session is selected by asking the caller's app, through that host, to do it.
--- Each server gives the app its own client ID, so it is matched by label.
-local function select_remote(host, session_id, client_id)
-  local me = client_id and rex.call("client.inspect", { client_id = client_id })
-  local name = me and me.client.info and me.client.info.label
-  if not name then error("no Rex app to switch", 0) end
+-- A queued session.select only finds sessions on this machine's server, so a
+-- session on another host is selected by asking the app, through that host, to
+-- do it. Host calls travel over the app's own connection, so whoami there names
+-- the app's node.
+local function select_session(session_id, host, window_id)
+  local args = { session_id = session_id, window_id = window_id }
+  if not host then return rex.client.queue("session.select", args) end
   local srv = rex.server(host)
-  local r, err = srv.call("client.list")
-  if not r then error(err, 0) end
+  local me, err = srv.call("server.whoami")
+  local node = me and me.principal and me.principal.node
+  if not node then error(err or ("no Tailscale identity on " .. host), 0) end
+  local r, lerr = srv.call("client.list")
+  if not r then error(lerr, 0) end
   for _, c in ipairs(r.clients or {}) do
-    if c.info and c.info.kind == "app" and c.info.label == name then
+    if c.info and c.info.kind == "app" and c.principal and c.principal.node == node then
       local _, perr = srv.call("client.perform", {
-        client_id = c.client_id, action = "session.select", args = { session_id = session_id }, origin = "key",
+        client_id = c.client_id, action = "session.select", args = args, origin = "key",
       })
       if perr then error(perr, 0) end
       return
     end
   end
-  error(name .. " is not connected to " .. host, 0)
+  error("this Mac's Rex app is not connected to " .. host, 0)
 end
 
 rex.action{
@@ -76,10 +101,70 @@ rex.action{
   category = "Session",
   args = { index = "integer" },
   run = function(ctx, args)
-    local s, label = session_at(args.index)
+    local s, host = session_at(ctx, args.index)
     if not s then error("no session " .. args.index, 0) end
-    if label then return select_remote(label, s.session_id, ctx.client_id) end
-    rex.client.queue("session.select", { session_id = s.session_id })
+    select_session(s.session_id, host)
+  end,
+}
+
+-- This machine's sessions go through its own socket while ctx.server points
+-- rex.call at another host.
+local function set_label(ctx, host, session_id, label)
+  local args = { session_id = session_id, label = label }
+  if host then return rex.server(host).call("session.set_label", args) end
+  if not ctx.server then return rex.call("session.set_label", args) end
+  local r, err = rex.exec({ rex_cli, "session", "rename", session_id, label }, { env = env, timeout = 5 })
+  if r and r.ok then return true end
+  return nil, err or (r.stderr ~= "" and r.stderr) or "rex session rename failed"
+end
+
+-- Prefixes each session label with its ctrl+N number ("3-api"), like Herdr's
+-- tab renumbering. A leading "<digits>-" is replaced, so reruns don't stack.
+rex.action{
+  name = "session_renumber",
+  title = "Number Sessions for Ctrl+N",
+  category = "Session",
+  run = function(ctx)
+    local groups = { { sessions = local_sessions(ctx) } }
+    for _, host in ipairs(rex.servers()) do
+      local r, err = rex.server(host).call("session.list")
+      if not r then rex.log("warn", "session_renumber: " .. host .. " skipped: " .. tostring(err)) end
+      groups[#groups + 1] = { host = host, sessions = r and r.sessions or {} }
+    end
+    local n, failed = 0, {}
+    for _, g in ipairs(groups) do
+      if g.host then
+        rex.server(g.host).call("session.attach_all", { event_scope = "session" })
+      elseif not ctx.server then
+        attach_all()
+      end
+      for _, s in ipairs(g.sessions) do
+        n = n + 1
+        local label = n .. "-" .. (s.label or ""):gsub("^%d+%-", "")
+        if label ~= s.label then
+          local ok, err = set_label(ctx, g.host, s.session_id, label)
+          if not ok then failed[#failed + 1] = label .. ": " .. tostring(err) end
+        end
+      end
+    end
+    if #failed > 0 then error("not renamed: " .. table.concat(failed, "; "), 0) end
+  end,
+}
+
+-- client.tab.goto counts the tabs of every session in the sidebar; this counts
+-- only the current session's, like a browser window. 9 is the last tab.
+rex.action{
+  name = "tab_goto",
+  title = "Go to Tab N in This Session",
+  category = "Tab",
+  args = { index = "integer" },
+  run = function(ctx, args)
+    local v, err = rex.session.view{ session_id = ctx.session_id }
+    if not v then error(err, 0) end
+    local tabs = v.windows or {}
+    local w = tabs[args.index == 9 and #tabs or args.index]
+    if not w then error("no tab " .. args.index, 0) end
+    select_session(ctx.session_id, ctx.server, w.window_id)
   end,
 }
 
@@ -88,8 +173,10 @@ rex.action{
   title = "Home: First Session, Tab, and Pane",
   category = "Session",
   run = function(ctx)
-    local s = sessions()[1]
+    local s = local_sessions(ctx)[1]
     if not s then error("no sessions", 0) end
+    -- The tab and pane calls below would go to the other host.
+    if ctx.server then return select_session(s.session_id) end
     attach_all()
     local v, err = rex.session.view{ session_id = s.session_id }
     if not v then error(err, 0) end
@@ -141,38 +228,74 @@ rex.action{
       if h.block_id == ctx.block_id then pick = hits[(args.back and i - 2 or i) % #hits + 1] break end
     end
     rex.session.focus_block{ session_id = pick.session_id, block_id = pick.block_id }
-    if pick.session_id ~= ctx.session_id then
-      rex.client.queue("session.select", { session_id = pick.session_id })
-    end
+    if pick.session_id ~= ctx.session_id then select_session(pick.session_id, ctx.server) end
   end,
 }
 
--- ponytail: whole scrollback in one read; page with max_bytes + blob_read if it ever fails with too_large.
+-- Overlay scripts read the pane with the rex CLI on whichever host owns it. Rex
+-- zooms only the focused block, so a focused popup unzooms the window: over a
+-- zoomed pane it fills the window to hide that, and re-zooms the pane on quit.
+local overlay_tail = [=[
+if [ -n "$2" ]; then "$REX_BIN_DIR/rex" zoom --on "$1"; else "$REX_BIN_DIR/rex" focus "$1"; fi >/dev/null 2>&1]=]
+
+-- Script args: $1 the pane, $2 "1" if it was zoomed, then the caller's.
+local function overlay(ctx, bounds, script, ...)
+  local zoomed = ""
+  local v = rex.session.view{ session_id = ctx.session_id }
+  for _, w in ipairs(v and v.windows or {}) do
+    if w.zoomed_block_id == ctx.block_id then zoomed = "1" end
+  end
+  local _, err = rex.session.new_layer{
+    bounds = zoomed == "1" and { 0, 0, 1, 1 } or bounds,
+    focus = true,
+    layout = rex.layout.block{
+      flavor = "com.superlogical.terminal.shell",
+      options = { shell = "none", command = { "/bin/sh", "-c", script .. "\n" .. overlay_tail, "sh", ctx.block_id, zoomed, ... } },
+    },
+  }
+  if err then error(err, 0) end
+end
+
+local copy_script = [=[f=$(mktemp) || exit; trap 'rm -f "$f"' EXIT HUP INT TERM
+PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+"$REX_BIN_DIR/rex" capture -b "$1" --unwrap 2>&1 | sed 's/[[:space:]]*$//' >"$f"
+NOTE="$3" nvim -n -R + -c "set clipboard=unnamedplus" -c "nnoremap <buffer> q <cmd>qa!<cr>" -c "let &winbar = \$NOTE" "$f"]=]
+
 rex.action{
   name = "copy_mode",
   title = "Copy Mode",
   description = "Opens the pane's screen and scrollback in Neovim over the pane. y copies, q closes.",
   category = "Pane",
   run = function(ctx)
-    local r, err = rex.block.call(term, "format", { block_id = ctx.block_id, format = "text", trim = true })
-    if not r then error(err, 0) end
-    local path = os.tmpname()
-    local f = assert(io.open(path, "w"))
-    f:write(r.content or "")
-    f:close()
-    local script = 'trap \'rm -f "$1"\' EXIT HUP INT TERM; PATH="' .. env.PATH .. '"; nvim -n -R + -c "set clipboard=unnamedplus" -c "nnoremap <buffer> q <cmd>qa!<cr>" "$1"'
-    local _, lerr = rex.session.new_layer{
-      bounds = { 0, 0, 1, 1 },
-      focus = true,
-      layout = rex.layout.block{
-        flavor = "com.superlogical.terminal.shell",
-        options = { shell = "none", command = { "/bin/sh", "-c", script, "sh", path } },
-      },
-    }
-    if lerr then
-      os.remove(path)
-      error(lerr, 0)
-    end
+    -- A full-screen app (Claude Code, nvim, less) draws on the alternate screen,
+    -- which has no scrollback, so only what is visible comes back.
+    local m = rex.block.call(term, "modes", { block_id = ctx.block_id })
+    local note = m and m.screen == "alternate" and " Full-screen app: only the visible screen is here" or ""
+    overlay(ctx, { 0, 0, 1, 1 }, copy_script, note)
+  end,
+}
+
+-- A popup shows the pane below wherever its program paints no background, so
+-- fzf paints one (merino-dark's raised surface).
+local fingers_script = [=[f=$(mktemp) || exit; trap 'rm -f "$f"' EXIT HUP INT TERM
+PATH="$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"
+export FZF_DEFAULT_OPTS="${FZF_DEFAULT_OPTS:-} --color=bg:#1e2023,bg+:#2b2f34"
+if text=$("$REX_BIN_DIR/rex" capture -b "$1" --unwrap 2>&1); then
+  printf '%s\n' "$text" | tail -n 500 >"$f"
+  HERDR_FINGERS_TEXT_FILE="$f" HERDR_ACTIVE_PANE_CWD="$3" herdr-fingers || { printf '\nPress Enter to close.'; read -r _; }
+else
+  printf '%s\n\nPress Enter to close.' "$text"; read -r _
+fi]=]
+
+-- Herdr's prefix+space picker on the pane's latest 500 lines, newest first:
+-- Enter opens, Ctrl-Y copies, Ctrl-E edits.
+rex.action{
+  name = "fingers",
+  title = "Pick a URL or Path",
+  category = "Pane",
+  run = function(ctx)
+    local ok, dir = pcall(pane_dir, ctx.block_id)
+    overlay(ctx, { 0.1, 0.1, 0.8, 0.8 }, fingers_script, ok and dir or "")
   end,
 }
 
@@ -196,17 +319,14 @@ rex.action{
 
 rex.action{
   name = "open_pr",
-  title = "Open Pull Request",
-  description = "Opens the current branch's pull request, or the repo's pull request list.",
+  title = "Open Pull Requests",
+  description = "Opens the repo's pull request list on GitHub.",
   category = "Pane",
   run = function(ctx)
     local root = git(pane_dir(ctx.block_id), "rev-parse", "--show-toplevel")
     if not root then error("no git project in this pane", 0) end
-    local opts = { cwd = root, env = env, timeout = 10 }
-    local view = rex.exec({ "gh", "pr", "view", "--web" }, opts)
-    if view and view.ok then return end
-    local list, err = rex.exec({ "gh", "pr", "list", "--web" }, opts)
-    if not list then error(err, 0) end
-    if not list.ok then error(list.stderr, 0) end
+    local r, err = rex.exec({ "gh", "pr", "list", "--web" }, { cwd = root, env = env, timeout = 10 })
+    if not r then error(err, 0) end
+    if not r.ok then error(r.stderr, 0) end
   end,
 }
