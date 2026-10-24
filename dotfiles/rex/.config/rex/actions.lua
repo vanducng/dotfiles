@@ -285,12 +285,22 @@ end
 -- pane's text ("" when the overlay must capture it), then the caller's.
 -- With no bounds the overlay covers exactly the pane it was opened from.
 local function overlay(ctx, bounds, script, file, ...)
+  local function fail(msg)
+    if file ~= "" then os.remove(file) end
+    error(msg, 0)
+  end
   local zoomed, rect = "", nil
   local v, verr = rex.session.view{ session_id = ctx.session_id }
   if not v then rex.log("warn", "overlay: zoom state unknown: " .. tostring(verr)) end
   for _, w in ipairs(v and v.windows or {}) do
     if w.zoomed_block_id == ctx.block_id then zoomed = "1" end
     rect = rect or pane_rect((w.layers or {})[1] and w.layers[1].layout, ctx.block_id)
+    -- A popup over a popup traps focus: directional keys cannot leave a floating layer.
+    for _, l in ipairs(w.layers or {}) do
+      for _, b in ipairs(l.kind == "floating" and l.blocks or {}) do
+        if b.block_id == ctx.block_id then fail("already in a popup; close it first") end
+      end
+    end
   end
   local _, err = rex.session.new_layer{
     bounds = zoomed == "1" and { 0, 0, 1, 1 } or bounds or rect or { 0, 0, 1, 1 },
@@ -300,10 +310,7 @@ local function overlay(ctx, bounds, script, file, ...)
       options = { shell = "none", command = { "/bin/sh", "-c", script .. "\n" .. overlay_tail, "sh", ctx.block_id, zoomed, file, ... } },
     },
   }
-  if err then
-    if file ~= "" then os.remove(file) end
-    error(err, 0)
-  end
+  if err then fail(err) end
 end
 
 -- Reading the pane here saves the overlay a rex CLI launch (~40-90ms). A pane on
