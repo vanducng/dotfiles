@@ -9,6 +9,7 @@ Rex (Rex Beta) is the native macOS multiplexer that replaces Ghostty on space 1 
 - `dotfiles/rex/.config/rex/init.lua` - key bindings and the resize mode
 - `dotfiles/rex/.config/rex/actions.lua` - Lua actions: `session_goto`, `session_renumber`, `tab_renumber`, `tab_goto`, `home`, `fingers`, `agent_attention`, `copy_mode`, `pane_label`, `open_pr`
 - `dotfiles/rex/.config/rex/hosts.lua` - the other machines, one Rex host per ssh alias
+- `dotfiles/rex/.config/rex/copy-mode.nvim.lua` - the small Neovim config copy mode starts with (`nvim -u`), so it opens in tens of milliseconds instead of loading the full Neovim setup
 - `scripts/rex-setup.sh` (`make setup-rex`) - app settings that live in UserDefaults: Option as Alt, vertical tabs, compact panes, the Tailscale node name, and the app's Remote Hosts list. The app reads them at launch, so quit and reopen Rex Beta after a run; sessions live in the server and survive
 
 Rex reads the config when it starts. After an edit, run `rex config reload` or press `C-x Shift-R`. Run `rex config check` first to catch mistakes, and `rex keymap` to see what loaded.
