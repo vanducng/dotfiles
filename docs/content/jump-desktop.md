@@ -8,7 +8,7 @@ Remote desktop across the home machines with [Jump Desktop](https://jumpdesktop.
 | --- | --- | --- | --- |
 | `mini-01` | Mac mini (`mac01`) | Jump Desktop Connect (Fluid, cloud, from anywhere) | `mini-01.jump`: VNC `192.168.1.21:5900` (LAN) |
 | `linux-01` | Ubuntu (`dpl`, ssh `linux01`) | Jump Desktop Connect for Linux (Fluid, cloud, from anywhere) - not working yet, see below | none: Jump cannot RDP to GNOME Remote Desktop 42 |
-| `macpro` | MacBook Pro (`Ducs-MacBook-Pro`) | Jump Desktop Connect (Fluid, cloud, from anywhere) | `macpro.jump`: VNC `ducs-macbook-pro:5900` (Tailscale, works off the LAN) |
+| `mbp-01` | MacBook Pro (`Ducs-MacBook-Pro`) | Jump Desktop Connect (Fluid, cloud, from anywhere) | `mbp-01.jump`: VNC `ducs-macbook-pro:5900` (Tailscale, works off the LAN) |
 
 Connect reports each host by its hostname. The names above are set per viewer from `names` by `jump-connect names`; the hostnames stay unchanged because Tailscale, ssh, and skhd use them.
 
