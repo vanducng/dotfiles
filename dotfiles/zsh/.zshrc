@@ -17,6 +17,18 @@ export EDITOR=nvim
 export VISUAL="$EDITOR"
 export GPG_TTY="${GPG_TTY:-$(tty 2>/dev/null)}"
 
+# Caches slow init/completion output; regenerates when the tool binary moves or changes.
+_cached_eval() {
+  local bin=${commands[$1]:A} cache=${XDG_CACHE_HOME:-$HOME/.cache}/zsh/eval/${(j:-:)@}.zsh key
+  [[ -n $bin ]] || return 0
+  [[ -r $cache ]] && read -r key < $cache
+  if [[ $key != "# $bin" || $bin -nt $cache ]]; then
+    [[ -d ${cache:h} ]] || mkdir -p ${cache:h}
+    { print -r -- "# $bin"; command "$@" } >| $cache.$$ 2>/dev/null && mv -f $cache.$$ $cache || { rm -f $cache.$$; return 1 }
+  fi
+  source $cache
+}
+
 # Portable Linux env (stowed from shell-linux). Darwin keeps Homebrew paths below.
 if [[ "$(uname -s)" != Darwin ]] && [[ -f "${XDG_CONFIG_HOME:-$HOME/.config}/shell/linux.sh" ]]; then
   # shellcheck disable=SC1090
@@ -32,6 +44,12 @@ zsh-autosuggestions
 zsh-syntax-highlighting
 zsh-vi-mode
 )
+# Completion dirs must be on fpath before oh-my-zsh runs the only compinit.
+typeset -U fpath
+fpath=(~/.grok/completions/zsh $fpath ~/.zfunc)
+# Nested and agent shells inherit an exported FPATH; one dump per fpath keeps each valid.
+ZSH_COMPDUMP="${XDG_CACHE_HOME:-$HOME/.cache}/zsh/zcompdump-$ZSH_VERSION-${$(print -r -- $fpath | cksum)%% *}"
+[[ -d ${ZSH_COMPDUMP:h} ]] || mkdir -p ${ZSH_COMPDUMP:h}
 source $ZSH/oh-my-zsh.sh
 
 # Default path style is underline, so `cd ~/work` draws a line under the path.
@@ -39,13 +57,13 @@ ZSH_HIGHLIGHT_STYLES[path]=none
 ZSH_HIGHLIGHT_STYLES[path_prefix]=none
 ZSH_HIGHLIGHT_STYLES[autodirectory]=fg=green
 
-source <(gopass completion zsh)
+_cached_eval gopass completion zsh
 
 # 1Password CLI. Unlock comes from the desktop app (Settings > Developer >
 # Integrate with 1Password CLI), never from `op signin`, so no OP_SESSION_* here.
 # No OP_ACCOUNT: shorthands only exist for CLI-added accounts, and the app
 # supplies the account once `op account forget` clears the manual entry.
-command -v op >/dev/null && { eval "$(op completion zsh)"; compdef _op op; }
+command -v op >/dev/null && { _cached_eval op completion zsh; compdef _op op; }
 
 function zvm_vi_yank() {
 	zvm_yank
@@ -70,11 +88,8 @@ export HOMEBREW_AUTO_UPDATE_SECS=86400
 # Claude Code: flicker-free renderer + mouse support (v2.1.88+)
 export CLAUDE_CODE_NO_FLICKER=1
 
-# wtfutil: github + jira credentials (sourced from gh CLI / gopass)
+# wtfutil's Jira credentials load at launch in ~/.local/bin/wtfutil.
 export GITHUB_TOKEN="$(gh auth token 2>/dev/null)"
-export JIRA_DOMAIN="https://cnbacrylic.atlassian.net"
-export JIRA_EMAIL="me@vanducng.dev"
-export JIRA_API_KEY="$(gopass show -o work/cnb/atlassian-api-key 2>/dev/null)"
 
 # Aliases live in ~/.config/shell/aliases.zsh (sourced at the bottom).
 
@@ -82,7 +97,7 @@ export JIRA_API_KEY="$(gopass show -o work/cnb/atlassian-api-key 2>/dev/null)"
 export PYENV_ROOT="$HOME/.pyenv"
 command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
 if command -v pyenv >/dev/null; then
-  eval "$(pyenv init -)"
+  _cached_eval pyenv init - --no-rehash
 fi
 
 autoload -U +X bashcompinit && bashcompinit
@@ -179,7 +194,7 @@ export PATH="$HOME/.atuin/bin:$PATH"
 
 # Initialize atuin before zsh-vi-mode
 export ATUIN_NOBIND="true"
-eval "$(atuin init zsh)"
+_cached_eval atuin init zsh
 
 # Define a function to set up atuin keybindings after zsh-vi-mode loads
 function zvm_after_init() {
@@ -242,17 +257,7 @@ nvm() {
 # Ansible vault
 export ANSIBLE_VAULT_ENCRYPT_SALT=ddsa
 
-# Fast completion setup
-autoload -Uz compinit
-# Check if we need to regenerate dump
-if [[ -n ~/.zcompdump(#qN.mh+24) ]]; then
-  compinit -d ~/.zcompdump
-else
-  compinit -C -d ~/.zcompdump
-fi
-
 zstyle ':completion:*' menu select
-fpath+=~/.zfunc
 
 eval "$(zoxide init zsh)"
 
@@ -296,8 +301,7 @@ bindkey -s '^g' "$HOME/.local/bin/tmux-sessionizer\n"
 
 # gh copilot alias removed - gh-copilot v1.0.4 dropped the `alias` subcommand
 
-# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
-[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+# Not cached: run from a shell that already has mise active, the output hardcodes that shell's PATH.
 eval "$(mise activate zsh)"
 
 
@@ -338,7 +342,7 @@ export PATH="$HOME/.antigravity/antigravity/bin:$PATH"
 # Load Angular CLI autocompletion. ng calls getcwd at startup and dumps a stack
 # trace when the shell was launched in a directory macOS will not let it read.
 if command -v ng >/dev/null 2>&1 && pwd -P >/dev/null 2>&1; then
-  source <(ng completion script)
+  _cached_eval ng completion script
 fi
 
 # Cortex CLI completion (disable via /settings in cortex)
@@ -350,7 +354,7 @@ export PATH="$HOME/.copaw/bin:$PATH"
 # MariaDB Connector/C for Python mariadb package
 export MARIADB_CONFIG=/opt/homebrew/opt/mariadb-connector-c/bin/mariadb_config
 
-if command -v wt >/dev/null 2>&1; then eval "$(command wt config shell init zsh)"; fi
+_cached_eval wt config shell init zsh
 
 
 # Herd injected PHP 8.4 configuration.
@@ -371,11 +375,7 @@ export HERD_PHP_85_INI_SCAN_DIR="$HOME/Library/Application Support/Herd/config/p
 # tool-vs-GOROOT mismatch breaks every go command with:
 #   compile: version "go1.23.4" does not match go tool version "go1.26.3"
 # Keep last: `mise activate` runs ~line 263 and cannot outrank the prepends after it.
-if command -v mise >/dev/null 2>&1; then
-  _mise_go="$(mise which go 2>/dev/null)"
-  [[ -n "$_mise_go" ]] && export PATH="${_mise_go:h}:$PATH"
-  unset _mise_go
-fi
+[[ -x $GOROOT/bin/go ]] && export PATH="$GOROOT/bin:$PATH"
 
 claws() {
   env \
@@ -402,8 +402,6 @@ ssh() {
 
 # >>> grok installer >>>
 export PATH="$HOME/.grok/bin:$PATH"
-fpath=(~/.grok/completions/zsh $fpath)
-autoload -Uz compinit && compinit -C
 # <<< grok installer <<<
 
 

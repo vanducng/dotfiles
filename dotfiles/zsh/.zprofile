@@ -25,7 +25,13 @@ export PATH=/Applications/SnowSQL.app/Contents/MacOS:$PATH
 # added by Snowflake SnowCD installer
 export PATH=/opt/snowflake/snowcd:$PATH
 
-eval "$(/opt/homebrew/bin/brew shellenv)"
+# Inlined `brew shellenv` output (fixed prefix); the eval costs ~80ms per login shell.
+export HOMEBREW_PREFIX="/opt/homebrew" HOMEBREW_CELLAR="/opt/homebrew/Cellar" HOMEBREW_REPOSITORY="/opt/homebrew"
+fpath[1,0]="/opt/homebrew/share/zsh/site-functions"
+export FPATH
+export PATH="/opt/homebrew/bin:/opt/homebrew/sbin${PATH+:$PATH}"
+[ -z "${MANPATH-}" ] || { export MANPATH="${MANPATH%"${MANPATH##*[!:]}"}"; export MANPATH=":${MANPATH#"${MANPATH%%[!:]*}"}"; }
+export INFOPATH="/opt/homebrew/share/info:${INFOPATH:-}"
 
 # Interactive login shells source .zshrc themselves. Doing it here runs startup twice.
 if [[ ! -o interactive ]]; then
