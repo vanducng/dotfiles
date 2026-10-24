@@ -34,12 +34,11 @@ Rex uses Herdr's `C-x` prefix and letters, so moving between the two needs no re
 | `C-x 1..9` | Go to tab N in this session (`9` is the last tab) |
 | `C-x Shift-T` | Rename tab |
 | `C-x Shift-X` | Close tab |
-| `C-x Shift-1..9` | Go to session |
-| `C-x Shift-Left/Right` | Previous / next session |
-| `C-x g` / `C-x w` / `C-x s` | Session picker |
+| `C-x a` / `C-x Shift-Right` | Previous / next session (the session picker is `Cmd-k`) |
 | `C-x 0` | Home: first session, first tab, first pane |
 | `C-x Shift-N` | New session |
-| `C-x Shift-S` / `C-x Shift-W` | Rename session |
+| `C-x Shift-S` | Rename session |
+| `C-x Shift-W` | Open the session on the web |
 | `C-x Shift-I` | Number every session's label with its `Ctrl-1..9` number (`3-api`), here and on remote hosts; rerun after adding, closing, or renaming one |
 | `C-x i` | Number every tab's label with its `Cmd-1..9` number (`2-api`) in each session on the Mac you are viewing; a tab without a name of its own takes its pane's folder |
 | `C-x Shift-D` | Close session |
@@ -51,7 +50,7 @@ Rex uses Herdr's `C-x` prefix and letters, so moving between the two needs no re
 | `C-x Shift-G` | Open the repo's pull requests on GitHub (`/pulls`) |
 | `C-x ?` | Command palette |
 
-`C-x a` (last pane) has no equivalent: Rex config Lua cannot track focus history.
+Herdr's `C-x a` (last pane) has no equivalent, since Rex config Lua cannot track focus history, so `C-x a` is the previous session here.
 
 ## Direct keys
 
@@ -68,7 +67,7 @@ Rex uses Herdr's `C-x` prefix and letters, so moving between the two needs no re
 | `Shift-Cmd-]` / `Shift-Cmd-[` | Next / previous tab |
 | `Shift-Cmd-Up` / `Shift-Cmd-Down` (also `Left` / `Right`) | Move tab up / down. Replaces Rex's `Ctrl-Shift-Up/Down`, which never reached the app, and its `Shift-Cmd-arrow` splits (`C-x m` / `C-x v` split) |
 | `Ctrl-1..9` | Go to session |
-| `Alt-Cmd-]` / `Alt-Cmd-[` | Next / previous session |
+| `Alt-Cmd-]` | Next session |
 | `Cmd-k` | Session picker |
 | `Shift-Cmd-k` | Switch machine (host) |
 | `Ctrl-Alt-a` | Next agent that needs you |
@@ -79,7 +78,7 @@ Rex uses Herdr's `C-x` prefix and letters, so moving between the two needs no re
 | `Cmd-Up` / `Cmd-Down` | Previous / next shell prompt |
 | `Shift-Cmd-p` | Command palette |
 
-`Ctrl-1..9` and `C-x Shift-1..9` number sessions like the session picker: this Mac's first, then each remote host's, so `Ctrl-7` can open a session on `mini-01`. Remote sessions count only when the key is pressed in the app, because an action sees the hosts of the client that ran it. The numbers stay the same while you view a session on another Mac. To open a remote session, the action asks that host to have your app select it, so keep Remote Control on (Settings, Server, Client Info). `Ctrl-Shift-Tab` never reaches Rex because skhd uses it for yabai stacks, so use `Shift-Cmd-[` for the previous tab.
+`Ctrl-1..9` numbers sessions like the session picker: this Mac's first, then each remote host's, so `Ctrl-7` can open a session on `mini-01`. Remote sessions count only when the key is pressed in the app, because an action sees the hosts of the client that ran it. The numbers stay the same while you view a session on another Mac. To open a remote session, the action asks that host to have your app select it, so keep Remote Control on (Settings, Server, Client Info). `Ctrl-Shift-Tab` never reaches Rex because skhd uses it for yabai stacks, so use `Shift-Cmd-[` for the previous tab.
 
 ## Machines
 

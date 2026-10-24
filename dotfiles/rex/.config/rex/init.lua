@@ -53,20 +53,16 @@ for _, k in ipairs({ "down", "right" }) do bind("shift+cmd+" .. k, "client.tab.m
 for i = 1, 9 do
   px(tostring(i), "tab_goto", { index = i })
   bind("cmd+" .. i, "tab_goto", { index = i })
-  px("shift+" .. i, "session_goto", { index = i })
   bind("ctrl+" .. i, "session_goto", { index = i })
 end
 px("0", "home")
-px("shift+left", "session.previous")
+-- The session picker stays on Rex's cmd+k.
+px("a", "session.previous")
 px("shift+right", "session.next")
-bind("alt+cmd+[BracketLeft]", "session.previous")
 bind("alt+cmd+[BracketRight]", "session.next")
-for _, k in ipairs({ "g", "w", "s" }) do
-  px(k, "session.switch")
-end
 px("shift+n", "session.new")
 px("shift+s", "session.rename")
-px("shift+w", "session.rename")
+px("shift+w", "session.open_on_web")
 px("shift+i", "session_renumber")
 px("i", "tab_renumber")
 px("shift+d", "session.close")
