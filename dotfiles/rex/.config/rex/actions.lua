@@ -33,15 +33,40 @@ end
 
 -- Same numbering as the session picker: this Mac first, then each remote host.
 -- Remote hosts are asked only when the index runs past the local sessions.
+-- Returns the session and, for a remote one, its host label.
 local function session_at(index)
   local list = sessions()
+  if list[index] then return list[index] end
   for _, label in ipairs(rex.servers()) do
-    if list[index] then break end
     local r, err = rex.server(label).call("session.list")
     if not r then rex.log("warn", "session_goto: " .. label .. " skipped: " .. tostring(err)) end
-    for _, s in ipairs(r and r.sessions or {}) do list[#list + 1] = s end
+    for _, s in ipairs(r and r.sessions or {}) do
+      list[#list + 1] = s
+      if list[index] then return s, label end
+    end
   end
-  return list[index]
+end
+
+-- session.select only finds sessions on the server that queued it, so a remote
+-- session is selected by asking the caller's app, through that host, to do it.
+-- Each server gives the app its own client ID, so it is matched by label.
+local function select_remote(host, session_id, client_id)
+  local me = client_id and rex.call("client.inspect", { client_id = client_id })
+  local name = me and me.client.info and me.client.info.label
+  if not name then error("no Rex app to switch", 0) end
+  local srv = rex.server(host)
+  local r, err = srv.call("client.list")
+  if not r then error(err, 0) end
+  for _, c in ipairs(r.clients or {}) do
+    if c.info and c.info.kind == "app" and c.info.label == name then
+      local _, perr = srv.call("client.perform", {
+        client_id = c.client_id, action = "session.select", args = { session_id = session_id }, origin = "key",
+      })
+      if perr then error(perr, 0) end
+      return
+    end
+  end
+  error(name .. " is not connected to " .. host, 0)
 end
 
 rex.action{
@@ -50,8 +75,9 @@ rex.action{
   category = "Session",
   args = { index = "integer" },
   run = function(ctx, args)
-    local s = session_at(args.index)
+    local s, label = session_at(args.index)
     if not s then error("no session " .. args.index, 0) end
+    if label then return select_remote(label, s.session_id, ctx.client_id) end
     rex.client.queue("session.select", { session_id = s.session_id })
   end,
 }

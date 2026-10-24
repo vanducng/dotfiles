@@ -74,7 +74,7 @@ Rex uses Herdr's `C-x` prefix and letters, so moving between the two needs no re
 | `Cmd-Up` / `Cmd-Down` | Previous / next shell prompt |
 | `Shift-Cmd-p` | Command palette |
 
-`Ctrl-1..9` and `C-x Shift-1..9` number sessions like the session picker: this Mac's first, then each remote host's, so `Ctrl-7` can open a session on `mini-01`. Remote sessions count only when the key is pressed in the app, because an action sees the hosts of the client that ran it. `Ctrl-Shift-Tab` never reaches Rex because skhd uses it for yabai stacks, so use `Shift-Cmd-[` for the previous tab.
+`Ctrl-1..9` and `C-x Shift-1..9` number sessions like the session picker: this Mac's first, then each remote host's, so `Ctrl-7` can open a session on `mini-01`. Remote sessions count only when the key is pressed in the app, because an action sees the hosts of the client that ran it. To open a remote session, the action asks that host to have your app select it, so keep Remote Control on and give each Mac's app its own label (Settings, Server, Client Info). `Ctrl-Shift-Tab` never reaches Rex because skhd uses it for yabai stacks, so use `Shift-Cmd-[` for the previous tab.
 
 ## Machines
 
