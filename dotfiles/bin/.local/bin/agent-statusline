@@ -80,6 +80,7 @@ def render(d, width=None):
     cwd = ws.get("current_dir") or d.get("cwd") or os.getcwd()
     branch, dirty = git_state(cwd, ws.get("branch"))
 
+    # In display order.
     seg = {
         "head": paint("1", name or "?") + (" " + paint("2", effort) if effort else ""),
         "ctx": context_segment(d),

@@ -17,7 +17,8 @@ export default function (pi: ExtensionAPI) {
 		if (startCtx.mode !== "tui") return;
 		startCtx.ui.setFooter((tui, theme, footerData) => {
 			let line = "";
-			let width = 80;
+			// The first render sets the width and runs the first refresh.
+			let width = 0;
 			let running = false;
 			let again = false;
 			let disposed = false;
@@ -54,7 +55,6 @@ export default function (pi: ExtensionAPI) {
 				child.stdin?.end(JSON.stringify(payload));
 			};
 			const unsub = footerData.onBranchChange(refresh);
-			refresh();
 			return {
 				dispose() {
 					disposed = true;
