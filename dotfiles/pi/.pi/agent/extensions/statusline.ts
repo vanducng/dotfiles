@@ -20,8 +20,11 @@ export default function (pi: ExtensionAPI) {
 			let width = 80;
 			let running = false;
 			let again = false;
+			let disposed = false;
+			let retries = 0;
+			let timer: ReturnType<typeof setTimeout> | undefined;
 			refresh = () => {
-				if (!ctx) return;
+				if (!ctx || disposed) return;
 				if (running) {
 					again = true;
 					return;
@@ -36,12 +39,13 @@ export default function (pi: ExtensionAPI) {
 				};
 				const child = execFile(SCRIPT, { timeout: 5000, env: { ...process.env, COLUMNS: String(width) } }, (err, out) => {
 					running = false;
+					if (disposed) return;
 					if (!err && out.trim() && out.trimEnd() !== line) {
 						line = out.trimEnd();
 						tui.requestRender();
 					}
-					// A cold start on a busy machine can time out, and no event may follow to retry it.
-					if (err?.killed && !line) setTimeout(refresh, 1000);
+					// Nothing shown yet and no event may follow (a cold start on a busy machine can time out).
+					if (err && !line && retries++ < 3) timer = setTimeout(refresh, 1000);
 					if (again) {
 						again = false;
 						refresh();
@@ -52,7 +56,11 @@ export default function (pi: ExtensionAPI) {
 			const unsub = footerData.onBranchChange(refresh);
 			refresh();
 			return {
-				dispose: unsub,
+				dispose() {
+					disposed = true;
+					clearTimeout(timer);
+					unsub();
+				},
 				invalidate() {},
 				render(w: number): string[] {
 					if (w !== width) {
