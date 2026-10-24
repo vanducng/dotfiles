@@ -45,7 +45,7 @@ tail -n 100 ~/.config/herdr/herdr-server.log
 | `C-x + 1..9` / `Ctrl-1..9` | Switch Tab | `C-x + Shift-1..9` / `Ctrl-Alt-1..9` | Switch Workspace |
 | `C-x + Shift-Left/Right` | Previous/Next Workspace | `C-x + w` | Workspace Picker |
 | `C-x + Shift-Up/Down` | Previous/Next Agent | `C-x + Alt-1..9` | Focus Agent |
-| `C-x + p` | Previous Tab | `C-x + c` | New Tab |
+| `C-x + c` | New Tab | | |
 | `C-x + f` | Agent Address Picker | `C-x + g` / `C-x + Shift-M` | Session Navigator |
 | `C-x + s` | Named Session Picker | `C-x + Shift-S` | Settings |
 | `C-x + Space` | Pick Recent Target | `C-x + Shift-T` | Rename Tab |
