@@ -74,7 +74,6 @@ More modifiers means a bigger jump: panes, then tabs, then workspaces, then mach
 | `C-x 0` | Home: first workspace, first tab, first pane |
 | `C-x 1..9` | Switch tab |
 | `Ctrl-1..9` | Switch tab (direct) |
-| `C-x n` / `C-x p` | Next / previous tab |
 | `C-x c` | New tab |
 | `C-x Shift-T` | Rename tab |
 | `C-x Shift-1..9` | Switch workspace |
@@ -101,7 +100,9 @@ Herdr keeps tab IDs stable after closes, so `C-x Shift-I` renumbers the visible 
 
 Herdr 0.9.0 has no machine key. `C-x 0` is home on the machine you are viewing: workspace 1, tab 1, first pane (the Local orchestrator when you are on Local). From another machine, `C-x g` then `Home` then `Enter` selects Local; the first navigator row is Local. `C-x Shift-Left/Right` also walks workspaces across machines. `C-x w` stays the portable workspace jump when numbered workspace chords do not reach Herdr.
 
-`Ctrl-Alt-1..9` is the direct workspace jump on macOS Ghostty. Kitty on macOS defaults Option+digit to unicode (¡™£), so the same chord never reaches Herdr during `herdr --remote` even though `Ctrl-Alt-hjkl` and `Ctrl-1..9` work. `kitty.conf` sets `macos_option_as_alt yes` and maps `ctrl+alt+1..9` to kitty CSI-u; restart Kitty after that change. Moshi/mosh still lack that protocol, so use `C-x 1..9` for tabs and `C-x w` for workspaces there. Ghostty unbinds `shift+arrows` so `C-x Shift-Left/Right` can reach Herdr instead of adjusting a terminal selection.
+`C-x 1..9` and `Ctrl-1..9` switch to that tab. `C-x n` and `C-x p` stay unset.
+
+`Ctrl-Alt-1..9` is the direct workspace jump on macOS Ghostty. Kitty on macOS defaults Option+digit to unicode (¡™£), so that chord never reaches Herdr during `herdr --remote` even though `Ctrl-Alt-hjkl` does. `kitty.conf` sets `macos_option_as_alt yes` and maps `ctrl+alt+1..9` to kitty CSI-u; restart Kitty after that change. Moshi/mosh still lack that protocol, so use `C-x 1..9` for tabs and `C-x w` for workspaces there. Ghostty unbinds `shift+arrows` so `C-x Shift-Left/Right` can reach Herdr instead of adjusting a terminal selection.
 
 The picker scans the latest 500 rows of the focused pane and lists matching paths and URLs newest-first. Press `Enter` to open in the file browser in Aside, `Ctrl-Y` to copy, or `Ctrl-E` to open in the editor. External URLs open in the default browser, existing localhost viewer URLs restart the file browser when needed, and relative paths resolve from the pane's working directory. Exiting the temporary picker returns to the original pane.
 
