@@ -20,12 +20,15 @@ node="rex-$label"
 defaults write "$DOMAIN" Workspace.terminalOptionKeyBehavior -string actsAsAlt
 # The sidebar (C-x b, cmd+b) only exists with vertical tabs.
 defaults write "$DOMAIN" Workspace.tabStyle -string vertical
+# Everything below needs the tailnet, so stop before writing any of it.
+TS=/Applications/Tailscale.app/Contents/MacOS/Tailscale
+[ -x "$TS" ] || TS=tailscale
+suffix="$(TAILSCALE_BE_CLI=1 "$TS" status --json \
+  | /usr/bin/python3 -c 'import json,sys; s=json.load(sys.stdin).get("MagicDNSSuffix"); sys.exit("Tailscale is not connected; sign in, then rerun") if not s else print(s)')"
+
 # What the app's Tailscale toggle saves, so the node comes back after a restart.
 defaults write "$DOMAIN" rex.server.tailnet-enabled -bool true
 defaults write "$DOMAIN" rex.server.tailnet-hostname -string "$node"
-
-suffix="$(TAILSCALE_BE_CLI=1 /Applications/Tailscale.app/Contents/MacOS/Tailscale status --json \
-  | /usr/bin/python3 -c 'import json,sys; s=json.load(sys.stdin).get("MagicDNSSuffix"); sys.exit("Tailscale is not connected; sign in, then rerun") if not s else print(s)')"
 
 # The app's Remote Hosts list ignores hosts.lua. Add each other Mac once; the app
 # fills in its IDs on first connect, so existing records are left alone.

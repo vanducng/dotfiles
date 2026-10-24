@@ -37,7 +37,8 @@ local function session_at(index)
   local list = sessions()
   for _, label in ipairs(rex.servers()) do
     if list[index] then break end
-    local r = rex.server(label).call("session.list")
+    local r, err = rex.server(label).call("session.list")
+    if not r then rex.log("warn", "session_goto: " .. label .. " skipped: " .. tostring(err)) end
     for _, s in ipairs(r and r.sessions or {}) do list[#list + 1] = s end
   end
   return list[index]
