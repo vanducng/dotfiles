@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.29.0](https://github.com/vanducng/dotfiles/compare/v0.28.0...v0.29.0) (2026-10-24)
+
+
+### Features
+
+* **agents:** gave Claude Code, Grok, pi and Codex one minimal status line ([#238](https://github.com/vanducng/dotfiles/issues/238)) ([ecd20bf](https://github.com/vanducng/dotfiles/commit/ecd20bf416060b7aa5184bf1a6c140a77a894b57))
+
+
+### Bug Fixes
+
+* **atuin:** applied the marine theme that was parsed under [daemon] ([#234](https://github.com/vanducng/dotfiles/issues/234)) ([2f499df](https://github.com/vanducng/dotfiles/commit/2f499dfe61c0127a536f534517a50f6717443e9c))
+* **ci:** made validate pass by skipping zsh files and pinning Claude hooks to /usr/bin/python3 ([#233](https://github.com/vanducng/dotfiles/issues/233)) ([ef23a7d](https://github.com/vanducng/dotfiles/commit/ef23a7d8c0b553c0cfe0bdc4e14d59d8c4ec7068))
+* **rex:** freed Ctrl-Shift-Up/Down for moving tabs ([#237](https://github.com/vanducng/dotfiles/issues/237)) ([abee15c](https://github.com/vanducng/dotfiles/commit/abee15caf240a883fb5b60ece3d2c8a50ba7bfab))
+* **rex:** made copy mode and the picker show up on any pane ([#236](https://github.com/vanducng/dotfiles/issues/236)) ([98993de](https://github.com/vanducng/dotfiles/commit/98993de9b97430405862a3846667345c75acef97))
+* **zsh:** stopped ssh from printing command not found in Claude Code shells ([#239](https://github.com/vanducng/dotfiles/issues/239)) ([f749825](https://github.com/vanducng/dotfiles/commit/f7498251c68c9a320ee852fe67206d3713ba93ca))
+
 ## [0.28.0](https://github.com/vanducng/dotfiles/compare/v0.27.0...v0.28.0) (2026-10-24)
 
 
