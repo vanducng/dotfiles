@@ -268,36 +268,91 @@ rex.action{
   end,
 }
 
--- Overlay scripts read the pane with the rex CLI on whichever host owns it. Rex
--- zooms only the focused block, so a focused popup unzooms the window: over a
--- zoomed pane it fills the window to hide that, and re-zooms the pane on quit.
+-- Overlays run on whichever host owns the pane. Rex zooms only the focused
+-- block, so a focused popup unzooms the window: over a zoomed pane it fills the
+-- window to hide that, and re-zooms the pane on quit.
 local overlay_tail = [=[
 if [ -n "$2" ]; then "$REX_BIN_DIR/rex" zoom --on "$1"; else "$REX_BIN_DIR/rex" focus "$1"; fi >/dev/null 2>&1]=]
 
--- Script args: $1 the pane, $2 "1" if it was zoomed, then the caller's.
-local function overlay(ctx, bounds, script, ...)
-  local zoomed = ""
+local function pane_rect(node, block_id)
+  if not node then return nil end
+  if node.block_id == block_id then return node.rect end
+  local s = node.split
+  return s and (pane_rect(s.before, block_id) or pane_rect(s.after, block_id))
+end
+
+-- Script args: $1 the pane, $2 "1" if it was zoomed, $3 a file holding the
+-- pane's text ("" when the overlay must capture it), then the caller's.
+-- With no bounds the overlay covers exactly the pane it was opened from.
+local function overlay(ctx, bounds, script, file, ...)
+  local function fail(msg)
+    if file ~= "" then os.remove(file) end
+    error(msg, 0)
+  end
+  local zoomed, rect = "", nil
   local v, verr = rex.session.view{ session_id = ctx.session_id }
   if not v then rex.log("warn", "overlay: zoom state unknown: " .. tostring(verr)) end
   for _, w in ipairs(v and v.windows or {}) do
     if w.zoomed_block_id == ctx.block_id then zoomed = "1" end
+    for _, l in ipairs(w.layers or {}) do
+      if l.kind == "tiled" then rect = rect or pane_rect(l.layout, ctx.block_id) end
+      -- A popup over a popup traps focus: directional keys cannot leave a floating layer.
+      for _, b in ipairs(l.kind == "floating" and l.blocks or {}) do
+        if b.block_id == ctx.block_id then fail("already in a popup; close it first") end
+      end
+    end
   end
   local _, err = rex.session.new_layer{
-    bounds = zoomed == "1" and { 0, 0, 1, 1 } or bounds,
+    bounds = zoomed == "1" and { 0, 0, 1, 1 } or bounds or rect or { 0, 0, 1, 1 },
     focus = true,
     layout = rex.layout.block{
       flavor = "com.superlogical.terminal.shell",
-      options = { shell = "none", command = { "/bin/sh", "-c", script .. "\n" .. overlay_tail, "sh", ctx.block_id, zoomed, ... } },
+      options = { shell = "none", command = { "/bin/sh", "-c", script .. "\n" .. overlay_tail, "sh", ctx.block_id, zoomed, file, ... } },
     },
   }
-  if err then error(err, 0) end
+  if err then fail(err) end
 end
 
-local copy_script = [=[f=$(mktemp) || exit; trap 'rm -f "$f"' EXIT HUP INT TERM
+-- Reading the pane here saves the overlay a rex CLI launch (~40-90ms). A pane on
+-- another host is left to the overlay there, which cannot see a file made here.
+local function capture_file(ctx, last_lines)
+  if ctx.server then return "" end
+  local r = rex.block.call(term, "format", {
+    session_id = ctx.session_id, block_id = ctx.block_id, format = "text", trim = true, unwrap = true,
+  })
+  if not (r and r.content) then return "" end
+  -- trim drops blank cells, not spaces a program printed, so strip those too.
+  local text = r.content:gsub("[ \t]+\n", "\n"):gsub("[ \t]+$", ""):gsub("\n$", "")
+  if last_lines then
+    local lines = {}
+    for line in (text .. "\n"):gmatch("(.-)\n") do lines[#lines + 1] = line end
+    text = table.concat(lines, "\n", math.max(1, #lines - last_lines + 1))
+  end
+  local path = os.tmpname()
+  local f = io.open(path, "w")
+  if not f then return "" end
+  local ok = f:write(text, "\n")
+  f:close()
+  if not ok then
+    os.remove(path)
+    return ""
+  end
+  return path
+end
+
+local copy_script = [=[f=$3; [ -n "$f" ] || f=$(mktemp) || exit
+trap 'rm -f "$f"' EXIT HUP INT TERM
 PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
-text=$("$REX_BIN_DIR/rex" capture -b "$1" --unwrap 2>&1) || set -- "$1" "$2" " rex capture failed"
-printf '%s\n' "$text" | sed 's/[[:space:]]*$//' >"$f"
-NOTE="$3" nvim -n -R + -c "set clipboard=unnamedplus" -c "nnoremap <buffer> q <cmd>qa!<cr>" -c "let &winbar = \$NOTE" "$f"]=]
+if [ -z "$3" ]; then
+  text=$("$REX_BIN_DIR/rex" capture -b "$1" --unwrap 2>&1) || set -- "$1" "$2" "" " rex capture failed"
+  printf '%s\n' "$text" | sed 's/[[:space:]]*$//' >"$f"
+fi
+init="$HOME/.config/rex/copy-mode.nvim.lua"
+if [ -r "$init" ]; then
+  REX_COPY_NOTE="$4" nvim -u "$init" -i NONE -n -R + "$f"
+else
+  nvim -u NONE -i NONE -n -R + -c "set clipboard=unnamedplus" -c "nnoremap q <cmd>qa!<cr>" -c "nnoremap <C-c> <cmd>qa!<cr>" "$f"
+fi]=]
 
 rex.action{
   name = "copy_mode",
@@ -309,18 +364,19 @@ rex.action{
     -- which has no scrollback, so only what is visible comes back.
     local m = rex.block.call(term, "modes", { block_id = ctx.block_id })
     local note = m and m.screen == "alternate" and " Full-screen app: only the visible screen is here" or ""
-    overlay(ctx, { 0, 0, 1, 1 }, copy_script, note)
+    overlay(ctx, nil, copy_script, capture_file(ctx), note)
   end,
 }
 
 -- A popup shows the pane below wherever its program paints no background, so
 -- fzf paints one (merino-dark's raised surface).
-local fingers_script = [=[f=$(mktemp) || exit; trap 'rm -f "$f"' EXIT HUP INT TERM
+local fingers_script = [=[f=$3; [ -n "$f" ] || f=$(mktemp) || exit
+trap 'rm -f "$f"' EXIT HUP INT TERM
 PATH="$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"
 export FZF_DEFAULT_OPTS="${FZF_DEFAULT_OPTS:-} --color=bg:#1e2023,bg+:#2b2f34"
-if text=$("$REX_BIN_DIR/rex" capture -b "$1" --unwrap 2>&1); then
-  printf '%s\n' "$text" | tail -n 500 >"$f"
-  HERDR_FINGERS_TEXT_FILE="$f" HERDR_ACTIVE_PANE_CWD="$3" herdr-fingers || { printf '\nPress Enter to close.'; read -r _; }
+if [ -n "$3" ] || text=$("$REX_BIN_DIR/rex" capture -b "$1" --unwrap 2>&1); then
+  [ -n "$3" ] || printf '%s\n' "$text" | tail -n 500 >"$f"
+  HERDR_FINGERS_TEXT_FILE="$f" HERDR_ACTIVE_PANE_CWD="$4" herdr-fingers || { printf '\nPress Enter to close.'; read -r _; }
 else
   printf '%s\n\nPress Enter to close.' "$text"; read -r _
 fi]=]
@@ -333,7 +389,7 @@ rex.action{
   category = "Pane",
   run = function(ctx)
     local ok, dir = pcall(pane_dir, ctx.block_id)
-    overlay(ctx, { 0.1, 0.1, 0.8, 0.8 }, fingers_script, ok and dir or "")
+    overlay(ctx, { 0.1, 0.1, 0.8, 0.8 }, fingers_script, capture_file(ctx, 500), ok and dir or "")
   end,
 }
 

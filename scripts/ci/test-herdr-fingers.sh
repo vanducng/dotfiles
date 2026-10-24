@@ -109,6 +109,7 @@ EOF
 cat >"$test_dir/git" <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
+[[ -z "${HERDR_FINGERS_GIT_LOG:-}" ]] || printf '%s\n' "$*" >>"$HERDR_FINGERS_GIT_LOG"
 exit 1
 EOF
 
@@ -136,6 +137,7 @@ HERDR_FINGERS_TEST_ACTION="enter" \
 
 # Rex hands over the pane text as a file; no Herdr pane or binary is needed.
 printf '%s\n' 'Newest docs: ./README.md:7.' >"$test_dir/pane-text"
+HERDR_FINGERS_GIT_LOG="$test_dir/git-calls" \
 HERDR_FINGERS_HERDR_FAIL=1 \
 HERDR_FINGERS_TEXT_FILE="$test_dir/pane-text" \
 HERDR_FINGERS_TEST_ACTION="enter" \
@@ -147,6 +149,8 @@ HERDR_FINGERS_TEST_ACTION="enter" \
   HERDR_FINGERS_CLIPBOARD_CAPTURE="$clipboard_capture" \
   "$project_root/dotfiles/bin/.local/bin/herdr-fingers"
 [[ "$(cat "$capture")" == "--browser ./README.md:7|$test_dir/project" ]]
+# Every candidate resolved under the pane folder, so git never ran.
+[[ ! -s "$test_dir/git-calls" ]]
 
 HERDR_FINGERS_EXPECT_WRAPPED=1 \
 HERDR_FINGERS_PANE_WIDTH=36 \
