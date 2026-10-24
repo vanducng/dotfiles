@@ -28,6 +28,20 @@ Every Claude Code tier for that process, including subagents, uses the model id 
 
 Start a new session for a proxy model. Resume a proxy session with `ccx <model-id> --continue` from the same directory.
 
+## Status line
+
+`statusLine` runs `~/.local/bin/agent-statusline` (`dotfiles/bin`), the same script Grok and pi use:
+
+```text
+Opus 5.5 xhigh  ◔ 37%  ~/dotfiles  main*  ↯ fast
+```
+
+Model and effort, context used (amber at 70%, red at 85%), folder, branch with `*` when tracked files changed, and `↯ fast` only while fast mode is on. Claude does not pass the permission mode to the script; its own line under the status line shows it. Codex cannot run a script, so `tui.status_line` lists its built-in items in the same order.
+
+`~/.claude/settings.json` on this Mac is a plain file Claude rewrites, not a stow link, so a change to `statusLine` here also has to be made there.
+
+OpenRig seats keep a blank status line: OpenRig installs its own collector in each seat's `.claude/settings.local.json`, and its idle check expects no row between the input box and the mode line.
+
 ## Examples
 
 Windows below are the vendor input limits already used for compaction on this gateway. `--autocompact` accepts `100k` through `1M`.

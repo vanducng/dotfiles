@@ -35,6 +35,11 @@ default_selected_permission = "always_allow_all_sessions"
 # Terminal OSC notifications: set via /settings when supported by the running
 # binary. Attention sounds and Telegram notify are wired in hooks/lifecycle.json.
 
+# Same script and layout as Claude Code and pi (dotfiles/bin/.local/bin/agent-statusline).
+[ui.status_line]
+type = "command"
+command = "~/.local/bin/agent-statusline"
+
 [features]
 telemetry = false
 feedback = true
