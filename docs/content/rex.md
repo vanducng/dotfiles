@@ -7,7 +7,7 @@ Rex (Rex Beta) is the native macOS multiplexer that replaces Ghostty on space 1 
 ## Source of truth
 
 - `dotfiles/rex/.config/rex/init.lua` - key bindings and the resize mode
-- `dotfiles/rex/.config/rex/actions.lua` - Lua actions: `session_goto`, `session_renumber`, `tab_renumber`, `tab_goto`, `home`, `fingers`, `agent_attention`, `copy_mode`, `pane_label`, `open_pr`
+- `dotfiles/rex/.config/rex/actions.lua` - Lua actions: `session_goto`, `session_toggle`, `session_renumber`, `tab_renumber`, `tab_goto`, `home`, `fingers`, `agent_attention`, `copy_mode`, `pane_label`, `open_pr`
 - `dotfiles/rex/.config/rex/hosts.lua` - the other machines, one Rex host per ssh alias
 - `dotfiles/rex/.config/rex/copy-mode.nvim.lua` - the small Neovim config copy mode starts with (`nvim -u`), so it opens in tens of milliseconds instead of loading the full Neovim setup
 - `scripts/rex-setup.sh` (`make setup-rex`) - app settings that live in UserDefaults: Option as Alt, vertical tabs, compact panes, the Tailscale node name, and the app's Remote Hosts list. The app reads them at launch, so quit and reopen Rex Beta after a run; sessions live in the server and survive
@@ -34,7 +34,8 @@ Rex uses Herdr's `C-x` prefix and letters, so moving between the two needs no re
 | `C-x 1..9` | Go to tab N in this session (`9` is the last tab) |
 | `C-x Shift-T` | Rename tab |
 | `C-x Shift-X` | Close tab |
-| `C-x a` / `C-x Shift-Right` | Previous / next session (the session picker is `Cmd-k`) |
+| `C-x a` | Back to the last session; press again to return. It remembers jumps made with `Ctrl-1..9`, `C-x 0` and `C-x a`, not `Cmd-k` or sidebar clicks, and a config reload forgets it |
+| `C-x Shift-Right` | Next session (the session picker is `Cmd-k`) |
 | `C-x 0` | Home: first session, first tab, first pane |
 | `C-x Shift-N` | New session |
 | `C-x Shift-S` | Rename session |
@@ -50,7 +51,7 @@ Rex uses Herdr's `C-x` prefix and letters, so moving between the two needs no re
 | `C-x Shift-G` | Open the repo's pull requests on GitHub (`/pulls`) |
 | `C-x ?` | Command palette |
 
-Herdr's `C-x a` (last pane) has no equivalent, since Rex config Lua cannot track focus history, so `C-x a` is the previous session here.
+Herdr's `C-x a` (last pane) has no equivalent, since Rex config Lua cannot track focus history, so `C-x a` toggles to the last session here.
 
 ## Direct keys
 
