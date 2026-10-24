@@ -24,7 +24,7 @@ _cached_eval() {
   [[ -r $cache ]] && read -r key < $cache
   if [[ $key != "# $bin" || $bin -nt $cache ]]; then
     [[ -d ${cache:h} ]] || mkdir -p ${cache:h}
-    { print -r -- "# $bin"; command "$@" } >| $cache.$$ 2>/dev/null && mv -f $cache.$$ $cache || { rm -f $cache.$$; return 1 }
+    { print -r -- "# $bin"; command "$@" } >| $cache.$$ && mv -f $cache.$$ $cache || { rm -f $cache.$$; return 1 }
   fi
   source $cache
 }
