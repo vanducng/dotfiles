@@ -40,15 +40,16 @@ px("e", "pane.balance")
 px("r", "client.mode.enter", { name = "resize" })
 px(",", "pane_label")
 px("shift+p", "pane_label")
-px("space", "pane.insert_path")
+px("space", "fingers")
 
 px("c", "client.tab.new")
 px("shift+t", "client.tab.rename")
 px("shift+x", "client.tab.close")
 
--- cmd+N is a tab, ctrl+N is a session.
+-- cmd+N is a tab in this session, ctrl+N is a session.
 for i = 1, 9 do
-  px(tostring(i), "client.tab.goto", { index = i })
+  px(tostring(i), "tab_goto", { index = i })
+  bind("cmd+" .. i, "tab_goto", { index = i })
   px("shift+" .. i, "session_goto", { index = i })
   bind("ctrl+" .. i, "session_goto", { index = i })
 end
@@ -63,6 +64,7 @@ end
 px("shift+n", "session.new")
 px("shift+s", "session.rename")
 px("shift+w", "session.rename")
+px("shift+i", "session_renumber")
 px("shift+d", "session.close")
 
 px("shift+m", "client.host.switch")

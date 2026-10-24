@@ -20,6 +20,7 @@ node="rex-$label"
 defaults write "$DOMAIN" Workspace.terminalOptionKeyBehavior -string actsAsAlt
 # The sidebar (C-x b, cmd+b) only exists with vertical tabs.
 defaults write "$DOMAIN" Workspace.tabStyle -string vertical
+defaults write "$DOMAIN" Workspace.paneDensity -string compact
 # Everything below needs the tailnet, so stop before writing any of it.
 TS=/Applications/Tailscale.app/Contents/MacOS/Tailscale
 [ -x "$TS" ] || TS=tailscale
@@ -62,5 +63,5 @@ defaults write "$DOMAIN" rex.server.tailnet-hostname -string "$node"
 current="$("$REX" server status --json | /usr/bin/python3 -c 'import json,sys; print((json.load(sys.stdin).get("tailscale") or {}).get("dns_name", "").split(".")[0])')"
 [ "$current" = "$node" ] || "$REX" server tailscale rename "$node" >/dev/null
 "$REX" config reload >/dev/null
-echo "Rex: $node, Option acts as Alt, vertical tabs, config reloaded (quit and reopen Rex Beta to apply app settings)"
+echo "Rex: $node, Option acts as Alt, vertical tabs, compact panes, config reloaded (quit and reopen Rex Beta to apply app settings)"
 [ -z "$hosts_hex" ] || echo "Remote Hosts updated; quit and reopen Rex Beta to see them"

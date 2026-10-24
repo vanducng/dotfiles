@@ -134,6 +134,20 @@ HERDR_FINGERS_TEST_ACTION="enter" \
 [[ "$(cat "$capture")" == "--browser ./README.md:7|$test_dir/project" ]]
 [[ "$(cat "$choices")" == $'https://example.com/docs\nMy Project/report.md\n./README.md:7\nartifacts/' ]]
 
+# Rex hands over the pane text as a file; no Herdr pane or binary is needed.
+printf '%s\n' 'Newest docs: ./README.md:7.' >"$test_dir/pane-text"
+HERDR_FINGERS_HERDR_FAIL=1 \
+HERDR_FINGERS_TEXT_FILE="$test_dir/pane-text" \
+HERDR_FINGERS_TEST_ACTION="enter" \
+  PATH="$test_dir:$PATH" \
+  HERDR_BIN_PATH="$test_dir/missing-herdr" \
+  HERDR_ACTIVE_PANE_CWD="$test_dir/project" \
+  HERDR_FINGERS_CAPTURE="$capture" \
+  HERDR_FINGERS_CHOICES="$choices" \
+  HERDR_FINGERS_CLIPBOARD_CAPTURE="$clipboard_capture" \
+  "$project_root/dotfiles/bin/.local/bin/herdr-fingers"
+[[ "$(cat "$capture")" == "--browser ./README.md:7|$test_dir/project" ]]
+
 HERDR_FINGERS_EXPECT_WRAPPED=1 \
 HERDR_FINGERS_PANE_WIDTH=36 \
 HERDR_FINGERS_TEST_ACTION="enter" \
