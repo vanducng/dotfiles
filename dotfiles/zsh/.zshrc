@@ -88,7 +88,7 @@ export HOMEBREW_AUTO_UPDATE_SECS=86400
 # Claude Code: flicker-free renderer + mouse support (v2.1.88+)
 export CLAUDE_CODE_NO_FLICKER=1
 
-# wtfutil's Jira credentials load at launch in ~/.local/bin/wtfutil.
+# Other tools read GITHUB_TOKEN, so it stays global; wtfutil's Jira credentials load in ~/.local/bin/wtfutil.
 export GITHUB_TOKEN="$(gh auth token 2>/dev/null)"
 
 # Aliases live in ~/.config/shell/aliases.zsh (sourced at the bottom).
