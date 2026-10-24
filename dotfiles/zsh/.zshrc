@@ -196,6 +196,10 @@ export PATH="$HOME/.atuin/bin:$PATH"
 export ATUIN_NOBIND="true"
 _cached_eval atuin init zsh
 
+# 18.24 init no longer emits the legacy dotfiles alias cache.
+[[ -r ${XDG_DATA_HOME:-$HOME/.local/share}/atuin/dotfiles/cache/aliases.zsh ]] &&
+  source "${XDG_DATA_HOME:-$HOME/.local/share}/atuin/dotfiles/cache/aliases.zsh"
+
 # Define a function to set up atuin keybindings after zsh-vi-mode loads
 function zvm_after_init() {
   # Rebind the keys after zsh-vi-mode loads

@@ -158,6 +158,7 @@ keymap_mode = "auto"
 ## in entering the cursor shape.  Available values are "default" and
 ## "{blink,steady}-{block,underline,bar}".
 keymap_cursor = { emacs = "blink-bar", vim_insert = "blink-bar", vim_normal = "steady-block" }
+search_mode = "daemon-fuzzy"
 
 # network_connect_timeout = 5
 # network_timeout = 5
@@ -254,6 +255,8 @@ sync_frequency = 600
 ## If you provide a custom theme file, it should be  called "NAME.toml" and the theme below
 ## should be the stem, i.e. `theme = "NAME"` for your chosen NAME.
 name = "marine"
+enabled = true
+autostart = true
 
 ## Whether the theme manager should output normal or extra information to help fix themes.
 ## Boolean, true or false. If unset, left up to the theme manager.
@@ -266,4 +269,7 @@ name = "marine"
 filters = [ "global", "host", "session", "workspace", "directory" ]
 
 [dotfiles]
+enabled = true
+
+[ai]
 enabled = true
