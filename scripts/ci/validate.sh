@@ -110,7 +110,7 @@ validate_shell() {
     local file="$1"
     # Skip zsh-only files — shellcheck doesn't support zsh syntax (globs, etc.)
     case "$file" in
-        */.zshrc|*/.zshenv|*/.zprofile|*/.zlogin|*/.zlogout)
+        */.zshrc|*/.zshenv|*/.zprofile|*/.zlogin|*/.zlogout|*.zsh)
             log_success "Skipping zsh config (shellcheck unsupported): $file"
             return
             ;;
