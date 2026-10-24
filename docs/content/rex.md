@@ -73,6 +73,7 @@ Rex uses Herdr's `C-x` prefix and letters, so moving between the two needs no re
 | `Ctrl-Alt-a` | Next agent that needs you |
 | `Cmd-b` | Toggle sidebar (also `Cmd-/`) |
 | `Cmd-.` | Toggle Activity |
+| `Cmd-Esc` | Dismiss a notice, such as an "Action failed" toast |
 | `Shift-Cmd-s` | Toggle vertical / horizontal tabs |
 | `Cmd-Up` / `Cmd-Down` | Previous / next shell prompt |
 | `Shift-Cmd-p` | Command palette |
