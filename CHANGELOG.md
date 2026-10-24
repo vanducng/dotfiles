@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.30.0](https://github.com/vanducng/dotfiles/compare/v0.29.0...v0.30.0) (2026-10-24)
+
+
+### Features
+
+* **rex:** replayed seat agent status to tiles that attach later ([f87d338](https://github.com/vanducng/dotfiles/commit/f87d338b1901cc6c31296c4828136b240b176ecb))
+* **rex:** showed agents in OpenRig tmux seats as agents in Rex ([3265394](https://github.com/vanducng/dotfiles/commit/32653942255a08d534a084b9711c386cb9ee8433))
+* **rex:** switched hosts with Ctrl-Alt-1..9 from one hosts.json ([980ef91](https://github.com/vanducng/dotfiles/commit/980ef9177945194d7a989a2b9ca9fb743339d271))
+* **rex:** toggled back to the last session with C-x a ([3858fa6](https://github.com/vanducng/dotfiles/commit/3858fa6d1a0827789ed572654c492dddc9688171))
+* **rex:** turned on Program Activity sounds ([f6b1b3a](https://github.com/vanducng/dotfiles/commit/f6b1b3abefc316efe642053ec5c71c8171ebdcf7))
+* **rex:** walked every tab in sidebar order with Ctrl-Alt-&lt; and &gt; ([3b7faa2](https://github.com/vanducng/dotfiles/commit/3b7faa27a1d4beb03498cf791003272f0fae935f))
+
+
+### Bug Fixes
+
+* **rex:** dismissed notices with Alt-Cmd-. ([610ec99](https://github.com/vanducng/dotfiles/commit/610ec99c11664f1e8410fd249e5ea01fd48800f3))
+* **rex:** moved tabs with Shift-Cmd-arrows ([#240](https://github.com/vanducng/dotfiles/issues/240)) ([e7b7f9c](https://github.com/vanducng/dotfiles/commit/e7b7f9ced8dbdae1fb6354e6ff9a319d91f0fff5))
+* **rex:** trimmed session keys to one per action and opened sessions on the web ([3b3a89c](https://github.com/vanducng/dotfiles/commit/3b3a89c1c8d00ada926af58e3c0da4e756fd4e0a))
+* **yabai:** moved Jump Desktop to the main display ([1b2659d](https://github.com/vanducng/dotfiles/commit/1b2659d558e83e770b18400516c8e19aab2b3834))
+
 ## [0.29.0](https://github.com/vanducng/dotfiles/compare/v0.28.0...v0.29.0) (2026-10-24)
 
 
