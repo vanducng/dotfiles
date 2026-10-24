@@ -76,7 +76,7 @@ Herdr's `C-x a` (last pane) has no equivalent, since Rex config Lua cannot track
 | `Ctrl-Alt-a` | Next agent that needs you |
 | `Cmd-b` | Toggle sidebar (also `Cmd-/`) |
 | `Cmd-.` | Toggle Activity |
-| `Cmd-Esc` | Dismiss a notice, such as an "Action failed" toast |
+| `Alt-Cmd-.` | Dismiss a notice, such as an "Action failed" toast (replaces Rex's `Shift-Cmd-.`) |
 | `Shift-Cmd-s` | Toggle vertical / horizontal tabs |
 | `Cmd-Up` / `Cmd-Down` | Previous / next shell prompt |
 | `Shift-Cmd-p` | Command palette |
