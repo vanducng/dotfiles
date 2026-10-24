@@ -19,7 +19,6 @@ Rex uses Herdr's `C-x` prefix and letters, so moving between the two needs no re
 
 | Key | Action |
 |---|---|
-| `C-x h/j/k/l` | Focus pane |
 | `C-x Shift-H/J/K/L` | Move pane |
 | `C-x Tab` / `C-x Shift-Tab` | Next / previous pane |
 | `C-x z` | Zoom pane |
