@@ -49,11 +49,12 @@ px("shift+x", "client.tab.close")
 for _, k in ipairs({ "up", "left" }) do bind("shift+cmd+" .. k, "client.tab.move.backward") end
 for _, k in ipairs({ "down", "right" }) do bind("shift+cmd+" .. k, "client.tab.move.forward") end
 
--- cmd+N is a tab in this session, ctrl+N is a session.
+-- cmd+N is a tab in this session, ctrl+N a session on this host, ctrl+alt+N a host.
 for i = 1, 9 do
   px(tostring(i), "tab_goto", { index = i })
   bind("cmd+" .. i, "tab_goto", { index = i })
   bind("ctrl+" .. i, "session_goto", { index = i })
+  bind("ctrl+alt+" .. i, "host_goto", { index = i })
 end
 px("0", "home")
 -- The session picker stays on Rex's cmd+k.

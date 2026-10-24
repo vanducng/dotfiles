@@ -1,5 +1,6 @@
+local hosts = require("hosts")
 local term = "com.superlogical.terminal"
-local env = { PATH = "/opt/homebrew/bin:/usr/local/bin:" .. (os.getenv("PATH") or "/usr/bin:/bin") }
+local env ={ PATH = "/opt/homebrew/bin:/usr/local/bin:" .. (os.getenv("PATH") or "/usr/bin:/bin") }
 local attention = { blocked = 1, error = 2, done = 3, idle = 4 }
 
 local function sessions()
@@ -60,20 +61,12 @@ local function local_sessions(ctx)
   return d.sessions or {}
 end
 
--- Same numbering as the session picker: this Mac first, then each remote host.
--- Remote hosts are asked only when the index runs past the local sessions.
--- Returns the session and, for a remote one, its host label.
-local function session_at(ctx, index)
-  local list = local_sessions(ctx)
-  if list[index] then return list[index] end
-  for _, label in ipairs(rex.servers()) do
-    local r, err = rex.server(label).call("session.list")
-    if not r then rex.log("warn", "session_goto: " .. label .. " skipped: " .. tostring(err)) end
-    for _, s in ipairs(r and r.sessions or {}) do
-      list[#list + 1] = s
-      if list[index] then return s, label end
-    end
-  end
+-- Sessions on one host, in its own order: host is a remote label, or nil for this Mac.
+local function host_sessions(ctx, host)
+  if not host then return local_sessions(ctx) end
+  local r, err = rex.server(host).call("session.list")
+  if not r then error(err, 0) end
+  return r.sessions or {}
 end
 
 -- A queued session.select only finds sessions on this machine's server, so a
@@ -114,13 +107,14 @@ end
 rex.action{
   name = "session_goto",
   title = "Go to Session N",
+  description = "Goes to session N on the host being viewed; ctrl+alt+N picks the host.",
   category = "Session",
   args = { index = "integer" },
   run = function(ctx, args)
-    local s, host = session_at(ctx, args.index)
-    if not s then error("no session " .. args.index, 0) end
+    local s = host_sessions(ctx, ctx.server)[args.index]
+    if not s then error("no session " .. args.index .. (ctx.server and " on " .. ctx.server or ""), 0) end
     remember(ctx, s.session_id)
-    select_session(s.session_id, host)
+    select_session(s.session_id, ctx.server)
   end,
 }
 
@@ -137,6 +131,40 @@ rex.action{
   end,
 }
 
+-- The session each app last had on each host, so going back to a host lands where you left it.
+local last_on = {}
+
+rex.action{
+  name = "host_goto",
+  title = "Go to Host N",
+  description = "Switches to host N in hosts.lua order, on the session you last had there, else its first.",
+  category = "Session",
+  args = { index = "integer" },
+  run = function(ctx, args)
+    local label = hosts.order[args.index]
+    if not label then error("no host " .. args.index, 0) end
+    local host
+    if label ~= hosts.self then
+      for _, s in ipairs(rex.servers()) do
+        if s == label then host = label end
+      end
+      if not host then error(label .. " is not connected", 0) end
+    end
+    if host == ctx.server then return end
+    local mem = ctx.client_id and last_on[ctx.client_id] or {}
+    mem[ctx.server or hosts.self or "local"] = ctx.session_id
+    if ctx.client_id then last_on[ctx.client_id] = mem end
+    local list = host_sessions(ctx, host)
+    local target = list[1]
+    for _, s in ipairs(list) do
+      if s.session_id == mem[label] then target = s end
+    end
+    if not target then error("no sessions on " .. label, 0) end
+    remember(ctx, target.session_id)
+    select_session(target.session_id, host)
+  end,
+}
+
 -- This machine's sessions go through its own socket while ctx.server points
 -- rex.call at another host.
 local function set_label(ctx, host, session_id, label)
@@ -148,8 +176,8 @@ local function set_label(ctx, host, session_id, label)
   return nil, err or (r.stderr ~= "" and r.stderr) or "rex session rename failed"
 end
 
--- Prefixes each session label with its ctrl+N number ("3-api"), like Herdr's
--- tab renumbering. A leading "<digits>-" is replaced, so reruns don't stack.
+-- Prefixes each session label with its ctrl+N number on its own host ("3-api"),
+-- like Herdr's tab renumbering. A leading "<digits>-" is replaced, so reruns don't stack.
 rex.action{
   name = "session_renumber",
   title = "Number Sessions for Ctrl+N",
@@ -161,8 +189,9 @@ rex.action{
       if not r then rex.log("warn", "session_renumber: " .. host .. " skipped: " .. tostring(err)) end
       groups[#groups + 1] = { host = host, sessions = r and r.sessions or {} }
     end
-    local n, failed = 0, {}
+    local failed = {}
     for _, g in ipairs(groups) do
+      local n = 0
       if g.host then
         rex.server(g.host).call("session.attach_all", { event_scope = "session" })
       elseif not ctx.server then
