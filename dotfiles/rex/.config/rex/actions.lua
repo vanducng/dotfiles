@@ -23,7 +23,8 @@ local function pane_dir(block_id)
 end
 
 local function git(dir, ...)
-  local r = rex.exec({ "git", "-C", dir, ... }, { env = env, timeout = 5 })
+  local r, err = rex.exec({ "git", "-C", dir, ... }, { env = env, timeout = 5 })
+  if not r then rex.log("warn", "git did not run: " .. tostring(err)) end
   if r and r.ok then return (r.stdout:gsub("%s+$", "")) end
 end
 

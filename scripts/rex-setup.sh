@@ -26,10 +26,6 @@ TS=/Applications/Tailscale.app/Contents/MacOS/Tailscale
 suffix="$(TAILSCALE_BE_CLI=1 "$TS" status --json \
   | /usr/bin/python3 -c 'import json,sys; s=json.load(sys.stdin).get("MagicDNSSuffix"); sys.exit("Tailscale is not connected; sign in, then rerun") if not s else print(s)')"
 
-# What the app's Tailscale toggle saves, so the node comes back after a restart.
-defaults write "$DOMAIN" rex.server.tailnet-enabled -bool true
-defaults write "$DOMAIN" rex.server.tailnet-hostname -string "$node"
-
 # The app's Remote Hosts list ignores hosts.lua. Add each other Mac once; the app
 # fills in its IDs on first connect, so existing records are left alone.
 hosts_hex="$(/usr/bin/python3 - "$label" "$suffix" <<'PY'
@@ -40,19 +36,24 @@ icons = {"mini-01": "macmini", "macpro": "laptopcomputer"}
 prefs = plistlib.loads(subprocess.run(
     ["defaults", "export", "com.superlogical.rex", "-"], check=True, capture_output=True).stdout)
 data = json.loads(prefs.get("RexSync.servers") or b'{"formatVersion":1,"records":[]}')
-have = {r.get("name") for r in data["records"]}
+records = data.setdefault("records", [])
+have = {r.get("name") for r in records}
 added = False
 for name, icon in icons.items():
     if name == me or name in have:
         continue
     url = f"https://rex-{name}.{suffix}"
-    data["records"].append({"id": str(uuid.uuid4()).upper(), "name": name, "icon": icon,
-                            "locators": [url], "preferredURL": url})
+    records.append({"id": str(uuid.uuid4()).upper(), "name": name, "icon": icon,
+                    "locators": [url], "preferredURL": url})
     added = True
 if added:
     print(json.dumps(data, separators=(",", ":")).encode().hex())
 PY
 )"
+
+# What the app's Tailscale toggle saves, so the node comes back after a restart.
+defaults write "$DOMAIN" rex.server.tailnet-enabled -bool true
+defaults write "$DOMAIN" rex.server.tailnet-hostname -string "$node"
 [ -z "$hosts_hex" ] || defaults write "$DOMAIN" RexSync.servers -data "$hosts_hex"
 
 "$REX" server tailscale on --hostname "$node" >/dev/null
