@@ -7,7 +7,7 @@ Rex (Rex Beta) is the native macOS multiplexer that replaces Ghostty on space 1 
 ## Source of truth
 
 - `dotfiles/rex/.config/rex/init.lua` - key bindings and the resize mode
-- `dotfiles/rex/.config/rex/actions.lua` - Lua actions: `session_goto`, `session_toggle`, `session_renumber`, `tab_renumber`, `tab_goto`, `home`, `fingers`, `agent_attention`, `copy_mode`, `pane_label`, `open_pr`
+- `dotfiles/rex/.config/rex/actions.lua` - Lua actions: `session_goto`, `session_toggle`, `host_goto`, `tab_cycle`, `session_renumber`, `tab_renumber`, `tab_goto`, `home`, `fingers`, `agent_attention`, `copy_mode`, `pane_label`, `open_pr`
 - `dotfiles/rex/.config/rex/hosts.json` - every machine that runs Rex, defined once: `label`, `device`, macOS `hostname`, and the app `icon`. Its order is the `Ctrl-Alt-1..9` number
 - `dotfiles/rex/.config/rex/hosts.lua` - reads `hosts.json`, works out which entry is this Mac, and declares the others as Rex hosts
 - `dotfiles/rex/.config/rex/copy-mode.nvim.lua` - the small Neovim config copy mode starts with (`nvim -u`), so it opens in tens of milliseconds instead of loading the full Neovim setup
@@ -67,6 +67,7 @@ Herdr's `C-x a` (last pane) has no equivalent, since Rex config Lua cannot track
 | `Cmd-1..9` | Go to tab N in this session (`Cmd-9` is the last tab). Rex's default counts the tabs of every session in the sidebar |
 | `Cmd-t` | New tab |
 | `Shift-Cmd-]` / `Shift-Cmd-[` | Next / previous tab |
+| `Ctrl-Alt-.` / `Ctrl-Alt-,` | Next / previous tab in sidebar order across every session and host, wrapping at the end |
 | `Shift-Cmd-Up` / `Shift-Cmd-Down` (also `Left` / `Right`) | Move tab up / down. Replaces Rex's `Ctrl-Shift-Up/Down`, which never reached the app, and its `Shift-Cmd-arrow` splits (`C-x m` / `C-x v` split) |
 | `Ctrl-1..9` | Go to session N on the host you are viewing |
 | `Ctrl-Alt-1..9` | Go to host N: 1 MacBook Pro (`mbp-01`), 2 `mini-01`, 3 kept for `linux-01`; lands on the session you last had there, else its first |
