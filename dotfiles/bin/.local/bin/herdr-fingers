@@ -18,10 +18,21 @@ command -v fzf >/dev/null 2>&1 || { printf 'herdr-fingers: fzf is required\n' >&
 rg --pcre2-version >/dev/null 2>&1 || { printf 'herdr-fingers: ripgrep must support PCRE2\n' >&2; exit 1; }
 
 base_dir="${HERDR_ACTIVE_PANE_CWD:-$PWD}"
-repo_root="$(git -C "$base_dir" rev-parse --show-toplevel 2>/dev/null || true)"
-git_common_dir="$(git -C "$base_dir" rev-parse --path-format=absolute --git-common-dir 2>/dev/null || true)"
+# A git launch costs ~40ms, more than scanning a small pane, so the roots load
+# only when a relative candidate is not under base_dir.
+repo_root=""
 main_root=""
-[[ "${git_common_dir##*/}" == ".git" ]] && main_root="${git_common_dir%/.git}"
+roots_loaded=""
+load_git_roots() {
+  [[ -z "$roots_loaded" ]] || return 0
+  roots_loaded=1
+  local out common
+  out="$(git -C "$base_dir" rev-parse --show-toplevel --path-format=absolute --git-common-dir 2>/dev/null)" || return 0
+  repo_root="${out%%$'\n'*}"
+  common="${out#*$'\n'}"
+  [[ "$common" != "$out" && "${common##*/}" == ".git" ]] && main_root="${common%/.git}"
+  return 0
+}
 extensions='md|markdown|mdx|png|jpe?g|gif|webp|heic|heif|pdf|csv|tsv|xlsx|txt|json|ya?ml|toml|lua|sh|zsh|fish|py|js|jsx|ts|tsx|go|rs|java|kt|swift|c|cc|cpp|h|hpp'
 url_pattern='https?://[^[:space:]<>\"]+'
 # Prefixed paths keep shell escapes (\ ) and literal spaces, and stop before a new path or URL.
@@ -143,7 +154,7 @@ pick_existing_path() {
 }
 
 resolve_candidate() {
-  local raw="$1" path root
+  local raw="$1"
   RESOLVED=""
   raw="${raw%:[0-9]*:[0-9]*}"
   raw="${raw%:[0-9]*}"
@@ -160,15 +171,17 @@ resolve_candidate() {
   fi
 
   raw="${raw#./}"
-  for root in "$base_dir" "$repo_root" "$main_root"; do
-    [[ -n "$root" ]] || continue
-    path="$root/$raw"
-    if [[ -f "$path" || -d "$path" ]]; then
-      RESOLVED="${path%/}"
-      return 0
-    fi
-  done
-  return 1
+  resolve_under "$base_dir" "$raw" && return 0
+  load_git_roots
+  resolve_under "$repo_root" "$raw" && return 0
+  resolve_under "$main_root" "$raw"
+}
+
+resolve_under() {
+  [[ -n "$1" ]] || return 1
+  local path="$1/$2"
+  [[ -f "$path" || -d "$path" ]] || return 1
+  RESOLVED="${path%/}"
 }
 
 maybe_rescan() {
