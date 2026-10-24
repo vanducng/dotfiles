@@ -5,6 +5,9 @@
 #   rex-agent-status <app>        e.g. claude-code
 # It wraps the status in tmux passthrough (allow-passthrough on) and writes it to the
 # seat's pane, so it reaches whichever Rex pane has the seat attached. Never fails a hook.
+# The last status is kept on the pane (@rex_status); tmux.conf replays it when a client
+# attaches, so a tile opened later shows it too:
+#   rex-agent-status --replay <session>
 import base64
 import json
 import os
@@ -34,45 +37,72 @@ def status(event):
     return None
 
 
-def sequence(app, state, kind, msg):
+def fields(app, state, kind, msg):
     pairs = ["app=" + app, "state=" + state]
     if kind:
         pairs.append("kind=" + kind)
     if msg:
         line = re.sub(r"[\x00-\x1f\x7f]+", " ", str(msg)).strip()[:200]
         pairs.append("msg=" + base64.b64encode(line.encode()).decode())
-    osc = "\x1b]7501;" + ":".join(pairs) + "\x07"
+    return ":".join(pairs)
+
+
+def wrap(pairs):
+    osc = "\x1b]7501;" + pairs + "\x07"
     return "\x1bPtmux;" + osc.replace("\x1b", "\x1b\x1b") + "\x1b\\"
 
 
-def pane_tty():
-    pane = os.environ.get("TMUX_PANE")
-    if not (os.environ.get("TMUX") and pane):
-        return None
-    for tmux in ("tmux", "/opt/homebrew/bin/tmux", "/usr/local/bin/tmux"):
+def sequence(app, state, kind, msg):
+    return wrap(fields(app, state, kind, msg))
+
+
+def tmux(*args):
+    for exe in ("tmux", "/opt/homebrew/bin/tmux", "/usr/local/bin/tmux"):
         try:
-            out = subprocess.run([tmux, "display-message", "-p", "-t", pane, "#{pane_tty}"],
-                                 capture_output=True, text=True, timeout=2)
+            out = subprocess.run([exe, *args], capture_output=True, text=True, timeout=2)
         except (OSError, subprocess.TimeoutExpired):
             continue
-        if out.returncode == 0 and out.stdout.strip():
-            return out.stdout.strip()
+        return out.stdout.rstrip("\n") if out.returncode == 0 else None
     return None
+
+
+def write(tty, text):
+    with open(tty, "w") as f:
+        f.write(text)
+
+
+def replay(session):
+    """Re-send each pane's last status, for a client that just attached."""
+    for row in (tmux("list-panes", "-s", "-t", session, "-F", "#{pane_tty} #{@rex_status}") or "").splitlines():
+        tty, _, pairs = row.partition(" ")
+        if pairs:
+            write(tty, wrap(pairs))
 
 
 def main():
     if len(sys.argv) < 2:
+        return
+    if sys.argv[1] == "--replay":
+        if len(sys.argv) > 2:
+            replay(sys.argv[2])
+        return
+    pane = os.environ.get("TMUX_PANE")
+    if not (os.environ.get("TMUX") and pane):
         return
     try:
         event = json.loads(sys.stdin.read() or "{}")
     except ValueError:
         return
     st = status(event) if isinstance(event, dict) else None
-    tty = st and pane_tty()
+    tty = st and tmux("display-message", "-p", "-t", pane, "#{pane_tty}")
     if not tty:
         return
-    with open(tty, "w") as f:
-        f.write(sequence(sys.argv[1], *st))
+    pairs = fields(sys.argv[1], *st)
+    write(tty, wrap(pairs))
+    if st[0] == "clear":
+        tmux("set-option", "-p", "-u", "-t", pane, "@rex_status")
+    else:
+        tmux("set-option", "-p", "-t", pane, "@rex_status", pairs)
 
 
 if __name__ == "__main__":
