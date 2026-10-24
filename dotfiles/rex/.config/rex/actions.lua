@@ -49,7 +49,9 @@ local function local_sessions(ctx)
   if not ctx.server then return sessions() end
   local r, err = rex.exec({ rex_cli, "ls", "--json" }, { env = env, timeout = 5 })
   if not (r and r.ok) then error(err or (r.stderr ~= "" and r.stderr) or "rex ls failed", 0) end
-  return rex.json.decode(r.stdout).sessions or {}
+  local ok, d = pcall(rex.json.decode, r.stdout)
+  if not ok then error("rex ls returned unreadable output", 0) end
+  return d.sessions or {}
 end
 
 -- Same numbering as the session picker: this Mac first, then each remote host.
@@ -230,8 +232,9 @@ rex.action{
   end,
 }
 
--- Overlay scripts read the pane with the rex CLI on whichever host owns it. A new
--- layer unzooms the window, so on quit they refocus the pane, zoomed if it was.
+-- Overlay scripts read the pane with the rex CLI on whichever host owns it. Rex
+-- zooms only the focused block, so a focused popup unzooms the window: over a
+-- zoomed pane it fills the window to hide that, and re-zooms the pane on quit.
 local overlay_tail = [=[
 if [ -n "$2" ]; then "$REX_BIN_DIR/rex" zoom --on "$1"; else "$REX_BIN_DIR/rex" focus "$1"; fi >/dev/null 2>&1]=]
 
@@ -243,7 +246,7 @@ local function overlay(ctx, bounds, script, ...)
     if w.zoomed_block_id == ctx.block_id then zoomed = "1" end
   end
   local _, err = rex.session.new_layer{
-    bounds = bounds,
+    bounds = zoomed == "1" and { 0, 0, 1, 1 } or bounds,
     focus = true,
     layout = rex.layout.block{
       flavor = "com.superlogical.terminal.shell",
