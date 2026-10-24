@@ -1,15 +1,17 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Rex (or any caller) can hand over the pane text instead of a Herdr pane.
+text_file="${HERDR_FINGERS_TEXT_FILE:-}"
 pane_id="${HERDR_ACTIVE_PANE_ID:-}"
-[[ -n "$pane_id" ]] || { printf 'herdr-fingers: no active pane\n' >&2; exit 1; }
+[[ -n "$pane_id" || -n "$text_file" ]] || { printf 'herdr-fingers: no active pane\n' >&2; exit 1; }
 
 herdr_bin="${HERDR_BIN_PATH:-}"
 if [[ ! -x "$herdr_bin" ]]; then
   herdr_bin="$(command -v herdr || true)"
 fi
 open_path="$(command -v open-path || true)"
-[[ -n "$herdr_bin" ]] || { printf 'herdr-fingers: herdr is required\n' >&2; exit 1; }
+[[ -n "$herdr_bin" || -n "$text_file" ]] || { printf 'herdr-fingers: herdr is required\n' >&2; exit 1; }
 [[ -n "$open_path" ]] || { printf 'herdr-fingers: open-path is required\n' >&2; exit 1; }
 command -v rg >/dev/null 2>&1 || { printf 'herdr-fingers: ripgrep is required\n' >&2; exit 1; }
 command -v fzf >/dev/null 2>&1 || { printf 'herdr-fingers: fzf is required\n' >&2; exit 1; }
@@ -402,7 +404,9 @@ repair_wrapped_urls() {
 # finishes on the fast path while a stalled one gives up quickly.
 pane_output=""
 read_budget="${HERDR_FINGERS_READ_TIMEOUT:-0.5}"
-if ! pane_output="$(read_pane recent-unwrapped "$read_budget")"; then
+if [[ -n "$text_file" ]]; then
+  pane_output="$(cat "$text_file")" || { printf 'herdr-fingers: failed to read %s\n' "$text_file" >&2; exit 1; }
+elif ! pane_output="$(read_pane recent-unwrapped "$read_budget")"; then
   # Includes exit 124 (timed out) and any transport error; `visible` is cheap
   # enough to always be worth one attempt before giving up. It is bounded too:
   # it measured 20-21ms on the panes that stall, but it reaches Herdr the same
@@ -414,7 +418,7 @@ if ! pane_output="$(read_pane recent-unwrapped "$read_budget")"; then
 fi
 
 pane_width="${HERDR_FINGERS_PANE_WIDTH:-}"
-if [[ -z "$pane_width" ]] && command -v jq >/dev/null 2>&1; then
+if [[ -z "$pane_width" && -z "$text_file" ]] && command -v jq >/dev/null 2>&1; then
   pane_width="$(
     "$herdr_bin" pane layout --pane "$pane_id" 2>/dev/null |
       jq -r --arg pane "$pane_id" \
