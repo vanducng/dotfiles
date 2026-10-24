@@ -29,8 +29,8 @@ All application shortcuts use the `meh` key (ctrl+alt+shift) for consistency and
 
 | Space | Display | App |
 |-------|---------|-----|
-| 1 | 1 | Ghostty |
-| 2 | 1 | Jump Desktop (Mac Mini) |
+| 1 | 1 | Rex Beta |
+| 2 | 1 | Ghostty (Herdr) |
 | 3 | 1 | Aside |
 | 4 | 1 | Chrome, Dia |
 | 5 | 1 | Cursor |
@@ -38,7 +38,7 @@ All application shortcuts use the `meh` key (ctrl+alt+shift) for consistency and
 | 7 | 1 | Alter |
 | 8 | 1 | Obsidian |
 | 9 | 1 | LibreOffice |
-| 10 | 2 | (first built-in desktop; no pinned app) |
+| 10 | 2 | Jump Desktop (Mac Mini) |
 | 11 | 2 | Zalo |
 | 12 | 2 | Telegram, Discord, WhatsApp (stack) |
 | 13 | 2 | Arc |
@@ -50,13 +50,13 @@ All application shortcuts use the `meh` key (ctrl+alt+shift) for consistency and
 ### Development Tools
 | Shortcut | Application | Description |
 |----------|-------------|-------------|
-| `meh + a` | Ghostty | Focus the primary terminal and move the pointer to it |
+| `meh + a` | Rex Beta | Focus the primary terminal and move the pointer to it |
+| `meh + x` | Ghostty | Terminal for Herdr on space 2 |
 | `meh + f` | Sysmon overlay | Last tmux window, centered (first start: btop / disk / vault) |
 | `cmd + shift + opt + v` | Sysmon left of Dia | Hub on the left quarter of Dia's space. Press again to focus it |
 | `cmd + shift + opt + g` | Sysmon right of Dia | Hub on the right quarter of Dia's space. Press again to focus it |
 | `cmd + shift + opt + r` | Sysmon left of Aside | Hub on the left quarter of Aside's space. Press again to focus it |
 | `cmd + shift + opt + t` | Sysmon right of Aside | Hub on the right quarter of Aside's space. Press again to focus it |
-| `meh + x` | ChatGPT | AI assistant on display 2, space 16 |
 | `meh + g` | Cursor | AI-powered code editor on space 5 |
 | `meh + h` | Alter | Chat hub on space 7 |
 
@@ -79,7 +79,7 @@ All application shortcuts use the `meh` key (ctrl+alt+shift) for consistency and
 | Shortcut | Application | Description |
 |----------|-------------|-------------|
 | `meh + 1` | 1Password | Password manager |
-| `meh + 2` | Jump Desktop | Mac Mini (`mini-01`, Fluid) on the primary display, space 2 |
+| `meh + 2` | Jump Desktop | Mac Mini (`mini-01`, Fluid) on the built-in display, space 10 |
 | `meh + v` | Grok Bot | Grok desktop app on space 16 |
 | `meh + l` | Perplexity | AI search engine |
 | `meh + i` | Structured | Task and time management |
