@@ -1,5 +1,37 @@
 # Changelog
 
+## [0.27.0](https://github.com/vanducng/dotfiles/compare/v0.26.0...v0.27.0) (2026-10-24)
+
+
+### Features
+
+* **homelab:** added GNOME Pop Shell tiling with Mac-style keys on linux-01 ([#213](https://github.com/vanducng/dotfiles/issues/213)) ([41eebb3](https://github.com/vanducng/dotfiles/commit/41eebb3842a3d62002492b5df1aa78956947439e))
+* **homelab:** always showed workspace numbers 1-9 and dropped the Firefox key on linux-01 ([#221](https://github.com/vanducng/dotfiles/issues/221)) ([2140f5a](https://github.com/vanducng/dotfiles/commit/2140f5a1dea7eb4455a68e3b0428aa868964f926))
+* **homelab:** made cmd+c/v copy and paste in Ghostty on linux-01 ([#222](https://github.com/vanducng/dotfiles/issues/222)) ([203aa6e](https://github.com/vanducng/dotfiles/commit/203aa6e91ae55c2a99169f47e31a848722d6efca))
+* **homelab:** pinned apps to workspaces and reloaded a blank wall dashboard ([#218](https://github.com/vanducng/dotfiles/issues/218)) ([c31fd6e](https://github.com/vanducng/dotfiles/commit/c31fd6e5640ebdea092fe40a3c8f54f40fb524ad))
+* **homelab:** put BrowserOS neo on meh+s, Chrome on meh+d, and slimmed the GNOME panel ([#214](https://github.com/vanducng/dotfiles/issues/214)) ([e4f6116](https://github.com/vanducng/dotfiles/commit/e4f6116e0f6792b6e16360125124bddc8cf8ec68))
+* **homelab:** put Grok Bot on meh+v on linux-01 ([#217](https://github.com/vanducng/dotfiles/issues/217)) ([74839a7](https://github.com/vanducng/dotfiles/commit/74839a783a50ed94f144a90123c967df94be4c42))
+* **homelab:** put the sysmon hub on meh+f and added an app taskbar to the GNOME panel ([#215](https://github.com/vanducng/dotfiles/issues/215)) ([00c3c0c](https://github.com/vanducng/dotfiles/commit/00c3c0c111ee9b75c7a4103334a60884c5fcffe8))
+* Jump host names, OpenVPN split repair, shell and agent config updates ([90401a2](https://github.com/vanducng/dotfiles/commit/90401a2c499de47cafb7c2053c09e05c4d2a9dfc))
+* **jump-desktop:** name hosts mini-01, linux-01, macpro and pin the Apple account ([3122f05](https://github.com/vanducng/dotfiles/commit/3122f05cdd796ea66188e2dbce9f6892c4bec112))
+* **jump-desktop:** version Jump Desktop viewer entries and helper shim ([6fa5e9b](https://github.com/vanducng/dotfiles/commit/6fa5e9b7ceb55a5e1c798743b361df47ea4963d1))
+* **jump-desktop:** version Jump Desktop viewer entries and helper shim ([8383674](https://github.com/vanducng/dotfiles/commit/8383674d2b7b12a4e31773033c19df02b1415fb4))
+* **linux:** exported the 1Password service account token for agents on linux-01 ([#219](https://github.com/vanducng/dotfiles/issues/219)) ([5d1eb4a](https://github.com/vanducng/dotfiles/commit/5d1eb4acba589fc2a37b834964ba0823e15ae3fb))
+* **openvpn:** pin CNB host routes to the tun and repair them after reconnects ([c384e3c](https://github.com/vanducng/dotfiles/commit/c384e3c1992779cddbeabe1dfda67cc38c987b1e))
+* **rex:** added Rex config with herdr-style keys and multi-Mac hosts ([#224](https://github.com/vanducng/dotfiles/issues/224)) ([f3def9a](https://github.com/vanducng/dotfiles/commit/f3def9ab9a48445de555f3fdd517d7c573674a25))
+* **rex:** fixed cross-Mac session jumps and added tab, numbering, and picker keys ([#225](https://github.com/vanducng/dotfiles/issues/225)) ([e585251](https://github.com/vanducng/dotfiles/commit/e5852514618b3a7c1f4e9a88895b296b8edce678))
+* **skhd:** opened the Mac mini over Jump Desktop on meh+2 ([#212](https://github.com/vanducng/dotfiles/issues/212)) ([6d42da1](https://github.com/vanducng/dotfiles/commit/6d42da11309dc703f424898ffe556505a3b0fb6c))
+* **ssh:** shared home host aliases mini-01, linux-01, macpro ([2f314d1](https://github.com/vanducng/dotfiles/commit/2f314d11ac62a372ddfb5f0e9f085a1c77c9979f))
+* **ssh:** shared home host aliases mini-01, linux-01, macpro ([415954a](https://github.com/vanducng/dotfiles/commit/415954a6566cf174b02973d32176972606efb3c1))
+
+
+### Bug Fixes
+
+* **homelab:** addressed review feedback on the linux-01 desktop scripts ([#216](https://github.com/vanducng/dotfiles/issues/216)) ([014e1dc](https://github.com/vanducng/dotfiles/commit/014e1dcc0d26cad9183ee5448cdbc1e7f8f75da4))
+* **homelab:** waited for the network before opening the wall and put app search on cmd+space ([#220](https://github.com/vanducng/dotfiles/issues/220)) ([08a2b21](https://github.com/vanducng/dotfiles/commit/08a2b218057aa09550894fe6bf56467b11aa6db8))
+* **shell:** portable aliases and paths, quieter startup on unreadable cwd ([f1e30c3](https://github.com/vanducng/dotfiles/commit/f1e30c39b918d70c326280eff36ec05dff9ce347))
+* **zsh:** prefer the installer atuin over Homebrew ([#223](https://github.com/vanducng/dotfiles/issues/223)) ([5d6512e](https://github.com/vanducng/dotfiles/commit/5d6512e63922085b28e14596826607d9d84d9c07))
+
 ## [0.26.0](https://github.com/vanducng/dotfiles/compare/v0.25.1...v0.26.0) (2026-10-18)
 
 
