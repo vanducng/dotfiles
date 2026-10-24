@@ -173,6 +173,7 @@ rex.action{
         local base = (w.label or ""):gsub("^%d+%-", "")
         if base:match("^%d*$") or base:match("^Window %x+$") then
           local ok, dir = pcall(pane_dir, w.focused_block_id, s.session_id)
+          if not ok then rex.log("warn", "tab_renumber: tab " .. i .. " has no folder: " .. tostring(dir)) end
           base = not ok and "" or dir == os.getenv("HOME") and "~" or basename(dir)
         end
         local label = base == "" and tostring(i) or i .. "-" .. base
