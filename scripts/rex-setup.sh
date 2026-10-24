@@ -21,14 +21,6 @@ defaults write "$DOMAIN" Workspace.terminalOptionKeyBehavior -string actsAsAlt
 # The sidebar (C-x b, cmd+b) only exists with vertical tabs.
 defaults write "$DOMAIN" Workspace.tabStyle -string vertical
 defaults write "$DOMAIN" Workspace.paneDensity -string compact
-# Mission Control's slow-motion shortcuts (34 up, 35 down) take ctrl+shift+up/down from Rex's Move Tab Up/Down.
-for id in 34 35; do
-  defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add "$id" "<dict><key>enabled</key><false/>
-    <key>value</key><dict><key>parameters</key><array><integer>65535</integer><integer>$((id == 34 ? 126 : 125))</integer>
-    <integer>8781824</integer></array><key>type</key><string>standard</string></dict></dict>"
-done
-/System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -u 2>/dev/null \
-  || echo "Log out and back in to free ctrl+shift+up/down for Rex"
 # Everything below needs the tailnet, so stop before writing any of it.
 TS=/Applications/Tailscale.app/Contents/MacOS/Tailscale
 [ -x "$TS" ] || TS=tailscale
