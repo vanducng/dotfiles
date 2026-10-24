@@ -25,7 +25,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$HOME/skills/hooks/agent-notify.py\" claude stop"
+            "command": "/usr/bin/python3 \"$HOME/skills/hooks/agent-notify.py\" claude stop"
           }
         ]
       }
@@ -35,7 +35,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$HOME/skills/hooks/agent-notify.py\" claude notification"
+            "command": "/usr/bin/python3 \"$HOME/skills/hooks/agent-notify.py\" claude notification"
           }
         ]
       }
