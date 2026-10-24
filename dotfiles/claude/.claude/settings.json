@@ -18,6 +18,15 @@
             "timeout": 10
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/bin/sh -c '[ -n \"$TMUX\" ] || exit 0; exec /usr/bin/python3 \"$HOME/.local/bin/rex-agent-status\" claude-code'",
+            "timeout": 5
+          }
+        ]
       }
     ],
     "Stop": [
@@ -28,6 +37,15 @@
             "command": "/usr/bin/python3 \"$HOME/skills/hooks/agent-notify.py\" claude stop"
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/bin/sh -c '[ -n \"$TMUX\" ] || exit 0; exec /usr/bin/python3 \"$HOME/.local/bin/rex-agent-status\" claude-code'",
+            "timeout": 5
+          }
+        ]
       }
     ],
     "Notification": [
@@ -36,6 +54,59 @@
           {
             "type": "command",
             "command": "/usr/bin/python3 \"$HOME/skills/hooks/agent-notify.py\" claude notification"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/bin/sh -c '[ -n \"$TMUX\" ] || exit 0; exec /usr/bin/python3 \"$HOME/.local/bin/rex-agent-status\" claude-code'",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/bin/sh -c '[ -n \"$TMUX\" ] || exit 0; exec /usr/bin/python3 \"$HOME/.local/bin/rex-agent-status\" claude-code'",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/bin/sh -c '[ -n \"$TMUX\" ] || exit 0; exec /usr/bin/python3 \"$HOME/.local/bin/rex-agent-status\" claude-code'",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/bin/sh -c '[ -n \"$TMUX\" ] || exit 0; exec /usr/bin/python3 \"$HOME/.local/bin/rex-agent-status\" claude-code'",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/bin/sh -c '[ -n \"$TMUX\" ] || exit 0; exec /usr/bin/python3 \"$HOME/.local/bin/rex-agent-status\" claude-code'",
+            "timeout": 5
           }
         ]
       }
