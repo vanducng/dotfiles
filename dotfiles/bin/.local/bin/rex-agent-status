@@ -1,0 +1,82 @@
+#!/usr/bin/env python3
+# Rex learns an agent's status from OSC 7501, which Claude Code and Codex send on their own
+# when they run straight in a Rex pane. Inside tmux (OpenRig seats) the sequence stops at
+# tmux, so the agent's hooks call this with the hook JSON on stdin:
+#   rex-agent-status <app>        e.g. claude-code
+# It wraps the status in tmux passthrough (allow-passthrough on) and writes it to the
+# seat's pane, so it reaches whichever Rex pane has the seat attached. Never fails a hook.
+import base64
+import json
+import os
+import re
+import subprocess
+import sys
+
+
+def status(event):
+    """(state, kind, msg) for a hook event, or None to leave the status alone."""
+    name = event.get("hook_event_name", "")
+    if name == "SessionStart":
+        return "idle", None, None
+    if name == "UserPromptSubmit":
+        return "working", None, "Working"
+    if name == "PreToolUse":
+        tool = event.get("tool_input") or {}
+        return "working", None, tool.get("description") or event.get("tool_name")
+    if name == "PermissionRequest":
+        return "blocked", "permission", "Allow " + str(event.get("tool_name") or "a tool") + "?"
+    if name == "Notification" and event.get("notification_type") == "permission_prompt":
+        return "blocked", "permission", event.get("message")
+    if name == "Stop":
+        return "done", None, "Done"
+    if name == "SessionEnd":
+        return "clear", None, None
+    return None
+
+
+def sequence(app, state, kind, msg):
+    pairs = ["app=" + app, "state=" + state]
+    if kind:
+        pairs.append("kind=" + kind)
+    if msg:
+        line = re.sub(r"[\x00-\x1f\x7f]+", " ", str(msg)).strip()[:200]
+        pairs.append("msg=" + base64.b64encode(line.encode()).decode())
+    osc = "\x1b]7501;" + ":".join(pairs) + "\x07"
+    return "\x1bPtmux;" + osc.replace("\x1b", "\x1b\x1b") + "\x1b\\"
+
+
+def pane_tty():
+    pane = os.environ.get("TMUX_PANE")
+    if not (os.environ.get("TMUX") and pane):
+        return None
+    for tmux in ("tmux", "/opt/homebrew/bin/tmux", "/usr/local/bin/tmux"):
+        try:
+            out = subprocess.run([tmux, "display-message", "-p", "-t", pane, "#{pane_tty}"],
+                                 capture_output=True, text=True, timeout=2)
+        except (OSError, subprocess.TimeoutExpired):
+            continue
+        if out.returncode == 0 and out.stdout.strip():
+            return out.stdout.strip()
+    return None
+
+
+def main():
+    if len(sys.argv) < 2:
+        return
+    try:
+        event = json.loads(sys.stdin.read() or "{}")
+    except ValueError:
+        return
+    st = status(event) if isinstance(event, dict) else None
+    tty = st and pane_tty()
+    if not tty:
+        return
+    with open(tty, "w") as f:
+        f.write(sequence(sys.argv[1], *st))
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except Exception:
+        pass

@@ -100,6 +100,14 @@ Host labels follow `<kind>-<nn>`: `mbp`, `mini` or `linux`, then a two-digit num
 
 The Mac app ignores `hosts.lua` and keeps its own Remote Hosts list in the `RexSync.servers` preference. `rex-setup.sh` adds each missing Mac there with the same address and leaves existing records alone, since the app fills in their IDs on first connect. Quit and reopen Rex Beta after it reports "Remote Hosts updated".
 
+## Agents inside tmux (OpenRig seats)
+
+Rex shows an agent's status (working, waiting on you, done) from OSC 7501, an escape sequence Claude Code and Codex send on their own when they run straight in a Rex pane. An OpenRig seat runs its agent inside tmux, and its Rex tile only runs `tmux attach`, so the sequence stops at tmux and the tile looks like plain tmux.
+
+`~/.local/bin/rex-agent-status` bridges that for Claude Code. Hooks in `~/.claude/settings.json` (session start and end, prompt, each tool, permission request, stop) call it only when `$TMUX` is set; it turns the event into an OSC 7501 status, wraps it in tmux passthrough, and writes it to the seat's pane. tmux (`allow-passthrough on` in `.tmux.conf`) forwards it to the attached Rex tile, which then counts as a `claude-code` agent for the sidebar status and `C-x o`. `set-titles` passes the agent's title (`✳ <task>`) to the tile as well. A running seat picks the hooks up at its next start.
+
+Codex seats need the same hooks in `~/.codex/hooks.json`, but Codex asks you to review new hooks before they run, so they are not wired yet. Running seats natively in Rex instead of tmux is tracked on the OpenRig fork.
+
 ## Option key
 
 Rex defaults the Option key to `automatic`, which types special characters (`alt+p` gives `π`). `rex-setup.sh` sets `Workspace.terminalOptionKeyBehavior` to `actsAsAlt`, the same as Ghostty's `macos-option-as-alt = true`. The other values are `composesText`, `leftActsAsAlt`, and `rightActsAsAlt`. Right Option plus a letter still launches apps through Karabiner before Rex sees it.
