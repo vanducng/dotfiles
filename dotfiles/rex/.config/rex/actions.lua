@@ -303,7 +303,25 @@ local function is_dir(path)
   return r and r.ok
 end
 
-local function make_session(e)
+-- Makes e's session, or adds the tabs an existing one lacks (a create that failed partway, or a
+-- closed tab), skipping it when this Mac lacks its folder. Returns its id, a placeholder one in
+-- a dry run, or nil when skipped.
+local function ensure_session(e, id, dry, lines)
+  local have = 0
+  if id then
+    local out, err = cli(nil, "session", "inspect", id, "--json")
+    if not out then return nil, err end
+    local ok, d = pcall(rex.json.decode, out)
+    if not ok then return nil, "rex session inspect returned unreadable output" end
+    have = #(d.windows or {})
+    if have >= #e.tabs then return id end
+  end
+  if e.dir and not is_dir(e.dir) then
+    lines[#lines + 1] = "skip " .. e.name .. ": " .. e.dir .. " does not exist"
+    return nil
+  end
+  lines[#lines + 1] = (id and "add " .. (#e.tabs - have) .. " tab(s) to " or "create ") .. e.name
+  if dry then return id or ("new:" .. e.name) end
   local function opts(tab)
     local o = { "--shell", "zsh", "--keep-open" }
     if e.dir then o[#o + 1] = "-c"; o[#o + 1] = e.dir end
@@ -311,41 +329,42 @@ local function make_session(e)
     for _, a in ipairs(tab.command) do o[#o + 1] = a end
     return (table.unpack or unpack)(o)
   end
-  local out, err = cli(nil, "new", e.name, "--window", e.tabs[1].label, "--json", opts(e.tabs[1]))
-  if not out then return nil, err end
-  local ok, d = pcall(rex.json.decode, out)
-  local id = ok and d and d.session_id
-  if not id then return nil, "rex new printed no session id" end
-  for i = 2, #e.tabs do
+  if not id then
+    local out, err = cli(nil, "new", e.name, "--window", e.tabs[1].label, "--json", opts(e.tabs[1]))
+    if not out then return nil, err end
+    local ok, d = pcall(rex.json.decode, out)
+    id = ok and d and d.session_id
+    if not id then return nil, "rex new printed no session id" end
+    have = 1
+  end
+  for i = have + 1, #e.tabs do
     local _, werr = cli(nil, "window", "new", "-s", id, e.tabs[i].label, "--focus=false", opts(e.tabs[i]))
     if werr then return nil, e.tabs[i].label .. ": " .. werr end
   end
   return id
 end
 
--- Makes the layout's missing sessions (skipping one whose folder this Mac lacks), then arranges
--- this Mac's sessions. Never kills, restarts or renames past the number prefix.
-local function session_layout(dry)
-  local lines = {}
-  local existing, err = cli_sessions(nil)
-  if not existing then error(err, 0) end
-  local have, new = {}, {}
-  for _, s in ipairs(existing) do
+-- The first session standing for each layout entry, by id.
+local function layout_ids()
+  local list, err = cli_sessions(nil)
+  if not list then error(err, 0) end
+  local ids = {}
+  for _, s in ipairs(list) do
     local e = layout.entry(s.label)
-    if e then have[e] = true end
+    if e and not ids[e] then ids[e] = s.id end
   end
+  return ids
+end
+
+-- Makes or completes the layout's sessions, then arranges this Mac's sessions. Never kills,
+-- restarts or renames past the number prefix.
+local function session_layout(dry)
+  local lines, new = {}, {}
+  local ids = layout_ids()
   for _, e in ipairs(layout.sessions) do
-    if not have[e] and e.dir and not is_dir(e.dir) then
-      lines[#lines + 1] = "skip " .. e.name .. ": " .. e.dir .. " does not exist"
-    elseif not have[e] then
-      lines[#lines + 1] = "create " .. e.name .. " (" .. #e.tabs .. " tab" .. (#e.tabs > 1 and "s" or "") .. ")"
-      if dry then
-        new[#new + 1] = { id = "new:" .. e.name, label = e.name }
-      else
-        local _, merr = make_session(e)
-        if merr then error(e.name .. ": " .. merr, 0) end
-      end
-    end
+    local id, err = ensure_session(e, ids[e], dry, lines)
+    if err then error(e.name .. ": " .. err, 0) end
+    if dry and id and not ids[e] then new[#new + 1] = { id = id, label = e.name } end
   end
   local ok, aerr = arrange(nil, dry, lines, new)
   if not ok then error(aerr, 0) end
@@ -372,17 +391,15 @@ local function goto_layout(ctx, index)
   local k = layout_keys[index]
   if not k then error("no layout key " .. index, 0) end
   local want = layout.sessions[k[1]]
-  local function find()
-    for _, s in ipairs(cli_sessions(nil) or {}) do
-      if layout.entry(s.label) == want then return s.id end
-    end
-  end
-  local id = find()
-  if not id then
-    session_layout(false)
-    id = find()
-  end
+  local had = layout_ids()[want]
+  -- Only this target is made or completed, so the key does not wait on the whole layout.
+  local id, err = ensure_session(want, had, false, {})
+  if err then error(want.name .. ": " .. err, 0) end
   if not id then error(want.name .. " is not on this Mac (its folder is missing)", 0) end
+  if not had then
+    local ok, aerr = arrange(nil, false, {})
+    if not ok then error(aerr, 0) end
+  end
   local w = session_windows(ctx, nil, id)[k[2]]
   if not w then error(want.name .. " has no tab " .. k[2], 0) end
   remember(ctx, id)
