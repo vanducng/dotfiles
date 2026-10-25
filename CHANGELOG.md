@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.31.0](https://github.com/vanducng/dotfiles/compare/v0.30.0...v0.31.0) (2026-10-25)
+
+
+### Features
+
+* **rex:** spun the agent status glyph in plain Rex pane headers ([34deb84](https://github.com/vanducng/dotfiles/commit/34deb840e6e4f4750c8b4b3a63efdb4f8247fb76))
+
 ## [0.30.0](https://github.com/vanducng/dotfiles/compare/v0.29.0...v0.30.0) (2026-10-24)
 
 
