@@ -25,10 +25,16 @@ local function labels(plan)
   return table.concat(out, " ")
 end
 
-local function rerun(plan)
+local function rerun(plan, here)
   local next = {}
   for i, p in ipairs(plan) do next[i] = { id = p.id, label = p.want } end
-  return layout.plan(next)
+  return layout.plan(next, here)
+end
+
+local function names(list)
+  local out = {}
+  for i, l in ipairs(list) do out[i] = { id = tostring(i), label = l } end
+  return out
 end
 
 check(layout.base("2-3-foo"), "foo", "a stacked prefix is stripped whole")
@@ -42,7 +48,7 @@ local today = {
   { id = "d", label = "notes" },
   { id = "e", label = "cnb" },
 }
-local plan = layout.plan(today)
+local plan = layout.plan(today, true)
 check(labels(plan), "1-dashboard 2-cnb 3-warp-factory-setup 4-foo 5-notes",
   "the layout's sessions go first and the rest are renumbered by position")
 check(plan[1].id .. plan[2].id .. plan[3].id, "cea", "order is layout first, then the rest as they were")
@@ -54,15 +60,25 @@ local full = {
   { id = "d", label = "3-abs" },
   { id = "e", label = "2-3-foo" },
 }
-plan = layout.plan(full)
+plan = layout.plan(full, true)
 check(labels(plan), "1-dashboard 2-cnb 3-abs 4-warp-factory-setup 5-foo",
   "with all three layout sessions, the rest number from 4")
-check(labels(rerun(plan)), labels(plan), "a rerun changes nothing")
-for i, p in ipairs(rerun(plan)) do check(p.label, p.want, "rerun label " .. i) end
+check(labels(rerun(plan, true)), labels(plan), "a rerun changes nothing")
+for i, p in ipairs(rerun(plan, true)) do check(p.label, p.want, "rerun label " .. i) end
 
-plan = layout.plan({ { id = "x", label = "dashboard" }, { id = "y", label = "4-dashboard" } })
+plan = layout.plan({ { id = "x", label = "dashboard" }, { id = "y", label = "4-dashboard" } }, true)
 check(labels(plan), "1-dashboard 2-dashboard", "a duplicate dashboard is not a second layout session")
-check(labels(rerun(plan)), labels(plan), "a duplicate stays put on a rerun")
+check(labels(rerun(plan, true)), labels(plan), "a duplicate stays put on a rerun")
+
+check(labels(layout.plan(names({ "dashboard", "abs", "foo" }), true)), "1-dashboard 2-abs 3-foo",
+  "a missing middle layout session leaves no repeated number")
+check(labels(layout.plan(names({ "cnb", "foo" }), true)), "1-cnb 2-foo",
+  "every number is the real Ctrl-N position")
+plan = layout.plan(names({ "abs" }), false)
+check(labels(plan), "1-abs", "a remote host numbers by plain position")
+plan = layout.plan(names({ "foo", "3-abs", "dashboard" }), false)
+check(labels(plan), "1-foo 2-abs 3-dashboard", "a remote host keeps its order")
+check(labels(rerun(plan, false)), labels(plan), "a remote rerun changes nothing")
 
 check(layout.sessions[1].tabs[1].command[1], "/home/test/.local/bin/rexboard", "paths come from HOME")
 for i, k in ipairs(layout.keys) do
@@ -71,4 +87,4 @@ for i, k in ipairs(layout.keys) do
 end
 LUA
 ) || fail "layout numbering: $out"
-pass "layout numbering: stacked prefixes, an existing 1- session, reruns"
+pass "layout numbering: stacked prefixes, an existing 1- session, gaps, remote hosts, reruns"

@@ -10,7 +10,7 @@ M.sessions = {
     { label = "rig", command = { "rig", "tui" } },
   } },
   { name = "2-cnb", dir = home .. "/git/work/cnb", tabs = { { label = "claude", command = { "claude" } } } },
-  { name = "3-abs", dir = home .. "/git/work/abs", tabs = { { label = "claude", command = { "claude" } } } },
+  { name = "3-abs", dir = home .. "/git/work/ab-spectrum", tabs = { { label = "claude", command = { "claude" } } } },
 }
 
 -- alt+shift+1..4: { session, tab number }.
@@ -31,24 +31,24 @@ function M.entry(label)
   end
 end
 
--- sessions: { { id, label } } in sidebar order. Returns them with the layout's own first, in
--- layout order, and the rest after in their current order, each with the label it should have:
--- the layout's name, or its position and base name ("4-warp-factory-setup"). A second
--- layout-named session (a duplicate "dashboard") counts as one of the rest.
-function M.plan(sessions)
+-- sessions: { { id, label } } in sidebar order. Returns them in the order they should have,
+-- each labelled "<Ctrl-N position>-<base name>". On this Mac (here) the layout's sessions go
+-- first, in layout order; a second "dashboard" counts as one of the rest. Elsewhere the order
+-- stays as it is.
+function M.plan(sessions, here)
   local slot, rest = {}, {}
   for _, s in ipairs(sessions) do
-    local e, i = M.entry(s.label)
-    if e and not slot[i] then slot[i] = { id = s.id, label = s.label, want = e.name }
-    else rest[#rest + 1] = s end
+    local _, i = M.entry(s.label)
+    if here and i and not slot[i] then slot[i] = s else rest[#rest + 1] = s end
   end
   local out = {}
   for i = 1, #M.sessions do
     if slot[i] then out[#out + 1] = slot[i] end
   end
-  for _, s in ipairs(rest) do
+  for _, s in ipairs(rest) do out[#out + 1] = s end
+  for i, s in ipairs(out) do
     local b = M.base(s.label)
-    out[#out + 1] = { id = s.id, label = s.label, want = b == "" and tostring(#out + 1) or (#out + 1) .. "-" .. b }
+    out[i] = { id = s.id, label = s.label, want = b == "" and tostring(i) or i .. "-" .. b }
   end
   return out
 end

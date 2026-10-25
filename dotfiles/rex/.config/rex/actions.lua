@@ -269,8 +269,8 @@ local function cli_sessions(host)
   return list
 end
 
--- Puts layout.lua's sessions first on host (nil is this Mac) and gives every session its
--- label: the layout's name, or "<position>-<name>". Only order and the number prefix change.
+-- Gives every session on host (nil is this Mac) its Ctrl-N number ("2-cnb"), after putting
+-- layout.lua's sessions first on this Mac. Only order and the number prefix change.
 -- New sessions are { id, label } entries not made yet, so a dry run numbers them too.
 local function arrange(host, dry, lines, new)
   local list, err = cli_sessions(host)
@@ -279,9 +279,9 @@ local function arrange(host, dry, lines, new)
   local cur = {}
   for i, s in ipairs(list) do cur[i] = s.id end
   local where = host and (" on " .. host) or ""
-  for i, p in ipairs(layout.plan(list)) do
+  for i, p in ipairs(layout.plan(list, host == nil)) do
     if cur[i] ~= p.id then
-      lines[#lines + 1] = "move " .. p.label .. " to " .. i .. where
+      lines[#lines + 1] = "move " .. p.label .. " to position " .. i .. where
       for j = #cur, 1, -1 do if cur[j] == p.id then table.remove(cur, j) end end
       table.insert(cur, i, p.id)
       if not dry then
@@ -322,7 +322,9 @@ local function ensure_session(e, id, dry, lines)
     lines[#lines + 1] = "skip " .. e.name .. ": " .. e.dir .. " does not exist"
     return nil
   end
-  lines[#lines + 1] = (id and "add " .. (#e.tabs - have) .. " tab(s) to " or "create ") .. e.name
+  local missing = #e.tabs - have
+  lines[#lines + 1] = id and ("add " .. missing .. (missing == 1 and " tab to " or " tabs to ") .. e.name)
+    or ("create " .. e.name)
   if dry then return id or ("new:" .. e.name) end
   local function opts(tab)
     local o = { "--shell", "zsh", "--keep-open" }
@@ -377,8 +379,8 @@ end
 
 rex.action{
   name = "session_layout",
-  title = "Lay Out the Fixed Sessions",
-  description = "Makes and orders layout.lua's sessions at 1-3 and numbers the rest from there.",
+  title = "Lay Out Sessions (dashboard, cnb, abs)",
+  description = "Makes layout.lua's sessions, puts them first and numbers every session by its Ctrl-N position.",
   category = "Session",
   args = { dry_run = "boolean?" },
   run = function(_, args)
@@ -394,7 +396,7 @@ local function goto_layout(ctx, index)
   -- Only this target is made or completed, so the key does not wait on the whole layout.
   local id, err = ensure_session(want, had, false, {})
   if err then error(want.name .. ": " .. err, 0) end
-  if not id then error(want.name .. " is not on this Mac (its folder is missing)", 0) end
+  if not id then error(want.name .. ": " .. tostring(want.dir) .. " does not exist", 0) end
   local w = session_windows(ctx, nil, id)[k[2]]
   if not w then error(want.name .. " has no tab " .. k[2], 0) end
   remember(ctx, id)
@@ -415,11 +417,11 @@ rex.action{
   run = function(ctx, args) goto_layout(ctx, args.index) end,
 }
 
--- Puts the layout's sessions first on every host and prefixes the rest with their ctrl+N
--- number ("4-api"), like Herdr's tab renumbering. A stacked "2-3-" is replaced whole.
+-- Puts the layout's sessions first on this Mac, then prefixes every session on every host with
+-- its ctrl+N number ("4-api"), like Herdr's tab renumbering. A stacked "2-3-" is replaced whole.
 rex.action{
   name = "session_renumber",
-  title = "Number Sessions for Ctrl+N",
+  title = "Put Layout First and Number Sessions",
   category = "Session",
   run = function()
     local failed, lines = {}, {}

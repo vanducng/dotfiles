@@ -43,7 +43,7 @@ Rex uses Herdr's `C-x` prefix and letters, so moving between the two needs no re
 | `C-x Shift-N` | New session |
 | `C-x Shift-S` | Rename session |
 | `C-x Shift-W` | Open the session on the web |
-| `C-x Shift-I` | Put the layout's sessions first, then number every other session's label with its `Ctrl-1..9` number on its own host (`4-api`), on this Mac and the remote hosts. A stacked prefix (`2-3-api`) is replaced whole, and a second run changes nothing. Rerun after adding, closing, or renaming one |
+| `C-x Shift-I` | Put the layout's sessions first on this Mac, then number every session's label with its `Ctrl-1..9` number on its own host (`4-api`), on this Mac and the remote hosts. A remote host keeps its order. A stacked prefix (`2-3-api`) is replaced whole, and a second run changes nothing. Rerun after adding, closing, or renaming one |
 | `C-x i` | Number every tab's label with its `Cmd-1..9` number (`2-api`) in each session on the Mac you are viewing, replacing a stacked prefix whole; a tab without a name of its own takes its pane's folder |
 | `C-x Shift-D` | Close session |
 | `C-x Shift-M` | Switch machine (host) |
@@ -73,8 +73,9 @@ Herdr's `C-x a` (last pane) has no equivalent, since Rex config Lua cannot track
 | `Ctrl-Alt-.` / `Ctrl-Alt-,` | Next / previous tab in sidebar order across every session and host, wrapping at the end |
 | `Shift-Cmd-Up` / `Shift-Cmd-Down` (also `Left` / `Right`) | Move tab up / down. Replaces Rex's `Ctrl-Shift-Up/Down`, which never reached the app, and its `Shift-Cmd-arrow` splits (`C-x m` / `C-x v` split) |
 | `Ctrl-1..9` | Go to session N on the host you are viewing |
-| `Alt-Shift-1` / `Alt-Shift-2` | `1-dashboard`: the board, then `rig tui` |
-| `Alt-Shift-3` / `Alt-Shift-4` | `2-cnb` / `3-abs`. A missing layout session is made first |
+| `Alt-Shift-1` | The board: `1-dashboard` tab 1 (replaces `C-x Shift-O`). Made first if missing |
+| `Alt-Shift-2` | `rig tui`: `1-dashboard` tab 2. Made first if missing |
+| `Alt-Shift-3` / `Alt-Shift-4` | `2-cnb` / `3-abs`. Made first if missing, or says its folder does not exist |
 | `Ctrl-Alt-1..9` | Go to host N: 1 MacBook Pro (`mbp-01`), 2 `mini-01`, 3 kept for `linux-01`; lands on the session you last had there, else its first |
 | `Alt-Cmd-]` | Next session |
 | `Cmd-k` | Session picker |
@@ -97,9 +98,11 @@ Each host numbers its own sessions, so `Ctrl-1..9` stays short however many mach
 |---|---|---|
 | 1 | `1-dashboard` | `rexboard` (the board), `rig` (`rig tui`) |
 | 2 | `2-cnb` | `claude` in `~/git/work/cnb` |
-| 3 | `3-abs` | `claude` in `~/git/work/abs` |
+| 3 | `3-abs` | `claude` in `~/git/work/ab-spectrum` |
 
-The `session_layout` action makes the missing ones and moves the three to positions 1-3. It finds them by name without the number, so `dashboard` or `5-dashboard` counts. It skips a session whose folder this Mac lacks, and never kills or restarts a session. Every other session keeps its name; only its number prefix changes, to its new position (`1-warp-factory-setup` becomes `4-warp-factory-setup`). It runs from `make setup-rex` and at login (the `dev.vanducng.rex-session-layout` LaunchAgent in the `launchd` package), with no key. By hand:
+The `session_layout` action makes the missing ones, reopens a layout tab you closed, and moves the three to positions 1-3. It finds them by name without the number, so `dashboard` or `5-dashboard` counts. It skips a session whose folder this Mac lacks, and never kills or restarts a session. Every session's number is its `Ctrl-1..9` position, so with all three present the rest start at 4 (`1-warp-factory-setup` becomes `4-warp-factory-setup`); with one skipped, the rest close the gap. Only the number prefix changes, never the name.
+
+It runs from `make setup-rex` and at login (the `dev.vanducng.rex-session-layout` LaunchAgent in the `launchd` package), which writes failures to `~/Library/Logs/rex-session-layout.log`. No key runs the whole layout: `Alt-Shift-1..4` make or complete only their own session before going to it, or say its folder does not exist. By hand:
 
 ```bash
 rex do ~/.config/rex/actions.lua --action session_layout dry_run=true   # print the plan, change nothing

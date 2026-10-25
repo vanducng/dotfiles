@@ -9,7 +9,7 @@
   <array>
     <string>/bin/bash</string>
     <string>-lc</string>
-    <string>exec "$HOME/Library/Application Support/com.superlogical.rex/RexServer/Versions/Current/Rex Server.app/Contents/MacOS/rex" do --autostart=false "$HOME/.config/rex/actions.lua" --action session_layout</string>
+    <string>exec "$HOME/Library/Application Support/com.superlogical.rex/RexServer/Versions/Current/Rex Server.app/Contents/MacOS/rex" do --autostart=false "$HOME/.config/rex/actions.lua" --action session_layout 2&gt;&gt;"$HOME/Library/Logs/rex-session-layout.log"</string>
   </array>
   <key>EnvironmentVariables</key>
   <dict>
