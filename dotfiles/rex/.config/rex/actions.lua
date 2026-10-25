@@ -494,40 +494,37 @@ local function overlay(ctx, bounds, script, file, ...)
   if err then fail(err) end
 end
 
--- The board's own Rex window: focus it when yabai has a window with its title, else open a
--- new one. Plain `rexboard window` is never used here: Rex cannot tell which window shows the
--- board's session, so it could put the board in this window. It runs in the background, so the
--- action returns before the app is asked for a window; failures go to board-key.log.
-local function open_board()
+-- The board in this Rex window: `rexboard window` selects its session in the focused window,
+-- making it when missing. C-x a comes back, unless this is already the board. It runs in the
+-- background, so the action returns before the app is asked to switch; failures go to
+-- board-key.log.
+local function open_board(ctx)
+  local v = ctx.session_id and rex.session.view{ session_id = ctx.session_id }
+  if not (v and v.label == "rexboard") then remember(ctx) end
   local r, err = rex.exec({ "/bin/sh", "-c", [=[
 log="${XDG_STATE_HOME:-$HOME/.local/state}/rexboard/board-key.log"
 mkdir -p "$(dirname "$log")"
-(
-  title=$("$1" window --print-title) || exit 1
-  wins=$(yabai -m query --windows) || exit 1
-  id=$(printf '%s' "$wins" | jq -r --arg t "$title" 'map(select(.app == "Rex Beta" and .title == $t)) | first | .id // empty')
-  if [ -n "$id" ]; then yabai -m window --focus "$id"; else "$1" window --new; fi
-) </dev/null >>"$log" 2>&1 &
+"$1" window </dev/null >>"$log" 2>&1 &
 ]=], "sh", rexboard_cli() }, { env = env, timeout = 5 })
   if not (r and r.ok) then error(tostring(err or (r and r.stderr) or "board_window failed"), 0) end
 end
 
 rex.action{
   name = "board_window",
-  title = "Board Window (rexboard)",
+  title = "Show the Board (rexboard)",
   category = "Session",
   run = open_board,
 }
 
 -- rexboard's picker over the window. Enter jumps and moves focus itself, so the pane is
 -- refocused only on esc or a failure, and a failure's reason stays up until enter. A pane on
--- another host would run that host's rexboard, so there the board window opens instead.
+-- another host would run that host's rexboard, so there the board shows instead.
 rex.action{
   name = "agent_pick",
   title = "Pick an Agent (rexboard)",
   category = "Session",
   run = function(ctx)
-    if ctx.server then return open_board() end
+    if ctx.server then return open_board(ctx) end
     overlay(ctx, { 0, 0, 1, 1 }, [=[
 e=$(mktemp) && "$4" pick 2>"$e" && { rm -f "$e"; exit 0; }
 [ -s "$e" ] && { cat "$e"; printf 'enter closes '; read -r _; }
