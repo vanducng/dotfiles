@@ -288,6 +288,65 @@ hs.hotkey.bind(hyper, "p", function()
 end)
 
 --------------------------------------------
+-- GitHub repo chooser (Hyper+I)
+--
+-- Lists every repo in ~/projects/orgs/<org>/repos.yaml as <org>/<repo>.
+-- Enter opens the pull requests, Shift+Enter the repo home.
+--------------------------------------------
+local githubChooser
+local githubHistoryKey = "githubRecentRepos"
+local projectsOrgsDir = os.getenv("HOME") .. "/projects/orgs"
+
+local function githubRepos()
+	local orgs, repos = {}, {}
+	if not hs.fs.attributes(projectsOrgsDir) then return repos end
+	for org in hs.fs.dir(projectsOrgsDir) do
+		if org:sub(1, 1) ~= "." then orgs[#orgs + 1] = org end
+	end
+	table.sort(orgs)
+	for _, org in ipairs(orgs) do
+		local file = io.open(projectsOrgsDir .. "/" .. org .. "/repos.yaml")
+		if file then
+			for origin in file:read("a"):gmatch("origin:%s*(%S+)") do
+				repos[#repos + 1] = { text = org .. "/" .. origin:match("[^/]+$"), subText = origin, origin = origin }
+			end
+			file:close()
+		end
+	end
+	return repos
+end
+
+hs.hotkey.bind(hyper, "i", function()
+	local repos, byOrigin = githubRepos(), {}
+	if #repos == 0 then
+		hs.notify.new({ title = "GitHub", informativeText = "No repos in ~/projects/orgs/*/repos.yaml" }):send()
+		return
+	end
+	for _, repo in ipairs(repos) do byOrigin[repo.origin] = repo end
+
+	local choices, seen = {}, {}
+	for _, origin in ipairs(hs.settings.get(githubHistoryKey) or {}) do
+		local repo = byOrigin[origin]
+		if repo then
+			repo.subText = "Recent · " .. origin
+			choices[#choices + 1] = repo
+			seen[origin] = true
+		end
+	end
+	for _, repo in ipairs(repos) do
+		if not seen[repo.origin] then choices[#choices + 1] = repo end
+	end
+
+	githubChooser = hs.chooser.new(function(choice)
+		if not choice then return end
+		rememberRecent(githubHistoryKey, choice.origin)
+		local page = hs.eventtap.checkKeyboardModifiers().shift and "" or "/pulls"
+		hs.urlevent.openURL("https://github.com/" .. choice.origin .. page)
+	end)
+	githubChooser:choices(choices):placeholderText("Search repos (Enter: PRs, Shift+Enter: repo)"):rows(12):show()
+end)
+
+--------------------------------------------
 -- Open clipboard content (URL or file path)
 --
 -- Reads the clipboard, trims whitespace, and opens the content using
