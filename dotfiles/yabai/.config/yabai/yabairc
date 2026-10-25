@@ -183,6 +183,13 @@ yabai -m signal --add event=window_created \
             case "$app:$title" in kitty:|kitty:sysmon*|kitty:notes-vault|Ghostty:sysmon*|Ghostty:notes-vault) exit 0 ;; esac; \
             sleep 0.3 && yabai -m window $YABAI_WINDOW_ID --resize bottom:0:0 2>/dev/null'
 
+# The rexboard board window: a narrow right column beside the main Rex window. The title is
+# set once the board shows, after the window is made, so this keys on the title change.
+if rb_title=$("$HOME/.local/bin/rexboard" window --print-title 2>/dev/null); then
+    yabai -m signal --add label=rexboard-board event=window_title_changed app="^Rex Beta$" title="^$rb_title$" \
+        action='"$HOME/.config/yabai/rexboard-board.sh" "$YABAI_WINDOW_ID"'
+fi
+
 # Keep Alter floating even if it gets tiled after moves/space changes.
 yabai -m signal --add event=window_moved app="^Dia$" \
     action="$HOME/.local/bin/sysmon dia-sync"
