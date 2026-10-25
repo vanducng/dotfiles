@@ -252,9 +252,10 @@ local function cli(host, ...)
   if host then argv[#argv + 1] = "-S"; argv[#argv + 1] = host end
   for _, a in ipairs({ ... }) do argv[#argv + 1] = a end
   local r, err = rex.exec(argv, { env = env, timeout = 10 })
-  if r and r.ok then return r.stdout end
-  local why = r and r.stderr and r.stderr:gsub("%s+$", "") or ""
-  if why == "" then why = r and ("rex exited " .. tostring(r.code)) or tostring(err or "rex did not run") end
+  if not r then return nil, tostring(err or "rex did not run") end
+  if r.ok then return r.stdout end
+  local why = (r.stderr or ""):gsub("%s+$", "")
+  if why == "" then why = "rex exited " .. tostring(r.code or "?") end
   return nil, why
 end
 

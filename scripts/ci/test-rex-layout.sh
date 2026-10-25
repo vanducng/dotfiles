@@ -11,7 +11,7 @@ pass() { echo "OK: $*"; }
 LUA=$(command -v luajit || command -v lua || true)
 [ -n "$LUA" ] || fail "no lua or luajit to run the layout tests"
 
-HOME=/home/test "$LUA" - "$REX/?.lua" <<'LUA' || fail "layout numbering"
+out=$(HOME=/home/test "$LUA" - "$REX/?.lua" 2>&1 <<'LUA'
 package.path = arg[1] .. ";" .. package.path
 local layout = require("layout")
 
@@ -70,4 +70,5 @@ for i, k in ipairs(layout.keys) do
   if not (e and e.tabs[k[2]]) then error("alt+shift+" .. i .. " names no layout tab: " .. k[1] .. " " .. k[2], 0) end
 end
 LUA
+) || fail "layout numbering: $out"
 pass "layout numbering: stacked prefixes, an existing 1- session, reruns"
