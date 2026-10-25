@@ -60,6 +60,8 @@ for i = 1, 9 do
   bind("ctrl+alt+" .. i, "host_goto", { index = i })
 end
 px("0", "home")
+-- alt+shift+1/2: 1-dashboard's tabs (the board, rig tui), 3: 2-cnb, 4: 3-abs (layout.lua).
+for i = 1, 4 do bind("alt+shift+" .. i, "layout_goto", { index = i }) end
 -- The session picker stays on Rex's cmd+k.
 px("a", "session_toggle")
 px("shift+right", "session.next")
@@ -74,13 +76,12 @@ px("shift+d", "session.close")
 px("shift+m", "client.host.switch")
 bind("shift+cmd+k", "client.host.switch")
 
--- rexboard: the next agent that needs you, a picker, and the board in this window.
+-- rexboard: the next agent that needs you, and a picker. The board is 1-dashboard's first tab.
 px("shift+down", "agent_next")
 px("o", "agent_next")
 px("shift+up", "agent_next", { back = true })
 bind("ctrl+alt+a", "agent_next")
 px("f", "agent_pick")
-px("shift+o", "board_window")
 
 px("b", "client.sidebar.toggle")
 bind("cmd+b", "client.sidebar.toggle")

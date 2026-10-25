@@ -1,4 +1,5 @@
 local hosts = require("hosts")
+local layout = require("layout")
 local term = "com.superlogical.terminal"
 local env ={ PATH = "/opt/homebrew/bin:/usr/local/bin:" .. (os.getenv("PATH") or "/usr/bin:/bin") }
 local attention = { blocked = 1, error = 2, done = 3, idle = 4 }
@@ -244,51 +245,193 @@ rex.action{
   end,
 }
 
--- This machine's sessions go through its own socket while ctx.server points
--- rex.call at another host.
-local function set_label(ctx, host, session_id, label)
-  local args = { session_id = session_id, label = label }
-  if host then return rex.server(host).call("session.set_label", args) end
-  if not ctx.server then return rex.call("session.set_label", args) end
-  local r, err = rex.exec({ rex_cli, "session", "rename", session_id, label }, { env = env, timeout = 5 })
-  if r and r.ok then return true end
-  return nil, err or (r.stderr ~= "" and r.stderr) or "rex session rename failed"
+-- The layout goes through the rex CLI, so it acts on the right host from a key (even while the
+-- app views another host), from `rex do`, and from the login LaunchAgent alike.
+local function cli(host, ...)
+  local argv = { rex_cli }
+  if host then argv[#argv + 1] = "-S"; argv[#argv + 1] = host end
+  for _, a in ipairs({ ... }) do argv[#argv + 1] = a end
+  local r, err = rex.exec(argv, { env = env, timeout = 10 })
+  if not r then return nil, tostring(err or "rex did not run") end
+  if r.ok then return r.stdout end
+  local why = (r.stderr or ""):gsub("%s+$", "")
+  if why == "" then why = "rex exited " .. tostring(r.code or "?") end
+  return nil, why
 end
 
--- rexboard finds its board by the session label "rexboard" and tab "board"; renumbering skips it.
-local board_session = "rexboard"
+local function cli_sessions(host)
+  local out, err = cli(host, "ls", "--json")
+  if not out then return nil, err end
+  local ok, d = pcall(rex.json.decode, out)
+  if not ok then return nil, "rex ls returned unreadable output" end
+  local list = {}
+  for _, s in ipairs(d.sessions or {}) do list[#list + 1] = { id = s.session_id, label = s.label or "" } end
+  return list
+end
 
--- Prefixes each session label with its ctrl+N number on its own host ("3-api"),
--- like Herdr's tab renumbering. A leading "<digits>-" is replaced, so reruns don't stack.
+-- Gives every session on host (nil is this Mac) its Ctrl-N number ("2-cnb"), after putting
+-- layout.lua's sessions first on this Mac. Only order and the number prefix change.
+-- New sessions are { id, label } entries not made yet, so a dry run numbers them too.
+local function arrange(host, dry, lines, new)
+  local list, err = cli_sessions(host)
+  if not list then return nil, err end
+  for _, s in ipairs(new or {}) do list[#list + 1] = s end
+  local cur = {}
+  for i, s in ipairs(list) do cur[i] = s.id end
+  local where = host and (" on " .. host) or ""
+  for i, p in ipairs(layout.plan(list, host == nil)) do
+    if cur[i] ~= p.id then
+      lines[#lines + 1] = "move " .. p.label .. " to position " .. i .. where
+      for j = #cur, 1, -1 do if cur[j] == p.id then table.remove(cur, j) end end
+      table.insert(cur, i, p.id)
+      if not dry then
+        local _, merr = cli(host, "session", "move", p.id, "--index", tostring(i))
+        if merr then return nil, p.label .. ": " .. merr end
+      end
+    end
+    if p.label ~= p.want then
+      lines[#lines + 1] = "rename " .. p.label .. " to " .. p.want .. where
+      if not dry then
+        local _, rerr = cli(host, "session", "rename", p.id, p.want)
+        if rerr then return nil, p.label .. ": " .. rerr end
+      end
+    end
+  end
+  return true
+end
+
+local function is_dir(path)
+  local r = rex.exec({ "test", "-d", path }, { env = env, timeout = 5 })
+  return r and r.ok
+end
+
+-- Makes e's session, or adds the tabs an existing one lacks (a create that failed partway, or a
+-- closed tab), skipping it when this Mac lacks its folder. Returns its id, a placeholder one in
+-- a dry run, or nil when skipped.
+local function ensure_session(e, id, dry, lines)
+  local have = 0
+  if id then
+    local out, err = cli(nil, "session", "inspect", id, "--json")
+    if not out then return nil, err end
+    local ok, d = pcall(rex.json.decode, out)
+    if not ok then return nil, "rex session inspect returned unreadable output" end
+    have = #(d.windows or {})
+    if have >= #e.tabs then return id end
+  end
+  if e.dir and not is_dir(e.dir) then
+    lines[#lines + 1] = "skip " .. e.name .. ": " .. e.dir .. " does not exist"
+    return nil
+  end
+  local missing = #e.tabs - have
+  lines[#lines + 1] = id and ("add " .. missing .. (missing == 1 and " tab to " or " tabs to ") .. e.name)
+    or ("create " .. e.name)
+  if dry then return id or ("new:" .. e.name) end
+  local function opts(tab)
+    local o = { "--shell", "zsh", "--keep-open" }
+    if e.dir then o[#o + 1] = "-c"; o[#o + 1] = e.dir end
+    o[#o + 1] = "--"
+    for _, a in ipairs(tab.command) do o[#o + 1] = a end
+    return (table.unpack or unpack)(o)
+  end
+  if not id then
+    local out, err = cli(nil, "new", e.name, "--window", e.tabs[1].label, "--json", opts(e.tabs[1]))
+    if not out then return nil, err end
+    local ok, d = pcall(rex.json.decode, out)
+    id = ok and d and d.session_id
+    if not id then return nil, "rex new printed no session id" end
+    have = 1
+  end
+  for i = have + 1, #e.tabs do
+    local _, werr = cli(nil, "window", "new", "-s", id, e.tabs[i].label, "--focus=false", opts(e.tabs[i]))
+    if werr then return nil, e.tabs[i].label .. ": " .. werr end
+  end
+  return id
+end
+
+-- The first session standing for each layout entry, by id.
+local function layout_ids()
+  local list, err = cli_sessions(nil)
+  if not list then error(err, 0) end
+  local ids = {}
+  for _, s in ipairs(list) do
+    local e = layout.entry(s.label)
+    if e and not ids[e] then ids[e] = s.id end
+  end
+  return ids
+end
+
+-- Makes or completes the layout's sessions, then arranges this Mac's sessions. Never kills,
+-- restarts or renames past the number prefix.
+local function session_layout(dry)
+  local lines, new = {}, {}
+  local ids = layout_ids()
+  for _, e in ipairs(layout.sessions) do
+    local id, err = ensure_session(e, ids[e], dry, lines)
+    if err then error(e.name .. ": " .. err, 0) end
+    if dry and id and not ids[e] then new[#new + 1] = { id = id, label = e.name } end
+  end
+  local ok, aerr = arrange(nil, dry, lines, new)
+  if not ok then error(aerr, 0) end
+  if #lines == 0 then lines[1] = "nothing to do" end
+  if dry then table.insert(lines, 1, "dry run, nothing changed") end
+  return lines
+end
+
+rex.action{
+  name = "session_layout",
+  title = "Lay Out Sessions (dashboard, cnb, abs)",
+  description = "Makes layout.lua's sessions, puts them first and numbers every session by its Ctrl-N position.",
+  category = "Session",
+  args = { dry_run = "boolean?" },
+  run = function(_, args)
+    return session_layout(args and args.dry_run)
+  end,
+}
+
+local function goto_layout(ctx, index)
+  local k = layout.keys[index]
+  if not k then error("no layout key " .. index, 0) end
+  local want = layout.entry(k[1])
+  local had = layout_ids()[want]
+  -- Only this target is made or completed, so the key does not wait on the whole layout.
+  local id, err = ensure_session(want, had, false, {})
+  if err then error(want.name .. ": " .. err, 0) end
+  if not id then error(want.name .. ": " .. tostring(want.dir) .. " does not exist", 0) end
+  local w = session_windows(ctx, nil, id)[k[2]]
+  if not w then error(want.name .. " has no tab " .. k[2], 0) end
+  remember(ctx, id)
+  select_session(id, nil, w.window_id)
+  -- A new session goes to its place after the jump; failing to order it only costs tidiness.
+  if not had then
+    local ok, aerr = arrange(nil, false, {})
+    if not ok then rex.log("warn", "layout_goto: " .. tostring(aerr)) end
+  end
+end
+
+rex.action{
+  name = "layout_goto",
+  title = "Go to a Layout Session",
+  description = "alt+shift+1/2: the dashboard's tabs, 3: cnb, 4: abs. Makes a missing one first.",
+  category = "Session",
+  args = { index = "integer" },
+  run = function(ctx, args) goto_layout(ctx, args.index) end,
+}
+
+-- Puts the layout's sessions first on this Mac, then prefixes every session on every host with
+-- its ctrl+N number ("4-api"), like Herdr's tab renumbering. A stacked "2-3-" is replaced whole.
 rex.action{
   name = "session_renumber",
-  title = "Number Sessions for Ctrl+N",
+  title = "Put Layout First and Number Sessions",
   category = "Session",
-  run = function(ctx)
-    local groups = { { sessions = local_sessions(ctx) } }
+  run = function()
+    local failed, lines = {}, {}
+    local ok, err = arrange(nil, false, lines)
+    if not ok then failed[#failed + 1] = "this Mac: " .. tostring(err) end
     for _, host in ipairs(rex.servers()) do
-      local r, err = rex.server(host).call("session.list")
-      if not r then rex.log("warn", "session_renumber: " .. host .. " skipped: " .. tostring(err)) end
-      groups[#groups + 1] = { host = host, sessions = r and r.sessions or {} }
+      ok, err = arrange(host, false, lines)
+      if not ok then failed[#failed + 1] = host .. ": " .. tostring(err) end
     end
-    local failed = {}
-    for _, g in ipairs(groups) do
-      local n = 0
-      if g.host then
-        rex.server(g.host).call("session.attach_all", { event_scope = "session" })
-      elseif not ctx.server then
-        attach_all()
-      end
-      for _, s in ipairs(g.sessions) do
-        n = n + 1
-        local label = n .. "-" .. (s.label or ""):gsub("^%d+%-", "")
-        if label ~= s.label and s.label ~= board_session then
-          local ok, err = set_label(ctx, g.host, s.session_id, label)
-          if not ok then failed[#failed + 1] = label .. ": " .. tostring(err) end
-        end
-      end
-    end
-    if #failed > 0 then error("not renamed: " .. table.concat(failed, "; "), 0) end
+    if #failed > 0 then error("not renumbered: " .. table.concat(failed, "; "), 0) end
   end,
 }
 
@@ -303,9 +446,9 @@ rex.action{
     attach_all()
     local failed = {}
     for _, s in ipairs(sessions()) do
-      local v = s.label ~= board_session and rex.session.view{ session_id = s.session_id }
+      local v = rex.session.view{ session_id = s.session_id }
       for i, w in ipairs(v and v.windows or {}) do
-        local base = (w.label or ""):gsub("^%d+%-", "")
+        local base = layout.base(w.label)
         if base:match("^%d*$") or base:match("^Window %x+$") then
           local ok, dir = pcall(pane_dir, w.focused_block_id, s.session_id)
           if not ok then rex.log("warn", "tab_renumber: tab " .. i .. " has no folder: " .. tostring(dir)) end
@@ -494,37 +637,15 @@ local function overlay(ctx, bounds, script, file, ...)
   if err then fail(err) end
 end
 
--- The board in this Rex window: `rexboard window` selects its session in the focused window,
--- making it when missing. C-x a comes back, unless this is already the board. It runs in the
--- background, so the action returns before the app is asked to switch; failures go to
--- board-key.log.
-local function open_board(ctx)
-  local v = ctx.session_id and rex.session.view{ session_id = ctx.session_id }
-  if not (v and v.label == "rexboard") then remember(ctx) end
-  local r, err = rex.exec({ "/bin/sh", "-c", [=[
-log="${XDG_STATE_HOME:-$HOME/.local/state}/rexboard/board-key.log"
-mkdir -p "$(dirname "$log")"
-"$1" window </dev/null >>"$log" 2>&1 &
-]=], "sh", rexboard_cli() }, { env = env, timeout = 5 })
-  if not (r and r.ok) then error(tostring(err or (r and r.stderr) or "board_window failed"), 0) end
-end
-
-rex.action{
-  name = "board_window",
-  title = "Show the Board (rexboard)",
-  category = "Session",
-  run = open_board,
-}
-
 -- rexboard's picker over the window. Enter jumps and moves focus itself, so the pane is
 -- refocused only on esc or a failure, and a failure's reason stays up until enter. A pane on
--- another host would run that host's rexboard, so there the board shows instead.
+-- another host would run that host's rexboard, so there the dashboard's board shows instead.
 rex.action{
   name = "agent_pick",
   title = "Pick an Agent (rexboard)",
   category = "Session",
   run = function(ctx)
-    if ctx.server then return open_board(ctx) end
+    if ctx.server then return goto_layout(ctx, 1) end
     overlay(ctx, { 0, 0, 1, 1 }, [=[
 e=$(mktemp) && "$4" pick 2>"$e" && { rm -f "$e"; exit 0; }
 [ -s "$e" ] && { cat "$e"; printf 'enter closes '; read -r _; }
