@@ -1,3 +1,11 @@
 model_provider = "cli_proxy"
 model = "gpt-6.1-sol"
 model_reasoning_effort = "high"
+
+[hooks.state]
+
+[hooks.state."/Users/vanducng/.codex/hooks.json:session_start:1:0"]
+trusted_hash = "sha256:282ef4f786ed6c3cd4d9639e029d006c516c39638b258d2f1da498b82c616a2e"
+
+[hooks.state."/Users/vanducng/.codex/hooks.json:session_start:2:0"]
+trusted_hash = "sha256:42add9dc57fde5dc69225e724210cf0c1325de204b695eb7a232ac11da3f94a6"

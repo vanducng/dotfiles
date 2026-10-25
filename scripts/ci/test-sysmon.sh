@@ -338,11 +338,11 @@ EOF
   "$SCRIPT" show >/dev/null
   wins="$(tmux -L "$SYSMON_TMUX_SOCKET" list-windows -t "$SESSION" -F '#{window_index}:#{window_name}')"
   printf '%s\n' "$wins" | grep -qx '1:processes' || fail "backfill window 1: $wins"
-  printf '%s\n' "$wins" | grep -qx '2:disk' || fail "backfill window 2: $wins"
+  printf '%s\n' "$wins" | grep -qx '2:disk' && fail "backfill must not start a dua scan: $wins"
   printf '%s\n' "$wins" | grep -qx '3:vault' || fail "backfill window 3: $wins"
   current="$(tmux -L "$SYSMON_TMUX_SOCKET" display-message -p -t "$SESSION" '#{window_name}')"
   [[ "$current" == processes ]] || fail "backfill should keep current window: $current"
-  pass "show recreates closed hub windows"
+  pass "show recreates closed hub windows but not disk"
 
   "$SCRIPT" stop >/dev/null
   if tmux -L "$SYSMON_TMUX_SOCKET" has-session -t "$SESSION" 2>/dev/null; then
@@ -353,10 +353,10 @@ EOF
   "$SCRIPT" show >/dev/null
   wins="$(tmux -L "$SYSMON_TMUX_SOCKET" list-windows -t "$SESSION" -F '#{window_index}:#{window_name}')"
   printf '%s\n' "$wins" | grep -qx '1:processes' || fail "first start window 1: $wins"
-  printf '%s\n' "$wins" | grep -qx '2:disk' || fail "first start window 2: $wins"
+  printf '%s\n' "$wins" | grep -qx '2:disk' && fail "first start must not start a dua scan: $wins"
   printf '%s\n' "$wins" | grep -qx '3:vault' || fail "first start window 3: $wins"
   current="$(tmux -L "$SYSMON_TMUX_SOCKET" display-message -p -t "$SESSION" '#{window_name}')"
   [[ "$current" == processes ]] || fail "first start should land on btop: $current"
-  pass "first start creates btop, disk, and vault"
+  pass "first start creates btop and vault, not disk"
   "$SCRIPT" stop >/dev/null
 fi
