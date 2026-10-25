@@ -438,48 +438,6 @@ rex.action{
   end,
 }
 
--- rexboard's picker in a full-window popup. Enter jumps, which moves focus itself, so the
--- pane is refocused only when the picker is left with esc.
-rex.action{
-  name = "agent_pick",
-  title = "Pick an Agent (rexboard)",
-  category = "Session",
-  run = function(ctx)
-    local _, err = rex.session.new_layer{
-      bounds = { 0, 0, 1, 1 },
-      focus = true,
-      layout = rex.layout.block{
-        flavor = "com.superlogical.terminal.shell",
-        options = { shell = "none", command = { "/bin/sh", "-c",
-          '"$1" pick || "$REX_BIN_DIR/rex" focus "$2" >/dev/null 2>&1', "sh", rexboard_cli(), ctx.block_id } },
-      },
-    }
-    if err then error(err, 0) end
-  end,
-}
-
--- The board's own Rex window: focus it when yabai has a window with its title, else open a
--- new one. Plain `rexboard window` is never used here: Rex cannot tell which window shows the
--- board's session, so it could put the board in this window. It runs in the background, so the
--- action returns before the app is asked for a window; failures go to board-key.log.
-rex.action{
-  name = "board_window",
-  title = "Board Window (rexboard)",
-  category = "Session",
-  run = function()
-    local r, err = rex.exec({ "/bin/sh", "-c", [=[
-log="${XDG_STATE_HOME:-$HOME/.local/state}/rexboard/board-key.log"
-mkdir -p "$(dirname "$log")"
-(
-  title=$("$1" window --print-title) || exit 1
-  id=$(yabai -m query --windows | jq -r --arg t "$title" 'map(select(.app == "Rex Beta" and .title == $t)) | first | .id // empty')
-  if [ -n "$id" ]; then yabai -m window --focus "$id"; else "$1" window --new; fi
-) </dev/null >>"$log" 2>&1 &
-]=], "sh", rexboard_cli() }, { env = env, timeout = 5 })
-    if not (r and r.ok) then error(tostring(err or (r and r.stderr) or "board_window failed"), 0) end
-  end,
-}
-
 -- Overlays run on whichever host owns the pane. Rex zooms only the focused
 -- block, so a focused popup unzooms the window: over a zoomed pane it fills the
 -- window to hide that, and re-zooms the pane on quit.
@@ -532,6 +490,47 @@ local function overlay(ctx, bounds, script, file, ...)
   }
   if err then fail(err) end
 end
+
+-- The board's own Rex window: focus it when yabai has a window with its title, else open a
+-- new one. Plain `rexboard window` is never used here: Rex cannot tell which window shows the
+-- board's session, so it could put the board in this window. It runs in the background, so the
+-- action returns before the app is asked for a window; failures go to board-key.log.
+local function open_board()
+  local r, err = rex.exec({ "/bin/sh", "-c", [=[
+log="${XDG_STATE_HOME:-$HOME/.local/state}/rexboard/board-key.log"
+mkdir -p "$(dirname "$log")"
+(
+  title=$("$1" window --print-title) || exit 1
+  wins=$(yabai -m query --windows) || exit 1
+  id=$(printf '%s' "$wins" | jq -r --arg t "$title" 'map(select(.app == "Rex Beta" and .title == $t)) | first | .id // empty')
+  if [ -n "$id" ]; then yabai -m window --focus "$id"; else "$1" window --new; fi
+) </dev/null >>"$log" 2>&1 &
+]=], "sh", rexboard_cli() }, { env = env, timeout = 5 })
+  if not (r and r.ok) then error(tostring(err or (r and r.stderr) or "board_window failed"), 0) end
+end
+
+rex.action{
+  name = "board_window",
+  title = "Board Window (rexboard)",
+  category = "Session",
+  run = open_board,
+}
+
+-- rexboard's picker over the window. Enter jumps and moves focus itself, so the pane is
+-- refocused only on esc or a failure, and a failure's reason stays up until enter. A pane on
+-- another host would run that host's rexboard, so there the board window opens instead.
+rex.action{
+  name = "agent_pick",
+  title = "Pick an Agent (rexboard)",
+  category = "Session",
+  run = function(ctx)
+    if ctx.server then return open_board() end
+    overlay(ctx, { 0, 0, 1, 1 }, [=[
+e=$(mktemp) && "$4" pick 2>"$e" && { rm -f "$e"; exit 0; }
+[ -s "$e" ] && { cat "$e"; printf 'enter closes '; read -r _; }
+rm -f "$e"]=], "", rexboard_cli())
+  end,
+}
 
 -- Reading the pane here saves the overlay a rex CLI launch (~40-90ms). A pane on
 -- another host is left to the overlay there, which cannot see a file made here.
