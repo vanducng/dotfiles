@@ -74,7 +74,7 @@ px("shift+d", "session.close")
 px("shift+m", "client.host.switch")
 bind("shift+cmd+k", "client.host.switch")
 
--- rexboard: the next agent that needs you, a picker, and the board's own window.
+-- rexboard: the next agent that needs you, a picker, and the board in this window.
 px("shift+down", "agent_next")
 px("o", "agent_next")
 px("shift+up", "agent_next", { back = true })
