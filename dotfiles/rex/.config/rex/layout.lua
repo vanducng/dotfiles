@@ -46,10 +46,8 @@ function M.plan(sessions, here)
     if slot[i] then out[#out + 1] = slot[i] end
   end
   for _, s in ipairs(rest) do out[#out + 1] = s end
-  for i, s in ipairs(out) do
-    local b = M.base(s.label)
-    out[i] = { id = s.id, label = s.label, want = b == "" and tostring(i) or i .. "-" .. b }
-  end
+  -- An empty name keeps its dash ("4-"), so a rerun reads it as empty again, not as "4".
+  for i, s in ipairs(out) do out[i] = { id = s.id, label = s.label, want = i .. "-" .. M.base(s.label) } end
   return out
 end
 

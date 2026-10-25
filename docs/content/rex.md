@@ -43,7 +43,7 @@ Rex uses Herdr's `C-x` prefix and letters, so moving between the two needs no re
 | `C-x Shift-N` | New session |
 | `C-x Shift-S` | Rename session |
 | `C-x Shift-W` | Open the session on the web |
-| `C-x Shift-I` | Put the layout's sessions first on this Mac, then number every session's label with its `Ctrl-1..9` number on its own host (`4-api`), on this Mac and the remote hosts. A remote host keeps its order. A stacked prefix (`2-3-api`) is replaced whole, and a second run changes nothing. Rerun after adding, closing, or renaming one |
+| `C-x Shift-I` | Put the layout's sessions first on this Mac, then number every session's label with its `Ctrl-1..9` number (`4-api`), on this Mac and the remote hosts. A remote host keeps its order. A stacked prefix (`2-3-api`) is replaced whole, and a second run changes nothing. Rerun after adding, closing, or renaming one |
 | `C-x i` | Number every tab's label with its `Cmd-1..9` number (`2-api`) in each session on the Mac you are viewing, replacing a stacked prefix whole; a tab without a name of its own takes its pane's folder |
 | `C-x Shift-D` | Close session |
 | `C-x Shift-M` | Switch machine (host) |

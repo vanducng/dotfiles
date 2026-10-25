@@ -79,6 +79,9 @@ check(labels(plan), "1-abs", "a remote host numbers by plain position")
 plan = layout.plan(names({ "foo", "3-abs", "dashboard" }), false)
 check(labels(plan), "1-foo 2-abs 3-dashboard", "a remote host keeps its order")
 check(labels(rerun(plan, false)), labels(plan), "a remote rerun changes nothing")
+plan = layout.plan(names({ "foo", "" }), false)
+check(labels(plan), "1-foo 2-", "an empty name keeps its number")
+check(labels(rerun(plan, false)), labels(plan), "an empty name is stable on a rerun")
 
 check(layout.sessions[1].tabs[1].command[1], "/home/test/.local/bin/rexboard", "paths come from HOME")
 for i, k in ipairs(layout.keys) do
