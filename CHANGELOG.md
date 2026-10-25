@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.32.0](https://github.com/vanducng/dotfiles/compare/v0.31.0...v0.32.0) (2026-10-25)
+
+
+### Features
+
+* **release:** merged the release PR and synced every Mac with make release ([88e89ad](https://github.com/vanducng/dotfiles/commit/88e89ad5a50e7d23020c8ce165a147161962dcac))
+
 ## [0.31.0](https://github.com/vanducng/dotfiles/compare/v0.30.0...v0.31.0) (2026-10-25)
 
 
