@@ -30,9 +30,16 @@ assert ":kind=permission" in r.sequence("claude-code", "blocked", "permission", 
 pairs = r.fields("claude-code", "done", None, "Done")
 assert pairs == "app=claude-code:state=done:msg=RG9uZQ==", pairs
 assert r.wrap(pairs) == r.sequence("claude-code", "done", None, "Done")
+
+assert (r.glyph("working", 0), r.glyph("working", 1.0)) == ("◐ ", "◑ ")
+assert (r.glyph("blocked", 0), r.glyph("done", 0), r.glyph("", 0)) == ("◉ ", "", "")
+assert r.titled("Fix login", "◐ ") == "◐ Fix login"
+assert r.titled("◑ Fix login", "◉ ") == "◉ Fix login"
+assert r.titled("◉ Fix login", "") == "Fix login"
+assert r.titled("✳ Fix login", "") == "✳ Fix login"
 PY
 
-# Outside tmux, and with bad input, it writes nothing and never fails the hook.
-printf '{"hook_event_name":"Stop"}' | env -u TMUX -u TMUX_PANE "$script" claude-code
+# Outside tmux and Rex, and with bad input, it writes nothing and never fails the hook.
+printf '{"hook_event_name":"Stop"}' | env -u TMUX -u TMUX_PANE -u REX_BLOCK "$script" claude-code
 printf 'not json' | TMUX=x TMUX_PANE=%0 "$script" claude-code
 echo "rex-agent-status: ok"
