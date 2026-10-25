@@ -217,14 +217,18 @@ local gopassPath = "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sb
 local gopassChooser
 local gopassHistoryKey = "gopassRecentKeys"
 
+local function rememberRecent(historyKey, value)
+	local recent = { value }
+	for _, previous in ipairs(hs.settings.get(historyKey) or {}) do
+		if previous ~= value and #recent < 8 then recent[#recent + 1] = previous end
+	end
+	hs.settings.set(historyKey, recent)
+end
+
 local function copyGopassPassword(key)
 	local task = hs.task.new("/usr/bin/env", function(exitCode, _, stdErr)
 		if exitCode == 0 then
-			local recent = { key }
-			for _, previous in ipairs(hs.settings.get(gopassHistoryKey) or {}) do
-				if previous ~= key and #recent < 8 then recent[#recent + 1] = previous end
-			end
-			hs.settings.set(gopassHistoryKey, recent)
+			rememberRecent(gopassHistoryKey, key)
 			hs.notify.new({ title = "Gopass", informativeText = "Password copied for 45 seconds" }):send()
 		else
 			local message = (stdErr or ""):match("^%s*(.-)%s*$")
