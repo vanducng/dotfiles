@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 # Fetch-only refresh for curated clones that affect day-to-day work.
 # Never checkout/merge/stash. Platform repos stay on git-sync-repos.
 #
