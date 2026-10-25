@@ -12,7 +12,7 @@ STOW_FOLDERS=$(COMMON_STOW_FOLDERS) $(LINUX_STOW_EXTRAS)
 endif
 SHELL := /bin/bash
 
-.PHONY: help stow-folders stow-install stow-uninstall stow-status setup-herdr setup-tinycast setup-rex test validate deps platform-test script-test linux-deps linux-desktop linux-homelab bootstrap-linux ensure-home-repos
+.PHONY: help stow-folders stow-install stow-uninstall stow-status setup-herdr setup-tinycast setup-rex release test validate deps platform-test script-test linux-deps linux-desktop linux-homelab bootstrap-linux ensure-home-repos
 
 help:
 	@echo "Dotfiles Management"
@@ -41,6 +41,7 @@ help:
 	@echo "  make export-aliases  - Export atuin aliases"
 	@echo "  make import-aliases  - Import atuin aliases"
 	@echo "  make backup-aliases  - Backup and commit aliases"
+	@echo "  make release         - Merge the pending release PR, then pull on every Mac in hosts.json"
 
 stow-folders:
 	@printf '%s\n' $(STOW_FOLDERS)
@@ -122,6 +123,9 @@ setup-tinycast:
 setup-rex:
 	@./scripts/rex-setup.sh
 
+release:
+	@./scripts/release.sh
+
 setup-herdr:
 	@command -v herdr >/dev/null || { echo "herdr is required"; exit 1; }
 	@command -v droid >/dev/null || { echo "droid is required"; exit 1; }
@@ -171,6 +175,7 @@ script-test:
 	@./scripts/ci/test-sysmon.sh
 	@./scripts/ci/test-tmux-fingers-conf.sh
 	@./scripts/ci/test-release-manifest.sh
+	@./scripts/ci/test-release.sh
 
 install-test:
 	@./scripts/ci/test-install.sh
