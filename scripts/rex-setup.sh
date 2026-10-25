@@ -69,5 +69,8 @@ current="$("$REX" server status --json | /usr/bin/python3 -c 'import json,sys; p
 [ "$current" = "$node" ] || "$REX" server tailscale rename "$node" >/dev/null
 "$REX" config check >/dev/null || { echo "Rex config has problems; run: rex config check"; exit 1; }
 "$REX" config reload >/dev/null
+# layout.lua's sessions at the top of the sidebar; a rerun leaves the running ones alone.
+"$REX" do "$HOME/.config/rex/actions.lua" --action session_layout >/dev/null \
+  || echo "Rex session layout failed; rerun: rex do ~/.config/rex/actions.lua --action session_layout"
 echo "Rex: $node, Option acts as Alt, vertical tabs, compact panes, config reloaded (quit and reopen Rex Beta to apply app settings)"
 [ -z "$hosts_hex" ] || echo "Remote Hosts updated; quit and reopen Rex Beta to see them"
