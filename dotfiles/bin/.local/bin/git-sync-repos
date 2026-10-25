@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 # Keep listed clones on origin/main (or origin/master).
 # macOS: launchd StartInterval. Linux: systemd --user timer.
 # skills/dotfiles/firstmate: live under $HOME; never discard WIP (stash, update main, apply).
