@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.33.0](https://github.com/vanducng/dotfiles/compare/v0.32.0...v0.33.0) (2026-10-25)
+
+
+### Features
+
+* **hammerspoon:** opened GitHub repo PRs from a Hyper+I chooser ([751e352](https://github.com/vanducng/dotfiles/commit/751e352d5996b1647685be1b17d7293ba622c51f))
+
 ## [0.32.0](https://github.com/vanducng/dotfiles/compare/v0.31.0...v0.32.0) (2026-10-25)
 
 
