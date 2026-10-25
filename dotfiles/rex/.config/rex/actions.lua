@@ -255,6 +255,9 @@ local function set_label(ctx, host, session_id, label)
   return nil, err or (r.stderr ~= "" and r.stderr) or "rex session rename failed"
 end
 
+-- rexboard finds its board by the session label "rexboard" and tab "board"; renumbering skips it.
+local board_session = "rexboard"
+
 -- Prefixes each session label with its ctrl+N number on its own host ("3-api"),
 -- like Herdr's tab renumbering. A leading "<digits>-" is replaced, so reruns don't stack.
 rex.action{
@@ -279,7 +282,7 @@ rex.action{
       for _, s in ipairs(g.sessions) do
         n = n + 1
         local label = n .. "-" .. (s.label or ""):gsub("^%d+%-", "")
-        if label ~= s.label then
+        if label ~= s.label and s.label ~= board_session then
           local ok, err = set_label(ctx, g.host, s.session_id, label)
           if not ok then failed[#failed + 1] = label .. ": " .. tostring(err) end
         end
@@ -300,7 +303,7 @@ rex.action{
     attach_all()
     local failed = {}
     for _, s in ipairs(sessions()) do
-      local v = rex.session.view{ session_id = s.session_id }
+      local v = s.label ~= board_session and rex.session.view{ session_id = s.session_id }
       for i, w in ipairs(v and v.windows or {}) do
         local base = (w.label or ""):gsub("^%d+%-", "")
         if base:match("^%d*$") or base:match("^Window %x+$") then
