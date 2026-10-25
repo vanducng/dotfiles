@@ -1,9 +1,9 @@
 [Unit]
-Description=Hourly git-sync for skills, dotfiles, firstmate, and vault
+Description=git-sync every 15 minutes for skills, dotfiles, firstmate, vault and the projects workspace
 
 [Timer]
 OnBootSec=2min
-OnUnitActiveSec=1h
+OnUnitActiveSec=15min
 Persistent=true
 
 [Install]

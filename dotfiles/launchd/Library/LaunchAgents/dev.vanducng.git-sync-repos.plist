@@ -18,7 +18,7 @@
   <key>RunAtLoad</key>
   <true/>
   <key>StartInterval</key>
-  <integer>3600</integer>
+  <integer>900</integer>
   <key>ProcessType</key>
   <string>Background</string>
 </dict>
