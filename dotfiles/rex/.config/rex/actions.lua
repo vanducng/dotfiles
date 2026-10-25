@@ -255,6 +255,9 @@ local function set_label(ctx, host, session_id, label)
   return nil, err or (r.stderr ~= "" and r.stderr) or "rex session rename failed"
 end
 
+-- rexboard finds its board by the session label "rexboard" and tab "board"; renumbering skips it.
+local board_session = "rexboard"
+
 -- Prefixes each session label with its ctrl+N number on its own host ("3-api"),
 -- like Herdr's tab renumbering. A leading "<digits>-" is replaced, so reruns don't stack.
 rex.action{
@@ -279,7 +282,7 @@ rex.action{
       for _, s in ipairs(g.sessions) do
         n = n + 1
         local label = n .. "-" .. (s.label or ""):gsub("^%d+%-", "")
-        if label ~= s.label then
+        if label ~= s.label and s.label ~= board_session then
           local ok, err = set_label(ctx, g.host, s.session_id, label)
           if not ok then failed[#failed + 1] = label .. ": " .. tostring(err) end
         end
@@ -300,7 +303,7 @@ rex.action{
     attach_all()
     local failed = {}
     for _, s in ipairs(sessions()) do
-      local v = rex.session.view{ session_id = s.session_id }
+      local v = s.label ~= board_session and rex.session.view{ session_id = s.session_id }
       for i, w in ipairs(v and v.windows or {}) do
         local base = (w.label or ""):gsub("^%d+%-", "")
         if base:match("^%d*$") or base:match("^Window %x+$") then
@@ -401,6 +404,43 @@ rex.action{
   end,
 }
 
+-- rexboard (an attention board over every host's agents) lives in ~/.local/bin, which the
+-- server's PATH lacks, the same reason rex_cli is resolved by path.
+local rexboard = (os.getenv("HOME") or "") .. "/.local/bin/rexboard"
+
+local function rexboard_cli()
+  local f = io.open(rexboard)
+  if not f then
+    error("rexboard not installed: curl -fsSL https://raw.githubusercontent.com/vanducng/rexboard/main/install.sh | sh", 0)
+  end
+  f:close()
+  return rexboard
+end
+
+local function rexboard_run(argv, extra)
+  local run_env = { PATH = env.PATH }
+  for k, v in pairs(extra or {}) do run_env[k] = v end
+  local r, err = rex.exec(argv, { env = run_env, timeout = 20 })
+  if not (r and r.ok) then
+    local why = r and r.stderr and r.stderr:gsub("%s+$", "") or ""
+    error(why ~= "" and why or tostring(err or "rexboard failed"), 0)
+  end
+end
+
+-- The next agent that needs you, from rexboard serve: unseen first, oldest first, on every
+-- host, after the pane this runs in. agent_attention's own scan stays until this is proven live.
+rex.action{
+  name = "agent_next",
+  title = "Next Agent Needing You (rexboard)",
+  category = "Session",
+  args = { back = "boolean?" },
+  run = function(ctx, args)
+    local argv = { rexboard_cli(), "next" }
+    if args.back then argv[#argv + 1] = "--back" end
+    rexboard_run(argv, { REX_BLOCK = ctx.block_id })
+  end,
+}
+
 -- Overlays run on whichever host owns the pane. Rex zooms only the focused
 -- block, so a focused popup unzooms the window: over a zoomed pane it fills the
 -- window to hide that, and re-zooms the pane on quit.
@@ -453,6 +493,47 @@ local function overlay(ctx, bounds, script, file, ...)
   }
   if err then fail(err) end
 end
+
+-- The board's own Rex window: focus it when yabai has a window with its title, else open a
+-- new one. Plain `rexboard window` is never used here: Rex cannot tell which window shows the
+-- board's session, so it could put the board in this window. It runs in the background, so the
+-- action returns before the app is asked for a window; failures go to board-key.log.
+local function open_board()
+  local r, err = rex.exec({ "/bin/sh", "-c", [=[
+log="${XDG_STATE_HOME:-$HOME/.local/state}/rexboard/board-key.log"
+mkdir -p "$(dirname "$log")"
+(
+  title=$("$1" window --print-title) || exit 1
+  wins=$(yabai -m query --windows) || exit 1
+  id=$(printf '%s' "$wins" | jq -r --arg t "$title" 'map(select(.app == "Rex Beta" and .title == $t)) | first | .id // empty')
+  if [ -n "$id" ]; then yabai -m window --focus "$id"; else "$1" window --new; fi
+) </dev/null >>"$log" 2>&1 &
+]=], "sh", rexboard_cli() }, { env = env, timeout = 5 })
+  if not (r and r.ok) then error(tostring(err or (r and r.stderr) or "board_window failed"), 0) end
+end
+
+rex.action{
+  name = "board_window",
+  title = "Board Window (rexboard)",
+  category = "Session",
+  run = open_board,
+}
+
+-- rexboard's picker over the window. Enter jumps and moves focus itself, so the pane is
+-- refocused only on esc or a failure, and a failure's reason stays up until enter. A pane on
+-- another host would run that host's rexboard, so there the board window opens instead.
+rex.action{
+  name = "agent_pick",
+  title = "Pick an Agent (rexboard)",
+  category = "Session",
+  run = function(ctx)
+    if ctx.server then return open_board() end
+    overlay(ctx, { 0, 0, 1, 1 }, [=[
+e=$(mktemp) && "$4" pick 2>"$e" && { rm -f "$e"; exit 0; }
+[ -s "$e" ] && { cat "$e"; printf 'enter closes '; read -r _; }
+rm -f "$e"]=], "", rexboard_cli())
+  end,
+}
 
 -- Reading the pane here saves the overlay a rex CLI launch (~40-90ms). A pane on
 -- another host is left to the overlay there, which cannot see a file made here.

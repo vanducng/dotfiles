@@ -7,9 +7,11 @@ Rex (Rex Beta) is the native macOS multiplexer that replaces Ghostty on space 1 
 ## Source of truth
 
 - `dotfiles/rex/.config/rex/init.lua` - key bindings and the resize mode
-- `dotfiles/rex/.config/rex/actions.lua` - Lua actions: `session_goto`, `session_toggle`, `host_goto`, `tab_cycle`, `session_renumber`, `tab_renumber`, `tab_goto`, `home`, `fingers`, `agent_attention`, `copy_mode`, `pane_label`, `open_pr`
+- `dotfiles/rex/.config/rex/actions.lua` - Lua actions: `session_goto`, `session_toggle`, `host_goto`, `tab_cycle`, `session_renumber`, `tab_renumber`, `tab_goto`, `home`, `fingers`, `agent_next`, `agent_pick`, `board_window`, `agent_attention` (the old in-Lua scan, kept until `rexboard next` is proven live), `copy_mode`, `pane_label`, `open_pr`
 - `dotfiles/rex/.config/rex/hosts.json` - every machine that runs Rex, defined once: `label`, `device`, macOS `hostname`, and the app `icon`. Its order is the `Ctrl-Alt-1..9` number
 - `dotfiles/rex/.config/rex/hosts.lua` - reads `hosts.json`, works out which entry is this Mac, and declares the others as Rex hosts
+- `dotfiles/rexboard/.config/rexboard/config.toml` - [rexboard](https://github.com/vanducng/rexboard)'s config: `jump.pre_cmd` focuses a main Rex window that is not minimized (not the board's or a dialog) through yabai before a jump, and stops the jump when there is none. The app client is left to the default, the only Rex app on the unix socket. The rexboard keys run `~/.local/bin/rexboard` and say how to install it when it is missing
+- `dotfiles/yabai/.config/yabai/rexboard-board.sh` - run by a yabairc signal (label `rexboard-board`) when a Rex window takes the board's title: the board goes to space 1 as the right side of a split, 22% of the display or Rex's 720pt minimum window width, whichever is wider. A Rex window opened while the board has focus lands in the board's column, since yabai inserts at the focused window; focus the main window first
 - `dotfiles/rex/.config/rex/copy-mode.nvim.lua` - the small Neovim config copy mode starts with (`nvim -u`), so it opens in tens of milliseconds instead of loading the full Neovim setup
 - `scripts/rex-setup.sh` (`make setup-rex`) - app settings that live in UserDefaults: Option as Alt, vertical tabs, compact panes, Program Activity sounds (an agent finished or is waiting on you), the Tailscale node name, and the app's Remote Hosts list. The app reads them at launch, so quit and reopen Rex Beta after a run; sessions live in the server and survive
 
@@ -45,8 +47,10 @@ Rex uses Herdr's `C-x` prefix and letters, so moving between the two needs no re
 | `C-x i` | Number every tab's label with its `Cmd-1..9` number (`2-api`) in each session on the Mac you are viewing; a tab without a name of its own takes its pane's folder |
 | `C-x Shift-D` | Close session |
 | `C-x Shift-M` | Switch machine (host) |
-| `C-x Shift-Down` / `C-x o` | Next agent that needs you: blocked, then error, done, idle |
-| `C-x Shift-Up` | Previous agent that needs you |
+| `C-x Shift-Down` / `C-x o` | Next agent that needs you, across every host (`rexboard next`) |
+| `C-x Shift-Up` | Previous agent that needs you (`rexboard next --back`) |
+| `C-x f` | Pick an agent from a list over the window (`rexboard pick`): `Enter` jumps, `Esc` returns to the pane, and a failed jump's reason stays up until `Enter`. Over a pane on another host it opens the board window instead, as `C-x Shift-O` does |
+| `C-x Shift-O` | The board's own window: focus the Rex window titled `board - rexboard` if there is one, else open it with `rexboard window --new` |
 | `C-x b` | Toggle sidebar (vertical tabs only; `shift+cmd+s` switches tab style) |
 | `C-x Shift-R` | Reload config |
 | `C-x Shift-G` | Open the repo's pull requests on GitHub (`/pulls`) |
@@ -74,7 +78,7 @@ Herdr's `C-x a` (last pane) has no equivalent, since Rex config Lua cannot track
 | `Alt-Cmd-]` | Next session |
 | `Cmd-k` | Session picker |
 | `Shift-Cmd-k` | Switch machine (host) |
-| `Ctrl-Alt-a` | Next agent that needs you |
+| `Ctrl-Alt-a` | Next agent that needs you (`rexboard next`) |
 | `Cmd-b` | Toggle sidebar (also `Cmd-/`) |
 | `Cmd-.` | Toggle Activity |
 | `Alt-Cmd-.` | Dismiss a notice, such as an "Action failed" toast (replaces Rex's `Shift-Cmd-.`) |
