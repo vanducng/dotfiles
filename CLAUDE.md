@@ -27,7 +27,12 @@ make stow-<tool>       # Install single tool (e.g., make stow-nvim)
 make unstow-<tool>     # Remove single tool
 make test              # Run CI validation
 make validate          # Validate config syntax
+make release           # Merge the pending release PR, then pull on every Mac
 ```
+
+## Releases
+
+release-please keeps a release PR open on `main`. To release, run `make release` (`scripts/release.sh`): it merges that PR, waits for the tag, and pulls `~/dotfiles` on every machine in `dotfiles/rex/.config/rex/hosts.json`, keeping each machine's local edits. It merges, so run it only when the user asks for a release or a merge. Use it instead of merging the PR by hand or pulling each machine over ssh; with nothing pending it only pulls.
 
 ## How Stow Works
 
