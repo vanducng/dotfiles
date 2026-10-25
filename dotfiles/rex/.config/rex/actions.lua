@@ -254,7 +254,8 @@ local function cli(host, ...)
   local r, err = rex.exec(argv, { env = env, timeout = 10 })
   if r and r.ok then return r.stdout end
   local why = r and r.stderr and r.stderr:gsub("%s+$", "") or ""
-  return nil, why ~= "" and why or tostring(err or "rex failed")
+  if why == "" then why = r and ("rex exited " .. tostring(r.code)) or tostring(err or "rex did not run") end
+  return nil, why
 end
 
 local function cli_sessions(host)
@@ -384,26 +385,24 @@ rex.action{
   end,
 }
 
--- alt+shift+1..4: { layout session, tab }.
-local layout_keys = { { 1, 1 }, { 1, 2 }, { 2, 1 }, { 3, 1 } }
-
 local function goto_layout(ctx, index)
-  local k = layout_keys[index]
+  local k = layout.keys[index]
   if not k then error("no layout key " .. index, 0) end
-  local want = layout.sessions[k[1]]
+  local want = layout.entry(k[1])
   local had = layout_ids()[want]
   -- Only this target is made or completed, so the key does not wait on the whole layout.
   local id, err = ensure_session(want, had, false, {})
   if err then error(want.name .. ": " .. err, 0) end
   if not id then error(want.name .. " is not on this Mac (its folder is missing)", 0) end
-  if not had then
-    local ok, aerr = arrange(nil, false, {})
-    if not ok then error(aerr, 0) end
-  end
   local w = session_windows(ctx, nil, id)[k[2]]
   if not w then error(want.name .. " has no tab " .. k[2], 0) end
   remember(ctx, id)
   select_session(id, nil, w.window_id)
+  -- A new session goes to its place after the jump; failing to order it only costs tidiness.
+  if not had then
+    local ok, aerr = arrange(nil, false, {})
+    if not ok then rex.log("warn", "layout_goto: " .. tostring(aerr)) end
+  end
 end
 
 rex.action{

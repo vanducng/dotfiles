@@ -65,5 +65,9 @@ check(labels(plan), "1-dashboard 2-dashboard", "a duplicate dashboard is not a s
 check(labels(rerun(plan)), labels(plan), "a duplicate stays put on a rerun")
 
 check(layout.sessions[1].tabs[1].command[1], "/home/test/.local/bin/rexboard", "paths come from HOME")
+for i, k in ipairs(layout.keys) do
+  local e = layout.entry(k[1])
+  if not (e and e.tabs[k[2]]) then error("alt+shift+" .. i .. " names no layout tab: " .. k[1] .. " " .. k[2], 0) end
+end
 LUA
 pass "layout numbering: stacked prefixes, an existing 1- session, reruns"

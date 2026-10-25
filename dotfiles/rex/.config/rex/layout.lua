@@ -13,6 +13,9 @@ M.sessions = {
   { name = "3-abs", dir = home .. "/git/work/abs", tabs = { { label = "claude", command = { "claude" } } } },
 }
 
+-- alt+shift+1..4: { session, tab number }.
+M.keys = { { "1-dashboard", 1 }, { "1-dashboard", 2 }, { "2-cnb", 1 }, { "3-abs", 1 } }
+
 -- A label without its leading "<n>-" run: "2-3-foo" and "foo" are both "foo".
 function M.base(label)
   local s, n = label or "", 1
