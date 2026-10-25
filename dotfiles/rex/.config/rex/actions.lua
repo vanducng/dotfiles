@@ -401,6 +401,85 @@ rex.action{
   end,
 }
 
+-- rexboard (an attention board over every host's agents) lives in ~/.local/bin, which the
+-- server's PATH lacks, the same reason rex_cli is resolved by path.
+local rexboard = (os.getenv("HOME") or "") .. "/.local/bin/rexboard"
+
+local function rexboard_cli()
+  local f = io.open(rexboard)
+  if not f then
+    error("rexboard not installed: curl -fsSL https://raw.githubusercontent.com/vanducng/rexboard/main/install.sh | sh", 0)
+  end
+  f:close()
+  return rexboard
+end
+
+local function rexboard_run(argv, extra)
+  local run_env = { PATH = env.PATH }
+  for k, v in pairs(extra or {}) do run_env[k] = v end
+  local r, err = rex.exec(argv, { env = run_env, timeout = 20 })
+  if not (r and r.ok) then
+    local why = r and r.stderr and r.stderr:gsub("%s+$", "") or ""
+    error(why ~= "" and why or tostring(err or "rexboard failed"), 0)
+  end
+end
+
+-- The next agent that needs you, from rexboard serve: unseen first, oldest first, on every
+-- host, after the pane this runs in. agent_attention's own scan stays until this is proven live.
+rex.action{
+  name = "agent_next",
+  title = "Next Agent Needing You (rexboard)",
+  category = "Session",
+  args = { back = "boolean?" },
+  run = function(ctx, args)
+    local argv = { rexboard_cli(), "next" }
+    if args.back then argv[#argv + 1] = "--back" end
+    rexboard_run(argv, { REX_BLOCK = ctx.block_id })
+  end,
+}
+
+-- rexboard's picker in a full-window popup. Enter jumps, which moves focus itself, so the
+-- pane is refocused only when the picker is left with esc.
+rex.action{
+  name = "agent_pick",
+  title = "Pick an Agent (rexboard)",
+  category = "Session",
+  run = function(ctx)
+    local _, err = rex.session.new_layer{
+      bounds = { 0, 0, 1, 1 },
+      focus = true,
+      layout = rex.layout.block{
+        flavor = "com.superlogical.terminal.shell",
+        options = { shell = "none", command = { "/bin/sh", "-c",
+          '"$1" pick || "$REX_BIN_DIR/rex" focus "$2" >/dev/null 2>&1', "sh", rexboard_cli(), ctx.block_id } },
+      },
+    }
+    if err then error(err, 0) end
+  end,
+}
+
+-- The board's own Rex window: focus it when yabai has a window with its title, else open a
+-- new one. Plain `rexboard window` is never used here: Rex cannot tell which window shows the
+-- board's session, so it could put the board in this window. It runs in the background, so the
+-- action returns before the app is asked for a window; failures go to board-key.log.
+rex.action{
+  name = "board_window",
+  title = "Board Window (rexboard)",
+  category = "Session",
+  run = function()
+    local r, err = rex.exec({ "/bin/sh", "-c", [=[
+log="${XDG_STATE_HOME:-$HOME/.local/state}/rexboard/board-key.log"
+mkdir -p "$(dirname "$log")"
+(
+  title=$("$1" window --print-title) || exit 1
+  id=$(yabai -m query --windows | jq -r --arg t "$title" 'map(select(.app == "Rex Beta" and .title == $t)) | first | .id // empty')
+  if [ -n "$id" ]; then yabai -m window --focus "$id"; else "$1" window --new; fi
+) </dev/null >>"$log" 2>&1 &
+]=], "sh", rexboard_cli() }, { env = env, timeout = 5 })
+    if not (r and r.ok) then error(tostring(err or (r and r.stderr) or "board_window failed"), 0) end
+  end,
+}
+
 -- Overlays run on whichever host owns the pane. Rex zooms only the focused
 -- block, so a focused popup unzooms the window: over a zoomed pane it fills the
 -- window to hide that, and re-zooms the pane on quit.

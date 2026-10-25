@@ -1,0 +1,14 @@
+# rexboard: https://github.com/vanducng/rexboard/blob/main/docs/configuration.md
+# The app client is left to the default: the only Rex app on this host's unix socket.
+
+[jump]
+# Before a jump, focus a main Rex window (the focused one when it is not the board), so the
+# session opens there and not in the board's window. With none, exit 1 and the jump stops.
+pre_cmd = ["/bin/sh", "-c", '''
+PATH=/opt/homebrew/bin:$PATH
+title=$("$HOME/.local/bin/rexboard" window --print-title) || exit 1
+id=$(yabai -m query --windows | jq -r --arg t "$title" '
+  map(select(.app == "Rex Beta" and .title != $t)) | (map(select(."has-focus")) + .) | first | .id // empty')
+[ -n "$id" ] || { echo "no main Rex window to jump into" >&2; exit 1; }
+yabai -m window --focus "$id" 2>/dev/null || [ "$(yabai -m query --windows --window | jq .id)" = "$id" ]
+''']

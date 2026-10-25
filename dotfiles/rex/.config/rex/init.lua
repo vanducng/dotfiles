@@ -74,10 +74,13 @@ px("shift+d", "session.close")
 px("shift+m", "client.host.switch")
 bind("shift+cmd+k", "client.host.switch")
 
-px("shift+down", "agent_attention")
-px("o", "agent_attention")
-px("shift+up", "agent_attention", { back = true })
-bind("ctrl+alt+a", "agent_attention")
+-- rexboard: the next agent that needs you, a picker, and the board's own window.
+px("shift+down", "agent_next")
+px("o", "agent_next")
+px("shift+up", "agent_next", { back = true })
+bind("ctrl+alt+a", "agent_next")
+px("f", "agent_pick")
+px("shift+o", "board_window")
 
 px("b", "client.sidebar.toggle")
 bind("cmd+b", "client.sidebar.toggle")
