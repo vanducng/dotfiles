@@ -166,4 +166,8 @@ sync_main skills "${HOME}/skills"
 sync_main dotfiles "${HOME}/dotfiles"
 sync_main firstmate "${HOME}/firstmate"
 vault_sync
+# The projects workspace syncs itself: pull all, commit only records of projects pinned to this machine.
+if [[ -x "${HOME}/projects/fleet/bin/workspace-sync" ]]; then
+  "${HOME}/projects/fleet/bin/workspace-sync" >>"$LOG" 2>&1 && log "ok projects: workspace-sync" || log "fail projects: workspace-sync (see ~/.local/log/workspace-sync.log)"
+fi
 exit 0
