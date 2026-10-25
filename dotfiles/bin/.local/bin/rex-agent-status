@@ -8,12 +8,19 @@
 # The last status is kept on the pane (@rex_status); tmux.conf replays it when a client
 # attaches, so a tile opened later shows it too:
 #   rex-agent-status --replay <session>
+# Straight in a Rex pane, Claude Code leaves its spinning ◐/◑ glyph out of the title (Rex has
+# the status), so the pane header can't show it. There the hooks record the status and one
+# background spinner per pane puts the glyph back on the title until the agent exits:
+#   rex-agent-status --spin <state-file-base> <agent-pid> <tty>
 import base64
+import fcntl
 import json
 import os
 import re
 import subprocess
 import sys
+import tempfile
+import time
 
 
 def status(event):
@@ -56,14 +63,96 @@ def sequence(app, state, kind, msg):
     return wrap(fields(app, state, kind, msg))
 
 
-def tmux(*args):
-    for exe in ("tmux", "/opt/homebrew/bin/tmux", "/usr/local/bin/tmux"):
+SPIN = 0.96  # Claude's own title spinner period
+REX = os.path.expanduser("~/Library/Application Support/com.superlogical.rex/RexServer/Versions/Current/Rex Server.app/Contents/MacOS/rex")
+
+
+def run(exes, *args):
+    for exe in exes:
         try:
             out = subprocess.run([exe, *args], capture_output=True, text=True, timeout=2)
         except (OSError, subprocess.TimeoutExpired):
             continue
         return out.stdout.rstrip("\n") if out.returncode == 0 else None
     return None
+
+
+def tmux(*args):
+    return run(("tmux", "/opt/homebrew/bin/tmux", "/usr/local/bin/tmux"), *args)
+
+
+def glyph(state, now):
+    if state == "working":
+        return "◐◑"[int(now / SPIN) % 2] + " "
+    return "◉ " if state == "blocked" else ""
+
+
+def titled(title, prefix):
+    return prefix + re.sub(r"^[◐◑◉] ", "", title)
+
+
+def agent_tty():
+    """The agent's pid and tty: its hook processes have no tty, so walk up to the first that does."""
+    pid = os.getppid()
+    while pid > 1:
+        row = (run(("/bin/ps",), "-o", "ppid=,tty=", "-p", str(pid)) or "").split()
+        if len(row) != 2:
+            break
+        if row[1] != "??":
+            return pid, "/dev/" + row[1]
+        pid = int(row[0])
+    return None, None
+
+
+def mark(state):
+    """Record the pane's status, and start its spinner unless one is running."""
+    base = os.path.join(tempfile.gettempdir(), "rex-agent-status-" + os.environ["REX_BLOCK"].replace(":", "-"))
+    write(base + ".tmp", state)
+    os.replace(base + ".tmp", base + ".state")
+    with open(base + ".lock", "w") as lock:
+        try:
+            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except OSError:
+            return
+    pid, tty = agent_tty()
+    if tty:
+        subprocess.Popen([sys.executable, os.path.abspath(__file__), "--spin", base, str(pid), tty],
+                         start_new_session=True, stdin=subprocess.DEVNULL,
+                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+
+def alive(pid):
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        pass
+    return True
+
+
+def spin(base, pid, tty):
+    """Redraw the pane's title from its status until the agent exits."""
+    with open(base + ".lock", "w") as lock:
+        try:
+            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except OSError:
+            return
+        drawn = None
+        while alive(pid):
+            try:
+                state = open(base + ".state").read()
+            except OSError:
+                state = ""
+            if state != drawn or state == "working":
+                title = json.loads(run(("rex", REX), "block", "call", "title") or "{}").get("title")
+                new = title and titled(title, glyph(state, time.time()))
+                if new and new != title:
+                    write(tty, "\x1b]2;" + new + "\x07")
+                drawn = state
+            if state == "clear":
+                return
+            time.sleep(SPIN / 2)
 
 
 def write(tty, text):
@@ -86,14 +175,21 @@ def main():
         if len(sys.argv) > 2:
             replay(sys.argv[2])
         return
+    if sys.argv[1] == "--spin":
+        spin(sys.argv[2], int(sys.argv[3]), sys.argv[4])
+        return
     pane = os.environ.get("TMUX_PANE")
-    if not (os.environ.get("TMUX") and pane):
+    in_tmux = os.environ.get("TMUX") and pane
+    if not (in_tmux or os.environ.get("REX_BLOCK")):
         return
     try:
         event = json.loads(sys.stdin.read() or "{}")
     except ValueError:
         return
     st = status(event) if isinstance(event, dict) else None
+    if st and not in_tmux:
+        mark(st[0])
+        return
     tty = st and tmux("display-message", "-p", "-t", pane, "#{pane_tty}")
     if not tty:
         return
