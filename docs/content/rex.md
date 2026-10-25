@@ -49,7 +49,7 @@ Rex uses Herdr's `C-x` prefix and letters, so moving between the two needs no re
 | `C-x Shift-Down` / `C-x o` | Next agent that needs you, across every host (`rexboard next`) |
 | `C-x Shift-Up` | Previous agent that needs you (`rexboard next --back`) |
 | `C-x f` | Pick an agent from a list over the window (`rexboard pick`): `Enter` jumps, `Esc` returns to the pane, and a failed jump's reason stays up until `Enter`. Over a pane on another host it shows the board instead, as `C-x Shift-O` does |
-| `C-x Shift-O` | The board, in this Rex window (`rexboard window`): `Enter` on a row goes to that agent's pane in the same window, and `C-x a` comes back to where you were |
+| `C-x Shift-O` | The board, in this Rex window (`rexboard window`). `Enter` on a row goes to that agent's pane in the same window, and `C-x Shift-O` shows the board again. `C-x a` goes back to the session you were on before the board, from the board or from the agent |
 | `C-x b` | Toggle sidebar (vertical tabs only; `shift+cmd+s` switches tab style) |
 | `C-x Shift-R` | Reload config |
 | `C-x Shift-G` | Open the repo's pull requests on GitHub (`/pulls`) |
