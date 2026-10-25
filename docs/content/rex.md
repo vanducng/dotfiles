@@ -7,7 +7,8 @@ Rex (Rex Beta) is the native macOS multiplexer that replaces Ghostty on space 1 
 ## Source of truth
 
 - `dotfiles/rex/.config/rex/init.lua` - key bindings and the resize mode
-- `dotfiles/rex/.config/rex/actions.lua` - Lua actions: `session_goto`, `session_toggle`, `host_goto`, `tab_cycle`, `session_renumber`, `tab_renumber`, `tab_goto`, `home`, `fingers`, `agent_next`, `agent_pick`, `board_window`, `agent_attention` (the old in-Lua scan, kept until `rexboard next` is proven live), `copy_mode`, `pane_label`, `open_pr`
+- `dotfiles/rex/.config/rex/actions.lua` - Lua actions: `session_goto`, `session_toggle`, `host_goto`, `tab_cycle`, `session_renumber`, `session_layout`, `layout_goto`, `tab_renumber`, `tab_goto`, `home`, `fingers`, `agent_next`, `agent_pick`, `agent_attention` (the old in-Lua scan, kept until `rexboard next` is proven live), `copy_mode`, `pane_label`, `open_pr`
+- `dotfiles/rex/.config/rex/layout.lua` - the sessions kept at the top of this Mac's sidebar (see [Session layout](#session-layout))
 - `dotfiles/rex/.config/rex/hosts.json` - every machine that runs Rex, defined once: `label`, `device`, macOS `hostname`, and the app `icon`. Its order is the `Ctrl-Alt-1..9` number
 - `dotfiles/rex/.config/rex/hosts.lua` - reads `hosts.json`, works out which entry is this Mac, and declares the others as Rex hosts
 - `dotfiles/rexboard/.config/rexboard/config.toml` - [rexboard](https://github.com/vanducng/rexboard)'s config. It sets no `jump.pre_cmd`: the board shows in the Rex window you are in, so a jump lands in that same window. The app client is left to the default, the only Rex app on the unix socket. The rexboard keys run `~/.local/bin/rexboard` and say how to install it when it is missing
@@ -36,20 +37,19 @@ Rex uses Herdr's `C-x` prefix and letters, so moving between the two needs no re
 | `C-x 1..9` | Go to tab N in this session (`9` is the last tab) |
 | `C-x Shift-T` | Rename tab |
 | `C-x Shift-X` | Close tab |
-| `C-x a` | Back to the last session; press again to return. It remembers jumps made with `Ctrl-1..9`, `C-x 0`, `C-x a` and `C-x Shift-O` (so it goes back to where you were before the board), not `Cmd-k` or sidebar clicks, and a config reload forgets it |
+| `C-x a` | Back to the last session; press again to return. It remembers jumps made with `Ctrl-1..9`, `Alt-Shift-1..4`, `C-x 0` and `C-x a`, not `Cmd-k` or sidebar clicks, and a config reload forgets it |
 | `C-x Shift-Right` | Next session (the session picker is `Cmd-k`) |
 | `C-x 0` | Home: first session, first tab, first pane |
 | `C-x Shift-N` | New session |
 | `C-x Shift-S` | Rename session |
 | `C-x Shift-W` | Open the session on the web |
-| `C-x Shift-I` | Number every session's label with its `Ctrl-1..9` number on its own host (`3-api`), on this Mac and the remote hosts; rerun after adding, closing, or renaming one |
-| `C-x i` | Number every tab's label with its `Cmd-1..9` number (`2-api`) in each session on the Mac you are viewing; a tab without a name of its own takes its pane's folder |
+| `C-x Shift-I` | Put the layout's sessions first, then number every other session's label with its `Ctrl-1..9` number on its own host (`4-api`), on this Mac and the remote hosts. A stacked prefix (`2-3-api`) is replaced whole, and a second run changes nothing. Rerun after adding, closing, or renaming one |
+| `C-x i` | Number every tab's label with its `Cmd-1..9` number (`2-api`) in each session on the Mac you are viewing, replacing a stacked prefix whole; a tab without a name of its own takes its pane's folder |
 | `C-x Shift-D` | Close session |
 | `C-x Shift-M` | Switch machine (host) |
 | `C-x Shift-Down` / `C-x o` | Next agent that needs you, across every host (`rexboard next`) |
 | `C-x Shift-Up` | Previous agent that needs you (`rexboard next --back`) |
-| `C-x f` | Pick an agent from a list over the window (`rexboard pick`): `Enter` jumps, `Esc` returns to the pane, and a failed jump's reason stays up until `Enter`. Over a pane on another host it shows the board instead, as `C-x Shift-O` does |
-| `C-x Shift-O` | The board, in this Rex window (`rexboard window`). `Enter` on a row goes to that agent's pane in the same window, and `C-x Shift-O` shows the board again. `C-x a` goes back to the session you were on before the board, from the board or from the agent |
+| `C-x f` | Pick an agent from a list over the window (`rexboard pick`): `Enter` jumps, `Esc` returns to the pane, and a failed jump's reason stays up until `Enter`. Over a pane on another host it goes to the board in `1-dashboard` instead |
 | `C-x b` | Toggle sidebar (vertical tabs only; `shift+cmd+s` switches tab style) |
 | `C-x Shift-R` | Reload config |
 | `C-x Shift-G` | Open the repo's pull requests on GitHub (`/pulls`) |
@@ -73,6 +73,8 @@ Herdr's `C-x a` (last pane) has no equivalent, since Rex config Lua cannot track
 | `Ctrl-Alt-.` / `Ctrl-Alt-,` | Next / previous tab in sidebar order across every session and host, wrapping at the end |
 | `Shift-Cmd-Up` / `Shift-Cmd-Down` (also `Left` / `Right`) | Move tab up / down. Replaces Rex's `Ctrl-Shift-Up/Down`, which never reached the app, and its `Shift-Cmd-arrow` splits (`C-x m` / `C-x v` split) |
 | `Ctrl-1..9` | Go to session N on the host you are viewing |
+| `Alt-Shift-1` / `Alt-Shift-2` | `1-dashboard`: the board, then `rig tui` |
+| `Alt-Shift-3` / `Alt-Shift-4` | `2-cnb` / `3-abs`. A missing layout session is made first |
 | `Ctrl-Alt-1..9` | Go to host N: 1 MacBook Pro (`mbp-01`), 2 `mini-01`, 3 kept for `linux-01`; lands on the session you last had there, else its first |
 | `Alt-Cmd-]` | Next session |
 | `Cmd-k` | Session picker |
@@ -86,6 +88,23 @@ Herdr's `C-x a` (last pane) has no equivalent, since Rex config Lua cannot track
 | `Shift-Cmd-p` | Command palette |
 
 Each host numbers its own sessions, so `Ctrl-1..9` stays short however many machines there are: pick the machine with `Ctrl-Alt-1..9`, then the session with `Ctrl-1..9`. The host numbers follow the order of `hosts.json` and are the same on every Mac. `Ctrl-Alt-N` remembers the session you left on each host, per app, until a config reload. To open a session on another Mac, the action asks that host to have your app select it, so keep Remote Control on (Settings, Server, Client Info). `Ctrl-Shift-Tab` never reaches Rex because skhd uses it for yabai stacks, so use `Shift-Cmd-[` for the previous tab.
+
+## Session layout
+
+`layout.lua` keeps three sessions at the top of this Mac's sidebar:
+
+| # | Session | Tabs |
+|---|---|---|
+| 1 | `1-dashboard` | `rexboard` (the board), `rig` (`rig tui`) |
+| 2 | `2-cnb` | `claude` in `~/git/work/cnb` |
+| 3 | `3-abs` | `claude` in `~/git/work/abs` |
+
+The `session_layout` action makes the missing ones and moves the three to positions 1-3. It finds them by name without the number, so `dashboard` or `5-dashboard` counts. It skips a session whose folder this Mac lacks, and never kills or restarts a session. Every other session keeps its name; only its number prefix changes, to its new position (`1-warp-factory-setup` becomes `4-warp-factory-setup`). It runs from `make setup-rex` and at login (the `dev.vanducng.rex-session-layout` LaunchAgent in the `launchd` package), with no key. By hand:
+
+```bash
+rex do ~/.config/rex/actions.lua --action session_layout dry_run=true   # print the plan, change nothing
+rex do ~/.config/rex/actions.lua --action session_layout
+```
 
 ## Machines
 

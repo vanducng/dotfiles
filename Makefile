@@ -149,6 +149,7 @@ platform-test:
 script-test:
 	@./scripts/ci/test-agent-statusline.sh
 	@./scripts/ci/test-rex-agent-status.sh
+	@./scripts/ci/test-rex-layout.sh
 	@./scripts/ci/test-herdr-fingers.sh
 	@./scripts/ci/test-herdr-agents.sh
 	@./scripts/ci/test-herdr-pane-rename.sh

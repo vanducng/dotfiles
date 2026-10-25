@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>dev.vanducng.rex-session-layout</string>
+  <!-- At login, layout.lua's sessions; retried until the Rex server is up. It never starts one. -->
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>-lc</string>
+    <string>exec "$HOME/Library/Application Support/com.superlogical.rex/RexServer/Versions/Current/Rex Server.app/Contents/MacOS/rex" do --autostart=false "$HOME/.config/rex/actions.lua" --action session_layout</string>
+  </array>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key>
+    <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+  </dict>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>KeepAlive</key>
+  <dict>
+    <key>SuccessfulExit</key>
+    <false/>
+  </dict>
+  <key>ThrottleInterval</key>
+  <integer>60</integer>
+  <key>ProcessType</key>
+  <string>Background</string>
+</dict>
+</plist>
