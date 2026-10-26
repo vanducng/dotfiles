@@ -27,6 +27,7 @@ local dirs = { h = "left", j = "down", k = "up", l = "right" }
 
 for k, dir in pairs(dirs) do
   px("shift+" .. k, "pane.move." .. dir)
+  bind("alt+shift+" .. dir, "pane.move." .. dir)
   bind("ctrl+alt+" .. k, "pane.focus." .. dir)
 end
 px("tab", "pane.focus_next")
