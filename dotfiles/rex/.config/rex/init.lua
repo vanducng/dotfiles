@@ -90,6 +90,8 @@ px("shift+/", "client.palette.toggle")
 px("shift+g", "open_pr")
 px("[BracketLeft]", "copy_mode")
 px("ctrl+x", "pane.send_key", { key = "ctrl+x" })
+-- On another host's pane, a clipboard image goes there as a file (actions.lua image_paste).
+bind("ctrl+v", "image_paste")
 bind("cmd+up", "client.prompt.previous")
 bind("cmd+down", "client.prompt.next")
 -- One key dismisses a notice: alt+cmd+. replaces Rex's own shift+cmd+.

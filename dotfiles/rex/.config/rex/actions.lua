@@ -765,3 +765,38 @@ rex.action{
     if not r.ok then error(r.stderr, 0) end
   end,
 }
+
+-- A program on another host can't read this Mac's clipboard, so ctrl+v there streams a
+-- clipboard image over ssh (the host's label is its ssh alias) and pastes the remote path,
+-- like Herdr's remote_image_paste. A local pane, or a clipboard without an image, gets ctrl+v.
+-- Exit 3: no image on the clipboard.
+local upload_script = [=[img=$(mktemp) || exit
+trap 'rm -f "$img"' EXIT
+pngpaste "$img" >/dev/null 2>&1 || exit 3
+ssh -o BatchMode=yes -o ConnectTimeout=5 "$1" "mkdir -p /tmp/rex-images && cat > '$2'" <"$img"]=]
+
+rex.action{
+  name = "image_paste",
+  title = "Paste Clipboard Image",
+  description = "On another host's pane, copies the clipboard image to its /tmp/rex-images and pastes the path.",
+  category = "Pane",
+  run = function(ctx)
+    local function passthrough() rex.client.queue("pane.send_key", { key = "ctrl+v" }) end
+    if not ctx.server then return passthrough() end
+    local path = os.date("/tmp/rex-images/%Y%m%d-%H%M%S-") .. math.random(1000, 9999) .. ".png"
+    local r, err = rex.exec({ "/bin/sh", "-c", upload_script, "sh", ctx.server, path }, { env = env, timeout = 30 })
+    if not r then error(err, 0) end
+    if r.code == 3 then return passthrough() end
+    if not r.ok then error("image to " .. ctx.server .. ": " .. (r.stderr ~= "" and r.stderr or "ssh failed"), 0) end
+    local m = rex.block.call(term, "modes", { block_id = ctx.block_id })
+    local bracketed = false
+    for _, mode in ipairs(m and m.modes or {}) do
+      if mode.name == "bracketed_paste" then bracketed = mode.set end
+    end
+    local _, werr = rex.block.call(term, "write", {
+      block_id = ctx.block_id,
+      data = bracketed and ("\27[200~" .. path .. "\27[201~") or path,
+    })
+    if werr then error(werr, 0) end
+  end,
+}
