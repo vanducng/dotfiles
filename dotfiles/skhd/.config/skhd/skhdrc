@@ -14,6 +14,7 @@
 #   9. Spaces — send + follow     (cmd+ctrl)
 #  10. Displays — send + follow   (cmd+ctrl + arrows / ])
 #  11. Layout — balance/gaps/rotate/mirror  (hyper)
+#  12. rexboard                   (hyper + b)
 # =============================================================================
 
 # While a remote desktop viewer is focused, let every chord through so the
@@ -185,3 +186,11 @@ hyper - i : yabai -m space --toggle padding; \
 # Toggle gaps only
 hyper - o : yabai -m space --toggle padding; \
             yabai -m space --toggle gap;
+
+# -----------------------------------------------------------------------------
+# 12. rexboard
+# -----------------------------------------------------------------------------
+# Rex to the front, its focused window on the board (1-cockpit's first tab, as
+# Alt-Shift-1 in Rex). Hammerspoon's cmd+alt+ctrl+b (no shift) is another chord.
+hyper - b : open -a "Rex Beta" && \
+            "$HOME/Library/Application Support/com.superlogical.rex/RexServer/Versions/Current/Rex Server.app/Contents/MacOS/rex" do layout_goto index=1
