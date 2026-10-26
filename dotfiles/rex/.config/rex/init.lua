@@ -60,8 +60,8 @@ for i = 1, 9 do
   bind("ctrl+alt+" .. i, "host_goto", { index = i })
 end
 px("0", "home")
--- alt+shift+1/2: 1-dashboard's tabs (the board, rig tui), 3: 2-cnb, 4: 3-abs (layout.lua).
-for i = 1, 4 do bind("alt+shift+" .. i, "layout_goto", { index = i }) end
+-- alt+shift+1-3: 1-cockpit's tabs (the board, rig tui, foreman), 4: 2-cnb, 5: 3-abs (layout.lua).
+for i = 1, #require("layout").keys do bind("alt+shift+" .. i, "layout_goto", { index = i }) end
 -- The session picker stays on Rex's cmd+k.
 px("a", "session_toggle")
 px("shift+right", "session.next")
@@ -76,7 +76,7 @@ px("shift+d", "session.close")
 px("shift+m", "client.host.switch")
 bind("shift+cmd+k", "client.host.switch")
 
--- rexboard: the next agent that needs you, and a picker. The board is 1-dashboard's first tab.
+-- rexboard: the next agent that needs you, and a picker. The board is 1-cockpit's first tab.
 px("shift+down", "agent_next")
 px("o", "agent_next")
 px("shift+up", "agent_next", { back = true })
@@ -90,6 +90,8 @@ px("shift+/", "client.palette.toggle")
 px("shift+g", "open_pr")
 px("[BracketLeft]", "copy_mode")
 px("ctrl+x", "pane.send_key", { key = "ctrl+x" })
+-- On another host's pane, a clipboard image goes there as a file (actions.lua image_paste).
+bind("ctrl+v", "image_paste")
 bind("cmd+up", "client.prompt.previous")
 bind("cmd+down", "client.prompt.next")
 -- One key dismisses a notice: alt+cmd+. replaces Rex's own shift+cmd+.

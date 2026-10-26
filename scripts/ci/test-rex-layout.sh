@@ -44,46 +44,47 @@ check(layout.base("rexboard"), "rexboard", "a plain label stays")
 local today = {
   { id = "a", label = "1-warp-factory-setup" },
   { id = "b", label = "2-3-foo" },
-  { id = "c", label = "5-dashboard" },
+  { id = "c", label = "5-cockpit" },
   { id = "d", label = "notes" },
   { id = "e", label = "cnb" },
 }
 local plan = layout.plan(today, true)
-check(labels(plan), "1-dashboard 2-cnb 3-warp-factory-setup 4-foo 5-notes",
+check(labels(plan), "1-cockpit 2-cnb 3-warp-factory-setup 4-foo 5-notes",
   "the layout's sessions go first and the rest are renumbered by position")
 check(plan[1].id .. plan[2].id .. plan[3].id, "cea", "order is layout first, then the rest as they were")
 
 local full = {
   { id = "a", label = "1-warp-factory-setup" },
-  { id = "b", label = "dashboard" },
+  { id = "b", label = "cockpit" },
   { id = "c", label = "2-cnb" },
   { id = "d", label = "3-abs" },
   { id = "e", label = "2-3-foo" },
 }
 plan = layout.plan(full, true)
-check(labels(plan), "1-dashboard 2-cnb 3-abs 4-warp-factory-setup 5-foo",
+check(labels(plan), "1-cockpit 2-cnb 3-abs 4-warp-factory-setup 5-foo",
   "with all three layout sessions, the rest number from 4")
 check(labels(rerun(plan, true)), labels(plan), "a rerun changes nothing")
 for i, p in ipairs(rerun(plan, true)) do check(p.label, p.want, "rerun label " .. i) end
 
-plan = layout.plan({ { id = "x", label = "dashboard" }, { id = "y", label = "4-dashboard" } }, true)
-check(labels(plan), "1-dashboard 2-dashboard", "a duplicate dashboard is not a second layout session")
+plan = layout.plan({ { id = "x", label = "cockpit" }, { id = "y", label = "4-cockpit" } }, true)
+check(labels(plan), "1-cockpit 2-cockpit", "a duplicate cockpit is not a second layout session")
 check(labels(rerun(plan, true)), labels(plan), "a duplicate stays put on a rerun")
 
-check(labels(layout.plan(names({ "dashboard", "abs", "foo" }), true)), "1-dashboard 2-abs 3-foo",
+check(labels(layout.plan(names({ "cockpit", "abs", "foo" }), true)), "1-cockpit 2-abs 3-foo",
   "a missing middle layout session leaves no repeated number")
 check(labels(layout.plan(names({ "cnb", "foo" }), true)), "1-cnb 2-foo",
   "every number is the real Ctrl-N position")
 plan = layout.plan(names({ "abs" }), false)
 check(labels(plan), "1-abs", "a remote host numbers by plain position")
-plan = layout.plan(names({ "foo", "3-abs", "dashboard" }), false)
-check(labels(plan), "1-foo 2-abs 3-dashboard", "a remote host keeps its order")
+plan = layout.plan(names({ "foo", "3-abs", "cockpit" }), false)
+check(labels(plan), "1-foo 2-abs 3-cockpit", "a remote host keeps its order")
 check(labels(rerun(plan, false)), labels(plan), "a remote rerun changes nothing")
 plan = layout.plan(names({ "foo", "" }), false)
 check(labels(plan), "1-foo 2-", "an empty name keeps its number")
 check(labels(rerun(plan, false)), labels(plan), "an empty name is stable on a rerun")
 
 check(layout.sessions[1].tabs[1].command[1], "/home/test/.local/bin/rexboard", "paths come from HOME")
+check(layout.sessions[1].tabs[3].dir, "/home/test/projects", "a tab's own folder comes from HOME")
 for i, k in ipairs(layout.keys) do
   local e = layout.entry(k[1])
   if not (e and e.tabs[k[2]]) then error("alt+shift+" .. i .. " names no layout tab: " .. k[1] .. " " .. k[2], 0) end

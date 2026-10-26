@@ -328,7 +328,8 @@ local function ensure_session(e, id, dry, lines)
   if dry then return id or ("new:" .. e.name) end
   local function opts(tab)
     local o = { "--shell", "zsh", "--keep-open" }
-    if e.dir then o[#o + 1] = "-c"; o[#o + 1] = e.dir end
+    local dir = tab.dir or e.dir
+    if dir then o[#o + 1] = "-c"; o[#o + 1] = dir end
     o[#o + 1] = "--"
     for _, a in ipairs(tab.command) do o[#o + 1] = a end
     return (table.unpack or unpack)(o)
@@ -379,7 +380,7 @@ end
 
 rex.action{
   name = "session_layout",
-  title = "Lay Out Sessions (dashboard, cnb, abs)",
+  title = "Lay Out Sessions (cockpit, cnb, abs)",
   description = "Makes layout.lua's sessions, puts them first and numbers every session by its Ctrl-N position.",
   category = "Session",
   args = { dry_run = "boolean?" },
@@ -411,7 +412,7 @@ end
 rex.action{
   name = "layout_goto",
   title = "Go to a Layout Session",
-  description = "alt+shift+1/2: the dashboard's tabs, 3: cnb, 4: abs. Makes a missing one first.",
+  description = "alt+shift+1-3: the cockpit's tabs, 4: cnb, 5: abs. Makes a missing one first.",
   category = "Session",
   args = { index = "integer" },
   run = function(ctx, args) goto_layout(ctx, args.index) end,
@@ -639,7 +640,7 @@ end
 
 -- rexboard's picker over the window. Enter jumps and moves focus itself, so the pane is
 -- refocused only on esc or a failure, and a failure's reason stays up until enter. A pane on
--- another host would run that host's rexboard, so there the dashboard's board shows instead.
+-- another host would run that host's rexboard, so there the cockpit's board shows instead.
 rex.action{
   name = "agent_pick",
   title = "Pick an Agent (rexboard)",
@@ -762,5 +763,40 @@ rex.action{
     local r, err = rex.exec({ "gh", "pr", "list", "--web" }, { cwd = root, env = env, timeout = 10 })
     if not r then error(err, 0) end
     if not r.ok then error(r.stderr, 0) end
+  end,
+}
+
+-- A program on another host can't read this Mac's clipboard, so ctrl+v there streams a
+-- clipboard image over ssh (the host's label is its ssh alias) and pastes the remote path,
+-- like Herdr's remote_image_paste. A local pane, or a clipboard without an image, gets ctrl+v.
+-- Exit 3: no image on the clipboard.
+local upload_script = [=[img=$(mktemp) || exit
+trap 'rm -f "$img"' EXIT
+pngpaste "$img" >/dev/null 2>&1 || exit 3
+ssh -o BatchMode=yes -o ConnectTimeout=5 "$1" "mkdir -p /tmp/rex-images && cat > '$2'" <"$img"]=]
+
+rex.action{
+  name = "image_paste",
+  title = "Paste Clipboard Image",
+  description = "On another host's pane, copies the clipboard image to its /tmp/rex-images and pastes the path.",
+  category = "Pane",
+  run = function(ctx)
+    local function passthrough() rex.client.queue("pane.send_key", { key = "ctrl+v" }) end
+    if not ctx.server then return passthrough() end
+    local path = os.date("/tmp/rex-images/%Y%m%d-%H%M%S-") .. math.random(1000, 9999) .. ".png"
+    local r, err = rex.exec({ "/bin/sh", "-c", upload_script, "sh", ctx.server, path }, { env = env, timeout = 30 })
+    if not r then error(err, 0) end
+    if r.code == 3 then return passthrough() end
+    if not r.ok then error("image to " .. ctx.server .. ": " .. (r.stderr ~= "" and r.stderr or "ssh failed"), 0) end
+    local m = rex.block.call(term, "modes", { block_id = ctx.block_id })
+    local bracketed = false
+    for _, mode in ipairs(m and m.modes or {}) do
+      if mode.name == "bracketed_paste" then bracketed = mode.set end
+    end
+    local _, werr = rex.block.call(term, "write", {
+      block_id = ctx.block_id,
+      data = bracketed and ("\27[200~" .. path .. "\27[201~") or path,
+    })
+    if werr then error(werr, 0) end
   end,
 }
