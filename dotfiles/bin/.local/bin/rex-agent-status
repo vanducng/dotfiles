@@ -294,7 +294,7 @@ def main():
         _, tty = agent_tty()
         if tty:
             write(tty, osc(fields(app, *st)))
-        log(name, None, "wrote %s to the Rex pane" % st[0] if tty else "skipped: no tty")
+        log(name, None, ("wrote %s to the Rex pane" % st[0]) if tty else "skipped: no tty")
         return
     if not pane:
         mark(st[0])
