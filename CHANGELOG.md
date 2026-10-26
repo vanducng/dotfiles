@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.34.0](https://github.com/vanducng/dotfiles/compare/v0.33.0...v0.34.0) (2026-10-26)
+
+
+### Features
+
+* **rex:** cockpit session with foreman tab, and clipboard image paste to remote panes ([#250](https://github.com/vanducng/dotfiles/issues/250)) ([b4d1d77](https://github.com/vanducng/dotfiles/commit/b4d1d7726bc2876b29d7999648187a9b0af9a129))
+* **rex:** lay out the fixed Rex sessions and number the rest after them ([#249](https://github.com/vanducng/dotfiles/issues/249)) ([0cbb788](https://github.com/vanducng/dotfiles/commit/0cbb788b9d48847bad60db37cb2927e562eb2fd4))
+* **rex:** move the focused pane with alt+shift+arrows ([#251](https://github.com/vanducng/dotfiles/issues/251)) ([bc24cac](https://github.com/vanducng/dotfiles/commit/bc24cacd36960de8600aa7ffd132cde494ce4ea2))
+* **rex:** rexboard keys, board window tiling and jump.pre_cmd ([#246](https://github.com/vanducng/dotfiles/issues/246)) ([745394e](https://github.com/vanducng/dotfiles/commit/745394e8b0e7bf50a88a7d98b48b5456ce8d916d))
+* **rex:** show the rexboard board in the current Rex window ([#248](https://github.com/vanducng/dotfiles/issues/248)) ([b97f1e4](https://github.com/vanducng/dotfiles/commit/b97f1e4f3bc0e71997e047198fdd0d42b6978985))
+* **sync:** git-sync-repos every 15 minutes, including the projects workspace ([29e3340](https://github.com/vanducng/dotfiles/commit/29e3340539ee7e25e606f1cc9238b9db78d06179))
+
+
+### Bug Fixes
+
+* **sync:** run git-sync-repos and git-fetch-repos with /bin/bash ([3fe4105](https://github.com/vanducng/dotfiles/commit/3fe41059381ad67b898342a2afae93a9bfe8a56c))
+
 ## [0.33.0](https://github.com/vanducng/dotfiles/compare/v0.32.0...v0.33.0) (2026-10-25)
 
 
