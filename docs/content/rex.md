@@ -172,7 +172,7 @@ Inside tmux, the script turns the event into an OSC 7501 status, wraps it in tmu
 | Stop on an API error | error | the agent's last message, else the error and its details |
 | Session end | cleared | |
 
-Codex sends the same events except AskUserQuestion, the permission notification and the API error. pi sends session start and end, each run's start (working), and its end (done, with the last assistant message, or error, with the model's error).
+Codex sends the same events except AskUserQuestion, the permission notification and the API error. pi sends session start and end, each run's start (working), and its end (done, with the last assistant message, or error, with the model's error). It sends them one at a time, in order, and holds off exiting until a run's end has been sent. `pi -p` sends no session end, so its result stays up after it exits.
 
 A message is one line, since Rex allows no control characters: each line break becomes ` ⏎ ` (rexboard splits on it), blank lines drop, and any other control character becomes a space. It is cut to Rex's limit of 2048 bytes, at a character, ending in `…`. Over a limit Rex would drop the whole report. So the agent's final message reaches Rex and anything that reads its status, such as rexboard, just as it does for an agent running straight in a Rex pane. Do not keep secrets in an agent's replies.
 
