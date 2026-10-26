@@ -204,7 +204,7 @@ To test the bridge without an agent, send a fake Stop through a throwaway tmux s
 ```bash
 tmux new-session -d -s zz-probe
 tmux send-keys -t zz-probe "unset TMUX TMUX_PANE REX_BLOCK; export TERM=tmux-256color; echo '{\"hook_event_name\":\"Stop\",\"last_assistant_message\":\"probe ok\"}' | /usr/bin/python3 ~/.local/bin/rex-agent-status claude-code" Enter
-sleep 1; tmux show-options -p -t zz-probe @rex_status   # app=claude-code:state=done:msg=cHJvYmUgb2s=
+for i in $(seq 50); do tmux show-options -p -t zz-probe -v @rex_status 2>/dev/null && break; sleep 0.2; done   # app=claude-code:state=done:msg=cHJvYmUgb2s=
 tmux kill-session -t zz-probe
 ```
 
