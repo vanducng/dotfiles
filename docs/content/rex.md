@@ -37,7 +37,7 @@ Rex uses Herdr's `C-x` prefix and letters, so moving between the two needs no re
 | `C-x 1..9` | Go to tab N in this session (`9` is the last tab) |
 | `C-x Shift-T` | Rename tab |
 | `C-x Shift-X` | Close tab |
-| `C-x a` | Back to the last session; press again to return. It remembers jumps made with `Ctrl-1..9`, `Alt-Shift-1..4`, `C-x 0` and `C-x a`, not `Cmd-k` or sidebar clicks, and a config reload forgets it |
+| `C-x a` | Back to the last session; press again to return. It remembers jumps made with `Ctrl-1..9`, `Alt-Shift-1..5`, `C-x 0` and `C-x a`, not `Cmd-k` or sidebar clicks, and a config reload forgets it |
 | `C-x Shift-Right` | Next session (the session picker is `Cmd-k`) |
 | `C-x 0` | Home: first session, first tab, first pane |
 | `C-x Shift-N` | New session |
@@ -49,7 +49,7 @@ Rex uses Herdr's `C-x` prefix and letters, so moving between the two needs no re
 | `C-x Shift-M` | Switch machine (host) |
 | `C-x Shift-Down` / `C-x o` | Next agent that needs you, across every host (`rexboard next`) |
 | `C-x Shift-Up` | Previous agent that needs you (`rexboard next --back`) |
-| `C-x f` | Pick an agent from a list over the window (`rexboard pick`): `Enter` jumps, `Esc` returns to the pane, and a failed jump's reason stays up until `Enter`. Over a pane on another host it goes to the board in `1-dashboard` instead |
+| `C-x f` | Pick an agent from a list over the window (`rexboard pick`): `Enter` jumps, `Esc` returns to the pane, and a failed jump's reason stays up until `Enter`. Over a pane on another host it goes to the board in `1-cockpit` instead |
 | `C-x b` | Toggle sidebar (vertical tabs only; `shift+cmd+s` switches tab style) |
 | `C-x Shift-R` | Reload config |
 | `C-x Shift-G` | Open the repo's pull requests on GitHub (`/pulls`) |
@@ -62,6 +62,7 @@ Herdr's `C-x a` (last pane) has no equivalent, since Rex config Lua cannot track
 | Key | Action |
 |---|---|
 | `Ctrl-Alt-h/j/k/l` | Focus pane (also `Cmd-Alt-arrows`) |
+| `Alt-Shift-arrows` | Move pane (also `C-x Shift-H/J/K/L`) |
 | `Ctrl-Alt-z` | Zoom pane (also `Shift-Cmd-Enter`) |
 | `Cmd-]` / `Cmd-[` | Next / previous pane |
 | `Cmd-d` / `Shift-Cmd-d` | Split right / down |
@@ -73,9 +74,11 @@ Herdr's `C-x a` (last pane) has no equivalent, since Rex config Lua cannot track
 | `Ctrl-Alt-.` / `Ctrl-Alt-,` | Next / previous tab in sidebar order across every session and host, wrapping at the end |
 | `Shift-Cmd-Up` / `Shift-Cmd-Down` (also `Left` / `Right`) | Move tab up / down. Replaces Rex's `Ctrl-Shift-Up/Down`, which never reached the app, and its `Shift-Cmd-arrow` splits (`C-x m` / `C-x v` split) |
 | `Ctrl-1..9` | Go to session N on the host you are viewing |
-| `Alt-Shift-1` | The board: `1-dashboard` tab 1 (replaces `C-x Shift-O`). Made first if missing |
-| `Alt-Shift-2` | `rig tui`: `1-dashboard` tab 2. Made first if missing |
-| `Alt-Shift-3` / `Alt-Shift-4` | `2-cnb` / `3-abs`. Made first if missing, or says its folder does not exist |
+| `Alt-Shift-1` | The board: `1-cockpit` tab 1 (replaces `C-x Shift-O`). Made first if missing |
+| `Alt-Shift-2` | `rig tui`: `1-cockpit` tab 2. Made first if missing |
+| `Alt-Shift-3` | `foreman`: `1-cockpit` tab 3, `claude` in `~/projects`. Made first if missing |
+| `Alt-Shift-4` / `Alt-Shift-5` | `2-cnb` / `3-abs`. Made first if missing, or says its folder does not exist |
+| `Ctrl-v` | On a pane on another host, sends the clipboard image there over ssh as `/tmp/rex-images/<time>.png` and pastes the path, so Claude Code there attaches it (Herdr's `remote_image_paste`). On a local pane, or with no image on the clipboard, it is a plain `Ctrl-v`. Needs `pngpaste` and key-based ssh to the host's alias |
 | `Ctrl-Alt-1..9` | Go to host N: 1 MacBook Pro (`mbp-01`), 2 `mini-01`, 3 kept for `linux-01`; lands on the session you last had there, else its first |
 | `Alt-Cmd-]` | Next session |
 | `Cmd-k` | Session picker |
@@ -96,13 +99,13 @@ Each host numbers its own sessions, so `Ctrl-1..9` stays short however many mach
 
 | # | Session | Tabs |
 |---|---|---|
-| 1 | `1-dashboard` | `rexboard` (the board), `rig` (`rig tui`) |
+| 1 | `1-cockpit` | `rexboard` (the board), `rig` (`rig tui`), `foreman` (`claude` in `~/projects`) |
 | 2 | `2-cnb` | `claude` in `~/git/work/cnb` |
 | 3 | `3-abs` | `claude` in `~/git/work/ab-spectrum` |
 
-The `session_layout` action makes the missing ones, reopens a layout tab you closed, and moves the three to positions 1-3. It finds them by name without the number, so `dashboard` or `5-dashboard` counts. It skips a session whose folder this Mac lacks, and never kills or restarts a session. Every session's number is its `Ctrl-1..9` position, so with all three present the rest start at 4 (`1-warp-factory-setup` becomes `4-warp-factory-setup`); with one skipped, the rest close the gap. Only the number prefix changes, never the name.
+The `session_layout` action makes the missing ones, reopens a layout tab you closed, and moves the three to positions 1-3. It finds them by name without the number, so `cockpit` or `5-cockpit` counts. It skips a session whose folder this Mac lacks, and never kills or restarts a session. Every session's number is its `Ctrl-1..9` position, so with all three present the rest start at 4 (`1-warp-factory-setup` becomes `4-warp-factory-setup`); with one skipped, the rest close the gap. Only the number prefix changes, never the name.
 
-It runs from `make setup-rex` and at login (the `dev.vanducng.rex-session-layout` LaunchAgent in the `launchd` package), which writes failures to `~/Library/Logs/rex-session-layout.log`. No key runs the whole layout: `Alt-Shift-1..4` make or complete only their own session before going to it, or say its folder does not exist. By hand:
+It runs from `make setup-rex` and at login (the `dev.vanducng.rex-session-layout` LaunchAgent in the `launchd` package), which writes failures to `~/Library/Logs/rex-session-layout.log`. No key runs the whole layout: `Alt-Shift-1..5` make or complete only their own session before going to it, or say its folder does not exist. By hand:
 
 ```bash
 rex do ~/.config/rex/actions.lua --action session_layout dry_run=true   # print the plan, change nothing
