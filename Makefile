@@ -58,6 +58,7 @@ stow-install:
 			(cd dotfiles && stow --no-folding -D -t $(HOME) $$folder 2>/dev/null || true; \
 			 stow --no-folding -t $(HOME) $$folder); \
 		fi; \
+		if [ "$$folder" = rex ]; then ./dotfiles/bin/.local/bin/rex-hooks-sync --apply; fi; \
 	done
 	@$(MAKE) ensure-home-repos
 

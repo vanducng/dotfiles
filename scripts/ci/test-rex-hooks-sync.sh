@@ -29,9 +29,9 @@ cp "$live" "$tmp/before.json"
 
 out="$("$sync" --target "$live")"
 cmp -s "$live" "$tmp/before.json"
-grep -q '^-.*|| exit 0; exec' <<<"$out"
-grep -q '^+.*tmux\*|screen\*' <<<"$out"
-if grep -q 'some-model\|EXAMPLE\|guard-tool\|keep-me\|notify-tool' <<<"$out"; then fail "the diff shows other values"; fi
+grep '^-' <<<"$out" | grep -qF '|| exit 0; exec' || fail "the old gate is not in the diff"
+grep '^+' <<<"$out" | grep -qF 'tmux*|screen*' || fail "the new gate is not in the diff"
+if grep -qF -e some-model -e EXAMPLE -e guard-tool -e keep-me -e notify-tool <<<"$out"; then fail "the diff shows other values"; fi
 [ -z "$(ls "$tmp" | grep '\.bak-' || true)" ]
 
 "$sync" --apply --target "$live" >/dev/null
@@ -52,8 +52,10 @@ for event, groups in source["hooks"].items():
         assert [g for g in live["hooks"][event] if rex(g)] == want, event
 PY
 [ "$(python3 -c 'import os, sys; print(oct(os.stat(sys.argv[1]).st_mode & 0o777))' "$live")" = 0o600 ] || fail "mode not kept"
-[ "$(ls "$tmp" | grep -c '\.bak-')" -eq 1 ]
-cmp -s "$tmp"/settings.json.bak-* "$tmp/before.json"
+[ "$(ls "$tmp" | grep -c '\.bak-')" -eq 1 ] || fail "not exactly one backup"
+bak="$(ls "$tmp"/settings.json.bak-*)"
+cmp -s "$bak" "$tmp/before.json" || fail "the backup is not the old file"
+[ "$(python3 -c 'import os, sys; print(oct(os.stat(sys.argv[1]).st_mode & 0o777))' "$bak")" = 0o600 ] || fail "the backup is wider than the file"
 
 "$sync" --apply --target "$live" | grep -q 'up to date'
 [ "$(ls "$tmp" | grep -c '\.bak-')" -eq 1 ]
@@ -65,6 +67,11 @@ ln -s "$live" "$tmp/linked.json"
 cmp -s "$live" "$tmp/after.json" || fail "a symlinked file was changed"
 "$sync" --apply --target "$tmp/missing.json" | grep -q 'nothing to merge'
 [ ! -e "$tmp/missing.json" ] || fail "a missing file was created"
+
+printf '{"hooks": {"Stop": ["a string, not a group"]}}' > "$tmp/odd.json"
+if "$sync" --apply --target "$tmp/odd.json" 2>"$tmp/err"; then fail "an odd hook shape was merged"; fi
+grep -q 'shape' "$tmp/err"
+[ -z "$(ls -a "$tmp" | grep 'rex-hooks-sync-' || true)" ] || fail "a temp file was left"
 
 printf '{ not json' > "$tmp/bad.json"
 if "$sync" --apply --target "$tmp/bad.json" 2>"$tmp/err"; then fail "invalid JSON was merged"; fi

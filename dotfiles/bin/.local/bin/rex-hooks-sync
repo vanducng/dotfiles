@@ -5,6 +5,7 @@
 # For each hook event, hooks that run rex-agent-status are replaced by the dotfiles ones, in
 # place; every other key and hook stays. Prints the changed lines (no context, so no other values);
 # --apply writes them, after a backup beside the file (FILE.bak-<UTC>). A second run changes nothing.
+import argparse
 import copy
 import difflib
 import json
@@ -21,7 +22,7 @@ HARNESSES = {
 
 
 def is_rex(hook):
-    return MARK in str(hook.get("command", ""))
+    return isinstance(hook, dict) and MARK in str(hook.get("command", ""))
 
 
 def rex_groups(settings):
@@ -67,20 +68,29 @@ def fail(why):
     sys.exit(1)
 
 
+def write(path, body, mode):
+    """Writes `body` to a new file in `path`'s directory with `mode`, then renames it to `path`."""
+    fd, tmp = tempfile.mkstemp(dir=os.path.dirname(path), prefix=".rex-hooks-sync-")
+    try:
+        os.fchmod(fd, mode)
+        with os.fdopen(fd, "w") as f:
+            f.write(body)
+        os.replace(tmp, path)
+    except BaseException:
+        if os.path.exists(tmp):
+            os.unlink(tmp)
+        raise
+
+
 def main(argv):
-    apply = "--apply" in argv
-    args = [a for a in argv if a != "--apply"]
-    target = None
-    if "--target" in args:
-        at = args.index("--target")
-        target = args[at + 1] if at + 1 < len(args) else fail("--target needs a file")
-        del args[at : at + 2]
-    harness = args[0] if args else "claude"
-    if harness not in HARNESSES:
-        fail("unknown harness %r; one of: %s" % (harness, ", ".join(HARNESSES)))
+    parser = argparse.ArgumentParser(prog="rex-hooks-sync")
+    parser.add_argument("harness", nargs="?", default="claude", choices=sorted(HARNESSES))
+    parser.add_argument("--target", help="the live file (default: the harness's own)")
+    parser.add_argument("--apply", action="store_true", help="write the change")
+    args = parser.parse_args(argv)
     repo = os.path.realpath(os.path.join(os.path.dirname(os.path.realpath(__file__)), "../../../.."))
-    source_path = os.path.join(repo, HARNESSES[harness][0])
-    target = os.path.expanduser(target or HARNESSES[harness][1])
+    source_path = os.path.join(repo, HARNESSES[args.harness][0])
+    target = os.path.expanduser(args.target or HARNESSES[args.harness][1])
     # Neither is an error, so `make stow-rex` works on every host.
     if os.path.islink(target):
         print("%s is a symlink: this host stows it, so it already has the dotfiles hooks" % target)
@@ -89,32 +99,35 @@ def main(argv):
         print("no %s on this host; nothing to merge" % target)
         return
     try:
-        before = open(target).read()
+        with open(source_path) as f:
+            source = json.load(f)
+    except (OSError, ValueError):
+        fail("cannot read the dotfiles hooks at %s" % source_path)
+    try:
+        with open(target) as f:
+            before = f.read()
         live = json.loads(before)
     except OSError as err:
         fail("cannot read %s: %s" % (target, err.strerror))
     except ValueError:
         fail("%s is not valid JSON; left alone" % target)
-    with open(source_path) as f:
-        source = json.load(f)
-    after = text(merged(live, source))
+    try:
+        after = text(merged(live, source))
+    except (AttributeError, TypeError):
+        fail("%s has hooks in a shape this does not know; left alone" % target)
     if after == text(live):
         print("rex hooks in %s are up to date" % target)
         return
     sys.stdout.writelines(difflib.unified_diff(
         text(live).splitlines(True), after.splitlines(True), target, target + " (merged)", n=0))
-    if not apply:
+    if not args.apply:
         print("dry run; --apply writes it")
         return
-    backup = target + ".bak-" + time.strftime("%Y%m%dT%H%M%SZ", time.gmtime())
-    with open(backup, "w") as f:
-        f.write(before)
+    # The backup holds the same private entries, so it gets the file's own mode.
     mode = os.stat(target).st_mode & 0o7777
-    fd, tmp = tempfile.mkstemp(dir=os.path.dirname(target), prefix=".rex-hooks-sync-")
-    with os.fdopen(fd, "w") as f:
-        f.write(after)
-    os.chmod(tmp, mode)
-    os.replace(tmp, target)
+    backup = target + ".bak-" + time.strftime("%Y%m%dT%H%M%SZ", time.gmtime())
+    write(backup, before, mode)
+    write(target, after, mode)
     print("wrote %s (backup %s)" % (target, backup))
 
 
