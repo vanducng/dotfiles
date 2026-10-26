@@ -328,7 +328,8 @@ local function ensure_session(e, id, dry, lines)
   if dry then return id or ("new:" .. e.name) end
   local function opts(tab)
     local o = { "--shell", "zsh", "--keep-open" }
-    if e.dir then o[#o + 1] = "-c"; o[#o + 1] = e.dir end
+    local dir = tab.dir or e.dir
+    if dir then o[#o + 1] = "-c"; o[#o + 1] = dir end
     o[#o + 1] = "--"
     for _, a in ipairs(tab.command) do o[#o + 1] = a end
     return (table.unpack or unpack)(o)
@@ -379,7 +380,7 @@ end
 
 rex.action{
   name = "session_layout",
-  title = "Lay Out Sessions (dashboard, cnb, abs)",
+  title = "Lay Out Sessions (cockpit, cnb, abs)",
   description = "Makes layout.lua's sessions, puts them first and numbers every session by its Ctrl-N position.",
   category = "Session",
   args = { dry_run = "boolean?" },
@@ -411,7 +412,7 @@ end
 rex.action{
   name = "layout_goto",
   title = "Go to a Layout Session",
-  description = "alt+shift+1/2: the dashboard's tabs, 3: cnb, 4: abs. Makes a missing one first.",
+  description = "alt+shift+1-3: the cockpit's tabs, 4: cnb, 5: abs. Makes a missing one first.",
   category = "Session",
   args = { index = "integer" },
   run = function(ctx, args) goto_layout(ctx, args.index) end,
@@ -639,7 +640,7 @@ end
 
 -- rexboard's picker over the window. Enter jumps and moves focus itself, so the pane is
 -- refocused only on esc or a failure, and a failure's reason stays up until enter. A pane on
--- another host would run that host's rexboard, so there the dashboard's board shows instead.
+-- another host would run that host's rexboard, so there the cockpit's board shows instead.
 rex.action{
   name = "agent_pick",
   title = "Pick an Agent (rexboard)",
