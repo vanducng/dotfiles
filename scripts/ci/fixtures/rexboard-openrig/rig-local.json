@@ -1,0 +1,51 @@
+{
+ "entries": [
+  {
+   "rigName": "api",
+   "logicalId": "dev.impl",
+   "canonicalSessionName": "dev-impl@api",
+   "agentActivity": {
+    "state": "idle"
+   },
+   "needsAttention": true
+  },
+  {
+   "rigName": "api",
+   "logicalId": "review.review",
+   "canonicalSessionName": "review-review@api",
+   "agentActivity": {
+    "state": "running"
+   },
+   "needsAttention": false
+  },
+  {
+   "rigName": "web",
+   "logicalId": "dev.impl",
+   "canonicalSessionName": "dev-impl@web",
+   "agentActivity": {
+    "state": "idle"
+   },
+   "needsAttention": false
+  },
+  {
+   "rigName": "api",
+   "logicalId": "lead.owner",
+   "canonicalSessionName": "lead-owner@api",
+   "agentActivity": {
+    "state": "idle"
+   },
+   "needsAttention": false
+  },
+  {
+   "rigName": "api",
+   "logicalId": "lead.owner",
+   "canonicalSessionName": "lead-owner@api-old",
+   "agentActivity": {
+    "state": "idle"
+   },
+   "needsAttention": false
+  }
+ ],
+ "totalNodes": 5,
+ "truncated": false
+}

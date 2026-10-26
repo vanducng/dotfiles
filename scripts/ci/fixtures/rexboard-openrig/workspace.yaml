@@ -1,0 +1,7 @@
+schema: openrig.workspace/v0alpha1
+projects:
+  - id: demo.api
+    root: orgs/demo/api
+    rigs: [api]
+  - id: demo.other
+    root: orgs/demo/other
