@@ -137,6 +137,14 @@ SKHD integrates with Yabai for powerful window management capabilities.
 | `alt + r` | Rotate Clockwise | Rotate layout 270° |
 | `shift + alt + r` | Rotate Counter | Rotate layout 90° |
 
+### rexboard
+
+| Shortcut | Action | Description |
+|----------|--------|-------------|
+| `hyper + b` | rexboard | Rex to the front, its focused window on the board: `1-cockpit`'s first tab, as `Alt-Shift-1` in Rex. Made first if missing |
+
+`hyper` here is Caps (Karabiner's cmd+ctrl+opt+shift). Hammerspoon's `Hyper+B`, which runs the clipboard as a command, is cmd+alt+ctrl+b without shift, so the two never meet.
+
 ### Gap Controls
 | Shortcut | Action | Description |
 |----------|--------|-------------|

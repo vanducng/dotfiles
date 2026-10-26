@@ -1,0 +1,15 @@
+{
+ "entries": [
+  {
+   "rigName": "web",
+   "logicalId": "lead.owner",
+   "canonicalSessionName": "lead-owner@web",
+   "agentActivity": {
+    "state": "unknown"
+   },
+   "needsAttention": false
+  }
+ ],
+ "totalNodes": 1,
+ "truncated": false
+}
