@@ -158,32 +158,43 @@ grep -q ' PreToolUse env=- pane=%9 wrote working$' "$tmp/log"
 : > "$tmp/tmux.log"
 printf '{"hook_event_name":"Stop"}' | seat TERM=xterm-256color REX_AGENT_STATUS_LOG="$tmp/log"
 [ ! -s "$tmp/tty" ] && [ ! -s "$tmp/tmux.log" ] && [ "$(wc -l < "$tmp/log")" -eq 1 ]
-# pi's rex-status extension turns pi events into the hook JSON above, through the same script.
+# pi's rex-status extension turns pi events into the hook JSON above, through the same script,
+# one report at a time and in order. A run's last report is written before its handler returns,
+# since `pi -p` exits right after it, and without a UI the session's end leaves that report up.
 mkdir -p "$tmp/pihome/.local/bin"
-printf 'import os, sys\nopen(os.environ["PI_LOG"], "a").write(sys.argv[1] + " " + sys.stdin.read() + "\\n")\n' > "$tmp/pihome/.local/bin/rex-agent-status"
+printf 'import os, sys, time\nevent = sys.stdin.read()\ntime.sleep(0.3 if "SessionStart" in event else 0)\nopen(os.environ["PI_LOG"], "a").write(sys.argv[1] + " " + event + "\\n")\n' > "$tmp/pihome/.local/bin/rex-agent-status"
 HOME="$tmp/pihome" PI_LOG="$tmp/pi.log" TERM=tmux-256color \
   EXT="$project_root/dotfiles/pi/.pi/agent/extensions/rex-status.js" node --input-type=module <<'JS'
+import { readFileSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 const ext = await import(pathToFileURL(process.env.EXT).href);
 if (ext.reporting({ TERM: "xterm-256color" }) || !ext.reporting({ REX_BLOCK: "b" }) || !ext.reporting({ TERM: "screen" })) throw new Error("gate");
 const handlers = {};
 ext.default({ on: (name, fn) => { handlers[name] = fn; } });
+const lines = () => readFileSync(process.env.PI_LOG, "utf8").trim().split("\n").length;
+await handlers.session_start({});
 await handlers.agent_start({});
 await handlers.message_end({ message: { role: "user", content: [{ type: "text", text: "ignored" }] } });
 await handlers.message_end({ message: { role: "assistant", content: [{ type: "text", text: "All " }, { type: "tool_use" }, { type: "text", text: "green" }] } });
 await handlers.agent_settled({});
+if (lines() !== 3) throw new Error("the run's last report was not written before its handler returned");
 await handlers.agent_start({});
 await handlers.message_end({ message: { role: "assistant", content: [], stopReason: "error", errorMessage: "429 rate limited" } });
 await handlers.agent_settled({});
-await new Promise((done) => setTimeout(done, 1500));
+await handlers.session_shutdown({}, { hasUI: false });
+if (lines() !== 5) throw new Error("pi -p cleared its result at shutdown");
+await handlers.session_shutdown({}, { hasUI: true });
+if (lines() !== 6) throw new Error("an interactive session's end was not reported");
 JS
-want='pi {"hook_event_name": "UserPromptSubmit"}
+want='pi {"hook_event_name": "SessionStart"}
+pi {"hook_event_name": "UserPromptSubmit"}
 pi {"hook_event_name": "Stop", "last_assistant_message": "All green"}
 pi {"hook_event_name": "UserPromptSubmit"}
-pi {"hook_event_name": "StopFailure", "last_assistant_message": "429 rate limited"}'
+pi {"hook_event_name": "StopFailure", "last_assistant_message": "429 rate limited"}
+pi {"hook_event_name": "SessionEnd"}'
 got="$(python3 -c 'import json, sys
 for line in open(sys.argv[1]):
     app, _, body = line.strip().partition(" ")
-    print(app, json.dumps(json.loads(body)))' "$tmp/pi.log" | sort)"
-[ "$got" = "$(sort <<<"$want")" ] || { printf 'pi extension sent:\n%s\n' "$got" >&2; exit 1; }
+    print(app, json.dumps(json.loads(body)))' "$tmp/pi.log")"
+[ "$got" = "$want" ] || { printf 'pi extension sent:\n%s\n' "$got" >&2; exit 1; }
 echo "rex-agent-status: ok"
