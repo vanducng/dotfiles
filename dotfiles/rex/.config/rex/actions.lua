@@ -331,7 +331,8 @@ local function ensure_session(e, id, dry, lines)
     local dir = tab.dir or e.dir
     if dir then o[#o + 1] = "-c"; o[#o + 1] = dir end
     o[#o + 1] = "--"
-    for _, a in ipairs(tab.command) do o[#o + 1] = a end
+    local command = type(tab.command) == "function" and tab.command() or tab.command
+    for _, a in ipairs(command) do o[#o + 1] = a end
     return (table.unpack or unpack)(o)
   end
   if not id then
@@ -548,17 +549,10 @@ rex.action{
   end,
 }
 
--- rexboard (an attention board over every host's agents) lives in ~/.local/bin, which the
--- server's PATH lacks, the same reason rex_cli is resolved by path.
-local rexboard = (os.getenv("HOME") or "") .. "/.local/bin/rexboard"
-
+-- rexboard (an attention board over every host's agents), found on each call by layout.rexboard,
+-- since the server's PATH may lack where it is installed.
 local function rexboard_cli()
-  local f = io.open(rexboard)
-  if not f then
-    error("rexboard not installed: curl -fsSL https://raw.githubusercontent.com/vanducng/rexboard/main/install.sh | sh", 0)
-  end
-  f:close()
-  return rexboard
+  return layout.rexboard() or error("rexboard not installed: brew install vanducng/tap/rexboard", 0)
 end
 
 local function rexboard_run(argv, extra)
