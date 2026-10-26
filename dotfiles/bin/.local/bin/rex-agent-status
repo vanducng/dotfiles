@@ -12,6 +12,8 @@
 # the status), so the pane header can't show it. There the hooks record the status and one
 # background spinner per pane puts the glyph back on the title until the agent exits:
 #   rex-agent-status --spin <state-file-base> <agent-pid> <tty>
+# REX_AGENT_STATUS_LOG=<file> appends one line per hook call (event, which of TMUX, TMUX_PANE
+# and REX_BLOCK were set, the pane found, what it did), never the hook's text.
 import base64
 import fcntl
 import json
@@ -95,13 +97,34 @@ def agent_tty():
     """The agent's pid and tty: its hook processes have no tty, so walk up to the first that does."""
     pid = os.getppid()
     while pid > 1:
-        row = (run(("/bin/ps",), "-o", "ppid=,tty=", "-p", str(pid)) or "").split()
+        row = (run(("ps", "/bin/ps"), "-o", "ppid=,tty=", "-p", str(pid)) or "").split()
         if len(row) != 2:
             break
         if row[1] != "??":
             return pid, "/dev/" + row[1]
         pid = int(row[0])
     return None, None
+
+
+def seat_pane():
+    """The agent's tmux pane: TMUX_PANE, else, under a tmux TERM, the one pane on the agent's tty.
+    A launcher can start the agent without TMUX and TMUX_PANE while it still runs in a pane."""
+    pane = os.environ.get("TMUX") and os.environ.get("TMUX_PANE")
+    if pane or not os.environ.get("TERM", "").startswith(("tmux", "screen")):
+        return pane
+    _, tty = agent_tty()
+    rows = (tmux("list-panes", "-a", "-F", "#{pane_tty} #{pane_id}") or "").splitlines() if tty else []
+    panes = [row.split(" ")[1] for row in rows if row.startswith(tty + " ")]
+    return panes[0] if len(panes) == 1 else None
+
+
+def log(event, pane, action):
+    path = os.environ.get("REX_AGENT_STATUS_LOG")
+    if not path:
+        return
+    names = ",".join(n for n in ("TMUX", "TMUX_PANE", "REX_BLOCK") if os.environ.get(n)) or "-"
+    with open(path, "a") as f:
+        f.write("%s %s env=%s pane=%s %s\n" % (time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), event or "-", names, pane or "-", action))
 
 
 def mark(state):
@@ -178,20 +201,29 @@ def main():
     if sys.argv[1] == "--spin":
         spin(sys.argv[2], int(sys.argv[3]), sys.argv[4])
         return
-    pane = os.environ.get("TMUX_PANE")
-    in_tmux = os.environ.get("TMUX") and pane
-    if not (in_tmux or os.environ.get("REX_BLOCK")):
+    pane = seat_pane()
+    if not (pane or os.environ.get("REX_BLOCK")):
+        log(None, None, "skipped: not in tmux or Rex")
         return
     try:
         event = json.loads(sys.stdin.read() or "{}")
     except ValueError:
+        log(None, pane, "skipped: not JSON")
         return
-    st = status(event) if isinstance(event, dict) else None
-    if st and not in_tmux:
+    if not isinstance(event, dict):
+        event = {}
+    name = event.get("hook_event_name")
+    st = status(event)
+    if not st:
+        log(name, pane, "skipped: no status for this event")
+        return
+    if not pane:
         mark(st[0])
+        log(name, None, "marked the Rex pane " + st[0])
         return
-    tty = st and tmux("display-message", "-p", "-t", pane, "#{pane_tty}")
+    tty = tmux("display-message", "-p", "-t", pane, "#{pane_tty}")
     if not tty:
+        log(name, pane, "skipped: tmux gave no tty")
         return
     pairs = fields(sys.argv[1], *st)
     write(tty, wrap(pairs))
@@ -199,6 +231,7 @@ def main():
         tmux("set-option", "-p", "-u", "-t", pane, "@rex_status")
     else:
         tmux("set-option", "-p", "-t", pane, "@rex_status", pairs)
+    log(name, pane, "wrote " + st[0])
 
 
 if __name__ == "__main__":
