@@ -218,10 +218,10 @@ Running seats natively in Rex instead of tmux is tracked on the OpenRig fork.
 
 ## OpenRig extension
 
-rexboard runs `extensions/openrig` (enabled in `config.toml`) every 10 seconds over its [extension contract](https://github.com/vanducng/rexboard/blob/main/docs/extensions.md). The adapter is POSIX `sh` with `jq` and `yq`. It asks `rig ps --nodes -A --json` on this Mac, and `rig ps --host <label>` for each other host in the rows, so a Rex host's label must be its OpenRig host id (`mini-01`). A host `rig` cannot reach only loses its own rows.
+rexboard runs `extensions/openrig` (enabled in `config.toml`) every 10 seconds over its [extension contract](https://github.com/vanducng/rexboard/blob/main/docs/extensions.md). The adapter is POSIX `sh` with `jq` and `yq`. It asks `rig ps --nodes -A --json` on this Mac, and `rig ps --host <label>` for each other host in the rows, so a Rex host's label must be its OpenRig host id (`mini-01`). The other hosts are asked at once and get until 2.5 seconds after this Mac answers, inside the extension's 5 second timeout, so a host that is asleep or off the network only loses its own rows.
 
 - **Matching:** a row is a seat when its title, with the leading status glyph or without it, is the seat's `canonicalSessionName` (`dev-impl@rexboard`), or else when its pane label is the seat's `logicalId` (`dev.impl`) inside the rig's tab (`openrig:rig:<rig>#…`) or `<n>-<rig>` session. That covers a Codex seat whose title the harness set. A row two seats could be is left out.
-- **Fields:** `rig` (`rigName`), `role` (`logicalId`), and `project`: the id of the project in `~/projects/workspace.yaml` (`settings.workspace`, else `$PROJECTS_ROOT`, else `~/projects`) whose `rigs` lists the rig.
+- **Fields:** `rig` (`rigName`), `role` (`logicalId`), and `project`: the id of the project in `~/projects/workspace.yaml` (`settings.workspace`, else `$PROJECTS_ROOT`, else `~/projects`) whose `rigs` lists the rig. A `workspace.yaml` that does not parse leaves `project` empty and logs one line to `serve.log`.
 - **Status,** for a seat with no status record of its own: `needsAttention` or `needs-input` is `blocked` (kind `input`), `running` is `working`, and `idle` is `idle`. Anything else gives none. A seat whose bridge reports keeps its own status.
 - **Failure:** with `rig` missing, or `rig ps` failing on this Mac, the run fails with one line on stderr, and rexboard's top bar shows `ext openrig failed`. `rexboard ext ls` shows how the last run went.
 

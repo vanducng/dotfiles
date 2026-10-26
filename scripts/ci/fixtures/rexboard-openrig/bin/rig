@@ -1,5 +1,6 @@
 #!/bin/sh
-# A fake `rig ps`: this host's nodes, or a host's by --host; host "down" and FAKE_RIG_FAIL fail.
+# A fake `rig ps`: this host's nodes, or a host's by --host; host "down" and FAKE_RIG_FAIL fail,
+# and host "asleep" hangs the way ssh does on a host that is off the network.
 [ -n "${FAKE_RIG_FAIL:-}" ] && { echo "rig: daemon unreachable" >&2; exit 1; }
 dir=$(cd "$(dirname "$0")/.." && pwd)
 host=local
@@ -10,5 +11,6 @@ done
 case $host in
   local) cat "$dir/rig-local.json" ;;
   mini) cat "$dir/rig-mini.json" ;;
+  asleep) sleep 10 ;;
   *) echo "rig: no host $host" >&2; exit 1 ;;
 esac

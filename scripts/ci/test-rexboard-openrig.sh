@@ -24,6 +24,25 @@ got=$(printf '%s' "$request" | PATH="$FIX/bin:$PATH" "$EXT/adapter")
 $(diff <(printf '%s' "$got" | jq -S .) <(jq -S . "$FIX/expected.json") || true)"
 pass "title, label and session matches; ambiguous, plain, wrong-host and unreachable rows left out; project and status"
 
+# A host that hangs (asleep, off the network) loses only its own rows, inside the 5 s timeout.
+asleep=$(printf '%s' "$request" | jq -c '.rows += [.rows[0] + {key: "asleep/b-title", host: "asleep"}]')
+start=$SECONDS
+got=$(printf '%s' "$asleep" | PATH="$FIX/bin:$PATH" "$EXT/adapter")
+took=$((SECONDS - start))
+[ "$took" -lt 5 ] || fail "a hanging host held the run for ${took}s"
+[ "$(printf '%s' "$got" | jq -S .)" = "$(jq -S . "$FIX/expected.json")" ] || fail "a hanging host changed the answer: $got"
+pass "a hanging host: answered in ${took}s without its rows"
+
+# A workspace.yaml that does not parse costs the project field only, with one stderr line.
+mkdir "$TMP/badws"
+printf 'projects: [\n  - id: demo\n' >"$TMP/badws/workspace.yaml"
+badws=$(printf '%s' "$request" | jq -c --arg ws "$TMP/badws" '.settings.workspace = $ws')
+got=$(printf '%s' "$badws" | PATH="$FIX/bin:$PATH" "$EXT/adapter" 2>"$TMP/badws/err") || fail "a broken workspace.yaml failed the run"
+[ "$(printf '%s' "$got" | jq -S .)" = "$(jq -S '.rows[].fields.project = null' "$FIX/expected.json")" ] ||
+  fail "a broken workspace.yaml changed more than project: $got"
+[ "$(wc -l <"$TMP/badws/err" | tr -d ' ')" = 1 ] || fail "want one stderr line, got: $(cat "$TMP/badws/err")"
+pass "a broken workspace.yaml: no project, \"$(cat "$TMP/badws/err")\""
+
 # Without rig, or with rig failing here, the run fails with one line, so rexboard shows its alert.
 mkdir "$TMP/empty"
 for case in missing failing; do
