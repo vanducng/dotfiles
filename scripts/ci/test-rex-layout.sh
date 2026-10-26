@@ -83,7 +83,33 @@ plan = layout.plan(names({ "foo", "" }), false)
 check(labels(plan), "1-foo 2-", "an empty name keeps its number")
 check(labels(rerun(plan, false)), labels(plan), "an empty name is stable on a rerun")
 
-check(layout.sessions[1].tabs[1].command[1], "/home/test/.local/bin/rexboard", "paths come from HOME")
+-- rexboard: $HOMEBREW_PREFIX/bin, /opt/homebrew/bin, /usr/local/bin, ~/.local/bin, then PATH.
+local real_exists = layout.exists
+local function find(installed, env)
+  layout.exists = function(p) return installed[p] == true end
+  local got = layout.rexboard(function(k) return env[k] end)
+  layout.exists = real_exists
+  return got
+end
+local env = { HOME = "/home/test", PATH = "/usr/bin:/home/test/bin", HOMEBREW_PREFIX = "/brew" }
+local all = { ["/brew/bin/rexboard"] = true, ["/opt/homebrew/bin/rexboard"] = true,
+  ["/usr/local/bin/rexboard"] = true, ["/home/test/.local/bin/rexboard"] = true,
+  ["/home/test/bin/rexboard"] = true }
+local order = { "/brew/bin/rexboard", "/opt/homebrew/bin/rexboard", "/usr/local/bin/rexboard",
+  "/home/test/.local/bin/rexboard", "/home/test/bin/rexboard" }
+for _, want in ipairs(order) do
+  check(find(all, env), want, "rexboard resolves in order")
+  all[want] = nil
+end
+check(find({}, env), nil, "no rexboard anywhere is nil")
+check(find({ ["/opt/homebrew/bin/rexboard"] = true }, { HOME = "/home/test" }), "/opt/homebrew/bin/rexboard",
+  "no HOMEBREW_PREFIX and no PATH still finds Homebrew's default")
+layout.exists = function(p) return p == "/home/test/.local/bin/rexboard" end
+local tab = layout.sessions[1].tabs[1].command()
+check(tab[1] .. " " .. tab[2], "/home/test/.local/bin/rexboard board", "the cockpit's board tab resolves when made")
+layout.exists = function() return false end
+check(layout.sessions[1].tabs[1].command()[1], "rexboard", "a missing rexboard falls back to the tab shell's PATH")
+layout.exists = real_exists
 check(layout.sessions[1].tabs[3].dir, "/home/test/projects", "a tab's own folder comes from HOME")
 for i, k in ipairs(layout.keys) do
   local e = layout.entry(k[1])
@@ -91,4 +117,4 @@ for i, k in ipairs(layout.keys) do
 end
 LUA
 ) || fail "layout numbering: $out"
-pass "layout numbering: stacked prefixes, an existing 1- session, gaps, remote hosts, reruns"
+pass "layout numbering: stacked prefixes, an existing 1- session, gaps, remote hosts, reruns; rexboard resolution order"

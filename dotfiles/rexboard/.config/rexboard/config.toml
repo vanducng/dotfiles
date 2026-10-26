@@ -1,5 +1,3 @@
 # rexboard: https://github.com/vanducng/rexboard/blob/main/docs/configuration.md
 # The app client is left to the default: the only Rex app on this host's unix socket.
-# No jump.pre_cmd: the board shows in the Rex window you are in, so a jump lands in that same
-# window. `pre_cmd` is only for a board kept in its own window (`rexboard window --new`).
 
