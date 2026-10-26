@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # Puts the rex-agent-status hooks from dotfiles into a live harness settings file, which the
 # harness rewrites at runtime and which holds private entries, so it is merged, never stowed.
-#   rex-hooks-sync [--apply] [--target FILE] [HARNESS]     HARNESS: claude (default)
+#   rex-hooks-sync [--apply] [--target FILE] [HARNESS]     HARNESS: claude (default) or codex
 # For each hook event, hooks that run rex-agent-status are replaced by the dotfiles ones, in
 # place; every other key and hook stays. Prints the changed lines (no context, so no other values);
 # --apply writes them, after a backup beside the file (FILE.bak-<UTC>). A second run changes nothing.
@@ -18,6 +18,7 @@ MARK = "rex-agent-status"
 # Harness: (source in the dotfiles repo, live file).
 HARNESSES = {
     "claude": ("dotfiles/claude/.claude/settings.json", "~/.claude/settings.json"),
+    "codex": ("dotfiles/codex/.codex/hooks.json", "~/.codex/hooks.json"),
 }
 
 
@@ -59,8 +60,9 @@ def merged(live, source):
     return out
 
 
-def text(settings):
-    return json.dumps(settings, indent=2, ensure_ascii=False) + "\n"
+def text(settings, end="\n"):
+    """The file as the harness writes it, ending as the live file does, so only real changes show."""
+    return json.dumps(settings, indent=2, ensure_ascii=False) + end
 
 
 def fail(why):
@@ -111,15 +113,16 @@ def main(argv):
         fail("cannot read %s: %s" % (target, err.strerror))
     except ValueError:
         fail("%s is not valid JSON; left alone" % target)
+    end = "\n" if before.endswith("\n") else ""
     try:
-        after = text(merged(live, source))
+        after = text(merged(live, source), end)
     except (AttributeError, TypeError):
         fail("%s has hooks in a shape this does not know; left alone" % target)
-    if after == text(live):
+    if after == text(live, end):
         print("rex hooks in %s are up to date" % target)
         return
     sys.stdout.writelines(difflib.unified_diff(
-        text(live).splitlines(True), after.splitlines(True), target, target + " (merged)", n=0))
+        text(live, end).splitlines(True), after.splitlines(True), target, target + " (merged)", n=0))
     if not args.apply:
         print("dry run; --apply writes it")
         return

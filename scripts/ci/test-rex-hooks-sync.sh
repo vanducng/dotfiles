@@ -77,4 +77,20 @@ printf '{ not json' > "$tmp/bad.json"
 if "$sync" --apply --target "$tmp/bad.json" 2>"$tmp/err"; then fail "invalid JSON was merged"; fi
 grep -q 'not valid JSON' "$tmp/err"
 [ "$(cat "$tmp/bad.json")" = '{ not json' ]
+# Codex: the same merge from dotfiles/codex/.codex/hooks.json, and a file without a final
+# newline keeps it that way, so only the rex lines change.
+printf '{\n  "hooks": {\n    "Stop": [\n      {\n        "hooks": [\n          {\n            "type": "command",\n            "command": "notify-tool"\n          }\n        ]\n      }\n    ]\n  }\n}' > "$tmp/codex.json"
+diff_out="$("$sync" codex --target "$tmp/codex.json")"
+grep '^-' <<<"$diff_out" | grep -v '^---' | grep -q . && fail "codex: a line was removed"
+grep -qF 'rex-agent-status\" codex' <<<"$diff_out" || fail "codex: no rex hook added"
+"$sync" codex --apply --target "$tmp/codex.json" >/dev/null
+[ "$(tail -c 1 "$tmp/codex.json")" = "}" ] || fail "codex: the file gained a final newline"
+python3 - "$tmp/codex.json" <<'PY'
+import json, sys
+hooks = json.load(open(sys.argv[1]))["hooks"]
+assert hooks["Stop"][0]["hooks"][0]["command"] == "notify-tool"
+for event in ("SessionStart", "UserPromptSubmit", "PreToolUse", "PermissionRequest", "Stop", "SessionEnd"):
+    assert any("rex-agent-status" in h["command"] for g in hooks[event] for h in g["hooks"]), event
+PY
+"$sync" codex --apply --target "$tmp/codex.json" | grep -q 'up to date'
 echo "rex-hooks-sync: ok"
