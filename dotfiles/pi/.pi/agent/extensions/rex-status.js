@@ -26,27 +26,47 @@ export function settled(last, failure) {
     : { hook_event_name: "Stop", last_assistant_message: last };
 }
 
+// Each report waits for the one before it, at most this long, so a quick `working` never lands
+// before the `idle` sent ahead of it. pi awaits a run's last report: `pi -p` exits right after
+// it, and the script finds pi's pane through pi's own process, so pi must still be running.
+const WAIT = 2000;
+
 function report(event) {
-  if (!reporting(process.env)) return;
-  try {
-    const child = spawn("/usr/bin/python3", [SCRIPT, "pi"], { stdio: ["pipe", "ignore", "ignore"] });
-    child.on("error", () => {});
+  if (!reporting(process.env)) return Promise.resolve();
+  return new Promise((resolve) => {
+    let child;
+    try {
+      child = spawn("/usr/bin/python3", [SCRIPT, "pi"], { stdio: ["pipe", "ignore", "ignore"] });
+    } catch {
+      return resolve();
+    }
+    const done = () => {
+      clearTimeout(timer);
+      child.unref();
+      resolve();
+    };
+    const timer = setTimeout(done, WAIT);
+    child.on("error", done);
+    child.on("exit", done);
     child.stdin.on("error", () => {});
     child.stdin.end(JSON.stringify(event));
-    child.unref();
-  } catch {}
+  });
 }
 
 export default function rexStatus(pi) {
   let last = "";
   let failure;
+  let queue = Promise.resolve();
+  const send = (event) => (queue = queue.then(() => report(event)));
 
-  pi.on("session_start", async () => report({ hook_event_name: "SessionStart" }));
+  pi.on("session_start", async () => {
+    send({ hook_event_name: "SessionStart" });
+  });
 
   pi.on("agent_start", async () => {
     last = "";
     failure = undefined;
-    report({ hook_event_name: "UserPromptSubmit" });
+    send({ hook_event_name: "UserPromptSubmit" });
   });
 
   pi.on("message_end", async (event) => {
@@ -56,7 +76,10 @@ export default function rexStatus(pi) {
     if (message.stopReason === "error") failure = message.errorMessage || "the model failed";
   });
 
-  pi.on("agent_settled", async () => report(settled(last, failure)));
+  pi.on("agent_settled", async () => send(settled(last, failure)));
 
-  pi.on("session_shutdown", async () => report({ hook_event_name: "SessionEnd" }));
+  // Without a UI (`pi -p`) the session ends with its one run, whose result should stay up.
+  pi.on("session_shutdown", async (_event, ctx) => {
+    if (ctx?.hasUI) await send({ hook_event_name: "SessionEnd" });
+  });
 }
