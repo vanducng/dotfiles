@@ -2,7 +2,10 @@
 # Rex learns an agent's status from OSC 7501, which Claude Code and Codex send on their own
 # when they run straight in a Rex pane. Inside tmux (OpenRig seats) the sequence stops at
 # tmux, so the agent's hooks call this with the hook JSON on stdin:
-#   rex-agent-status <app>        e.g. claude-code
+#   rex-agent-status <app>        claude-code; codex (experimental); pi, from its rex-status extension
+# The msg carries the agent's own words where a hook has them (the final message on Stop, the
+# question and its options for AskUserQuestion, the API error on StopFailure), on one line with
+# ` ⏎ ` for each line break, cut to Rex's 2048 bytes.
 # It wraps the status in tmux passthrough (allow-passthrough on) and writes it to the
 # seat's pane, so it reaches whichever Rex pane has the seat attached. Never fails a hook.
 # The last status is kept on the pane (@rex_status); tmux.conf replays it when a client
@@ -25,40 +28,105 @@ import tempfile
 import time
 
 
-def status(event):
+MSG_MAX = 2048  # Rex's limit on msg, in decoded bytes
+SEQ_MAX = 4096  # and on the whole sequence; a report over either is dropped whole
+
+
+def status(event, app="claude-code"):
     """(state, kind, msg) for a hook event, or None to leave the status alone."""
     name = event.get("hook_event_name", "")
+    tool = event.get("tool_name")
+    args = event.get("tool_input") or {}
     if name == "SessionStart":
         return "idle", None, None
     if name == "UserPromptSubmit":
         return "working", None, "Working"
+    if name == "PreToolUse" and tool == "AskUserQuestion":
+        return "blocked", "question", question(args)
     if name == "PreToolUse":
-        tool = event.get("tool_input") or {}
-        return "working", None, tool.get("description") or event.get("tool_name")
+        return "working", None, args.get("description") or tool
+    if name == "PostToolUse" and tool == "AskUserQuestion":
+        return "working", None, "Working"
     if name == "PermissionRequest":
-        return "blocked", "permission", "Allow " + str(event.get("tool_name") or "a tool") + "?"
+        asked = app == "codex" and args.get("description")
+        return "blocked", "permission", asked or "Allow " + str(tool or "a tool") + "?"
     if name == "Notification" and event.get("notification_type") == "permission_prompt":
         return "blocked", "permission", event.get("message")
     if name == "Stop":
-        return "done", None, "Done"
+        return "done", None, one_line(event.get("last_assistant_message")) or "Done"
+    if name == "StopFailure":
+        said = one_line(event.get("last_assistant_message"))
+        why = " ".join(str(p) for p in (event.get("error"), event.get("error_details")) if p)
+        return "error", None, said or why or "error"
     if name == "SessionEnd":
         return "clear", None, None
     return None
 
 
-def fields(app, state, kind, msg):
-    pairs = ["app=" + app, "state=" + state]
-    if kind:
-        pairs.append("kind=" + kind)
-    if msg:
-        line = re.sub(r"[\x00-\x1f\x7f]+", " ", str(msg)).strip()[:200]
-        pairs.append("msg=" + base64.b64encode(line.encode()).decode())
-    return ":".join(pairs)
+def turn_record(app, name, st):
+    """In a plain Rex pane, Claude's own `done` carries no text, so the final message also goes
+    to a `turn` sub-record, cleared when the next prompt starts or the session ends."""
+    if name == "Stop":
+        return fields(app, "done", None, st[2], record="turn")
+    if name in ("UserPromptSubmit", "SessionEnd"):
+        return fields(app, "clear", None, None, record="turn")
+    return None
+
+
+def question(args):
+    """An AskUserQuestion as one msg: the first question, then its options, numbered."""
+    questions = args.get("questions") or []
+    if not questions:
+        return "Question"
+    first = questions[0]
+    lines = [first.get("question") or first.get("header") or "Question"]
+    for n, option in enumerate(first.get("options") or [], 1):
+        label, about = option.get("label"), option.get("description")
+        lines.append("%d. %s - %s" % (n, label, about) if about else "%d. %s" % (n, label))
+    if len(questions) > 1:
+        lines.append("(+%d more questions)" % (len(questions) - 1))
+    return one_line("\n".join(lines))
+
+
+def one_line(text):
+    """Rex allows no control characters in msg: each run of line breaks becomes ` ⏎ `, and any
+    other control character a space."""
+    if not text:
+        return ""
+    lines = (re.sub(r"[\x00-\x1f\x7f-\x9f]+", " ", line).strip() for line in re.split(r"[\r\n]+", str(text)))
+    return " ⏎ ".join(line for line in lines if line)
+
+
+def capped(text, limit):
+    """`text` in at most `limit` UTF-8 bytes, cut at a character and ending in … when cut."""
+    data = text.encode()
+    if len(data) <= limit:
+        return text
+    return data[: limit - len("…".encode())].decode(errors="ignore") + "…"
+
+
+def fields(app, state, kind, msg, record=None):
+    head = ["id=" + record] if record else []
+    pairs = head + ["app=" + app, "state=" + state] + (["kind=" + kind] if kind else [])
+    line = one_line(msg)
+    limit = MSG_MAX
+    while True:
+        tail = [] if not line else ["msg=" + base64.b64encode(capped(line, limit).encode()).decode()]
+        out = ":".join(pairs + tail)
+        if len(wrap(out).encode()) <= SEQ_MAX:
+            return out
+        if limit <= 256:
+            return ":".join(pairs)
+        limit -= 256
+
+
+def osc(pairs):
+    return "\x1b]7501;" + pairs + "\x07"
 
 
 def wrap(pairs):
-    osc = "\x1b]7501;" + pairs + "\x07"
-    return "\x1bPtmux;" + osc.replace("\x1b", "\x1b\x1b") + "\x1b\\"
+    """The status in tmux passthrough, which forwards it to the attached Rex tile."""
+    return "\x1bPtmux;" + osc(pairs).replace("\x1b", "\x1b\x1b") + "\x1b\\"
 
 
 def sequence(app, state, kind, msg):
@@ -212,20 +280,35 @@ def main():
         return
     if not isinstance(event, dict):
         event = {}
+    app = sys.argv[1]
     name = event.get("hook_event_name")
-    st = status(event)
+    st = status(event, app)
     if not st:
         log(name, pane, "skipped: no status for this event")
         return
+    if not pane and app == "codex":
+        log(name, None, "skipped: codex reports to a Rex pane itself")
+        return
+    if not pane and app == "pi":
+        # pi reports nothing itself, so in a Rex pane the status goes straight to its tty.
+        _, tty = agent_tty()
+        if tty:
+            write(tty, osc(fields(app, *st)))
+        log(name, None, ("wrote %s to the Rex pane" % st[0]) if tty else "skipped: no tty")
+        return
     if not pane:
         mark(st[0])
-        log(name, None, "marked the Rex pane " + st[0])
+        record = turn_record(app, name, st)
+        _, tty = agent_tty() if record else (None, None)
+        if tty:
+            write(tty, osc(record))
+        log(name, None, "marked the Rex pane " + st[0] + (" and its turn record" if tty else ""))
         return
     tty = tmux("display-message", "-p", "-t", pane, "#{pane_tty}")
     if not tty:
         log(name, pane, "skipped: tmux gave no tty")
         return
-    pairs = fields(sys.argv[1], *st)
+    pairs = fields(app, *st)
     write(tty, wrap(pairs))
     if st[0] == "clear":
         tmux("set-option", "-p", "-u", "-t", pane, "@rex_status")

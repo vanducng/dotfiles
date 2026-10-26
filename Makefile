@@ -30,7 +30,7 @@ help:
 	@echo "  make bootstrap-linux - linux-deps + stow-install"
 	@echo "  make setup-herdr     - Install Herdr's Droid integration"
 	@echo "  make setup-tinycast  - Apply Tinycast hotkeys, Quick Actions, audio, and sysmon"
-	@echo "  make rex-hooks       - Show what merging the rex hooks into ~/.claude/settings.json changes"
+	@echo "  make rex-hooks       - Show what merging the rex hooks into the live Claude and Codex files changes"
 	@echo "  make rex-hooks-apply - Merge them (stow-rex runs this too)"
 	@echo ""
 	@echo "Testing:"
@@ -58,7 +58,7 @@ stow-install:
 			(cd dotfiles && stow --no-folding -D -t $(HOME) $$folder 2>/dev/null || true; \
 			 stow --no-folding -t $(HOME) $$folder); \
 		fi; \
-		if [ "$$folder" = rex ]; then ./dotfiles/bin/.local/bin/rex-hooks-sync --apply; fi; \
+		if [ "$$folder" = rex ]; then for h in $(REX_HARNESSES); do ./dotfiles/bin/.local/bin/rex-hooks-sync $$h --apply; done; fi; \
 	done
 	@$(MAKE) ensure-home-repos
 
@@ -106,18 +106,19 @@ stow-rex:
 	@echo "Stowing rex..."
 	@cd dotfiles && stow --no-folding -D -t $(HOME) rex 2>/dev/null || true
 	@cd dotfiles && stow --no-folding -t $(HOME) rex
-	@./dotfiles/bin/.local/bin/rex-hooks-sync --apply
+	@for h in $(REX_HARNESSES); do ./dotfiles/bin/.local/bin/rex-hooks-sync $$h --apply; done
 
 unstow-rex:
 	@echo "Unstowing rex..."
 	@cd dotfiles && stow -t $(HOME) -D rex 2>/dev/null || true
 
-# What the rex hooks merge would change in ~/.claude/settings.json; -apply writes it.
+# What the rex hooks merge would change in each harness's live hooks file; -apply writes it.
+REX_HARNESSES=claude codex
 rex-hooks:
-	@./dotfiles/bin/.local/bin/rex-hooks-sync
+	@for h in $(REX_HARNESSES); do ./dotfiles/bin/.local/bin/rex-hooks-sync $$h; done
 
 rex-hooks-apply:
-	@./dotfiles/bin/.local/bin/rex-hooks-sync --apply
+	@for h in $(REX_HARNESSES); do ./dotfiles/bin/.local/bin/rex-hooks-sync $$h --apply; done
 
 stow-pi:
 	@echo "Stowing pi (home layout)..."

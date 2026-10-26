@@ -110,6 +110,29 @@
           }
         ]
       }
+    ],
+    "StopFailure": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/bin/sh -c '[ -n \"$TMUX$REX_BLOCK\" ] || case \"$TERM\" in tmux*|screen*) ;; *) exit 0;; esac; exec /usr/bin/python3 \"$HOME/.local/bin/rex-agent-status\" claude-code'",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "AskUserQuestion",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/bin/sh -c '[ -n \"$TMUX$REX_BLOCK\" ] || case \"$TERM\" in tmux*|screen*) ;; *) exit 0;; esac; exec /usr/bin/python3 \"$HOME/.local/bin/rex-agent-status\" claude-code'",
+            "timeout": 5
+          }
+        ]
+      }
     ]
   },
   "statusLine": {
