@@ -1,0 +1,135 @@
+#!/usr/bin/env python3
+# Puts the rex-agent-status hooks from dotfiles into a live harness settings file, which the
+# harness rewrites at runtime and which holds private entries, so it is merged, never stowed.
+#   rex-hooks-sync [--apply] [--target FILE] [HARNESS]     HARNESS: claude (default)
+# For each hook event, hooks that run rex-agent-status are replaced by the dotfiles ones, in
+# place; every other key and hook stays. Prints the changed lines (no context, so no other values);
+# --apply writes them, after a backup beside the file (FILE.bak-<UTC>). A second run changes nothing.
+import argparse
+import copy
+import difflib
+import json
+import os
+import sys
+import tempfile
+import time
+
+MARK = "rex-agent-status"
+# Harness: (source in the dotfiles repo, live file).
+HARNESSES = {
+    "claude": ("dotfiles/claude/.claude/settings.json", "~/.claude/settings.json"),
+}
+
+
+def is_rex(hook):
+    return isinstance(hook, dict) and MARK in str(hook.get("command", ""))
+
+
+def rex_groups(settings):
+    """The hook groups that run rex-agent-status, by event, with only those hooks in each."""
+    out = {}
+    for event, groups in (settings.get("hooks") or {}).items():
+        mine = [dict(g, hooks=[h for h in g.get("hooks", []) if is_rex(h)]) for g in groups]
+        mine = [g for g in mine if g["hooks"]]
+        if mine:
+            out[event] = mine
+    return out
+
+
+def merged(live, source):
+    """`live` with its rex hooks replaced by `source`'s, each event's set where the old one was."""
+    out = copy.deepcopy(live)
+    hooks = out.setdefault("hooks", {})
+    want = rex_groups(source)
+    for event in list(hooks) + [e for e in want if e not in hooks]:
+        new, placed = [], False
+        for group in hooks.get(event, []):
+            rest = [h for h in group.get("hooks", []) if not is_rex(h)]
+            if len(rest) < len(group.get("hooks", [])) and not placed:
+                new.extend(copy.deepcopy(want.get(event, [])))
+                placed = True
+            if rest:
+                new.append(dict(group, hooks=rest))
+        if not placed:
+            new.extend(copy.deepcopy(want.get(event, [])))
+        if new:
+            hooks[event] = new
+        else:
+            hooks.pop(event, None)
+    return out
+
+
+def text(settings):
+    return json.dumps(settings, indent=2, ensure_ascii=False) + "\n"
+
+
+def fail(why):
+    print("rex-hooks-sync: " + why, file=sys.stderr)
+    sys.exit(1)
+
+
+def write(path, body, mode):
+    """Writes `body` to a new file in `path`'s directory with `mode`, then renames it to `path`."""
+    fd, tmp = tempfile.mkstemp(dir=os.path.dirname(path), prefix=".rex-hooks-sync-")
+    try:
+        os.fchmod(fd, mode)
+        with os.fdopen(fd, "w") as f:
+            f.write(body)
+        os.replace(tmp, path)
+    except BaseException:
+        if os.path.exists(tmp):
+            os.unlink(tmp)
+        raise
+
+
+def main(argv):
+    parser = argparse.ArgumentParser(prog="rex-hooks-sync")
+    parser.add_argument("harness", nargs="?", default="claude", choices=sorted(HARNESSES))
+    parser.add_argument("--target", help="the live file (default: the harness's own)")
+    parser.add_argument("--apply", action="store_true", help="write the change")
+    args = parser.parse_args(argv)
+    repo = os.path.realpath(os.path.join(os.path.dirname(os.path.realpath(__file__)), "../../../.."))
+    source_path = os.path.join(repo, HARNESSES[args.harness][0])
+    target = os.path.expanduser(args.target or HARNESSES[args.harness][1])
+    # Neither is an error, so `make stow-rex` works on every host.
+    if os.path.islink(target):
+        print("%s is a symlink: this host stows it, so it already has the dotfiles hooks" % target)
+        return
+    if not os.path.exists(target):
+        print("no %s on this host; nothing to merge" % target)
+        return
+    try:
+        with open(source_path) as f:
+            source = json.load(f)
+    except (OSError, ValueError):
+        fail("cannot read the dotfiles hooks at %s" % source_path)
+    try:
+        with open(target) as f:
+            before = f.read()
+        live = json.loads(before)
+    except OSError as err:
+        fail("cannot read %s: %s" % (target, err.strerror))
+    except ValueError:
+        fail("%s is not valid JSON; left alone" % target)
+    try:
+        after = text(merged(live, source))
+    except (AttributeError, TypeError):
+        fail("%s has hooks in a shape this does not know; left alone" % target)
+    if after == text(live):
+        print("rex hooks in %s are up to date" % target)
+        return
+    sys.stdout.writelines(difflib.unified_diff(
+        text(live).splitlines(True), after.splitlines(True), target, target + " (merged)", n=0))
+    if not args.apply:
+        print("dry run; --apply writes it")
+        return
+    # The backup holds the same private entries, so it gets the file's own mode.
+    mode = os.stat(target).st_mode & 0o7777
+    backup = target + ".bak-" + time.strftime("%Y%m%dT%H%M%SZ", time.gmtime())
+    write(backup, before, mode)
+    write(target, after, mode)
+    print("wrote %s (backup %s)" % (target, backup))
+
+
+if __name__ == "__main__":
+    main(sys.argv[1:])

@@ -12,7 +12,7 @@ STOW_FOLDERS=$(COMMON_STOW_FOLDERS) $(LINUX_STOW_EXTRAS)
 endif
 SHELL := /bin/bash
 
-.PHONY: help stow-folders stow-install stow-uninstall stow-status setup-herdr setup-tinycast setup-rex release test validate deps platform-test script-test linux-deps linux-desktop linux-homelab bootstrap-linux ensure-home-repos
+.PHONY: rex-hooks rex-hooks-apply help stow-folders stow-install stow-uninstall stow-status setup-herdr setup-tinycast setup-rex release test validate deps platform-test script-test linux-deps linux-desktop linux-homelab bootstrap-linux ensure-home-repos
 
 help:
 	@echo "Dotfiles Management"
@@ -30,6 +30,8 @@ help:
 	@echo "  make bootstrap-linux - linux-deps + stow-install"
 	@echo "  make setup-herdr     - Install Herdr's Droid integration"
 	@echo "  make setup-tinycast  - Apply Tinycast hotkeys, Quick Actions, audio, and sysmon"
+	@echo "  make rex-hooks       - Show what merging the rex hooks into ~/.claude/settings.json changes"
+	@echo "  make rex-hooks-apply - Merge them (stow-rex runs this too)"
 	@echo ""
 	@echo "Testing:"
 	@echo "  make test            - Run all tests"
@@ -56,6 +58,7 @@ stow-install:
 			(cd dotfiles && stow --no-folding -D -t $(HOME) $$folder 2>/dev/null || true; \
 			 stow --no-folding -t $(HOME) $$folder); \
 		fi; \
+		if [ "$$folder" = rex ]; then ./dotfiles/bin/.local/bin/rex-hooks-sync --apply; fi; \
 	done
 	@$(MAKE) ensure-home-repos
 
@@ -95,7 +98,26 @@ unstow-$(1):
 	@cd dotfiles && stow -t $(HOME) -D $(1) 2>/dev/null || true
 endef
 
-$(foreach tool,$(filter-out pi,$(ALL_STOW_FOLDERS)),$(eval $(call make-stow-target,$(tool))))
+$(foreach tool,$(filter-out pi rex,$(ALL_STOW_FOLDERS)),$(eval $(call make-stow-target,$(tool))))
+
+# Rex config, then the rex-agent-status hooks merged into the live Claude settings, which the
+# harness rewrites and which holds private entries, so it is never stowed.
+stow-rex:
+	@echo "Stowing rex..."
+	@cd dotfiles && stow --no-folding -D -t $(HOME) rex 2>/dev/null || true
+	@cd dotfiles && stow --no-folding -t $(HOME) rex
+	@./dotfiles/bin/.local/bin/rex-hooks-sync --apply
+
+unstow-rex:
+	@echo "Unstowing rex..."
+	@cd dotfiles && stow -t $(HOME) -D rex 2>/dev/null || true
+
+# What the rex hooks merge would change in ~/.claude/settings.json; -apply writes it.
+rex-hooks:
+	@./dotfiles/bin/.local/bin/rex-hooks-sync
+
+rex-hooks-apply:
+	@./dotfiles/bin/.local/bin/rex-hooks-sync --apply
 
 stow-pi:
 	@echo "Stowing pi (home layout)..."
@@ -149,6 +171,7 @@ platform-test:
 script-test:
 	@./scripts/ci/test-agent-statusline.sh
 	@./scripts/ci/test-rex-agent-status.sh
+	@./scripts/ci/test-rex-hooks-sync.sh
 	@./scripts/ci/test-rex-layout.sh
 	@./scripts/ci/test-herdr-fingers.sh
 	@./scripts/ci/test-herdr-agents.sh
