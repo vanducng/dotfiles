@@ -1,3 +1,10 @@
 # rexboard: https://github.com/vanducng/rexboard/blob/main/docs/configuration.md
 # The app client is left to the default: the only Rex app on this host's unix socket.
 
+[extensions]
+# Directories in ~/.config/rexboard/extensions run only when named here.
+enabled = ["openrig"]
+
+[extensions.settings.openrig]
+# Where workspace.yaml maps each project to its rigs.
+workspace = "~/projects"

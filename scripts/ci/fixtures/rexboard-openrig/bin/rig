@@ -1,0 +1,14 @@
+#!/bin/sh
+# A fake `rig ps`: this host's nodes, or a host's by --host; host "down" and FAKE_RIG_FAIL fail.
+[ -n "${FAKE_RIG_FAIL:-}" ] && { echo "rig: daemon unreachable" >&2; exit 1; }
+dir=$(cd "$(dirname "$0")/.." && pwd)
+host=local
+while [ $# -gt 0 ]; do
+  [ "$1" = --host ] && host=$2
+  shift
+done
+case $host in
+  local) cat "$dir/rig-local.json" ;;
+  mini) cat "$dir/rig-mini.json" ;;
+  *) echo "rig: no host $host" >&2; exit 1 ;;
+esac

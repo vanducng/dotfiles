@@ -1,0 +1,55 @@
+#!/bin/sh
+# rexboard extension, contract 1: each Rex pane that is an OpenRig seat gets its rig, project and
+# role, and a seat with no status record of its own gets OpenRig's state. Needs rig, jq and yq.
+set -u
+fields=rigName,logicalId,canonicalSessionName,agentActivity,needsAttention
+command -v rig >/dev/null 2>&1 || { echo "openrig: rig is not on PATH" >&2; exit 1; }
+req=$(cat)
+
+nodes=$(rig ps --nodes -A --json --fields "$fields" 2>/dev/null) || {
+  echo "openrig: rig ps failed on this host" >&2
+  exit 1
+}
+nodes=$(printf '%s' "$nodes" | jq -c '[.entries[] + {host: "local"}]')
+# A Rex host's label is its OpenRig host id; a host rig cannot reach only loses its own rows.
+for host in $(printf '%s' "$req" | jq -r '[.rows[].host | select(. != "local")] | unique | .[]'); do
+  more=$(rig ps --nodes -A --json --host "$host" --fields "$fields" 2>/dev/null) || continue
+  nodes=$(printf '%s\n%s' "$nodes" "$more" | jq -cs --arg h "$host" '.[0] + [.[1].entries[] + {host: $h}]')
+done
+
+workspace=$(printf '%s' "$req" | jq -r '.settings.workspace // empty')
+workspace=${workspace:-${PROJECTS_ROOT:-$HOME/projects}}
+case $workspace in \~/*) workspace=$HOME/${workspace#\~/} ;; esac
+projects='{}'
+if [ -f "$workspace/workspace.yaml" ]; then
+  projects=$(yq -o=json '.projects // []' "$workspace/workspace.yaml" |
+    jq -c '[.[] | .id as $id | (.rigs // [])[] | {(.): $id}] | add // {}') || projects='{}'
+fi
+
+printf '%s' "$req" | jq -c --argjson nodes "$nodes" --argjson projects "$projects" '
+  def base: sub("^([0-9]+-)+"; "");
+  # The seat a row is: by its title, glyph and all or not, then by its pane label inside the
+  # rig'"'"'s tab or session. None when no seat, or more than one, fits.
+  def seat($r):
+    [$nodes[] | select(.host == $r.host)] as $here
+    | [$r.title, ($r.title | sub("^\\S+\\s+"; ""))] as $titles
+    | [$here[] | select(.canonicalSessionName as $c | any($titles[]; . == $c))] as $by_title
+    | if ($by_title | length) == 1 then $by_title[0]
+      else
+        [$here[] | . as $n | select($n.logicalId == $r.pane
+          and (($r.tab | contains("openrig:rig:" + $n.rigName + "#")) or ($r.session | base) == $n.rigName))]
+        | if length == 1 then .[0] else null end
+      end;
+  def status($n):
+    ($n.agentActivity.state // "") as $s
+    | if $n.needsAttention == true or $s == "needs_input" or $s == "needs-input" then
+        {state: "blocked", kind: "input"}
+      elif $s == "running" or $s == "working" then {state: "working"}
+      elif $s == "idle" then {state: "idle"}
+      else null end;
+  {
+    contract: 1,
+    rows: ([.rows[] | . as $r | seat($r) as $n | select($n != null)
+      | {key: $r.key, value: ({fields: {rig: $n.rigName, role: $n.logicalId, project: $projects[$n.rigName]}}
+          + (status($n) | if . == null then {} else {status: .} end))}] | from_entries)
+  }'

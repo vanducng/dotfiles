@@ -12,6 +12,7 @@ Rex (Rex Beta) is the native macOS multiplexer that replaces Ghostty on space 1 
 - `dotfiles/rex/.config/rex/hosts.json` - every machine that runs Rex, defined once: `label`, `device`, macOS `hostname`, and the app `icon`. Its order is the `Ctrl-Alt-1..9` number
 - `dotfiles/rex/.config/rex/hosts.lua` - reads `hosts.json`, works out which entry is this Mac, and declares the others as Rex hosts
 - `dotfiles/rexboard/.config/rexboard/config.toml` - [rexboard](https://github.com/vanducng/rexboard)'s config. The app client is left to the default, the only Rex app on the unix socket. The rexboard keys and the cockpit's board tab find `rexboard` in `$HOMEBREW_PREFIX/bin`, `/opt/homebrew/bin`, `/usr/local/bin`, `~/.local/bin`, then `PATH`, and say `brew install vanducng/tap/rexboard` when it is missing
+- `dotfiles/rexboard/.config/rexboard/extensions/openrig/` - the [OpenRig extension](#openrig-extension) config.toml enables: each seat's rig, project and role on rexboard's rows
 - `dotfiles/bin/.local/bin/rex-agent-status` and `rex-hooks-sync` - the status bridge for agents in tmux and the hook merge (see [Agent status](#agent-status))
 - `dotfiles/rex/.config/rex/copy-mode.nvim.lua` - the small Neovim config copy mode starts with (`nvim -u`), so it opens in tens of milliseconds instead of loading the full Neovim setup
 - `scripts/rex-setup.sh` (`make setup-rex`) - app settings that live in UserDefaults: Option as Alt, vertical tabs, compact panes, Program Activity sounds (an agent finished or is waiting on you), the Tailscale node name, and the app's Remote Hosts list. The app reads them at launch, so quit and reopen Rex Beta after a run; sessions live in the server and survive
@@ -214,6 +215,17 @@ Known gaps:
 - Codex's hooks are experimental and do nothing until trusted in Codex.
 
 Running seats natively in Rex instead of tmux is tracked on the OpenRig fork.
+
+## OpenRig extension
+
+rexboard runs `extensions/openrig` (enabled in `config.toml`) every 10 seconds over its [extension contract](https://github.com/vanducng/rexboard/blob/main/docs/extensions.md). The adapter is POSIX `sh` with `jq` and `yq`. It asks `rig ps --nodes -A --json` on this Mac, and `rig ps --host <label>` for each other host in the rows, so a Rex host's label must be its OpenRig host id (`mini-01`). A host `rig` cannot reach only loses its own rows.
+
+- **Matching:** a row is a seat when its title, with the leading status glyph or without it, is the seat's `canonicalSessionName` (`dev-impl@rexboard`), or else when its pane label is the seat's `logicalId` (`dev.impl`) inside the rig's tab (`openrig:rig:<rig>#…`) or `<n>-<rig>` session. That covers a Codex seat whose title the harness set. A row two seats could be is left out.
+- **Fields:** `rig` (`rigName`), `role` (`logicalId`), and `project`: the id of the project in `~/projects/workspace.yaml` (`settings.workspace`, else `$PROJECTS_ROOT`, else `~/projects`) whose `rigs` lists the rig.
+- **Status,** for a seat with no status record of its own: `needsAttention` or `needs-input` is `blocked` (kind `input`), `running` is `working`, and `idle` is `idle`. Anything else gives none. A seat whose bridge reports keeps its own status.
+- **Failure:** with `rig` missing, or `rig ps` failing on this Mac, the run fails with one line on stderr, and rexboard's top bar shows `ext openrig failed`. `rexboard ext ls` shows how the last run went.
+
+`rexboard ext test openrig` runs it once against the live rows. `scripts/ci/test-rexboard-openrig.sh` (in `make test`) runs it on generic fixtures with a fake `rig`, then `rexboard ext test openrig --rows` on them when rexboard is installed.
 
 ## Option key
 
