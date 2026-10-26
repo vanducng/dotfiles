@@ -18,6 +18,15 @@
             "command": "/usr/bin/python3 \"$HOME/.codex/hooks/scout-block.py\""
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/bin/sh -c '[ -n \"$TMUX$REX_BLOCK\" ] || case \"$TERM\" in tmux*|screen*) ;; *) exit 0;; esac; exec /usr/bin/python3 \"$HOME/.local/bin/rex-agent-status\" codex'",
+            "timeout": 5
+          }
+        ]
       }
     ],
     "SessionStart": [
@@ -29,6 +38,15 @@
             "command": "/usr/bin/python3 \"$HOME/.codex/hooks/session-init.py\""
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/bin/sh -c '[ -n \"$TMUX$REX_BLOCK\" ] || case \"$TERM\" in tmux*|screen*) ;; *) exit 0;; esac; exec /usr/bin/python3 \"$HOME/.local/bin/rex-agent-status\" codex'",
+            "timeout": 5
+          }
+        ]
       }
     ],
     "UserPromptSubmit": [
@@ -37,6 +55,15 @@
           {
             "type": "command",
             "command": "/usr/bin/python3 \"$HOME/.codex/hooks/dev-rules-reminder.py\""
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/bin/sh -c '[ -n \"$TMUX$REX_BLOCK\" ] || case \"$TERM\" in tmux*|screen*) ;; *) exit 0;; esac; exec /usr/bin/python3 \"$HOME/.local/bin/rex-agent-status\" codex'",
+            "timeout": 5
           }
         ]
       }
@@ -63,6 +90,37 @@
             "type": "command",
             "command": "/bin/sh -c 'exec \"$HOME/.local/bin/plannotator\"'",
             "timeout": 345600
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/bin/sh -c '[ -n \"$TMUX$REX_BLOCK\" ] || case \"$TERM\" in tmux*|screen*) ;; *) exit 0;; esac; exec /usr/bin/python3 \"$HOME/.local/bin/rex-agent-status\" codex'",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/bin/sh -c '[ -n \"$TMUX$REX_BLOCK\" ] || case \"$TERM\" in tmux*|screen*) ;; *) exit 0;; esac; exec /usr/bin/python3 \"$HOME/.local/bin/rex-agent-status\" codex'",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/bin/sh -c '[ -n \"$TMUX$REX_BLOCK\" ] || case \"$TERM\" in tmux*|screen*) ;; *) exit 0;; esac; exec /usr/bin/python3 \"$HOME/.local/bin/rex-agent-status\" codex'",
+            "timeout": 5
           }
         ]
       }
