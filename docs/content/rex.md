@@ -13,7 +13,8 @@ Rex (Rex Beta) is the native macOS multiplexer that replaces Ghostty on space 1 
 - `dotfiles/rex/.config/rex/hosts.lua` - reads `hosts.json`, works out which entry is this Mac, and declares the others as Rex hosts
 - `dotfiles/rexboard/.config/rexboard/config.toml` - [rexboard](https://github.com/vanducng/rexboard)'s config. The app client is left to the default, the only Rex app on the unix socket. The rexboard keys and the cockpit's board tab find `rexboard` in `$HOMEBREW_PREFIX/bin`, `/opt/homebrew/bin`, `/usr/local/bin`, `~/.local/bin`, then `PATH`, and say `brew install vanducng/tap/rexboard` when it is missing
 - `dotfiles/rexboard/.config/rexboard/extensions/openrig/` - the [OpenRig extension](#openrig-extension) config.toml enables: each seat's rig, project and role on rexboard's rows
-- `dotfiles/bin/.local/bin/rex-agent-status` and `rex-hooks-sync` - the status bridge for agents in tmux and the hook merge (see [Agent status](#agent-status))
+- `dotfiles/bin/.local/bin/rex-title-spinner` and `rex-hooks-sync` - Claude Code's title glyph in a Rex pane and its hook merge (see [Agent status](#agent-status))
+- `dotfiles/bin/.local/bin/rex-agent-status` - kept for a release: hooks merged before `rexboard hook`, and the old tmux replay hook, still run it. It hands each call to `rexboard hook` or `rexboard hooks replay`, and does nothing when rexboard has no `hooks` command, so a hook never fails. `make rex-hooks-apply` and a restow replace those callers
 - `dotfiles/rex/.config/rex/copy-mode.nvim.lua` - the small Neovim config copy mode starts with (`nvim -u`), so it opens in tens of milliseconds instead of loading the full Neovim setup
 - `scripts/rex-setup.sh` (`make setup-rex`) - app settings that live in UserDefaults: Option as Alt, vertical tabs, compact panes, Program Activity sounds (an agent finished or is waiting on you), the Tailscale node name, and the app's Remote Hosts list. The app reads them at launch, so quit and reopen Rex Beta after a run; sessions live in the server and survive
 
@@ -137,84 +138,45 @@ The Mac app ignores `hosts.lua` and keeps its own Remote Hosts list in the `RexS
 
 Rex shows an agent's status (working, waiting on you, done) from OSC 7501, an escape sequence the agent prints into its pane. Rex keeps it on the pane as a status record with a state, an optional kind and a message (`msg`). The sidebar, `C-x o` and [rexboard](https://github.com/vanducng/rexboard) all read that record.
 
-Where the agent runs decides who sends it:
+Every agent hook runs `rexboard hook <harness> <EVENT>` with the hook's JSON on stdin. It works out where the agent runs and who has to send the status:
 
 | Agent | Straight in a Rex pane | Inside tmux (an OpenRig seat) |
 | --- | --- | --- |
-| Claude Code | Claude reports on its own. The hooks add the title glyph and a `turn` record with the final message (below) | The hooks report for it |
-| Codex (experimental) | Codex reports on its own, and the hooks write nothing | The hooks report for it, once trusted in Codex |
-| pi | pi reports nothing, so its extension writes the status to pi's tty | The extension reports through the seat's pane |
+| Claude Code | Claude reports on its own. `rexboard hook` adds a `turn` record with the final message, and the spinner hook puts the title glyph back (below) | `rexboard hook` reports for it |
+| Codex (experimental) | Codex reports on its own, and the hook writes nothing | `rexboard hook` reports for it, once trusted in Codex |
+| pi | pi reports nothing, so rexboard's extension writes the status to pi's tty | The extension reports through the seat's pane |
 
-An OpenRig seat needs the bridge because its Rex tile only runs `tmux attach`, and tmux stops the sequence, so without it the tile looks like plain tmux. rexboard shows a seat's row as `bridge`, a pane that reports for itself as `native`, and a pane with no record as `inferred` (see its [agent status page](https://github.com/vanducng/rexboard/blob/main/docs/agent-status.md)).
+An OpenRig seat needs this because its Rex tile only runs `tmux attach`, and tmux stops the sequence. `rexboard hook` wraps the status in tmux passthrough (`allow-passthrough on` in `.tmux.conf`) and keeps the last one on the pane as `@rex_status`. The tmux `client-attached` and `client-session-changed` hooks run `rexboard hooks replay`, so a tile opened later shows it at once. rexboard's [`hook` docs](https://github.com/vanducng/rexboard/blob/main/docs/cli.md#rexboard-hook) have the event mapping and message limits.
 
-### The bridge
-
-Every hook runs `~/.local/bin/rex-agent-status <app>` with the hook's JSON on stdin: `claude-code` from `~/.claude/settings.json`, `codex` from `~/.codex/hooks.json`, `pi` from the `rex-status` extension. A shell gate in front of it exits at once unless `$TMUX` or `$REX_BLOCK` is set, or `$TERM` starts with `tmux` or `screen`:
-
-```sh
-[ -n "$TMUX$REX_BLOCK" ] || case "$TERM" in tmux*|screen*) ;; *) exit 0;; esac
-```
-
-The `TERM` case covers a seat whose launcher started the agent without `TMUX` and `TMUX_PANE` (OpenRig's `--resume` does). The script then finds the seat's pane by the agent's tty (`tmux list-panes -a`), and does nothing unless exactly one pane matches.
-
-Inside tmux, the script turns the event into an OSC 7501 status, wraps it in tmux passthrough, and writes it to the seat's pane. tmux (`allow-passthrough on` in `.tmux.conf`) forwards it to the attached Rex tile, and `set-titles` passes the agent's title (`✳ <task>`) along too. The last status is also kept on the pane as `@rex_status` (the message base64-encoded), and a tmux hook resends it when a client attaches or switches to the session, so a tile opened later shows it at once. The script never fails a hook.
-
-### What each event reports
-
-| Event | Status | Message |
-| --- | --- | --- |
-| Session start | idle | |
-| Prompt | working | `Working` |
-| A tool | working | its description, else its name |
-| AskUserQuestion | blocked, kind `question` | the first question, then each option as `1. label - description`, and `(+N more questions)` |
-| The question answered | working | `Working` |
-| Permission request, or Claude's permission notification | blocked, kind `permission` | `Allow <tool>?`, or the notification's text (Codex: the command's description) |
-| Stop | done | the agent's final message, else `Done` |
-| Stop on an API error | error | the agent's last message, else the error and its details |
-| Session end | cleared | |
-
-Codex sends the same events except AskUserQuestion, the permission notification and the API error. pi sends session start and end, each run's start (working), and its end (done, with the last assistant message, or error, with the model's error). It sends them one at a time, in order, and holds off exiting until a run's end has been sent. `pi -p` sends no session end, so its result stays up after it exits.
-
-A message is one line, since Rex allows no control characters: each line break becomes ` ⏎ ` (rexboard splits on it), blank lines drop, and any other control character becomes a space. It is cut to Rex's limit of 2048 bytes, at a character, ending in `…`. Over a limit Rex would drop the whole report. So the agent's final message reaches Rex and anything that reads its status, such as rexboard, just as it does for an agent running straight in a Rex pane. Do not keep secrets in an agent's replies.
-
-Straight in a Rex pane, Claude Code's own `done` carries no text. So on stop the hook also writes a `turn` sub-record (`id=turn`) with the final message to Claude's tty, and clears it at the next prompt and when the session ends. Claude's own reports leave it alone (`rex block call program_status` shows both records).
-
-Inside tmux, Claude Code spins a glyph at the front of its title (`◐` working, `✳` idle), so a seat's pane header shows its state. Straight in a Rex pane it leaves the glyph out, because Rex already has the status, so the hooks put it back: each records the status in a file under `$TMPDIR` and starts one background spinner for the pane (`rex-agent-status --spin`). The spinner reads the title with `rex block call title` and writes it back with `◐`/`◑` flipping every 0.96 s while Claude works, `◉` while it waits on you, and no glyph when it is idle. It exits with Claude.
+Inside tmux, Claude Code spins a glyph at the front of its title (`◐` working, `✳` idle), so a seat's pane header shows its state. Straight in a Rex pane it leaves the glyph out, because Rex already has the status. So each Claude hook also runs `rex-title-spinner`, which acts only in a Rex pane outside tmux: it records the state in a file under `$TMPDIR` and starts one background spinner for the pane (`rex-title-spinner --spin`). The spinner reads the title with `rex block call title` and writes it back with `◐`/`◑` flipping every 0.96 s while Claude works, `◉` while it waits on you, and no glyph when it is idle. It exits with Claude.
 
 ### Install and update the hooks
 
-The live `~/.claude/settings.json` and `~/.codex/hooks.json` are not stowed: the agents rewrite them, and they hold private entries this repo must not see. Dotfiles owns only the rex hook entries, in `dotfiles/claude/.claude/settings.json` and `dotfiles/codex/.codex/hooks.json`, and `rex-hooks-sync` merges them in. For each event it replaces the hooks that run `rex-agent-status` with the dotfiles ones, in the same place, and leaves every other key and hook alone.
+`rexboard hooks install` merges rexboard's hooks into `~/.claude/settings.json` and `~/.codex/hooks.json`, wraps Claude's status line with `rexboard usage claude`, and writes pi's extension (`~/.pi/agent/extensions/rexboard.js`). It leaves a symlinked file alone, so a host that stows `claude` or `codex` gets the same hooks from `dotfiles/claude/.claude/settings.json` and `dotfiles/codex/.codex/hooks.json`. On a host that does not stow them, `rex-hooks-sync` merges the one hook rexboard does not ship, the title spinner, in place, and leaves every other key and hook alone.
 
 ```bash
-make rex-hooks         # print the lines that would change, or "up to date", for Claude and Codex
+make rex-hooks         # what rexboard hooks install and the spinner merge would change
 make rex-hooks-apply   # write them, after a backup beside each file (<file>.bak-<UTC>)
 ```
 
-`make stow-rex` and `make stow-install` run the apply step after stowing rex. A second run changes nothing. A file that is a symlink (a host that stows it) or missing is left alone, and one that is not valid JSON fails without a write. A running Claude Code picks up the merged hooks without a restart. Codex asks you to review and trust new hooks once, which only you can do in Codex.
-
-The pi extension, `dotfiles/pi/.pi/agent/extensions/rex-status.js`, comes with `make stow-pi`. That stops without changes when a live pi file, such as `~/.pi/agent/mcp.json`, differs from the dotfiles one. To link only the extension, make the same relative link stow would at `~/.pi/agent/extensions/rex-status.js`. pi loads it at its next start.
+`make stow-rex` and `make stow-install` run the apply step after stowing rex. Without a `rexboard` that has `hooks` on `PATH`, they print how to install it and merge only the spinner. A second run changes nothing. A running Claude Code picks up the merged hooks without a restart. Codex asks you to review and trust new hooks once, which only you can do in Codex, and pi loads its extension at its next start.
 
 ### Troubleshooting
 
-Start from what Rex has. rexboard's detail pane shows a row's `source` and message, and its [agent status page](https://github.com/vanducng/rexboard/blob/main/docs/agent-status.md#a-row-looks-wrong) covers rows that look wrong. For a seat, `tmux show-options -p -t <pane> @rex_status` shows the last status the bridge sent.
+Start from what Rex has. rexboard's detail pane shows a row's `source` and message, and its [agent status page](https://github.com/vanducng/rexboard/blob/main/docs/agent-status.md#a-row-looks-wrong) covers rows that look wrong. For a seat, `tmux show-options -p -t <pane> @rex_status` shows the last status sent. `rexboard hooks status` says whether each harness has the hooks.
 
-To see what the hooks do, set `REX_AGENT_STATUS_LOG=<file>` in the agent's env. Each call appends one line with the event, which of `TMUX`, `TMUX_PANE` and `REX_BLOCK` were set, the pane it found, and what it did, never the hook's text. For example, `Stop env=- pane=%78 wrote done`, or `skipped: not in tmux or Rex` when the pane could not be found. A seat whose hooks never appear in the log failed the gate. In that case, check `TERM` in the agent's env, and run `make rex-hooks`.
+To see what the hooks do, set `REXBOARD_HOOK_LOG=<file>` in the agent's env. Each call appends one line with the event, which of `TMUX`, `TMUX_PANE` and `REX_BLOCK` were set, the pane it found, and what it did, never the hook's text.
 
-To test the bridge without an agent, send a fake Stop through a throwaway tmux session, set up the way a resumed seat is:
+To test it without an agent, send a fake Stop through a throwaway tmux session, set up the way a resumed seat is:
 
 ```bash
 tmux new-session -d -s zz-probe
-tmux send-keys -t zz-probe "unset TMUX TMUX_PANE REX_BLOCK; export TERM=tmux-256color; echo '{\"hook_event_name\":\"Stop\",\"last_assistant_message\":\"probe ok\"}' | /usr/bin/python3 ~/.local/bin/rex-agent-status claude-code" Enter
+tmux send-keys -t zz-probe "unset TMUX TMUX_PANE REX_BLOCK; export TERM=tmux-256color; echo '{\"hook_event_name\":\"Stop\",\"last_assistant_message\":\"probe ok\"}' | rexboard hook claude Stop" Enter
 for i in $(seq 50); do tmux show-options -p -t zz-probe -v @rex_status 2>/dev/null && break; sleep 0.2; done   # app=claude-code:state=done:msg=cHJvYmUgb2s=
 tmux kill-session -t zz-probe
 ```
 
-Known gaps:
-
-- `pi -p` (print mode) loses its final report: the hook runs after pi exits and finds no pane, so the row stays `working`. Interactive pi reports normally.
-- Codex's hooks are experimental and do nothing until trusted in Codex.
-
-Running seats natively in Rex instead of tmux is tracked on the OpenRig fork.
+Codex's hooks are experimental and do nothing until trusted in Codex. Running seats natively in Rex instead of tmux is tracked on the OpenRig fork.
 
 ## OpenRig extension
 

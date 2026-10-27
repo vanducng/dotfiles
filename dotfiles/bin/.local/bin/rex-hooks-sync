@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-# Puts the rex-agent-status hooks from dotfiles into a live harness settings file, which the
-# harness rewrites at runtime and which holds private entries, so it is merged, never stowed.
-#   rex-hooks-sync [--apply] [--target FILE] [HARNESS]     HARNESS: claude (default) or codex
-# For each hook event, hooks that run rex-agent-status are replaced by the dotfiles ones, in
+# Puts the dotfiles' own extra Claude Code hooks, the rex-title-spinner ones, into a live
+# settings file, which the harness rewrites at runtime and which holds private entries, so it is
+# merged, never stowed. `rexboard hooks install` merges rexboard's hooks; this only the spinner.
+#   rex-hooks-sync [--apply] [--target FILE] [claude]
+# For each hook event, hooks that run rex-title-spinner are replaced by the dotfiles ones, in
 # place; every other key and hook stays. Prints the changed lines (no context, so no other values);
 # --apply writes them, after a backup beside the file (FILE.bak-<UTC>). A second run changes nothing.
 import argparse
@@ -14,11 +15,10 @@ import sys
 import tempfile
 import time
 
-MARK = "rex-agent-status"
+MARK = "rex-title-spinner"
 # Harness: (source in the dotfiles repo, live file).
 HARNESSES = {
     "claude": ("dotfiles/claude/.claude/settings.json", "~/.claude/settings.json"),
-    "codex": ("dotfiles/codex/.codex/hooks.json", "~/.codex/hooks.json"),
 }
 
 
@@ -27,7 +27,7 @@ def is_rex(hook):
 
 
 def rex_groups(settings):
-    """The hook groups that run rex-agent-status, by event, with only those hooks in each."""
+    """The hook groups that run rex-title-spinner, by event, with only those hooks in each."""
     out = {}
     for event, groups in (settings.get("hooks") or {}).items():
         mine = [dict(g, hooks=[h for h in g.get("hooks", []) if is_rex(h)]) for g in groups]
@@ -84,6 +84,24 @@ def write(path, body, mode):
         raise
 
 
+def keep_old(target, body, mode):
+    """Writes `body` to `FILE.bak-<UTC>`, never over an existing backup: `rexboard hooks install`
+    may have made one this same second, so the next takes `-2`, then `-3`."""
+    base = target + ".bak-" + time.strftime("%Y%m%dT%H%M%SZ", time.gmtime())
+    n = 1
+    while True:
+        path = base if n == 1 else "%s-%d" % (base, n)
+        try:
+            fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, mode)
+        except FileExistsError:
+            n += 1
+            continue
+        os.fchmod(fd, mode)
+        with os.fdopen(fd, "w") as f:
+            f.write(body)
+        return path
+
+
 def main(argv):
     parser = argparse.ArgumentParser(prog="rex-hooks-sync")
     parser.add_argument("harness", nargs="?", default="claude", choices=sorted(HARNESSES))
@@ -119,7 +137,7 @@ def main(argv):
     except (AttributeError, TypeError):
         fail("%s has hooks in a shape this does not know; left alone" % target)
     if after == text(live, end):
-        print("rex hooks in %s are up to date" % target)
+        print("rex-title-spinner hooks in %s are up to date" % target)
         return
     sys.stdout.writelines(difflib.unified_diff(
         text(live, end).splitlines(True), after.splitlines(True), target, target + " (merged)", n=0))
@@ -128,8 +146,7 @@ def main(argv):
         return
     # The backup holds the same private entries, so it gets the file's own mode.
     mode = os.stat(target).st_mode & 0o7777
-    backup = target + ".bak-" + time.strftime("%Y%m%dT%H%M%SZ", time.gmtime())
-    write(backup, before, mode)
+    backup = keep_old(target, before, mode)
     write(target, after, mode)
     print("wrote %s (backup %s)" % (target, backup))
 
