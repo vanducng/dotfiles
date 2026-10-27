@@ -194,6 +194,9 @@ for name in sys.argv[1:]:
                 except ValueError as exc:
                     errors.append(f"{path}: {event}: {exc}")
                     continue
+                # rexboard hooks install writes the bare name, and finds its own hooks by it.
+                if executable == "rexboard":
+                    continue
                 if not executable.startswith("/"):
                     errors.append(f"{path}: {event}: PATH-dependent command: {command}")
                     continue

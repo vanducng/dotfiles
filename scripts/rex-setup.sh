@@ -24,7 +24,7 @@ defaults write "$DOMAIN" Workspace.terminalOptionKeyBehavior -string actsAsAlt
 # The sidebar (C-x b, cmd+b) only exists with vertical tabs.
 defaults write "$DOMAIN" Workspace.tabStyle -string vertical
 defaults write "$DOMAIN" Workspace.paneDensity -string compact
-# Sound when an agent finishes or waits on you, including OpenRig seats (rex-agent-status).
+# Sound when an agent finishes or waits on you, including OpenRig seats (rexboard hook).
 defaults write "$DOMAIN" Workspace.playsProgramActivitySounds -bool true
 # Everything below needs the tailnet, so stop before writing any of it.
 TS=/Applications/Tailscale.app/Contents/MacOS/Tailscale

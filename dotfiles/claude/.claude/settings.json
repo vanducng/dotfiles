@@ -23,7 +23,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/bin/sh -c '[ -n \"$TMUX$REX_BLOCK\" ] || case \"$TERM\" in tmux*|screen*) ;; *) exit 0;; esac; exec /usr/bin/python3 \"$HOME/.local/bin/rex-agent-status\" claude-code'",
+            "command": "rexboard hook claude SessionStart",
+            "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "/bin/sh -c '[ -n \"$REX_BLOCK\" ] || exit 0; exec /usr/bin/python3 \"$HOME/.local/bin/rex-title-spinner\"'",
             "timeout": 5
           }
         ]
@@ -42,7 +47,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/bin/sh -c '[ -n \"$TMUX$REX_BLOCK\" ] || case \"$TERM\" in tmux*|screen*) ;; *) exit 0;; esac; exec /usr/bin/python3 \"$HOME/.local/bin/rex-agent-status\" claude-code'",
+            "command": "rexboard hook claude Stop",
+            "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "/bin/sh -c '[ -n \"$REX_BLOCK\" ] || exit 0; exec /usr/bin/python3 \"$HOME/.local/bin/rex-title-spinner\"'",
             "timeout": 5
           }
         ]
@@ -61,7 +71,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/bin/sh -c '[ -n \"$TMUX$REX_BLOCK\" ] || case \"$TERM\" in tmux*|screen*) ;; *) exit 0;; esac; exec /usr/bin/python3 \"$HOME/.local/bin/rex-agent-status\" claude-code'",
+            "command": "rexboard hook claude Notification",
+            "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "/bin/sh -c '[ -n \"$REX_BLOCK\" ] || exit 0; exec /usr/bin/python3 \"$HOME/.local/bin/rex-title-spinner\"'",
             "timeout": 5
           }
         ]
@@ -72,7 +87,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/bin/sh -c '[ -n \"$TMUX$REX_BLOCK\" ] || case \"$TERM\" in tmux*|screen*) ;; *) exit 0;; esac; exec /usr/bin/python3 \"$HOME/.local/bin/rex-agent-status\" claude-code'",
+            "command": "rexboard hook claude UserPromptSubmit",
+            "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "/bin/sh -c '[ -n \"$REX_BLOCK\" ] || exit 0; exec /usr/bin/python3 \"$HOME/.local/bin/rex-title-spinner\"'",
             "timeout": 5
           }
         ]
@@ -83,7 +103,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/bin/sh -c '[ -n \"$TMUX$REX_BLOCK\" ] || case \"$TERM\" in tmux*|screen*) ;; *) exit 0;; esac; exec /usr/bin/python3 \"$HOME/.local/bin/rex-agent-status\" claude-code'",
+            "command": "rexboard hook claude PreToolUse",
+            "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "/bin/sh -c '[ -n \"$REX_BLOCK\" ] || exit 0; exec /usr/bin/python3 \"$HOME/.local/bin/rex-title-spinner\"'",
             "timeout": 5
           }
         ]
@@ -94,7 +119,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/bin/sh -c '[ -n \"$TMUX$REX_BLOCK\" ] || case \"$TERM\" in tmux*|screen*) ;; *) exit 0;; esac; exec /usr/bin/python3 \"$HOME/.local/bin/rex-agent-status\" claude-code'",
+            "command": "rexboard hook claude PermissionRequest",
+            "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "/bin/sh -c '[ -n \"$REX_BLOCK\" ] || exit 0; exec /usr/bin/python3 \"$HOME/.local/bin/rex-title-spinner\"'",
             "timeout": 5
           }
         ]
@@ -105,7 +135,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/bin/sh -c '[ -n \"$TMUX$REX_BLOCK\" ] || case \"$TERM\" in tmux*|screen*) ;; *) exit 0;; esac; exec /usr/bin/python3 \"$HOME/.local/bin/rex-agent-status\" claude-code'",
+            "command": "rexboard hook claude SessionEnd",
+            "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "/bin/sh -c '[ -n \"$REX_BLOCK\" ] || exit 0; exec /usr/bin/python3 \"$HOME/.local/bin/rex-title-spinner\"'",
             "timeout": 5
           }
         ]
@@ -116,7 +151,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/bin/sh -c '[ -n \"$TMUX$REX_BLOCK\" ] || case \"$TERM\" in tmux*|screen*) ;; *) exit 0;; esac; exec /usr/bin/python3 \"$HOME/.local/bin/rex-agent-status\" claude-code'",
+            "command": "rexboard hook claude StopFailure",
+            "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "/bin/sh -c '[ -n \"$REX_BLOCK\" ] || exit 0; exec /usr/bin/python3 \"$HOME/.local/bin/rex-title-spinner\"'",
             "timeout": 5
           }
         ]
@@ -128,7 +168,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/bin/sh -c '[ -n \"$TMUX$REX_BLOCK\" ] || case \"$TERM\" in tmux*|screen*) ;; *) exit 0;; esac; exec /usr/bin/python3 \"$HOME/.local/bin/rex-agent-status\" claude-code'",
+            "command": "rexboard hook claude PostToolUse",
+            "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "/bin/sh -c '[ -n \"$REX_BLOCK\" ] || exit 0; exec /usr/bin/python3 \"$HOME/.local/bin/rex-title-spinner\"'",
             "timeout": 5
           }
         ]
@@ -137,7 +182,7 @@
   },
   "statusLine": {
     "type": "command",
-    "command": "\"$HOME/.local/bin/agent-statusline\""
+    "command": "command -v rexboard >/dev/null 2>&1 && exec rexboard usage claude -- /bin/sh -c '\"$HOME/.local/bin/agent-statusline\"' || exec /bin/sh -c '\"$HOME/.local/bin/agent-statusline\"'"
   },
   "enabledPlugins": {
     "docker-mcp-toolkit@docker": false,

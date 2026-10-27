@@ -30,8 +30,8 @@ help:
 	@echo "  make bootstrap-linux - linux-deps + stow-install"
 	@echo "  make setup-herdr     - Install Herdr's Droid integration"
 	@echo "  make setup-tinycast  - Apply Tinycast hotkeys, Quick Actions, audio, and sysmon"
-	@echo "  make rex-hooks       - Show what merging the rex hooks into the live Claude and Codex files changes"
-	@echo "  make rex-hooks-apply - Merge them (stow-rex runs this too)"
+	@echo "  make rex-hooks       - Show what rexboard hooks install and the title spinner merge would change"
+	@echo "  make rex-hooks-apply - Install them (stow-rex runs this too)"
 	@echo ""
 	@echo "Testing:"
 	@echo "  make test            - Run all tests"
@@ -58,8 +58,8 @@ stow-install:
 			(cd dotfiles && stow --no-folding -D -t $(HOME) $$folder 2>/dev/null || true; \
 			 stow --no-folding -t $(HOME) $$folder); \
 		fi; \
-		if [ "$$folder" = rex ]; then for h in $(REX_HARNESSES); do ./dotfiles/bin/.local/bin/rex-hooks-sync $$h --apply; done; fi; \
 	done
+	@$(if $(filter rex,$(STOW_FOLDERS)),$(REX_HOOKS_APPLY))
 	@$(MAKE) ensure-home-repos
 
 ensure-home-repos:
@@ -100,25 +100,30 @@ endef
 
 $(foreach tool,$(filter-out pi rex,$(ALL_STOW_FOLDERS)),$(eval $(call make-stow-target,$(tool))))
 
-# Rex config, then the rex-agent-status hooks merged into the live Claude settings, which the
-# harness rewrites and which holds private entries, so it is never stowed.
+# Rex config, then the agent hooks (rex-hooks-apply).
 stow-rex:
 	@echo "Stowing rex..."
 	@cd dotfiles && stow --no-folding -D -t $(HOME) rex 2>/dev/null || true
 	@cd dotfiles && stow --no-folding -t $(HOME) rex
-	@for h in $(REX_HARNESSES); do ./dotfiles/bin/.local/bin/rex-hooks-sync $$h --apply; done
+	@$(REX_HOOKS_APPLY)
 
 unstow-rex:
 	@echo "Unstowing rex..."
 	@cd dotfiles && stow -t $(HOME) -D rex 2>/dev/null || true
 
-# What the rex hooks merge would change in each harness's live hooks file; -apply writes it.
-REX_HARNESSES=claude codex
+# rexboard's hooks for Claude Code, Codex and pi, then the title spinner merged into the live
+# Claude settings, which the harness rewrites and which holds private entries, so it is never
+# stowed. rex-hooks shows the changes; -apply writes them.
+REX_HARNESSES=claude
+REXBOARD_HOOKS=if rexboard hooks --help >/dev/null 2>&1; then rexboard hooks install $(1) claude codex pi; \
+	else echo "rexboard with hooks is not on PATH: install or upgrade it (brew install vanducng/tap/rexboard, or its install.sh); skipping its hooks"; fi
+REX_HOOKS_APPLY=$(call REXBOARD_HOOKS,); for h in $(REX_HARNESSES); do ./dotfiles/bin/.local/bin/rex-hooks-sync $$h --apply; done
 rex-hooks:
+	@$(call REXBOARD_HOOKS,--dry-run)
 	@for h in $(REX_HARNESSES); do ./dotfiles/bin/.local/bin/rex-hooks-sync $$h; done
 
 rex-hooks-apply:
-	@for h in $(REX_HARNESSES); do ./dotfiles/bin/.local/bin/rex-hooks-sync $$h --apply; done
+	@$(REX_HOOKS_APPLY)
 
 stow-pi:
 	@echo "Stowing pi (home layout)..."
@@ -171,7 +176,7 @@ platform-test:
 
 script-test:
 	@./scripts/ci/test-agent-statusline.sh
-	@./scripts/ci/test-rex-agent-status.sh
+	@./scripts/ci/test-rex-title-spinner.sh
 	@./scripts/ci/test-rex-hooks-sync.sh
 	@./scripts/ci/test-rex-layout.sh
 	@./scripts/ci/test-rexboard-openrig.sh

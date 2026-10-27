@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-# Puts the rex-agent-status hooks from dotfiles into a live harness settings file, which the
-# harness rewrites at runtime and which holds private entries, so it is merged, never stowed.
-#   rex-hooks-sync [--apply] [--target FILE] [HARNESS]     HARNESS: claude (default) or codex
-# For each hook event, hooks that run rex-agent-status are replaced by the dotfiles ones, in
+# Puts the dotfiles' own extra Claude Code hooks, the rex-title-spinner ones, into a live
+# settings file, which the harness rewrites at runtime and which holds private entries, so it is
+# merged, never stowed. `rexboard hooks install` merges rexboard's hooks; this only the spinner.
+#   rex-hooks-sync [--apply] [--target FILE] [claude]
+# For each hook event, hooks that run rex-title-spinner are replaced by the dotfiles ones, in
 # place; every other key and hook stays. Prints the changed lines (no context, so no other values);
 # --apply writes them, after a backup beside the file (FILE.bak-<UTC>). A second run changes nothing.
 import argparse
@@ -14,11 +15,10 @@ import sys
 import tempfile
 import time
 
-MARK = "rex-agent-status"
+MARK = "rex-title-spinner"
 # Harness: (source in the dotfiles repo, live file).
 HARNESSES = {
     "claude": ("dotfiles/claude/.claude/settings.json", "~/.claude/settings.json"),
-    "codex": ("dotfiles/codex/.codex/hooks.json", "~/.codex/hooks.json"),
 }
 
 
@@ -27,7 +27,7 @@ def is_rex(hook):
 
 
 def rex_groups(settings):
-    """The hook groups that run rex-agent-status, by event, with only those hooks in each."""
+    """The hook groups that run rex-title-spinner, by event, with only those hooks in each."""
     out = {}
     for event, groups in (settings.get("hooks") or {}).items():
         mine = [dict(g, hooks=[h for h in g.get("hooks", []) if is_rex(h)]) for g in groups]
@@ -119,7 +119,7 @@ def main(argv):
     except (AttributeError, TypeError):
         fail("%s has hooks in a shape this does not know; left alone" % target)
     if after == text(live, end):
-        print("rex hooks in %s are up to date" % target)
+        print("rex-title-spinner hooks in %s are up to date" % target)
         return
     sys.stdout.writelines(difflib.unified_diff(
         text(live, end).splitlines(True), after.splitlines(True), target, target + " (merged)", n=0))
