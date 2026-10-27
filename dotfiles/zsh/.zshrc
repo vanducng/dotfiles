@@ -188,7 +188,7 @@ if [[ -n "$VSCODE_ENV_REPLACE" && -n "$VIRTUAL_ENV" ]]; then
   unset VIRTUAL_ENV_PROMPT
 fi
 
-# env no-ops when ~/.atuin/bin is already on PATH, so Homebrew's older atuin stays first.
+# Installer atuin only (no Homebrew copy); prepend anyway since env no-ops if already on PATH.
 . "$HOME/.atuin/bin/env"
 export PATH="$HOME/.atuin/bin:$PATH"
 
