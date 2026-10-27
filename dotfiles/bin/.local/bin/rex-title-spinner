@@ -86,8 +86,10 @@ def agent_tty():
 def mark(state):
     """Record the pane's status, and start its spinner unless one is running."""
     base = os.path.join(tempfile.gettempdir(), "rex-title-spinner-" + os.environ["REX_BLOCK"].replace(":", "-"))
-    write(base + ".tmp", state)
-    os.replace(base + ".tmp", base + ".state")
+    # One temp file per writer, so two hooks at once never publish each other's half.
+    tmp = "%s.tmp.%d" % (base, os.getpid())
+    write(tmp, state)
+    os.replace(tmp, base + ".state")
     with open(base + ".lock", "w") as lock:
         try:
             fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
@@ -124,14 +126,25 @@ def spin(base, pid, tty):
             except OSError:
                 state = ""
             if state != drawn or state == "working":
-                title = json.loads(run(("rex", REX), "block", "call", "title") or "{}").get("title")
-                new = title and titled(title, glyph(state, time.time()))
-                if new and new != title:
-                    write(tty, "\x1b]2;" + new + "\x07")
+                redraw(tty, state)
                 drawn = state
             if state == "clear":
                 return
             time.sleep(SPIN / 2)
+        # The agent is gone: take its glyph off the title, which nothing else would.
+        if glyph(drawn or "", 0):
+            redraw(tty, "")
+
+
+def redraw(tty, state):
+    """Puts the state's glyph on the pane's title; a bad title or a closed tty skips the frame."""
+    try:
+        title = json.loads(run(("rex", REX), "block", "call", "title") or "{}").get("title")
+        new = title and titled(title, glyph(state, time.time()))
+        if new and new != title:
+            write(tty, "\x1b]2;" + new + "\x07")
+    except (ValueError, OSError, AttributeError):
+        pass
 
 
 def write(tty, text):
@@ -141,7 +154,8 @@ def write(tty, text):
 
 def main():
     if sys.argv[1:2] == ["--spin"]:
-        spin(sys.argv[2], int(sys.argv[3]), sys.argv[4])
+        if len(sys.argv) == 5 and sys.argv[3].isdigit():
+            spin(sys.argv[2], int(sys.argv[3]), sys.argv[4])
         return
     if not in_rex_pane(os.environ):
         return
