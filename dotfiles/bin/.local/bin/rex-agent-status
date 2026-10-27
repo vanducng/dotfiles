@@ -1,0 +1,40 @@
+#!/usr/bin/env python3
+# Kept for a release: hooks merged into a live settings file before `rexboard hook` took over,
+# pi's old rex-status extension and tmux.conf's old replay hook still run this until
+# `make rex-hooks-apply` and a restow replace them. It hands each call to rexboard, and does
+# nothing when rexboard has no `hooks` command. It always exits 0: exit 2 would block the agent.
+#   rex-agent-status <app>             -> rexboard hook <harness>, the hook JSON on stdin
+#   rex-agent-status --replay <session> -> rexboard hooks replay <session>
+import os
+import shutil
+import subprocess
+import sys
+
+HARNESSES = {"claude-code": "claude", "codex": "codex", "pi": "pi"}
+
+
+def command(args):
+    if args[:1] == ["--replay"] and len(args) > 1:
+        return ["hooks", "replay", args[1]]
+    if args and args[0] in HARNESSES:
+        return ["hook", HARNESSES[args[0]]]
+    return None
+
+
+def main():
+    wanted = command(sys.argv[1:])
+    exe = shutil.which("rexboard")
+    if not wanted or not exe:
+        return
+    has_hooks = subprocess.run([exe, "hooks", "--help"], stdin=subprocess.DEVNULL,
+                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=2)
+    if has_hooks.returncode == 0:
+        os.execv(exe, [exe, *wanted])
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except Exception:
+        pass
+    sys.exit(0)

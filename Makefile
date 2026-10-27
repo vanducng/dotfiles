@@ -176,6 +176,7 @@ platform-test:
 
 script-test:
 	@./scripts/ci/test-agent-statusline.sh
+	@./scripts/ci/test-rex-agent-status.sh
 	@./scripts/ci/test-rex-title-spinner.sh
 	@./scripts/ci/test-rex-hooks-sync.sh
 	@./scripts/ci/test-rex-layout.sh

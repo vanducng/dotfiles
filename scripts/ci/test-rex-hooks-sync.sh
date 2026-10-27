@@ -81,4 +81,16 @@ if "$sync" --apply --target "$tmp/bad.json" 2>"$tmp/err"; then fail "invalid JSO
 grep -q 'not valid JSON' "$tmp/err"
 [ "$(cat "$tmp/bad.json")" = '{ not json' ]
 if "$sync" codex --target "$live" 2>/dev/null; then fail "codex is rexboard's now"; fi
+
+# `rexboard hooks install` may have made a backup this same second: never write over it.
+mkdir "$tmp/twice"
+printf '{"hooks": {}}\n' > "$tmp/twice/settings.json"
+for s in 0 1; do
+  printf 'rexboard'"'"'s backup' > "$tmp/twice/settings.json.bak-$(date -u -v+${s}S +%Y%m%dT%H%M%SZ 2>/dev/null || date -u -d "+$s sec" +%Y%m%dT%H%M%SZ)"
+done
+"$sync" --apply --target "$tmp/twice/settings.json" >/dev/null
+[ "$(ls "$tmp/twice" | grep -c '\.bak-')" -eq 3 ] || fail "a backup was written over: $(ls "$tmp/twice")"
+for f in "$tmp"/twice/settings.json.bak-*; do
+  case "$(cat "$f")" in "rexboard's backup"|'{"hooks": {}}') ;; *) fail "$f holds $(cat "$f")";; esac
+done
 echo "rex-hooks-sync: ok"
