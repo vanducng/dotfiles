@@ -70,6 +70,7 @@ meh - n : yabai -m space --focus 8; open "/Applications/Obsidian.app"
 meh - o : yabai -m space --focus 6; open -a "Preview"
 meh - 1 : open "/Applications/1Password.app"
 meh - 2 : "$HOME/.config/yabai/jump-mac-mini.sh"
+meh - 3 : "$HOME/.config/yabai/jump-mac-mini.sh" linux-01
 
 # -----------------------------------------------------------------------------
 # 3. Window focus & warp
