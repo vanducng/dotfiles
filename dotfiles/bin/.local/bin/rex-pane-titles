@@ -1,0 +1,236 @@
+#!/usr/bin/env python3
+import argparse
+import fcntl
+import hashlib
+import json
+import os
+from pathlib import Path
+import re
+import signal
+import shutil
+import subprocess
+import sys
+import unicodedata
+
+
+def clean(value, limit=128):
+    value = ''.join(c for c in str(value) if not unicodedata.category(c).startswith('C'))
+    return ' '.join(value.split())[:limit]
+
+
+def app_name(process):
+    names = {Path(process[k]).name.lstrip('-').lower() for k in ('name', 'argv0', 'script', 'invoked_path') if process.get(k)}
+    for name in ('claude', 'codex', 'pi', 'cursor-agent', 'grok', 'droid', 'rig'):
+        if name in names:
+            return 'cursor' if name == 'cursor-agent' else name
+    if any(re.match(r'grok-\d', name) for name in names):
+        return 'grok'
+    script = process.get('script', '')
+    if '/pi-coding-agent/' in script:
+        return 'pi'
+    if '/cursor-agent/versions/' in script:
+        return 'cursor'
+    name = Path(process.get('script') or process.get('argv0') or process.get('name') or 'shell').name.lstrip('-')
+    return 'shell' if name in ('zsh', 'bash', 'fish', 'sh', 'login') else clean(name, 24)
+
+
+def pane_label(processes, title, repo, previous=None):
+    foreground = processes.get('foreground') or processes.get('child') or {}
+    chain = [foreground, *(processes.get('ancestors') or [])]
+    agent = next((p for p in chain if app_name(p) in ('claude', 'codex', 'pi', 'cursor', 'grok', 'droid')), None)
+    app = app_name(agent or foreground)
+    label = clean(repo, 40) + ' · ' + app
+    task = ''
+    owner = title.get('owner') or {}
+    raw = title.get('title', '')
+    if agent and (owner.get('pid') == agent.get('pid') or re.match(r'^[◐◑◉]\s', raw) or raw.startswith(label + ' · ')):
+        task = re.sub(r'^[◐◑◉✳✻✽✶✴✢*]+\s*', '', clean(title.get('title', '')))
+        if task == label:
+            task = ''
+        elif task.startswith(label + ' · '):
+            task = task[len(label + ' · '):]
+        task = re.sub(r'\s+-\s+' + re.escape(app) + r'$', '', task, flags=re.I)
+        if task.lower() in (app, 'node', 'shell', 'claude code', 'cursor agent') or task.startswith('/') or task.endswith(' - Nvim'):
+            task = previous[1] if previous and previous[0] == agent.get('pid') else ''
+    elif agent and previous and previous[0] == agent.get('pid'):
+        task = previous[1]
+    if task:
+        label += ' · ' + task
+    return clean(label), (agent.get('pid'), task) if agent else None
+
+
+class Titles:
+    def __init__(self, rex, state):
+        self.rex = rex
+        self.state = state
+        self.tasks = {}
+        self.roots = {}
+        self.signatures = {}
+        self.ttys = {}
+        try:
+            self.owned = json.loads(state.read_text())
+        except (OSError, ValueError):
+            self.owned = {}
+
+    def call(self, *args):
+        result = subprocess.run([self.rex, '--autostart=false', '--timeout=3s', *args],
+                                capture_output=True, text=True, timeout=5)
+        return json.loads(result.stdout) if result.returncode == 0 and result.stdout.strip() else {}
+
+    def repo(self, cwd):
+        if cwd not in self.roots:
+            root = ''
+            if cwd:
+                result = subprocess.run(['git', '-C', cwd, 'rev-parse', '--show-toplevel'],
+                                        capture_output=True, text=True, timeout=2)
+                root = result.stdout.strip() if result.returncode == 0 else ''
+            path = Path(root or cwd)
+            self.roots[cwd] = '~' if path == Path.home() else path.name or '~'
+        return self.roots[cwd]
+
+    def refresh(self, session, block):
+        snapshot = self.call('block', 'ls', '-s', session, '--json')
+        row = next((b for b in snapshot.get('blocks', []) if b['block_id'] == block), None)
+        if not row or row.get('creator_name') != 'com.superlogical.terminal':
+            return
+        current = row.get('label', '')
+        if current not in ('shell', self.owned.get(block)) and not current.startswith('Block '):
+            return
+        processes = self.call('block', 'call', '-s', session, '-b', block, 'process')
+        foreground = processes.get('foreground') or processes.get('child') or {}
+        cwd = next((p['cwd'] for p in [foreground, *(processes.get('ancestors') or [])] if p.get('cwd')), '')
+        title = self.call('block', 'call', '-s', session, '-b', block, 'title')
+        label, task = pane_label(processes, title, self.repo(cwd), self.tasks.get(block))
+        self.tasks[block] = task
+        if label != current:
+            result = subprocess.run([self.rex, '--autostart=false', '--timeout=3s', 'block', 'rename',
+                                     '-s', session, block, label], capture_output=True, timeout=5)
+            if result.returncode:
+                return
+        self.owned[block] = label
+        self.save()
+        if foreground.get('pid'):
+            terminal = subprocess.run(['/bin/ps', '-o', 'tty=', '-p', str(foreground['pid'])],
+                                      capture_output=True, text=True, timeout=2).stdout.strip()
+            if terminal and terminal not in ('??', '?'):
+                self.ttys[block] = Path('/dev') / terminal
+        if title.get('title') != label:
+            self.draw(block, title.get('title', ''))
+
+    def draw(self, block, source):
+        if block not in self.ttys or block not in self.owned:
+            return
+        glyph = re.match(r'^[◐◑◉]\s', source)
+        label = (glyph.group(0) if glyph else '') + self.owned[block]
+        try:
+            self.ttys[block].write_text('\x1b]2;' + label + '\x07')
+        except OSError:
+            pass
+
+    def save(self):
+        temporary = self.state.with_suffix('.tmp')
+        temporary.write_text(json.dumps(self.owned))
+        temporary.replace(self.state)
+
+    def scan(self):
+        for session in self.call('ls', '--json').get('sessions', []):
+            sid = session['session_id']
+            for block in self.call('block', 'ls', '-s', sid, '--json').get('blocks', []):
+                self.safe_refresh(sid, block['block_id'])
+
+    def safe_refresh(self, session, block):
+        try:
+            self.refresh(session, block)
+        except (OSError, ValueError, subprocess.TimeoutExpired):
+            pass
+
+    def event(self, event):
+        if event.get('type') != 'session_event':
+            return
+        payload = event.get('payload', {})
+        session = payload.get('session_id')
+        inner = payload.get('event', {})
+        data = inner.get('payload', {})
+        block = data.get('block_id')
+        if inner.get('type') == 'session_view_changed':
+            try:
+                snapshot = self.call('block', 'ls', '-s', session, '--json')
+                for row in snapshot.get('blocks', []):
+                    bid = row['block_id']
+                    if bid in self.owned and row.get('label') != self.owned[bid]:
+                        self.owned.pop(bid, None)
+                        self.ttys.pop(bid, None)
+                        self.save()
+            except (OSError, ValueError, subprocess.TimeoutExpired):
+                pass
+            return
+        if inner.get('type') == 'block_closed':
+            self.tasks.pop(block, None)
+            self.owned.pop(block, None)
+            self.signatures.pop(block, None)
+            self.ttys.pop(block, None)
+            self.save()
+        if inner.get('type') == 'block_event' and data.get('name') in ('process_changed', 'title_changed', 'pwd_changed'):
+            if data.get('name') == 'title_changed':
+                title = data.get('payload', {})
+                signature = re.sub(r'^[◐◑◉]\s*', '', title.get('title', ''))
+                if signature == self.owned.get(block):
+                    return
+                if self.signatures.get(block) == signature:
+                    self.draw(block, title.get('title', ''))
+                    return
+                self.signatures[block] = signature
+            self.safe_refresh(session, block)
+
+    def watch(self):
+        with subprocess.Popen([self.rex, '--autostart=false', 'events', '--all', '--json'],
+                              stdout=subprocess.PIPE, text=True) as stream:
+            try:
+                self.scan()
+                for line in stream.stdout:
+                    try:
+                        self.event(json.loads(line))
+                    except ValueError:
+                        continue
+            finally:
+                stream.terminate()
+                stream.wait(timeout=5)
+
+
+def main():
+    parser = argparse.ArgumentParser(description='Keep automatic Rex pane labels in repo · app · task form.')
+    parser.add_argument('--start', action='store_true', help='start one background watcher per Rex server')
+    parser.add_argument('--once', action='store_true', help='update current panes once')
+    args = parser.parse_args()
+    for key in ('REX_SESSION', 'REX_BLOCK', 'REX_CLIENT'):
+        os.environ.pop(key, None)
+    bundled = Path.home() / 'Library/Application Support/com.superlogical.rex/RexServer/Versions/Current/Rex Server.app/Contents/MacOS/rex'
+    rex = shutil.which('rex') or str(bundled)
+    status = subprocess.run([rex, '--autostart=false', 'whoami', '--json'], capture_output=True, text=True, timeout=5)
+    if status.returncode:
+        return
+    endpoint = json.loads(status.stdout)['endpoint']
+    cache = Path(os.environ.get('XDG_CACHE_HOME', Path.home() / '.cache')) / 'rex/pane-titles'
+    cache.mkdir(parents=True, exist_ok=True, mode=0o700)
+    name = hashlib.sha256(endpoint.encode()).hexdigest()[:16]
+    if args.start:
+        subprocess.Popen([sys.executable, str(Path(__file__).resolve())], start_new_session=True,
+                         stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        return
+    with (cache / (name + '.lock')).open('w') as lock:
+        try:
+            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            return
+        def stop(_signal, _frame):
+            raise SystemExit(0)
+        signal.signal(signal.SIGTERM, stop)
+        titles = Titles(rex, cache / (name + '.json'))
+        titles.scan() if args.once else titles.watch()
+
+
+if __name__ == '__main__':
+    try:
+        main()
+    except (OSError, ValueError, subprocess.TimeoutExpired):
+        sys.exit(1)

@@ -17,6 +17,10 @@ export MISE_DATA_DIR="${MISE_DATA_DIR:-$HOME/.local/share/mise}"
 export STARSHIP_CONFIG="${STARSHIP_CONFIG:-$HOME/.config/starship/starship.toml}"
 export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
 
+if [ -t 0 ] && [ -n "${REX_BLOCK:-}" ] && [ -z "${TMUX:-}" ] && command -v rex-pane-titles >/dev/null 2>&1; then
+  rex-pane-titles --start >/dev/null 2>&1 || true
+fi
+
 if [ -n "${ZSH_VERSION:-}" ]; then
   _vd_shell=zsh
 else
