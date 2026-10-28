@@ -193,9 +193,8 @@ status_line_use_colors = true
 # Same order as agent-statusline (Claude Code, Grok, pi); Codex only takes built-in items.
 status_line = ["model-with-reasoning", "context-used", "current-dir", "git-branch", "fast-mode", "run-state"]
 terminal_title = [
-  "activity",
   "project",
-  "model",
+  "thread-name",
 ]
 vim_mode_default = false
 screen_reader_detection_done = true

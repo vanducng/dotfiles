@@ -63,14 +63,22 @@ class PaneTitlesTest(unittest.TestCase):
         label, _ = titles.pane_label(process, {'owner': {'pid': 99}, 'title': label}, 'api')
         self.assertEqual(label, 'api · claude · Fix login')
 
-    def test_visible_title_is_emitted_and_spinner_preserved(self):
+    def test_refresh_updates_label_without_writing_terminal_title(self):
         with tempfile.TemporaryDirectory() as temporary:
             watcher = titles.Titles('rex', Path(temporary) / 'state.json')
-            tty = Path(temporary) / 'tty'
-            watcher.ttys['b'] = tty
-            watcher.owned['b'] = 'api · cursor · Fix login'
-            watcher.draw('b', '◑ Fix login')
-            self.assertEqual(tty.read_text(), '\x1b]2;◑ api · cursor · Fix login\x07')
+            def call(*args):
+                if args[:2] == ('block', 'ls'):
+                    return {'blocks': [{'block_id': 'b', 'creator_name': 'com.superlogical.terminal', 'label': 'shell'}]}
+                return {'process': {'foreground': {'pid': 7, 'name': 'codex', 'cwd': '/work/api'}},
+                        'title': {'owner': {'pid': 7}, 'title': 'Fix login'}}[args[-1]]
+            watcher.call = call
+            watcher.repo = lambda _: 'api'
+            with patch.object(titles.subprocess, 'run') as run:
+                run.return_value.returncode = 0
+                watcher.refresh('s', 'b')
+                run.assert_called_once_with(['rex', '--autostart=false', '--timeout=3s', 'block', 'rename',
+                                             '-s', 's', 'b', 'api · codex · Fix login'], capture_output=True, timeout=5)
+            self.assertEqual(watcher.owned['b'], 'api · codex · Fix login')
 
     def test_manual_label_is_preserved(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -85,16 +93,13 @@ class PaneTitlesTest(unittest.TestCase):
             watcher = titles.Titles('rex', Path(temporary) / 'state.json')
             self.assertEqual(watcher.repo(str(Path.home())), '~')
 
-    def test_manual_rename_stops_visible_title_rewrites(self):
+    def test_manual_rename_releases_automatic_label(self):
         with tempfile.TemporaryDirectory() as temporary:
             watcher = titles.Titles('rex', Path(temporary) / 'state.json')
             watcher.owned['b'] = 'api · claude · Fix login'
-            tty = Path(temporary) / 'tty'
-            watcher.ttys['b'] = tty
             watcher.call = lambda *args: {'blocks': [{'block_id': 'b', 'label': 'Review'}]}
             watcher.event({'type': 'session_event', 'payload': {'session_id': 's', 'event': {'type': 'session_view_changed'}}})
-            watcher.draw('b', '◑ Fix login')
-            self.assertFalse(tty.exists())
+            self.assertNotIn('b', watcher.owned)
 
     def test_label_filters_controls_and_bounds_length(self):
         process = {'foreground': {'pid': 7, 'name': 'codex'}}
@@ -112,6 +117,50 @@ class PaneTitlesTest(unittest.TestCase):
                         'type': 'block_event', 'payload': {'block_id': 'b', 'name': 'title_changed', 'payload': {'title': title}}
                     }}})
                 self.assertEqual(refresh.call_count, 1)
+
+    def test_agent_title_events_do_not_write_competing_terminal_titles(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            watcher = titles.Titles('rex', Path(temporary) / 'state.json')
+            watcher.owned['b'] = 'api · codex · Fix login'
+            tty = Path(temporary) / 'tty'
+            watcher.ttys = {'b': tty}
+            watcher.statuses = {'b': 'working'}
+            with patch.object(watcher, 'safe_refresh'):
+                for frame in ('⠇', '⠏', '⠋'):
+                    watcher.event({'type': 'session_event', 'payload': {'session_id': 's', 'event': {
+                        'type': 'block_event', 'payload': {'block_id': 'b', 'name': 'title_changed',
+                        'payload': {'title': frame + ' api | GPT-6', 'owner': {'pid': 7, 'name': 'codex'}}}
+                    }}})
+            self.assertFalse(tty.exists(), 'the watcher must leave terminal titles to the foreground program')
+
+    def test_braille_frames_are_not_task_names(self):
+        process = {'foreground': {'pid': 7, 'name': 'codex'}}
+        for frame in ('⠇', '⠏', '⠋', '⠙'):
+            label, _ = titles.pane_label(process, {'owner': {'pid': 7}, 'title': frame + ' Fix login'}, 'api')
+            self.assertEqual(label, 'api · codex · Fix login')
+
+    def test_task_is_pinned_for_the_agent_session(self):
+        process = {'foreground': {'pid': 7, 'name': 'codex'}}
+        label, _ = titles.pane_label(process, {'owner': {'pid': 7}, 'title': 'Inspecting database'}, 'api', (7, 'Fix login'))
+        self.assertEqual(label, 'api · codex · Fix login')
+
+    def test_codex_thread_title_does_not_repeat_project(self):
+        process = {'foreground': {'pid': 7, 'name': 'codex'}}
+        label, _ = titles.pane_label(process, {'owner': {'pid': 7}, 'title': 'api | Fix login'}, 'api')
+        self.assertEqual(label, 'api · codex · Fix login')
+
+    def test_status_changes_do_not_trigger_title_or_label_rewrites(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            watcher = titles.Titles('rex', Path(temporary) / 'state.json')
+            watcher.owned['b'] = 'api · codex · Fix login'
+            with patch.object(watcher, 'safe_refresh') as refresh, patch.object(titles.subprocess, 'run') as run:
+                for state in ('working', 'blocked', 'done'):
+                    watcher.event({'type': 'session_event', 'payload': {'session_id': 's', 'event': {
+                        'type': 'block_event', 'payload': {'block_id': 'b', 'name': 'program_status_changed', 'payload': {'record': {'state': state}}}
+                    }}})
+                refresh.assert_not_called()
+                run.assert_not_called()
+            self.assertEqual(watcher.owned['b'], 'api · codex · Fix login')
 
 
 if __name__ == '__main__':

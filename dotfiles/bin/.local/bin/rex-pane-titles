@@ -12,6 +12,17 @@ import subprocess
 import sys
 import unicodedata
 
+SPINNER = re.compile(r'^[\u2800-\u28ff◐◑◉●○✓✳✻✽✶✴✢*!]+\s*')
+
+
+def without_status(title):
+    return SPINNER.sub('', clean(title))
+
+
+def agent_process(processes):
+    chain = [processes.get('foreground') or processes.get('child') or {}, *(processes.get('ancestors') or [])]
+    return next((p for p in chain if app_name(p) in ('claude', 'codex', 'pi', 'cursor', 'grok', 'droid')), None)
+
 
 def clean(value, limit=128):
     value = ''.join(c for c in str(value) if not unicodedata.category(c).startswith('C'))
@@ -36,20 +47,24 @@ def app_name(process):
 
 def pane_label(processes, title, repo, previous=None):
     foreground = processes.get('foreground') or processes.get('child') or {}
-    chain = [foreground, *(processes.get('ancestors') or [])]
-    agent = next((p for p in chain if app_name(p) in ('claude', 'codex', 'pi', 'cursor', 'grok', 'droid')), None)
+    agent = agent_process(processes)
     app = app_name(agent or foreground)
     label = clean(repo, 40) + ' · ' + app
     task = ''
     owner = title.get('owner') or {}
     raw = title.get('title', '')
-    if agent and (owner.get('pid') == agent.get('pid') or re.match(r'^[◐◑◉]\s', raw) or raw.startswith(label + ' · ')):
-        task = re.sub(r'^[◐◑◉✳✻✽✶✴✢*]+\s*', '', clean(title.get('title', '')))
+    if agent and previous and previous[0] == agent.get('pid') and previous[1]:
+        task = previous[1]
+    elif agent and (owner.get('pid') == agent.get('pid') or SPINNER.match(raw) or raw.startswith(label + ' · ')):
+        task = without_status(raw)
         if task == label:
             task = ''
         elif task.startswith(label + ' · '):
             task = task[len(label + ' · '):]
         task = re.sub(r'\s+-\s+' + re.escape(app) + r'$', '', task, flags=re.I)
+        task = re.sub(r'^' + re.escape(repo) + r'\s*\|\s*', '', task)
+        if re.match(r'^(GPT-|Claude |Opus |Sonnet |Gemini )', task, re.I):
+            task = ''
         if task.lower() in (app, 'node', 'shell', 'claude code', 'cursor agent') or task.startswith('/') or task.endswith(' - Nvim'):
             task = previous[1] if previous and previous[0] == agent.get('pid') else ''
     elif agent and previous and previous[0] == agent.get('pid'):
@@ -66,7 +81,7 @@ class Titles:
         self.tasks = {}
         self.roots = {}
         self.signatures = {}
-        self.ttys = {}
+        self.contexts = {}
         try:
             self.owned = json.loads(state.read_text())
         except (OSError, ValueError):
@@ -98,9 +113,18 @@ class Titles:
             return
         processes = self.call('block', 'call', '-s', session, '-b', block, 'process')
         foreground = processes.get('foreground') or processes.get('child') or {}
-        cwd = next((p['cwd'] for p in [foreground, *(processes.get('ancestors') or [])] if p.get('cwd')), '')
+        agent = agent_process(processes)
+        context = agent or foreground
+        cwd = context.get('cwd') or next((p['cwd'] for p in [foreground, *(processes.get('ancestors') or [])] if p.get('cwd')), '')
+        previous = self.contexts.get(block)
+        if agent and previous and previous[0] == agent.get('pid'):
+            repo = previous[1]
+        else:
+            repo = self.repo(cwd)
+            self.tasks.pop(block, None)
+            self.contexts[block] = (context.get('pid'), repo)
         title = self.call('block', 'call', '-s', session, '-b', block, 'title')
-        label, task = pane_label(processes, title, self.repo(cwd), self.tasks.get(block))
+        label, task = pane_label(processes, title, repo, self.tasks.get(block))
         self.tasks[block] = task
         if label != current:
             result = subprocess.run([self.rex, '--autostart=false', '--timeout=3s', 'block', 'rename',
@@ -109,23 +133,6 @@ class Titles:
                 return
         self.owned[block] = label
         self.save()
-        if foreground.get('pid'):
-            terminal = subprocess.run(['/bin/ps', '-o', 'tty=', '-p', str(foreground['pid'])],
-                                      capture_output=True, text=True, timeout=2).stdout.strip()
-            if terminal and terminal not in ('??', '?'):
-                self.ttys[block] = Path('/dev') / terminal
-        if title.get('title') != label:
-            self.draw(block, title.get('title', ''))
-
-    def draw(self, block, source):
-        if block not in self.ttys or block not in self.owned:
-            return
-        glyph = re.match(r'^[◐◑◉]\s', source)
-        label = (glyph.group(0) if glyph else '') + self.owned[block]
-        try:
-            self.ttys[block].write_text('\x1b]2;' + label + '\x07')
-        except OSError:
-            pass
 
     def save(self):
         temporary = self.state.with_suffix('.tmp')
@@ -159,7 +166,6 @@ class Titles:
                     bid = row['block_id']
                     if bid in self.owned and row.get('label') != self.owned[bid]:
                         self.owned.pop(bid, None)
-                        self.ttys.pop(bid, None)
                         self.save()
             except (OSError, ValueError, subprocess.TimeoutExpired):
                 pass
@@ -168,16 +174,15 @@ class Titles:
             self.tasks.pop(block, None)
             self.owned.pop(block, None)
             self.signatures.pop(block, None)
-            self.ttys.pop(block, None)
+            self.contexts.pop(block, None)
             self.save()
         if inner.get('type') == 'block_event' and data.get('name') in ('process_changed', 'title_changed', 'pwd_changed'):
             if data.get('name') == 'title_changed':
                 title = data.get('payload', {})
-                signature = re.sub(r'^[◐◑◉]\s*', '', title.get('title', ''))
+                signature = without_status(title.get('title', ''))
                 if signature == self.owned.get(block):
                     return
                 if self.signatures.get(block) == signature:
-                    self.draw(block, title.get('title', ''))
                     return
                 self.signatures[block] = signature
             self.safe_refresh(session, block)
