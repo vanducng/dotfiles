@@ -7,7 +7,7 @@ Rex (Rex Beta) is the native macOS multiplexer that replaces Ghostty on space 1 
 ## Source of truth
 
 - `dotfiles/rex/.config/rex/init.lua` - key bindings and the resize mode
-- `dotfiles/rex/.config/rex/actions.lua` - Lua actions: `session_goto`, `session_toggle`, `host_goto`, `tab_cycle`, `session_renumber`, `session_layout`, `layout_goto`, `tab_renumber`, `tab_goto`, `home`, `fingers`, `agent_next`, `agent_pick`, `agent_attention` (the old in-Lua scan, kept until `rexboard next` is proven live), `copy_mode`, `pane_label`, `open_pr`
+- `dotfiles/rex/.config/rex/actions.lua` - Lua actions: `session_goto`, `session_toggle`, `host_goto`, `tab_cycle`, `session_renumber`, `session_layout`, `layout_goto`, `tab_renumber`, `tab_goto`, `home`, `fingers`, `project_pick`, `agent_next`, `agent_pick`, `agent_attention` (the old in-Lua scan, kept until `rexboard next` is proven live), `copy_mode`, `pane_label`, `open_pr`
 - `dotfiles/rex/.config/rex/layout.lua` - the sessions kept at the top of this Mac's sidebar (see [Session layout](#session-layout))
 - `dotfiles/rex/.config/rex/hosts.json` - every machine that runs Rex, defined once: `label`, `device`, macOS `hostname`, and the app `icon`. Its order is the `Ctrl-Alt-1..9` number
 - `dotfiles/rex/.config/rex/hosts.lua` - reads `hosts.json`, works out which entry is this Mac, and declares the others as Rex hosts
@@ -35,8 +35,9 @@ Rex uses Herdr's `C-x` prefix and letters, so moving between the two needs no re
 | `C-x e` | Balance splits |
 | `C-x r` | Resize mode: `h/j/k/l` or arrows, `Shift` for bigger steps, `=` balance, `Esc` or `Enter` to leave |
 | `C-x ,` / `C-x Shift-P` | Label the pane `repo:branch`, or the folder name outside git |
-| `C-x Space` | Pick a URL or file path from the pane's latest 500 lines, newest first: `Enter` opens, `Ctrl-Y` copies, `Ctrl-E` edits (Herdr's `herdr-fingers`) |
-| `C-x [` | Copy mode: the screen and scrollback in Neovim over the pane, with wrapped lines joined. `v` to select, `y` copies to the clipboard, `q` or `Ctrl-C` closes and returns to the pane, zoomed if it was (over a zoomed pane the popup fills the window, since Rex unzooms when focus leaves the pane). The popup covers just the pane only when the pane is in the window's top-left corner, and fills the window otherwise: Rex Beta 1408 draws a popup's `[x, y, w, h]` as left, top, right, bottom, so any other placement comes out empty. The `C-x Space` picker fills the window for the same reason. A full-screen app (Claude Code, nvim, less) has no scrollback, so only its visible screen shows, and a bar at the top says so |
+| `C-x Space` | Pick a URL or file path from the pane's latest 500 lines, newest first, in a floating pane centered over the window: `Enter` opens, `Ctrl-Y` copies, `Ctrl-E` edits (Herdr's `herdr-fingers`) |
+| `C-x p` | Pick a session or a project folder in a floating pane (`rex-project-picker`, like `tmux-sessionizer`). Sessions come first and the current one last. A `+` row is a folder under `~/personal`, `~/projects`, `~/git/personal`, `~/git/work` or `~/git/dataplanelabs` with no session yet; `Enter` opens it in a new numbered session (`5-api`). A folder already open in a session (its first tab's pane is in it) shows only as that session, so a second pick reuses it. `Esc` returns to the pane. This Mac only |
+| `C-x [` | Copy mode: the screen and scrollback in Neovim over the pane, with wrapped lines joined. `v` to select, `y` copies to the clipboard, `q` or `Ctrl-C` closes and returns to the pane, zoomed if it was (over a zoomed pane the popup fills the window, since Rex unzooms when focus leaves the pane). A full-screen app (Claude Code, nvim, less) has no scrollback, so only its visible screen shows, and a bar at the top says so |
 | `C-x c` | New tab |
 | `C-x 1..9` | Go to tab N in this session (`9` is the last tab) |
 | `C-x Shift-T` | Rename tab |
@@ -107,7 +108,7 @@ Each host numbers its own sessions, so `Ctrl-1..9` stays short however many mach
 | 2 | `2-cnb` | `claude` in `~/git/work/cnb` |
 | 3 | `3-abs` | `claude` in `~/git/work/ab-spectrum` |
 
-The `session_layout` action makes the missing ones, reopens a layout tab you closed, and moves the three to positions 1-3. It finds them by name without the number, so `cockpit` or `5-cockpit` counts. It skips a session whose folder this Mac lacks, and never kills or restarts a session. Every session's number is its `Ctrl-1..9` position, so with all three present the rest start at 4 (`1-warp-factory-setup` becomes `4-warp-factory-setup`); with one skipped, the rest close the gap. Only the number prefix changes, never the name.
+The `session_layout` action makes the missing ones, reopens a layout tab you closed, and moves the three to positions 1-3. It finds sessions and tabs by name without the number, so `cockpit` or `5-cockpit` counts, and a tab you added yourself never stands in for a closed layout tab. It skips a session whose folder this Mac lacks, and never kills or restarts a session. Every session's number is its `Ctrl-1..9` position, so with all three present the rest start at 4 (`1-warp-factory-setup` becomes `4-warp-factory-setup`); with one skipped, the rest close the gap. Only the number prefix changes, never the name.
 
 It runs from `make setup-rex` and at login (the `dev.vanducng.rex-session-layout` LaunchAgent in the `launchd` package), which writes failures to `~/Library/Logs/rex-session-layout.log`. No key runs the whole layout: `Alt-Shift-1..5` make or complete only their own session before going to it, or say its folder does not exist. By hand:
 

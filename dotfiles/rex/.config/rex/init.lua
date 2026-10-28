@@ -42,6 +42,7 @@ px("r", "client.mode.enter", { name = "resize" })
 px(",", "pane_label")
 px("shift+p", "pane_label")
 px("space", "fingers")
+px("p", "project_pick")
 
 px("c", "client.tab.new")
 px("shift+t", "client.tab.rename")

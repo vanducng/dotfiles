@@ -1,0 +1,87 @@
+#!/usr/bin/env bash
+# Rex's prefix+p picker, run in a floating pane by the project_pick action.
+#   rex-project-picker --sessions FILE --client CLIENT_ID
+# FILE has one "id<TAB>label<TAB>dir<TAB>current" line per local session.
+# Exit 130 means nothing was picked, so the action refocuses the pane.
+set -euo pipefail
+
+sessions_file=""
+client=""
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --sessions) sessions_file="$2"; shift 2 ;;
+    --client) client="$2"; shift 2 ;;
+    *) printf 'rex-project-picker: unknown option %s\n' "$1" >&2; exit 2 ;;
+  esac
+done
+[[ -r "$sessions_file" ]] || { printf 'rex-project-picker: no session list\n' >&2; exit 1; }
+[[ -n "$client" ]] || { printf 'rex-project-picker: no Rex app to switch\n' >&2; exit 1; }
+command -v fzf >/dev/null 2>&1 || { printf 'rex-project-picker: fzf is required\n' >&2; exit 1; }
+command -v jq >/dev/null 2>&1 || { printf 'rex-project-picker: jq is required\n' >&2; exit 1; }
+rex_bin="${REX_BIN_DIR:+$REX_BIN_DIR/}rex"
+
+roots="${REX_PROJECT_ROOTS:-$HOME/personal:$HOME/projects:$HOME/git/personal:$HOME/git/work:$HOME/git/dataplanelabs}"
+IFS=: read -r -a root_list <<<"$roots"
+existing_roots=()
+for root in "${root_list[@]}"; do
+  [[ -d "$root" ]] && existing_roots+=("$root")
+done
+projects=""
+if ((${#existing_roots[@]})); then
+  projects="$(find "${existing_roots[@]}" -mindepth 1 -maxdepth 1 -type d ! -name '.*' 2>/dev/null | sort -f)"
+fi
+
+# Rows: display<TAB>kind<TAB>target. A project already open in a session (its dir or
+# below) shows only as that session, so picking it never makes a duplicate.
+rows="$(printf '%s\n' "$projects" | awk -F'\t' -v home="$HOME" '
+  function short(p) { return index(p, home "/") == 1 ? "~" substr(p, length(home) + 1) : p }
+  FILENAME == ARGV[1] {
+    if ($1 == "") next
+    n++; id[n] = $1; label[n] = $2; dir[n] = $3; cur[n] = $4
+    next
+  }
+  $0 != "" {
+    for (i = 1; i <= n; i++) if (dir[i] == $0 || index(dir[i], $0 "/") == 1) next
+    proj[++m] = $0
+  }
+  END {
+    for (i = 1; i <= n; i++) if (cur[i] != "1")
+      printf "%-24s %s\tsession\t%s\n", label[i], short(dir[i]), id[i]
+    for (j = 1; j <= m; j++) {
+      name = proj[j]; sub(/.*\//, "", name)
+      printf "%-24s %s\tproject\t%s\n", "+ " name, short(proj[j]), proj[j]
+    }
+    for (i = 1; i <= n; i++) if (cur[i] == "1")
+      printf "%-24s %s\tcurrent\t%s\n", label[i] " (here)", short(dir[i]), id[i]
+  }' "$sessions_file" -)"
+
+set +e
+choice="$(printf '%s\n' "$rows" | FZF_DEFAULT_OPTS="${FZF_DEFAULT_OPTS:-} --color=bg:#1e2023,bg+:#2b2f34" fzf \
+  --layout=reverse \
+  --no-info \
+  --delimiter=$'\t' \
+  --with-nth=1 \
+  --prompt='project> ' \
+  --header='Enter switches, or opens a new session for a + project')"
+status=$?
+set -e
+case "$status" in
+  0) ;;
+  1|130) exit 130 ;;
+  *) printf 'rex-project-picker: fzf exited with code %s\n' "$status" >&2; exit "$status" ;;
+esac
+
+IFS=$'\t' read -r _ kind target <<<"$choice"
+case "$kind" in
+  current) exit 130 ;;
+  session) id="$target" ;;
+  project)
+    count="$(awk -F'\t' '$1 != ""' "$sessions_file" | wc -l | tr -d ' ')"
+    base="$(basename "$target" | tr . _)"
+    out="$("$rex_bin" new "$((count + 1))-$base" --window "$base" -c "$target" --json)"
+    id="$(jq -r '.session_id // empty' <<<"$out")"
+    [[ -n "$id" ]] || { printf 'rex-project-picker: rex new printed no session id\n' >&2; exit 1; }
+    ;;
+  *) exit 130 ;;
+esac
+"$rex_bin" -C "$client" do session.select session_id="$id" >/dev/null
