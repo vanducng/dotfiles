@@ -1,4 +1,5 @@
 [
   { "label": "mbp-01", "device": "MacBook Pro", "hostname": "MacBookPro", "icon": "laptopcomputer" },
-  { "label": "mini-01", "device": "Mac mini", "hostname": "mac01", "icon": "macmini" }
+  { "label": "mini-01", "device": "Mac mini", "hostname": "mac01", "icon": "macmini" },
+  { "label": "linux-01", "device": "Linux", "hostname": "dpl", "icon": "desktopcomputer" }
 ]

@@ -1,0 +1,12 @@
+[Unit]
+Description=Rex personal server (built-in Tailscale node rex-linux-01, tailnet listener :7297)
+After=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/rex server run --listen unix://%t/rex/server.sock --extra-listen tailnet://:7297 --tailscale --tailscale-hostname rex-linux-01 --log-format text
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=default.target
