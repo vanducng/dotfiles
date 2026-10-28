@@ -30,7 +30,7 @@ cases = [
 for event, want in cases:
     assert s.event_state(event) == want, (event, s.event_state(event))
 
-assert (s.glyph("working", 0), s.glyph("working", 1.0)) == ("◐ ", "◑ ")
+assert (s.glyph("working", 0), s.glyph("working", 1.0)) == ("● ", "● ")
 assert (s.glyph("blocked", 0), s.glyph("done", 0), s.glyph("", 0)) == ("◉ ", "", "")
 assert s.titled("◑ Fix login", "◉ ") == "◉ Fix login"
 assert s.titled("◉ Fix login", "") == "Fix login"

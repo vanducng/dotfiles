@@ -62,12 +62,12 @@ def run(exes, *args):
 
 def glyph(state, now):
     if state == "working":
-        return "◐◑"[int(now / SPIN) % 2] + " "
+        return "● "
     return "◉ " if state == "blocked" else ""
 
 
 def titled(title, prefix):
-    return prefix + re.sub(r"^[◐◑◉] ", "", title)
+    return prefix + re.sub(r"^[◐◑◉●] ", "", title)
 
 
 def agent_tty():
@@ -125,7 +125,7 @@ def spin(base, pid, tty):
                 state = open(base + ".state").read()
             except OSError:
                 state = ""
-            if state != drawn or state == "working":
+            if state != drawn:
                 redraw(tty, state)
                 drawn = state
             if state == "clear":
