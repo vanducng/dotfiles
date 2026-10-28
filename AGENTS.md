@@ -21,7 +21,8 @@ The docs at `dotfiles.vanducng.dev` are built with **Astro Starlight**, kept ent
 ## Key Commands
 
 ```bash
-make stow-install      # Install all dotfiles via stow
+make setup             # Whole machine: packages, every dotfile, app settings (re-runnable)
+make stow-install      # Install all dotfiles via stow; files in the way go to ~/.dotfiles-backup/<ts>/
 make stow-uninstall    # Remove all symlinks
 make stow-<tool>       # Install single tool (e.g., make stow-nvim)
 make unstow-<tool>     # Remove single tool
