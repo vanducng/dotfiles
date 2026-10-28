@@ -97,9 +97,15 @@ class PaneTitlesTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             watcher = titles.Titles('rex', Path(temporary) / 'state.json')
             watcher.owned['b'] = 'api · claude · Fix login'
+            watcher.contexts['b'] = (7, 'api')
+            watcher.tasks['b'] = (7, 'Fix login')
+            watcher.signatures['b'] = 'Fix login'
             watcher.call = lambda *args: {'blocks': [{'block_id': 'b', 'label': 'Review'}]}
             watcher.event({'type': 'session_event', 'payload': {'session_id': 's', 'event': {'type': 'session_view_changed'}}})
             self.assertNotIn('b', watcher.owned)
+            self.assertNotIn('b', watcher.contexts)
+            self.assertNotIn('b', watcher.tasks)
+            self.assertNotIn('b', watcher.signatures)
 
     def test_label_filters_controls_and_bounds_length(self):
         process = {'foreground': {'pid': 7, 'name': 'codex'}}
@@ -122,16 +128,20 @@ class PaneTitlesTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             watcher = titles.Titles('rex', Path(temporary) / 'state.json')
             watcher.owned['b'] = 'api · codex · Fix login'
-            tty = Path(temporary) / 'tty'
-            watcher.ttys = {'b': tty}
-            watcher.statuses = {'b': 'working'}
-            with patch.object(watcher, 'safe_refresh'):
+            with patch.object(watcher, 'safe_refresh'), patch.object(Path, 'write_text') as write:
                 for frame in ('⠇', '⠏', '⠋'):
                     watcher.event({'type': 'session_event', 'payload': {'session_id': 's', 'event': {
                         'type': 'block_event', 'payload': {'block_id': 'b', 'name': 'title_changed',
                         'payload': {'title': frame + ' api | GPT-6', 'owner': {'pid': 7, 'name': 'codex'}}}
                     }}})
-            self.assertFalse(tty.exists(), 'the watcher must leave terminal titles to the foreground program')
+                write.assert_not_called()
+
+    def test_task_punctuation_is_not_a_status_marker(self):
+        process = {'foreground': {'pid': 7, 'name': 'codex'}}
+        for task in ('!123 Inspect history', '* Audit startup', '*Audit startup'):
+            with self.subTest(task=task):
+                label, _ = titles.pane_label(process, {'owner': {'pid': 7}, 'title': task}, 'api')
+                self.assertEqual(label, 'api · codex · ' + task)
 
     def test_braille_frames_are_not_task_names(self):
         process = {'foreground': {'pid': 7, 'name': 'codex'}}

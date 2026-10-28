@@ -12,7 +12,7 @@ import subprocess
 import sys
 import unicodedata
 
-SPINNER = re.compile(r'^[\u2800-\u28ff◐◑◉●○✓✳✻✽✶✴✢*!]+\s*')
+SPINNER = re.compile(r'^[\u2800-\u28ff◐◑◉●○✓✳✻✽✶✴✢]+\s*')
 
 
 def without_status(title):
@@ -166,6 +166,9 @@ class Titles:
                     bid = row['block_id']
                     if bid in self.owned and row.get('label') != self.owned[bid]:
                         self.owned.pop(bid, None)
+                        self.contexts.pop(bid, None)
+                        self.tasks.pop(bid, None)
+                        self.signatures.pop(bid, None)
                         self.save()
             except (OSError, ValueError, subprocess.TimeoutExpired):
                 pass
