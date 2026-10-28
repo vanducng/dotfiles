@@ -309,21 +309,27 @@ end
 -- closed tab), skipping it when this Mac lacks its folder. Returns its id, a placeholder one in
 -- a dry run, or nil when skipped.
 local function ensure_session(e, id, dry, lines)
-  local have = 0
+  local windows, missing = {}, {}
   if id then
     local out, err = cli(nil, "session", "inspect", id, "--json")
     if not out then return nil, err end
     local ok, d = pcall(rex.json.decode, out)
     if not ok then return nil, "rex session inspect returned unreadable output" end
-    have = #(d.windows or {})
-    if have >= #e.tabs then return id end
+    windows = d.windows or {}
   end
+  for _, tab in ipairs(e.tabs) do
+    local found = false
+    for _, w in ipairs(windows) do
+      if layout.base(w.label) == tab.label then found = true; break end
+    end
+    if not found then missing[#missing + 1] = tab end
+  end
+  if #missing == 0 then return id end
   if e.dir and not is_dir(e.dir) then
     lines[#lines + 1] = "skip " .. e.name .. ": " .. e.dir .. " does not exist"
     return nil
   end
-  local missing = #e.tabs - have
-  lines[#lines + 1] = id and ("add " .. missing .. (missing == 1 and " tab to " or " tabs to ") .. e.name)
+  lines[#lines + 1] = id and ("add " .. #missing .. (#missing == 1 and " tab to " or " tabs to ") .. e.name)
     or ("create " .. e.name)
   if dry then return id or ("new:" .. e.name) end
   local function opts(tab)
@@ -341,11 +347,11 @@ local function ensure_session(e, id, dry, lines)
     local ok, d = pcall(rex.json.decode, out)
     id = ok and d and d.session_id
     if not id then return nil, "rex new printed no session id" end
-    have = 1
+    table.remove(missing, 1)
   end
-  for i = have + 1, #e.tabs do
-    local _, werr = cli(nil, "window", "new", "-s", id, e.tabs[i].label, "--focus=false", opts(e.tabs[i]))
-    if werr then return nil, e.tabs[i].label .. ": " .. werr end
+  for _, tab in ipairs(missing) do
+    local _, werr = cli(nil, "window", "new", "-s", id, tab.label, "--focus=false", opts(tab))
+    if werr then return nil, tab.label .. ": " .. werr end
   end
   return id
 end
@@ -399,8 +405,11 @@ local function goto_layout(ctx, index)
   local id, err = ensure_session(want, had, false, {})
   if err then error(want.name .. ": " .. err, 0) end
   if not id then error(want.name .. ": " .. tostring(want.dir) .. " does not exist", 0) end
-  local w = session_windows(ctx, nil, id)[k[2]]
-  if not w then error(want.name .. " has no tab " .. k[2], 0) end
+  local w
+  for _, window in ipairs(session_windows(ctx, nil, id)) do
+    if layout.base(window.label) == want.tabs[k[2]].label then w = window; break end
+  end
+  if not w then error(want.name .. " has no tab " .. want.tabs[k[2]].label, 0) end
   remember(ctx, id)
   select_session(id, nil, w.window_id)
   -- A new session goes to its place after the jump; failing to order it only costs tidiness.
@@ -617,8 +626,6 @@ local function overlay(ctx, bounds, script, file, ...)
     end
   end
   local area = zoomed == "1" and { 0, 0, 1, 1 } or bounds or rect or { 0, 0, 1, 1 }
-  -- Rex Beta 1408 draws bounds as [left, top, right, bottom]; only a rect at the origin shows right.
-  if area[1] > 0 or area[2] > 0 then area = { 0, 0, 1, 1 } end
   -- Without window_id the layer goes to the session's active tab, not always the pane's.
   local _, err = rex.session.new_layer{
     window_id = win,
@@ -725,6 +732,45 @@ rex.action{
   run = function(ctx)
     local ok, dir = pcall(pane_dir, ctx.block_id)
     overlay(ctx, { 0.1, 0.1, 0.8, 0.8 }, fingers_script, capture_file(ctx, 500), ok and dir or "")
+  end,
+}
+
+-- Each local session as "id<TAB>label<TAB>dir<TAB>current", its dir from the first tab's
+-- focused pane, so the picker can match projects to sessions without a CLI call per session.
+local function session_list_file(ctx)
+  attach_all()
+  local rows = {}
+  for _, s in ipairs(sessions()) do
+    local v = rex.session.view{ session_id = s.session_id }
+    local w = (v and v.windows or {})[1]
+    local ok, dir = false, nil
+    if w and w.focused_block_id then ok, dir = pcall(pane_dir, w.focused_block_id, s.session_id) end
+    local label = (s.label or ""):gsub("[\t\r\n]", " ")
+    rows[#rows + 1] = table.concat({ s.session_id, label, ok and dir or "", s.session_id == ctx.session_id and "1" or "" }, "\t")
+  end
+  local path = os.tmpname()
+  local f = io.open(path, "w")
+  if not f then error("cannot write the session list", 0) end
+  f:write(table.concat(rows, "\n"), "\n")
+  f:close()
+  return path
+end
+
+-- tmux-sessionizer for Rex: a session, or a project folder that gets one, in a floating pane.
+rex.action{
+  name = "project_pick",
+  title = "Pick a Session or Project",
+  description = "Switches to a session, or opens a project folder in a new one, reusing a session already in it.",
+  category = "Session",
+  run = function(ctx)
+    if ctx.server then error("Switch to a local session to pick a project on this Mac.", 0) end
+    overlay(ctx, { 0.15, 0.12, 0.7, 0.76 }, [=[
+trap 'rm -f "$3"' EXIT
+PATH="$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"
+rex-project-picker --sessions "$3" --client "$4"
+code=$?
+[ "$code" = 0 ] && exit 0
+if [ "$code" != 130 ]; then printf '\nPress Enter to close.'; read -r _; fi]=], session_list_file(ctx), ctx.client_id or "")
   end,
 }
 
