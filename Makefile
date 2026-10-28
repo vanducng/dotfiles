@@ -12,13 +12,14 @@ STOW_FOLDERS=$(COMMON_STOW_FOLDERS) $(LINUX_STOW_EXTRAS)
 endif
 SHELL := /bin/bash
 
-.PHONY: rex-hooks rex-hooks-apply help stow-folders stow-install stow-uninstall stow-status setup-herdr setup-tinycast setup-rex setup-rex-linux release test validate deps platform-test script-test linux-deps linux-desktop linux-homelab bootstrap-linux ensure-home-repos
+.PHONY: setup rex-hooks rex-hooks-apply help stow-folders stow-install stow-uninstall stow-status setup-herdr setup-tinycast setup-rex setup-rex-linux release test validate deps platform-test script-test linux-deps linux-desktop linux-homelab bootstrap-linux ensure-home-repos
 
 help:
 	@echo "Dotfiles Management"
 	@echo ""
 	@echo "Installation:"
-	@echo "  make stow-install    - Install all dotfiles"
+	@echo "  make setup           - Everything: packages, all dotfiles, app settings"
+	@echo "  make stow-install    - Install all dotfiles (conflicting files go to ~/.dotfiles-backup/)"
 	@echo "  make stow-uninstall  - Remove all dotfiles"
 	@echo "  make stow-status     - Check installation status"
 	@echo "  make stow-<tool>     - Install specific tool"
@@ -49,18 +50,23 @@ stow-folders:
 	@printf '%s\n' $(STOW_FOLDERS)
 
 stow-install:
-	@for folder in $(STOW_FOLDERS); do \
-		if [ "$$folder" = pi ]; then \
-			echo "Stowing pi (home layout)"; \
-			./scripts/pi-home-layout.sh; \
-		else \
-			echo "Stowing $$folder"; \
-			(cd dotfiles && stow --no-folding -D -t $(HOME) $$folder 2>/dev/null || true; \
-			 stow --no-folding -t $(HOME) $$folder); \
-		fi; \
-	done
+	@$(if $(filter pi,$(STOW_FOLDERS)),echo "Stowing pi (home layout)"; ./scripts/pi-home-layout.sh)
+	@./scripts/stow-package.sh $(filter-out pi,$(STOW_FOLDERS))
 	@$(if $(filter rex,$(STOW_FOLDERS)),$(REX_HOOKS_APPLY))
 	@$(MAKE) ensure-home-repos
+
+# One command for a whole machine: packages, every dotfile, then the app settings.
+# The app steps need their app installed (and Rex needs Tailscale), so they warn instead of failing.
+ifneq ($(filter Darwin macos,$(PLATFORM)),)
+setup:
+	@./scripts/macos-deps.sh
+	@$(MAKE) stow-install
+	@./scripts/rex-setup.sh || echo "warning: setup-rex skipped; rerun make setup-rex"
+	@./scripts/tinycast-setup.sh || echo "warning: setup-tinycast skipped; rerun make setup-tinycast"
+	@echo "Setup complete. Open a new shell (exec zsh)."
+else
+setup: bootstrap-linux
+endif
 
 ensure-home-repos:
 	@./dotfiles/bin/.local/bin/ensure-home-managed-repos
@@ -89,9 +95,7 @@ stow-status:
 # Individual tool targets
 define make-stow-target
 stow-$(1):
-	@echo "Stowing $(1)..."
-	@cd dotfiles && stow --no-folding -D -t $(HOME) $(1) 2>/dev/null || true
-	@cd dotfiles && stow --no-folding -t $(HOME) $(1)
+	@./scripts/stow-package.sh $(1)
 
 unstow-$(1):
 	@echo "Unstowing $(1)..."
@@ -102,9 +106,7 @@ $(foreach tool,$(filter-out pi rex,$(ALL_STOW_FOLDERS)),$(eval $(call make-stow-
 
 # Rex config, then the agent hooks (rex-hooks-apply).
 stow-rex:
-	@echo "Stowing rex..."
-	@cd dotfiles && stow --no-folding -D -t $(HOME) rex 2>/dev/null || true
-	@cd dotfiles && stow --no-folding -t $(HOME) rex
+	@./scripts/stow-package.sh rex
 	@$(REX_HOOKS_APPLY)
 
 unstow-rex:
