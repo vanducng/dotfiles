@@ -63,6 +63,22 @@ else
   command -v direnv >/dev/null 2>&1 && eval "$(direnv hook bash)"
 fi
 
+# Same alias set as macOS (`gp` = git pull). `atuin init` with
+# [dotfiles] enabled needs ~/.local/share/atuin/key; skip it until that exists.
+_atuin_key="${XDG_DATA_HOME:-$HOME/.local/share}/atuin/key"
+if command -v atuin >/dev/null 2>&1 && atuin --version >/dev/null 2>&1 && [ -s "${_atuin_key}" ]; then
+  if [ -n "${ZSH_VERSION:-}" ]; then
+    _atuin_init="$(atuin init zsh)" && eval "${_atuin_init}"
+  else
+    _atuin_init="$(atuin init bash)" && eval "${_atuin_init}"
+  fi
+  unset _atuin_init
+fi
+unset _atuin_key
+
+# shellcheck disable=SC1091
+[ -f "${XDG_CONFIG_HOME}/shell/load-atuin-aliases.sh" ] && . "${XDG_CONFIG_HOME}/shell/load-atuin-aliases.sh"
+
 # Remote nvim/kitty can leave CSI-u key encoding on after SSH drop (keys become
 # [104;1:3u, Ctrl-C stops sending SIGINT). Pop + set flags 0 on the tty.
 # Inlined: Claude Code shell snapshots drop _-prefixed helpers but keep ssh().

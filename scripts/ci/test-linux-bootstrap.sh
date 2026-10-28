@@ -341,6 +341,38 @@ else
   fail "kitty missing Herdr workspace CSI-u maps or macos_option_as_alt"
 fi
 
+linux_toml="$ROOT/dotfiles/shell-linux/.config/mise/conf.d/linux.toml"
+if grep -q 'libc = "musl"' "$linux_toml"; then
+  pass "linux.toml prefers musl aqua binaries"
+else
+  fail "linux.toml must set libc = musl for Ubuntu 22.04"
+fi
+if grep -q 'load-atuin-aliases.sh' "$ROOT/dotfiles/shell-linux/.config/shell/linux.sh" \
+  && grep -q 'atuin/key' "$ROOT/dotfiles/shell-linux/.config/shell/linux.sh" \
+  && grep -q 'atuin init' "$ROOT/dotfiles/shell-linux/.config/shell/linux.sh"; then
+  pass "linux.sh loads atuin aliases and skips init without a key"
+else
+  fail "linux.sh must source load-atuin-aliases.sh and guard atuin init on the key file"
+fi
+alias_loader="$ROOT/dotfiles/shell-linux/.config/shell/load-atuin-aliases.sh"
+alias_src="$ROOT/dotfiles/atuin/.config/atuin/aliases.sh"
+if [[ -f "$alias_loader" ]] && grep -q "atuin dotfiles alias set 'gp' 'git pull'" "$alias_src"; then
+  bash -n "$alias_loader" && pass "load-atuin-aliases.sh parses" || fail "load-atuin-aliases.sh syntax"
+  alias_out="$(ATUIN_ALIASES_FILE="$alias_src" bash -c "alias esh='/Users/example/tool'; . \"$alias_loader\"; alias")"
+  if grep -q "gp='git pull'" <<<"$alias_out" && grep -q "v='nvim'" <<<"$alias_out" && grep -q "g='git'" <<<"$alias_out"; then
+    pass "load-atuin-aliases.sh defines gp=git pull, v=nvim, g=git"
+  else
+    fail "load-atuin-aliases.sh did not define gp/v/g"
+  fi
+  if grep -q '/Users/' <<<"$alias_out"; then
+    fail "load-atuin-aliases.sh leaked macOS /Users/ aliases"
+  else
+    pass "load-atuin-aliases.sh skips macOS-only aliases"
+  fi
+else
+  fail "missing alias loader or gp=git pull in aliases.sh"
+fi
+
 if [[ $FAIL -ne 0 ]]; then
   echo "test-linux-bootstrap: FAILED" >&2
   exit 1
