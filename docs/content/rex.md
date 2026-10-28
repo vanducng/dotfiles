@@ -14,6 +14,7 @@ Rex (Rex Beta) is the native macOS multiplexer that replaces Ghostty on space 1 
 - `dotfiles/rexboard/.config/rexboard/config.toml` - [rexboard](https://github.com/vanducng/rexboard)'s config. The app client is left to the default, the only Rex app on the unix socket. The rexboard keys and the cockpit's board tab find `rexboard` in `$HOMEBREW_PREFIX/bin`, `/opt/homebrew/bin`, `/usr/local/bin`, `~/.local/bin`, then `PATH`, and say `brew install vanducng/tap/rexboard` when it is missing
 - `dotfiles/rexboard/.config/rexboard/extensions/openrig/` - the [OpenRig extension](#openrig-extension) config.toml enables: each seat's rig, project and role on rexboard's rows
 - `dotfiles/bin/.local/bin/rex-title-spinner` and `rex-hooks-sync` - Claude Code's title glyph in a Rex pane and its hook merge (see [Agent status](#agent-status))
+- `dotfiles/bin/.local/bin/rex-pane-titles` - automatic pane labels and visible titles across agent CLIs (see [Pane names](#pane-names))
 - `dotfiles/bin/.local/bin/rex-agent-status` - kept for a release: hooks merged before `rexboard hook`, and the old tmux replay hook, still run it. It hands each call to `rexboard hook` or `rexboard hooks replay`, and does nothing when rexboard has no `hooks` command, so a hook never fails. `make rex-hooks-apply` and a restow replace those callers
 - `dotfiles/rex/.config/rex/copy-mode.nvim.lua` - the small Neovim config copy mode starts with (`nvim -u`), so it opens in tens of milliseconds instead of loading the full Neovim setup
 - `scripts/rex-setup.sh` (`make setup-rex`) - app settings that live in UserDefaults: Option as Alt, vertical tabs, compact panes, Program Activity sounds (an agent finished or is waiting on you), the Tailscale node name, and the app's Remote Hosts list. The app reads them at launch, so quit and reopen Rex Beta after a run; sessions live in the server and survive
@@ -140,6 +141,12 @@ Host labels follow `<kind>-<nn>`: `mbp`, `mini` or `linux`, then a two-digit num
 `make release` (`scripts/release.sh`) ships a release to every machine in `hosts.json`. It merges the open release-please PR once GitHub reports it clean, waits for the `release` run to tag it, then pulls `~/dotfiles` here and over ssh on each other machine. Local edits to tracked files survive: an edit to a file upstream also changed is lifted off as a patch and put back after the pull, and if it no longer applies the local file stays as it was and the script names it. When the rex config changed, it runs `rex config check` and then `rex config reload`. With no release pending it only pulls.
 
 The Mac app ignores `hosts.lua` and keeps its own Remote Hosts list in the `RexSync.servers` preference. `rex-setup.sh` adds each missing Mac there with the same address and leaves existing records alone, since the app fills in their IDs on first connect. Quit and reopen Rex Beta after it reports "Remote Hosts updated".
+
+## Pane names
+
+Automatic pane labels use `repo · app · task`, for example `api · claude · Fix login`, `api · grok · Add search`, or `api · cursor · Review login`. The task appears when the agent reports a title. A shell uses `repo · shell`; other programs use their executable or script name. Agent subprocesses retain the parent agent's identity. Idle shell titles show the folder, and remote shell prompts show the short hostname without the username.
+
+`rex-pane-titles` watches Rex process, directory, and title events. It updates both the block label and the visible terminal title, retaining the activity spinner. It returns them to shell labels when the agent exits. One watcher runs per Rex server, started by a new interactive Rex shell on macOS or Linux. It preserves manually assigned labels, including labels from `C-x ,`. Run `rex-pane-titles --start` to start it in an existing shell, or `rex-pane-titles --once` to update current automatic panes once. The watcher uses the local Rex CLI. Explicit session and tab names stay unchanged; unnamed tabs follow the terminal title.
 
 ## Agent status
 

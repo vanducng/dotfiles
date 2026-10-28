@@ -3,6 +3,12 @@ format = """$directory$character"""
 palette = "catppuccin_mocha"
 right_format = """$all"""
 
+[username]
+disabled = true
+
+[hostname]
+format = '[$hostname]($style) '
+
 [direnv]
 disabled = false
 rc_path = "~/.envrc"
