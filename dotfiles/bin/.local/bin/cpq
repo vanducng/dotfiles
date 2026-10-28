@@ -11,7 +11,8 @@ Usage: cpq [--json] [filter]
 
 Env: CLI_PROXY_BASE_URL (default https://cli-proxy.dataplanelabs.com)
      CLI_PROXY_MANAGEMENT_KEY, else gopass show -o $CLI_PROXY_MANAGEMENT_GOPASS_PATH
-     (default personal/saas/cli-proxy/management-key)
+     (default personal/saas/cli-proxy/management-key), else op-sa --sa personal-rig read
+     $CLI_PROXY_MANAGEMENT_OP_REF (default op://personal-rig/cli-proxy/management-key)
 Columns: used/left now, hours to reset, PACE = projected % used at reset at the current rate,
          BUDGET = % per hour you can still spend to reach reset without running out.
 EOF
@@ -30,7 +31,9 @@ done
 base="${CLI_PROXY_BASE_URL:-https://cli-proxy.dataplanelabs.com}"
 base="${base%/}"; base="${base%/v1}"
 api="$base/v0/management"
-key="${CLI_PROXY_MANAGEMENT_KEY:-$(gopass show -o "${CLI_PROXY_MANAGEMENT_GOPASS_PATH:-personal/saas/cli-proxy/management-key}")}"
+key="${CLI_PROXY_MANAGEMENT_KEY:-}"
+[[ -n "$key" ]] || key="$(gopass show -o "${CLI_PROXY_MANAGEMENT_GOPASS_PATH:-personal/saas/cli-proxy/management-key}" 2>/dev/null || true)"
+[[ -n "$key" ]] || key="$(op-sa --sa personal-rig read "${CLI_PROXY_MANAGEMENT_OP_REF:-op://personal-rig/cli-proxy/management-key}" 2>/dev/null || true)"
 [[ -n "$key" ]] || { echo "cpq: no management key" >&2; exit 1; }
 
 mgmt() { curl -fsS --max-time 20 -H "Authorization: Bearer $key" "$@"; }
