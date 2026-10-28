@@ -1,5 +1,34 @@
 # Changelog
 
+## [0.35.0](https://github.com/vanducng/dotfiles/compare/v0.34.0...v0.35.0) (2026-10-28)
+
+
+### Features
+
+* **cpq:** fall back to 1Password for the management key ([b597add](https://github.com/vanducng/dotfiles/commit/b597adde5d5e3e9c2d518e0c6a6763baa99908a4))
+* **rex:** add linux-01 host, Linux personal server setup, ctrl-alt-3 host jump ([efc5a3e](https://github.com/vanducng/dotfiles/commit/efc5a3eb60a6177b5bbd46f0a4f0f88d7e797baa))
+* **rexboard:** an OpenRig extension and a Caps+B board key ([#259](https://github.com/vanducng/dotfiles/issues/259)) ([ac11b52](https://github.com/vanducng/dotfiles/commit/ac11b52550c472190487d27e51a809c3f4e60d95))
+* **rex:** floating project picker and centered popups ([ad7f7bc](https://github.com/vanducng/dotfiles/commit/ad7f7bc63a877da98e6485e06045547d114434a6))
+* **rex:** hooks through rexboard hook and hooks install, with a fail-open shim ([5539fc4](https://github.com/vanducng/dotfiles/commit/5539fc48e39afa6210efe39c0d719b8268fc0b1a))
+* **rex:** name agent panes and simplify shell titles ([1bec4ed](https://github.com/vanducng/dotfiles/commit/1bec4eda38e7d21a5ac4e54880c7341cdd50fea0))
+* **rex:** send the agent's own words to Rex, and report Codex and pi ([#256](https://github.com/vanducng/dotfiles/issues/256)) ([5b96cb5](https://github.com/vanducng/dotfiles/commit/5b96cb520c971fb6526fdc084ca66315a0147353))
+* **shell-linux:** load atuin aliases without a key, prefer musl mise binaries ([34a32a4](https://github.com/vanducng/dotfiles/commit/34a32a48b755e8433cb0e9cda6d45522b89de9bb))
+* **shell-linux:** replace gws with gog 0.39.1 in mise ([b7848a1](https://github.com/vanducng/dotfiles/commit/b7848a193bf9e4e986bf7e062c0ffb62f18aed9a))
+* **skhd:** meh+3 opens linux-01 over Jump Desktop ([734d6da](https://github.com/vanducng/dotfiles/commit/734d6dacf3473c95693856554a4c03e55419408d))
+* **zsh:** put Homebrew and ~/.local/bin on PATH in .zshenv for Moshi SSH probes ([c3cac43](https://github.com/vanducng/dotfiles/commit/c3cac430ef0e2e46920935279392827b3ec888fa))
+
+
+### Bug Fixes
+
+* **cpq:** handle Claude windows without a reset time ([9d61183](https://github.com/vanducng/dotfiles/commit/9d61183f4b9bf1bbd6bac21a6ace7c913665578c))
+* **rex:** find rexboard wherever it is installed ([#252](https://github.com/vanducng/dotfiles/issues/252)) ([08e75a4](https://github.com/vanducng/dotfiles/commit/08e75a4ef9454bc0195651c486f78abe61a3c6d4))
+* **rex:** keep pi's final report in print mode ([#258](https://github.com/vanducng/dotfiles/issues/258)) ([5066dd5](https://github.com/vanducng/dotfiles/commit/5066dd5e4d5167a3b2223aaa69474fb5728ef1b1))
+* **rex:** merge the rex hooks into the live Claude settings ([#255](https://github.com/vanducng/dotfiles/issues/255)) ([2107adf](https://github.com/vanducng/dotfiles/commit/2107adfe043732cb7351838537e15e7e542f65d3))
+* **rex:** open copy mode read-only so a stray key cannot edit the capture ([#260](https://github.com/vanducng/dotfiles/issues/260)) ([57b8688](https://github.com/vanducng/dotfiles/commit/57b868836c5fa21ef64d2fcb4ec0d053d4337d5b))
+* **rex:** report status from tmux seats started without TMUX ([#254](https://github.com/vanducng/dotfiles/issues/254)) ([1993c6c](https://github.com/vanducng/dotfiles/commit/1993c6c3c8547a0f6788da9f2f32d377eda9f97a))
+* **rex:** stopped competing pane title updates ([#263](https://github.com/vanducng/dotfiles/issues/263)) ([bd95cc4](https://github.com/vanducng/dotfiles/commit/bd95cc46b343bbd504930e9951080c9347a145fa))
+* **tmux:** only force arm64 default-command on macOS ([ee54692](https://github.com/vanducng/dotfiles/commit/ee54692c2476704a1f1a9e17f18f536c6a3b7e9d))
+
 ## [0.34.0](https://github.com/vanducng/dotfiles/compare/v0.33.0...v0.34.0) (2026-10-26)
 
 
