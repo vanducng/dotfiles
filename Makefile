@@ -12,7 +12,7 @@ STOW_FOLDERS=$(COMMON_STOW_FOLDERS) $(LINUX_STOW_EXTRAS)
 endif
 SHELL := /bin/bash
 
-.PHONY: rex-hooks rex-hooks-apply help stow-folders stow-install stow-uninstall stow-status setup-herdr setup-tinycast setup-rex release test validate deps platform-test script-test linux-deps linux-desktop linux-homelab bootstrap-linux ensure-home-repos
+.PHONY: rex-hooks rex-hooks-apply help stow-folders stow-install stow-uninstall stow-status setup-herdr setup-tinycast setup-rex setup-rex-linux release test validate deps platform-test script-test linux-deps linux-desktop linux-homelab bootstrap-linux ensure-home-repos
 
 help:
 	@echo "Dotfiles Management"
@@ -150,6 +150,9 @@ setup-tinycast:
 
 setup-rex:
 	@./scripts/rex-setup.sh
+
+setup-rex-linux:
+	@./scripts/rex-linux-setup.sh
 
 release:
 	@./scripts/release.sh

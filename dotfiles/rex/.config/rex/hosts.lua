@@ -18,8 +18,15 @@ if file then
 end
 if #entries == 0 then rex.log("warn", "hosts.lua: no hosts in " .. dir .. "/hosts.json") end
 
+local function exists(path)
+  local f = io.open(path)
+  if f then f:close() end
+  return f ~= nil
+end
+
 local hosts = { order = {} }
-local me = run({ "scutil", "--get", "LocalHostName" })
+-- macOS has scutil; on Linux fall back to the short hostname (hosts.json carries it there).
+local me = (exists("/usr/sbin/scutil") and run({ "scutil", "--get", "LocalHostName" })) or run({ "hostname", "-s" })
 for i, h in ipairs(entries) do
   hosts.order[i] = h.label
   if h.hostname == me then hosts.self = h.label end
@@ -27,7 +34,8 @@ end
 
 -- The tailnet domain is read at load so it stays out of the repo. Without
 -- TAILSCALE_BE_CLI the Mac app binary tries to open its GUI from the Rex server.
-local status = run({ "/Applications/Tailscale.app/Contents/MacOS/Tailscale", "status", "--json" }, { TAILSCALE_BE_CLI = "1" })
+local ts_app = "/Applications/Tailscale.app/Contents/MacOS/Tailscale"
+local status = (exists(ts_app) and run({ ts_app, "status", "--json" }, { TAILSCALE_BE_CLI = "1" }))
   or run({ "tailscale", "status", "--json" })
 local ok, decoded = pcall(rex.json.decode, status or "")
 local suffix = ok and decoded and decoded.MagicDNSSuffix
