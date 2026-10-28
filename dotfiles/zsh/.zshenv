@@ -11,3 +11,13 @@ PATH="${HOME}/.local/bin:${PATH}"
 export PATH
 
 [ -f "${HOME}/.cargo/env" ] && . "${HOME}/.cargo/env"
+
+# CLI Proxy key for Codex and OpenRig seats, including non-interactive SSH. The key file is mode 600.
+if [ -z "${CLI_PROXY_API_KEY:-}" ] && [ -r "${HOME}/.config/cli-proxy/api-key" ]; then
+  CLI_PROXY_API_KEY="$(<"${HOME}/.config/cli-proxy/api-key")"
+  export CLI_PROXY_API_KEY
+fi
+export CLI_PROXY_BASE_URL="${CLI_PROXY_BASE_URL:-https://cli-proxy.dataplanelabs.com}"
+
+# Machine-only settings, not in git.
+[ -r "${HOME}/.zshenv.local" ] && . "${HOME}/.zshenv.local"
