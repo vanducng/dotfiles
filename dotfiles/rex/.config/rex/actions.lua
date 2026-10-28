@@ -684,9 +684,9 @@ if [ -z "$3" ]; then
 fi
 init="$HOME/.config/rex/copy-mode.nvim.lua"
 if [ -r "$init" ]; then
-  REX_COPY_NOTE="$4" nvim -u "$init" -i NONE -n -R + "$f"
+  REX_COPY_NOTE="$4" nvim -u "$init" -i NONE -n -M + "$f"
 else
-  nvim -u NONE -i NONE -n -R + -c "set clipboard=unnamedplus" -c "nnoremap q <cmd>qa!<cr>" -c "nnoremap <C-c> <cmd>qa!<cr>" "$f"
+  nvim -u NONE -i NONE -n -M + -c "set clipboard=unnamedplus" -c "nnoremap q <cmd>qa!<cr>" -c "nnoremap <C-c> <cmd>qa!<cr>" "$f"
 fi]=]
 
 rex.action{
