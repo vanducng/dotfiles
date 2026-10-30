@@ -1,7 +1,3 @@
-# Managed by ~/dotfiles via GNU Stow.
-# Install with: make stow-grok
-# Docs: ~/.grok/docs/user-guide/05-configuration.md
-
 [cli]
 auto_update = true
 installer = "internal"
@@ -19,7 +15,7 @@ default = "grok-4.7"
 web_search = "grok-4.7"
 
 [ui]
-permission_mode = "auto"
+permission_mode = "always-approve"
 max_thoughts_width = 120
 fork_secondary_model = "grok-4.7"
 yolo = false
@@ -32,10 +28,7 @@ collapsed_edit_blocks = false
 page_flip_on_send = true
 remember_tool_approvals = true
 default_selected_permission = "always_allow_all_sessions"
-# Terminal OSC notifications: set via /settings when supported by the running
-# binary. Attention sounds and Telegram notify are wired in hooks/lifecycle.json.
 
-# Same script and layout as Claude Code and pi (dotfiles/bin/.local/bin/agent-statusline).
 [ui.status_line]
 type = "command"
 command = "~/.local/bin/agent-statusline"
@@ -66,10 +59,12 @@ enabled = true
 enabled = true
 
 [skills]
-# Extra skill roots beyond ~/.grok/skills and Claude/Cursor compat paths
 paths = ["~/skills"]
+ignore = []
+disabled = []
+server_skill_dirs = []
+bundled_skill_dirs = []
 
-# Prefer native ~/.grok/hooks over Claude/Cursor hook sources to avoid double-fire
 [compat.claude]
 skills = true
 rules = true
@@ -89,16 +84,22 @@ sessions = true
 [compat.codex]
 sessions = true
 
-# Local MCP servers (no secrets). Atlassian and other secret-bearing MCPs stay
-# on Claude/Cursor compat sources so tokens never land in this managed file.
 [mcp_servers.miudb]
 command = "miudb"
-args = ["mcp", "serve", "--transport", "stdio"]
+args = [
+    "mcp",
+    "serve",
+    "--transport",
+    "stdio",
+]
 enabled = true
 startup_timeout_sec = 30
 
 [mcp_servers.playwright]
 command = "npx"
-args = ["-y", "@playwright/mcp@latest"]
+args = [
+    "-y",
+    "@playwright/mcp@latest",
+]
 enabled = true
 startup_timeout_sec = 60
