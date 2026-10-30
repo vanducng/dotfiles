@@ -2,4 +2,6 @@
 	path = ~/.config/gopass/config.local
 [core]
 	autopush = true
-	autosync = false
+	autosync = true
+[autosync]
+	interval = 6h
