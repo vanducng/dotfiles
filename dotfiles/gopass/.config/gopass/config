@@ -1,5 +1,2 @@
-[include]
-	path = ~/.config/gopass/config.local
-[core]
-	autopush = true
-	autosync = false
+[mounts]
+	path = ~/.local/share/gopass/stores/root
