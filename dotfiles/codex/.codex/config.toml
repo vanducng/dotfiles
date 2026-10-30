@@ -1,14 +1,15 @@
 # Managed by ~/dotfiles via GNU Stow.
 # Install with: make stow-codex
 # ChatGPT OAuth account default. Do not pin model_provider.
-model_reasoning_effort = "high"
+model_reasoning_effort = "medium"
 personality = "pragmatic"
 web_search = "cached"
 approvals_reviewer = "user"
 approval_policy = "never"
 sandbox_mode = "danger-full-access"
-service_tier = "fast"
+service_tier = "default"
 suppress_unstable_features_warning = true
+model = "gpt-6.1-sol"
 
 [projects."/Users/vanducng/dotfiles"]
 trust_level = "trusted"
@@ -238,6 +239,45 @@ trusted_hash = "sha256:eb720ecc9113d8e58408e4c4629d6bdae1b2f8947d81b4dcd064b5764
 [hooks.state."/Users/vanducng/.codex/hooks.json:stop:2:0"]
 trusted_hash = "sha256:ad540c34743f0208c8b86b8dad5f70d07a67c7c7662a19b9d0bff7ccffe4d0ac"
 
+[hooks.state."/Users/dplmac01/.codex/hooks.json:pre_tool_use:0:0"]
+trusted_hash = "sha256:015cecebb321b440498292a76471c01be95510b593f564ba8061f5b02920de3e"
+
+[hooks.state."/Users/dplmac01/.codex/hooks.json:pre_tool_use:1:0"]
+trusted_hash = "sha256:a01fd34e33414f7fcbcc3a23b56b5198797f1c755810c4f5a3d9753bc19ec353"
+
+[hooks.state."/Users/dplmac01/.codex/hooks.json:pre_tool_use:2:0"]
+trusted_hash = "sha256:8c05dc4f4e9247d8cdb87db0fc4c150baa034942b38d78d347cde99f996ba883"
+
+[hooks.state."/Users/dplmac01/.codex/hooks.json:permission_request:0:0"]
+trusted_hash = "sha256:0ac7a32d107fcc16730ff340e44bd77b62e1ee024d3765ef9dcafaeb2cea9adc"
+
+[hooks.state."/Users/dplmac01/.codex/hooks.json:session_start:0:0"]
+trusted_hash = "sha256:971f37840aabd22cbbf7e5e2170e132405a221b3e0c9f80e972603a39ea4374c"
+
+[hooks.state."/Users/dplmac01/.codex/hooks.json:session_start:1:0"]
+trusted_hash = "sha256:9c423a8f4e59447be358e3b8b7257c4074a01f7774c363b5d94d12511f5a8bbf"
+
+[hooks.state."/Users/dplmac01/.codex/hooks.json:session_end:0:0"]
+trusted_hash = "sha256:3b38c6864fab6201a3ac68cb3fd3089c5ca078f9aff4b6384c62a17312c4e691"
+
+[hooks.state."/Users/dplmac01/.codex/hooks.json:user_prompt_submit:0:0"]
+trusted_hash = "sha256:142710077d2d6265cb214dd3893585761ad34d082ce9432903ce7e59b9507708"
+
+[hooks.state."/Users/dplmac01/.codex/hooks.json:user_prompt_submit:1:0"]
+trusted_hash = "sha256:fdbb4fb47c723e914f0653f92a9f064c33ee08544fbfee2943cfe2a2a5cc82d3"
+
+[hooks.state."/Users/dplmac01/.codex/hooks.json:subagent_start:0:0"]
+trusted_hash = "sha256:c4d55dc8ff4796bc685f8978d70f47b4a414d222d1c910d6a09b754a7d90e58c"
+
+[hooks.state."/Users/dplmac01/.codex/hooks.json:subagent_start:0:1"]
+trusted_hash = "sha256:741a07870d814bb2b423295316ddb4440df14e2762f864740e4c9720884b4529"
+
+[hooks.state."/Users/dplmac01/.codex/hooks.json:stop:0:0"]
+trusted_hash = "sha256:47beadd940e912112abc5b7e780591252b2fa5129e9dbb01b8ccfa2f62dc45bf"
+
+[hooks.state."/Users/dplmac01/.codex/hooks.json:stop:1:0"]
+trusted_hash = "sha256:9c138a0cf1875b3c8d6bdaf9a0bd2f18824e05123e090cedd3440d51d5d0a982"
+
 [notice]
 hide_full_access_warning = true
 hide_rate_limit_model_nudge = true
@@ -363,3 +403,11 @@ url = "https://mcp.exa.ai/mcp"
 url = "https://mcp.context7.com/mcp"
 # END OPENRIG MANAGED CODEX CONFIG FRAGMENT: shared:codex-default-config
 
+[projects."/Volumes/exs/projects/orgs/cnb/projects/rover/tasks/rover"]
+trust_level = "trusted"
+
+[projects."/Volumes/exs/projects/orgs/cnb/projects/rover/tasks/rover/seats/review"]
+trust_level = "trusted"
+
+[projects."/Volumes/exs/projects"]
+trust_level = "trusted"
