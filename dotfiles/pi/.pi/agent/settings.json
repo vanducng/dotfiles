@@ -22,7 +22,8 @@
     "npm:@plannotator/pi-extension",
     "npm:@calesennett/pi-codex-fast",
     "npm:pi-mcp-adapter",
-    "git:github.com/DietrichGebert/ponytail@v4.9.0"
+    "git:github.com/DietrichGebert/ponytail@v4.9.0",
+    "npm:@indexyz/pi-skill"
   ],
   "skills": [
     "-skills/backend-development",
