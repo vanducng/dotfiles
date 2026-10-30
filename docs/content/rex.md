@@ -111,12 +111,25 @@ Each host numbers its own sessions, so `Ctrl-1..9` stays short however many mach
 
 The `session_layout` action makes the missing ones, reopens a layout tab you closed, and moves the three to positions 1-3. It finds sessions and tabs by name without the number, so `cockpit` or `5-cockpit` counts, and a tab you added yourself never stands in for a closed layout tab. It skips a session whose folder this Mac lacks, and never kills or restarts a session. Every session's number is its `Ctrl-1..9` position, so with all three present the rest start at 4 (`1-warp-factory-setup` becomes `4-warp-factory-setup`); with one skipped, the rest close the gap. Only the number prefix changes, never the name.
 
-It runs from `make setup-rex` and at login (the `dev.vanducng.rex-session-layout` LaunchAgent in the `launchd` package), which writes failures to `~/Library/Logs/rex-session-layout.log`. No key runs the whole layout: `Alt-Shift-1..5` make or complete only their own session before going to it, or say its folder does not exist. By hand:
+The server restores sessions itself (see [Restarts and upgrades](#restarts-and-upgrades)), so after a restart `session_layout` usually finds all three and changes nothing. It runs from `make setup-rex` and at login (the `dev.vanducng.rex-session-layout` LaunchAgent in the `launchd` package), which writes failures to `~/Library/Logs/rex-session-layout.log`. No key runs the whole layout: `Alt-Shift-1..5` make or complete only their own session before going to it, or say its folder does not exist. By hand:
 
 ```bash
 rex do ~/.config/rex/actions.lua --action session_layout dry_run=true   # print the plan, change nothing
 rex do ~/.config/rex/actions.lua --action session_layout
 ```
+
+## Restarts and upgrades
+
+From Mac 0.1.0-preview.23 and Linux server 0.1.0-preview.11, a Rex server saves its sessions when it stops and brings them back when it starts: sessions, tabs, splits, floating panes, labels and IDs. Each terminal comes back as a new shell in the folder it was in. Programs are not restarted and scrollback is not restored, so agents need resuming (`claude -c`, `codex resume --last`, `pi -c`, `cursor-agent resume`). OpenRig seats run in tmux and are not affected; reopen their tiles with `rig terminal open <rig> --provider rex`.
+
+The save happens on a clean stop: an app update, `rex server stop`, or `systemctl --user restart rex-personal.service`. A crash or power loss may lose changes made since the server started. `rex server stop --discard` deletes the saved sessions, and `rex server run --restore=false` starts without them.
+
+To upgrade:
+
+- **Mac:** update Rex Beta (Check for Updates). The first launch after an update can still start the old embedded server; `rex server status` shows its version. If it is old, quit the app, run `rex server stop`, and open the app again.
+- **Linux:** `sudo apt-get install --only-upgrade rex`, then `systemctl --user restart rex-personal.service`. The package does not restart a personal server by itself. The sudo password for `mini-01` and `linux-01` is `op://personal-rig/host-sudo/password`, readable with `op-sa --sa personal-rig read`; pipe it to `sudo -S`, never pass it as an argument.
+
+Drive a restart from somewhere that survives it: a tmux session, or an ssh tab from another machine. A restart ends every Rex pane on that server, including the one running the command.
 
 ## Machines
 
