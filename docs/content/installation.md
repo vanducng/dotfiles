@@ -24,8 +24,8 @@ This path does **not** use Homebrew, Nix, or sudo. It installs CLIs into `~/.loc
 Failures already baked in: `aqua:tmux/tmux` is not in the aqua registry (use mise `tmux`); `git-delta` is not a mise tool name (use `aqua:dandavison/delta`); do not auto-stow `grok` over a live Grok TUI `~/.grok/` tree.
 
 ```bash
-git clone https://github.com/vanducng/dotfiles.git ~/.dotfiles
-cd ~/.dotfiles
+git clone https://github.com/vanducng/dotfiles.git ~/dotfiles
+cd ~/dotfiles
 make bootstrap-linux
 ```
 
@@ -96,10 +96,10 @@ nvim --version
 
 ```bash
 # Clone the repository
-git clone https://github.com/vanducng/dotfiles.git ~/.dotfiles
+git clone https://github.com/vanducng/dotfiles.git ~/dotfiles
 
 # Navigate to dotfiles directory
-cd ~/.dotfiles
+cd ~/dotfiles
 
 # Verify repository structure
 ls -la
@@ -375,9 +375,9 @@ skhd --observe  # Press some keys to test
 ### Customize Settings
 ```bash
 # Edit configurations as needed
-nvim ~/.dotfiles/dotfiles/yabai/.config/yabai/yabairc
-nvim ~/.dotfiles/dotfiles/skhd/.config/skhd/skhdrc
-nvim ~/.dotfiles/dotfiles/nvim/.config/nvim/lua/plugins/user.lua
+nvim ~/dotfiles/dotfiles/yabai/.config/yabai/yabairc
+nvim ~/dotfiles/dotfiles/skhd/.config/skhd/skhdrc
+nvim ~/dotfiles/dotfiles/nvim/.config/nvim/lua/plugins/user.lua
 
 # Apply changes
 make stow-install
@@ -401,7 +401,7 @@ herdr
 ```bash
 # Fix file permissions
 chmod +x ~/.local/bin/*
-chmod +x ~/.dotfiles/scripts/*
+chmod +x ~/dotfiles/scripts/*
 
 # Grant accessibility permissions
 # System Preferences → Security & Privacy → Privacy → Accessibility
@@ -455,7 +455,7 @@ tail -n 100 ~/.config/herdr/herdr-server.log
 ### Stay Updated
 ```bash
 # Update dotfiles
-cd ~/.dotfiles
+cd ~/dotfiles
 git pull origin main
 make stow-install
 

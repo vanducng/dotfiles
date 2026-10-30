@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Follow-up after linux-homelab-root.sh on Ubuntu 22.04 + Docker 29.
 # Fixes invalid daemon.json tmp-dir, setcap on user OpenVPN, kernel Tailscale login hint.
-# Run: sudo -E /home/ubuntu/.dotfiles/scripts/linux-homelab-root-fix.sh
+# Run: sudo -E $HOME/dotfiles/scripts/linux-homelab-root-fix.sh
 set -euo pipefail
 
 if [[ ${EUID:-$(id -u)} -ne 0 ]]; then

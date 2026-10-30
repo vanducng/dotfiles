@@ -25,8 +25,8 @@ Install configs with `make stow-install`, or one tool with `make stow-<tool>` (f
 User-space bootstrap — no sudo, no Homebrew, no Nix at runtime:
 
 ```bash
-git clone https://github.com/vanducng/dotfiles.git ~/.dotfiles
-cd ~/.dotfiles
+git clone https://github.com/vanducng/dotfiles.git ~/dotfiles
+cd ~/dotfiles
 make bootstrap-linux
 # add to ~/.bashrc:  source ~/.config/shell/linux.sh
 ```

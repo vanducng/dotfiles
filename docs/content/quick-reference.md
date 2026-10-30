@@ -150,7 +150,7 @@ C-]     # Accept line
 ~/.zshrc                 # Zsh config
 
 # Dotfiles
-~/.dotfiles/dotfiles/    # All configurations
+~/dotfiles/dotfiles/    # All configurations
 
 # Logs
 /usr/local/var/log/yabai/
@@ -186,8 +186,8 @@ tail -f /usr/local/var/log/skhd/skhd.err.log
 brew install git stow mise
 
 # Install dotfiles and managed tools
-git clone https://github.com/vanducng/dotfiles.git ~/.dotfiles
-cd ~/.dotfiles
+git clone https://github.com/vanducng/dotfiles.git ~/dotfiles
+cd ~/dotfiles
 ./scripts/macos-deps.sh
 make stow-install
 mise install
@@ -219,7 +219,7 @@ nvim --startuptime startup.log
 
 ```bash
 # Backup configurations
-tar -czf ~/dotfiles-backup-$(date +%Y%m%d).tar.gz ~/.dotfiles
+tar -czf ~/dotfiles-backup-$(date +%Y%m%d).tar.gz ~/dotfiles
 
 # Reset Neovim
 rm -rf ~/.config/nvim ~/.local/share/nvim ~/.cache/nvim
