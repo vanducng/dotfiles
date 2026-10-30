@@ -2,7 +2,7 @@
 # User-space GNOME tiling (no sudo): Pop Shell built from source, Run or Raise for
 # meh+<letter> app keys, a lean top bar (Space Bar, App Icons Taskbar,
 # Window Title Is Back, Vitals, Just Perfection) and the
-# BrowserOS / BrowserOS neo AppImages. Then applies gnome-tiling-keys.sh.
+# BrowserOS neo AppImage. Then applies gnome-tiling-keys.sh.
 # Extensions load on the next login (GNOME Wayland cannot reload the shell).
 set -euo pipefail
 
@@ -69,8 +69,6 @@ install_appimage() {
   ln -sfn "$ver" "${d}/current"
   log "${name} ${ver} installed"
 }
-install_appimage browseros v0.51.0 BrowserOS_v0.51.0_x64.AppImage \
-  b586df72083c046e2ea2d1cc1b6463325ed4cb0c31975d48e09cc14215e3e7bf
 install_appimage browseros-neo browserclaw/v0.51.1.2 BrowserOS_neo_v0.51.1.2_x64.AppImage \
   914250bcff11b49876e40f53a0db09e5b6539290487fdf293155deee12c72950
 

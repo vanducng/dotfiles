@@ -236,8 +236,8 @@ EOF
   if [[ -x "${HOME}/.local/opt/google-chrome/google-chrome" ]]; then
     systemctl --user enable --now homelab-cdp.service || true
   fi
-  if [[ -x "${HOME}/work/store/opt/browseros/current/AppRun" ]]; then
-    systemctl --user enable --now browseros.service || true
+  if [[ -x "${HOME}/work/store/opt/browseros-neo/current/AppRun" ]]; then
+    systemctl --user enable --now browseros-neo.service || true
   fi
   if [[ -f "${HOME}/.config/systemd/user/git-sync-repos.timer" ]]; then
     systemctl --user enable --now git-sync-repos.timer 2>/dev/null || true
@@ -370,7 +370,7 @@ stow_homelab() {
     "${HOME}/.config/homelab/cdp-chrome" \
     "${HOME}/.config/homelab/install-desktop-tiling" \
     "${HOME}/.config/homelab/gnome-tiling-keys.sh" \
-    "${HOME}/.local/bin/browseros" \
+    "${HOME}/.local/bin/browseros-neo" \
     "${HOME}/.local/bin/dpl-remote" 2>/dev/null || true
 }
 

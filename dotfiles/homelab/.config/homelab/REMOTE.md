@@ -192,7 +192,7 @@ Units (user systemd, linger=yes):
 - `homelab-cdp.service` — headed Chrome CDP
 - `homelab-tailscale.service` — userspace Tailscale (leave off once kernel tailscaled is up)
 - `homelab-nosleep.service` / `homelab-disks.service`
-- `browseros.service` - BrowserOS, started before the CDP Chrome
+- `browseros-neo.service` - BrowserOS neo, started before the CDP Chrome (sandbox needs the AppArmor profile from `linux-homelab-root.sh`)
 
 ### Wall dashboard (machine-local)
 
@@ -211,7 +211,7 @@ fullscreen until the page fills the screen (GNOME ignores `--start-fullscreen`).
 
 ### Tiling desktop (GNOME + Pop Shell)
 
-`install-desktop-tiling` builds Pop Shell, installs Run or Raise and BrowserOS, then runs
+`install-desktop-tiling` builds Pop Shell, installs Run or Raise and BrowserOS neo, then runs
 `gnome-tiling-keys.sh`. Log out and back in to load the extensions. Keys mirror the Mac
 yabai/skhd setup over Jump (cmd = Super, meh = ctrl+alt+shift):
 

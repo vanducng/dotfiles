@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Privileged homelab pieces. Run once: sudo -E ./scripts/linux-homelab-root.sh
 # Installs sshd :22, docker, tailscale; fstab for extra disks; masks sleep;
-# copies /usr/local/bin links for moshi PATH probes.
+# AppArmor userns profile for BrowserOS neo; copies /usr/local/bin links for moshi PATH probes.
 set -euo pipefail
 
 if [[ ${EUID:-$(id -u)} -ne 0 ]]; then
@@ -114,6 +114,20 @@ WantedBy=multi-user.target
 EOF
 systemctl daemon-reload
 systemctl enable --now cnb-tun.service || true
+
+# --- BrowserOS neo sandbox (Ubuntu 24.04 denies unprivileged userns to unprofiled binaries) ---
+cat >/etc/apparmor.d/browserclaw-user <<'EOF'
+# Lets a user-local Chromium build create user namespaces for its sandbox.
+abi <abi/4.0>,
+include <tunables/global>
+
+profile browserclaw-user /media/ubuntu/work/store/opt/browseros-neo/**/browserclaw flags=(unconfined) {
+  userns,
+
+  include if exists <local/browserclaw-user>
+}
+EOF
+apparmor_parser -r /etc/apparmor.d/browserclaw-user || true
 
 # --- moshi PATH ---
 loginctl enable-linger "$TARGET_USER"

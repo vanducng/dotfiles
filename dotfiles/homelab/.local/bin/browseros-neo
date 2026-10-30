@@ -1,1 +1,11 @@
-browseros
+#!/usr/bin/env bash
+# BrowserOS neo, extracted AppImage under ~/work/store/opt/browseros-neo/current.
+# Its sandbox needs the browserclaw-user AppArmor profile from linux-homelab-root.sh.
+# Units may hard-code Wayland; follow the real session (NVIDIA makes GDM fall back to Xorg).
+if [[ ! -S "${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/${WAYLAND_DISPLAY:-wayland-0}" ]]; then
+  unset WAYLAND_DISPLAY
+  export XDG_SESSION_TYPE=x11 DISPLAY="${DISPLAY:-:0}"
+  [[ -z "${XAUTHORITY:-}" && -f "/run/user/$(id -u)/gdm/Xauthority" ]] && XAUTHORITY="/run/user/$(id -u)/gdm/Xauthority" && export XAUTHORITY
+fi
+# --class sets the Wayland app_id; the build reports chromium-browser otherwise.
+exec "$HOME/work/store/opt/browseros-neo/current/AppRun" --ozone-platform-hint=auto --class=browseros-neo "$@"

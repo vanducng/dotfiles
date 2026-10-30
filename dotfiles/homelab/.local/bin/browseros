@@ -1,8 +1,0 @@
-#!/usr/bin/env bash
-# BrowserOS and BrowserOS neo (`browseros-neo` links here); extracted AppImages under
-# ~/work/store/opt/<name>/current. chrome_sandbox is not setuid here, so --no-sandbox.
-app="$(basename "$0")"
-# shellcheck source=/dev/null
-. "${HOME}/.config/homelab/session-env"
-# --class sets the Wayland app_id; both builds report chromium-browser otherwise.
-exec "$HOME/work/store/opt/${app}/current/AppRun" --no-sandbox --ozone-platform-hint=auto --class="$app" "$@"
