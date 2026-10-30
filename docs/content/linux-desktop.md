@@ -9,7 +9,7 @@ Sway is i3 on Wayland. Caps is Hyper (`xkb_options caps:hyper`), matching Karabi
 ## Install
 
 ```bash
-cd ~/.dotfiles
+cd ~/dotfiles
 make linux-desktop
 ```
 
