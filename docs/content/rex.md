@@ -120,7 +120,7 @@ rex do ~/.config/rex/actions.lua --action session_layout
 
 ## Restarts and upgrades
 
-From Mac 0.1.0-preview.23 and Linux server 0.1.0-preview.11, a Rex server saves its sessions when it stops and brings them back when it starts: sessions, tabs, splits, floating panes, labels and IDs. Each terminal comes back as a new shell in the folder it was in. Programs are not restarted and scrollback is not restored, so agents need resuming (`claude -c`, `codex resume --last`, `pi -c`, `cursor-agent resume`). OpenRig seats run in tmux and are not affected; reopen their tiles with `rig terminal open <rig> --provider rex`.
+From Mac 0.1.0-preview.23 and Linux server 0.1.0-preview.11, a Rex server saves its sessions when it stops and brings them back when it starts: sessions, tabs, splits, floating panes, labels and IDs. Each terminal comes back as a new shell in the folder it was in. Programs are not restarted and scrollback is not restored, so agents need resuming (`claude -c`, `codex resume --last`, `pi -c`, `cursor-agent resume`). OpenRig seats run in tmux and are not affected, but their tiles do not come back: a tile runs `tmux attach` and closes when that ends, so the rig's session returns with no tabs. Remove the empty session (`rex kill <id>`), reopen the tiles with `rig terminal open <rig> --provider rex`, and renumber with `C-x Shift-I`.
 
 The save happens on a clean stop: an app update, `rex server stop`, or `systemctl --user restart rex-personal.service`. A crash or power loss may lose changes made since the server started. `rex server stop --discard` deletes the saved sessions, and `rex server run --restore=false` starts without them.
 
