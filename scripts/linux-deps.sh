@@ -195,7 +195,7 @@ stow_mise_then_install() {
   fi
   if have mise; then
     log "mise install"
-    mise install -y
+    bash "${REPO_ROOT}/scripts/mise-sync.sh"
   fi
 }
 

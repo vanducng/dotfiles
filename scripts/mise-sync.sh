@@ -8,6 +8,10 @@ PROJECTS_ROOT="${PROJECTS_ROOT:-${HOME}/projects}"
 OPENRIG_HOME="${OPENRIG_HOME:-${HOME}/.openrig}"
 cd "${HOME}"
 
+# linux.toml sets libc=musl for aqua bins; it also picks musl node/python, which glibc hosts cannot exec.
+if [[ "$(uname -s)" == Linux ]]; then
+  MISE_LIBC=gnu mise install -y node python
+fi
 mise install -y
 node_bin="$(mise where node)/bin/node"
 [[ -x "${node_bin}" ]] || { echo "pinned node missing: ${node_bin}" >&2; exit 1; }
@@ -37,7 +41,7 @@ while IFS= read -r file; do
 done < <(candidates)
 echo "files repointed: ${fixed}"
 
-daemon_node="$(ps -axo command= | awk '/@openrig\/cli\/daemon\/dist\/index.js/ && !/awk/ {print $1; exit}')"
+daemon_node="$(ps -axo command= | awk '/@openrig\/cli\/daemon\/dist\/index.js/ && !/awk/ && !seen++ {print $1}')"
 if [[ -n "${daemon_node}" && ! -x "${daemon_node}" ]]; then
   echo "OpenRig daemon runs a removed node (${daemon_node}); restart it: rig daemon stop && rig daemon start" >&2
 fi
