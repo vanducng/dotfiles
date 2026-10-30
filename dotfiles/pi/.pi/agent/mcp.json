@@ -6,6 +6,12 @@
         "scope": "email",
         "clientName": "Pi"
       }
+    },
+    "ticket": {
+      "url": "https://ticket.dataplanelabs.com/api/mcp"
+    },
+    "rex-community": {
+      "url": "https://www.superlogical.com/rex/community-mcp"
     }
   }
 }

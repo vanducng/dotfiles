@@ -94,7 +94,6 @@ Structured (the daily planner) is configured in the stowed
   "mcpServers": {
     "Structured": {
       "url": "https://mcp.structured.app/mcp",
-      "auth": "oauth",
       "oauth": {
         "scope": "email",
         "clientName": "Pi"
@@ -103,6 +102,8 @@ Structured (the daily planner) is configured in the stowed
   }
 }
 ```
+
+The same file holds every pi MCP server, so there is no separate `mcp-adapter.json`: also `rex-community` (the read-only [Rex community MCP](https://www.superlogical.com/rex/docs/beta/community-mcp), signed in with the Rex Beta Discord account) and `ticket`. Each server signs in once per machine with `mcp({ action: "auth-start", server: "<name>" })`; tokens stay in `~/.pi/agent/mcp-auth.json`, which is not tracked.
 
 OAuth uses Structured Cloud (email OTP). Tokens live in the OS credential store,
 not in this repo. `scope` must stay `email` - extra scopes fail on Structured's

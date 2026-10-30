@@ -17,7 +17,7 @@ jq empty "$agent_dir/settings.json" "$agent_dir/models.json" "$agent_dir/mcp.jso
 	"$agent_dir/themes/rose-pine-moon.json"
 jq -e '
 	.defaultProvider == "cliproxyapi" and
-	.defaultModel == "grok-4.7" and
+	.defaultModel == "claude-opus-5-5" and
 	.transport == "sse"
 ' "$agent_dir/settings.json" >/dev/null
 jq -e '
@@ -28,7 +28,6 @@ jq -e '
 ' "$agent_dir/settings.json" >/dev/null
 jq -e '
 	.mcpServers.Structured.url == "https://mcp.structured.app/mcp" and
-	.mcpServers.Structured.auth == "oauth" and
 	.mcpServers.Structured.oauth.scope == "email" and
 	(.mcpServers.Structured.oauth.clientId | not)
 ' "$agent_dir/mcp.json" >/dev/null
