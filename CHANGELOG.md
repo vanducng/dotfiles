@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.36.0](https://github.com/vanducng/dotfiles/compare/v0.35.1...v0.36.0) (2026-10-30)
+
+
+### Features
+
+* **bin:** track vd-skills-sync and prune links to removed skills ([dbfea78](https://github.com/vanducng/dotfiles/commit/dbfea783078e30c32e2eb8791f6660dc33f51219))
+* **cnb-openvpn:** route a machine-local split list over the tunnel ([e1bce39](https://github.com/vanducng/dotfiles/commit/e1bce3966c44b95f7e6b314ce90440e8e1dfda88))
+* **homelab:** run BrowserOS neo instead of BrowserOS ([247a298](https://github.com/vanducng/dotfiles/commit/247a298a0c24aa274cfbdd41e9b1bf308f13484d))
+* **pi:** use the hardware cursor and drop the codex-fast extensions ([7b818f9](https://github.com/vanducng/dotfiles/commit/7b818f903587edaa22cda721db2e0738c0e67014))
+
+
+### Bug Fixes
+
+* **gopass:** restore the config.local include so each host keeps its own store mount ([2eae563](https://github.com/vanducng/dotfiles/commit/2eae563bdb9b9cceca96b036abf51347d848a7d1))
+* **homelab:** reach the CNB bastion over the OpenVPN tunnel ([8e54316](https://github.com/vanducng/dotfiles/commit/8e543160655544968ffc33a6017a836384594252))
+
 ## [0.35.1](https://github.com/vanducng/dotfiles/compare/v0.35.0...v0.35.1) (2026-10-30)
 
 
