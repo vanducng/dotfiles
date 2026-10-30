@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      { "command": "/bin/sh -c '/usr/bin/python3 \"$HOME/.cursor/hooks/rex-status.py\" || true'" }
+    ],
+    "beforeSubmitPrompt": [
+      { "command": "/bin/sh -c '/usr/bin/python3 \"$HOME/.cursor/hooks/rex-status.py\" || true'" }
+    ],
+    "beforeShellExecution": [
+      { "command": "/bin/sh -c '/usr/bin/python3 \"$HOME/.cursor/hooks/rex-status.py\" || true'" }
+    ],
+    "beforeMCPExecution": [
+      { "command": "/bin/sh -c '/usr/bin/python3 \"$HOME/.cursor/hooks/rex-status.py\" || true'" }
+    ],
+    "afterFileEdit": [
+      { "command": "/bin/sh -c '/usr/bin/python3 \"$HOME/.cursor/hooks/rex-status.py\" || true'" }
+    ],
+    "stop": [
+      { "command": "/bin/sh -c '/usr/bin/python3 \"$HOME/.cursor/hooks/rex-status.py\" || true'" }
+    ],
+    "sessionEnd": [
+      { "command": "/bin/sh -c '/usr/bin/python3 \"$HOME/.cursor/hooks/rex-status.py\" || true'" }
+    ]
+  }
+}

@@ -689,11 +689,11 @@ if [ -z "$3" ]; then
   text=$("$REX_BIN_DIR/rex" capture -b "$1" --unwrap 2>&1) || set -- "$1" "$2" "" " rex capture failed"
   printf '%s\n' "$text" | sed 's/[[:space:]]*$//' >"$f"
 fi
-init="$HOME/.config/rex/copy-mode.nvim.lua"
+init="${XDG_CONFIG_HOME:-$HOME/.config}/rex/copy-mode.nvim.lua"
 if [ -r "$init" ]; then
-  REX_COPY_NOTE="$4" nvim -u "$init" -i NONE -n -M + "$f"
+  REX_COPY_NOTE="$4" REX_COPY_INIT="$init" nvim -i NONE -n -R + -c 'lua dofile(vim.env.REX_COPY_INIT)' "$f"
 else
-  nvim -u NONE -i NONE -n -M + -c "set clipboard=unnamedplus" -c "nnoremap q <cmd>qa!<cr>" -c "nnoremap <C-c> <cmd>qa!<cr>" "$f"
+  nvim -i NONE -n -R + -c "set clipboard=unnamedplus nomodifiable" -c "nnoremap q <cmd>qa!<cr>" -c "nnoremap <C-c> <cmd>qa!<cr>" "$f"
 fi]=]
 
 rex.action{

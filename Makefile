@@ -114,9 +114,9 @@ unstow-rex:
 	@cd dotfiles && stow -t $(HOME) -D rex 2>/dev/null || true
 
 # rexboard's hooks for Claude Code, Codex and pi, then the title spinner merged into the live
-# Claude settings, which the harness rewrites and which holds private entries, so it is never
-# stowed. rex-hooks shows the changes; -apply writes them.
-REX_HARNESSES=claude
+# Claude settings and the Rex status hook into cursor's hooks.json; both are rewritten at runtime
+# and hold private entries, so they are never stowed. rex-hooks shows the changes; -apply writes them.
+REX_HARNESSES=claude cursor
 REXBOARD_HOOKS=if rexboard hooks --help >/dev/null 2>&1; then rexboard hooks install $(1) claude codex pi; \
 	else echo "rexboard with hooks is not on PATH: install or upgrade it (brew install vanducng/tap/rexboard, or its install.sh); skipping its hooks"; fi
 REX_HOOKS_APPLY=$(call REXBOARD_HOOKS,); for h in $(REX_HARNESSES); do ./dotfiles/bin/.local/bin/rex-hooks-sync $$h --apply; done
