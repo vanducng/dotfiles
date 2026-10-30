@@ -90,13 +90,33 @@ set +e
 send local dev-impl@api "hi" '{"wait_for_idle": "soon"}' 2>"$TMP/err" >/dev/null
 code=$?
 set -e
-[ $code = 2 ] && [ ! -e "$TMP/sent" ] && grep -q "whole number of seconds" "$TMP/err" || fail "a bad wait_for_idle: exit $code, $(cat "$TMP/err")"
+if [ $code != 2 ] || [ -e "$TMP/sent" ] || ! grep -q "whole number of seconds" "$TMP/err"; then
+  fail "a bad wait_for_idle: exit $code, $(cat "$TMP/err")"
+fi
 set +e
 send local 2>"$TMP/err" >/dev/null; [ $? = 2 ] || fail "too few arguments"
 FAKE_RIG_SEND_EXIT=3 send local dev-impl@api "hi" 2>"$TMP/err" >/dev/null
 code=$?
 set -e
-[ $code = 3 ] && grep -q "not delivered" "$TMP/err" || fail "a failed rig send: exit $code, $(cat "$TMP/err")"
+if [ $code != 3 ] || ! grep -q "not delivered" "$TMP/err"; then
+  fail "a failed rig send: exit $code, $(cat "$TMP/err")"
+fi
+# The wait the script allows must fit inside the action's timeout with a delivery budget, or
+# rexboard kills a send that is still waiting: a wait that is accepted always has time to finish.
+max_wait=$(sed -n 's/^max_wait=\([0-9][0-9]*\).*/\1/p' "$EXT/send")
+timeout=$(yq -p toml -o json '.actions[0].timeout' "$EXT/extension.toml")
+[ -n "$max_wait" ] && [ "$timeout" -ge $((max_wait + 15)) ] ||
+  fail "the action timeout (${timeout:-?}s) must be at least max_wait (${max_wait:-?}s) plus 15s to deliver"
+send local dev-impl@api "hi" "{\"wait_for_idle\": $max_wait}" >/dev/null || fail "wait_for_idle at the cap ($max_wait) was refused"
+set +e
+send local dev-impl@api "hi" "{\"wait_for_idle\": $((max_wait + 1))}" 2>"$TMP/err" >/dev/null
+code=$?
+set -e
+if [ $code != 2 ] || [ -e "$TMP/sent" ] || ! grep -q "at most $max_wait seconds" "$TMP/err"; then
+  fail "a wait over the cap: exit $code, $(cat "$TMP/err")"
+fi
+pass "send: wait_for_idle up to $max_wait s, inside the ${timeout}s action timeout; more is refused"
+
 pass "send: wait_for_idle and sender only from settings; a bad wait or a failed rig send fails with its message"
 
 # rexboard's own check, when it is installed: the manifest loads and the answer keeps contract 1.

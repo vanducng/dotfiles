@@ -27,9 +27,9 @@ name = "send"
 title = "Send message"
 key = "s"
 cmd = ["./send", "{host}", "{field:session}", "{text}"]
-confirm = "send to {field:session} on {host}: {text}"
+confirm = "send to {field:session} on {host}"
 when = ["session"]
-timeout = 20
+timeout = 45  # send waits up to wait_for_idle (at most 30 s, see send), then verifies delivery
 
 [provides]
 status = true
