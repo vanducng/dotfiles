@@ -7,6 +7,8 @@ import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-a
 import { truncateToWidth } from "@earendil-works/pi-tui";
 
 const SCRIPT = join(homedir(), ".local/bin/agent-statusline");
+// An OpenRig seat leads its footer with its seat name.
+const SEAT = process.env.OPENRIG_SESSION_NAME?.trim() ?? "";
 
 export default function (pi: ExtensionAPI) {
 	let ctx: ExtensionContext | undefined;
@@ -38,7 +40,7 @@ export default function (pi: ExtensionAPI) {
 					context_window: { used_percentage: usage?.percent ?? null },
 					workspace: { current_dir: ctx.cwd, branch: footerData.getGitBranch() },
 				};
-				const child = execFile(SCRIPT, { timeout: 5000, env: { ...process.env, COLUMNS: String(width) } }, (err, out) => {
+				const child = execFile(SCRIPT, { timeout: 5000, env: { ...process.env, COLUMNS: String(Math.max(20, width - (SEAT ? SEAT.length + 2 : 0))) } }, (err, out) => {
 					running = false;
 					if (disposed) return;
 					if (!err && out.trim() && out.trimEnd() !== line) {
@@ -68,7 +70,8 @@ export default function (pi: ExtensionAPI) {
 						refresh();
 					}
 					const statuses = [...footerData.getExtensionStatuses().values()].join("  ");
-					const rows = [line || theme.fg("dim", ctx?.model?.id ?? "")];
+					const main = line || theme.fg("dim", ctx?.model?.id ?? "");
+					const rows = [SEAT ? `${theme.fg("accent", SEAT)}  ${main}` : main];
 					if (statuses) rows.push(statuses);
 					return rows.map((row) => truncateToWidth(row, w));
 				},
