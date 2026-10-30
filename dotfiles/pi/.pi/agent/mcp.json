@@ -2,7 +2,6 @@
   "mcpServers": {
     "Structured": {
       "url": "https://mcp.structured.app/mcp",
-      "auth": "oauth",
       "oauth": {
         "scope": "email",
         "clientName": "Pi"
