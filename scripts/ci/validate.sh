@@ -44,11 +44,6 @@ validate_json() {
 
 validate_yaml() {
     local file="$1"
-    # omdsh plugin manifests use custom !!js tags; not portable YAML 1.1.
-    if grep -qE '^[^#]*!!js' "$file" 2>/dev/null; then
-        log_warning "Skipping YAML with !!js tags: $file"
-        return
-    fi
     if command -v yq >/dev/null 2>&1; then
         if yq eval '.' "$file" >/dev/null 2>&1; then
             log_success "Valid YAML: $file"
