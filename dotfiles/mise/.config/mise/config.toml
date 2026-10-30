@@ -1,11 +1,14 @@
+# Exact pins: every host resolves the same versions, and tools that bake a
+# versioned node path (OpenRig hooks) only change on a dotfiles commit.
+# Bump here, then run scripts/mise-sync.sh on each host.
 [tools]
-"aqua:junegunn/fzf" = "latest"
-"github:ogulcancelik/herdr" = "latest"
+"aqua:junegunn/fzf" = "0.74.5"
+"github:ogulcancelik/herdr" = "0.9.5"
 go = "1.23.4"
-node = "22"
-python = "3"
-usage = "latest"
-"aqua:hashicorp/vault" = "latest"
+node = "22.23.4"
+python = "3.12.15"
+usage = "7.0.1"
+"aqua:hashicorp/vault" = "2.2.0"
 
 [settings]
 idiomatic_version_file_enable_tools = ["python"]
