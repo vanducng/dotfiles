@@ -1,8 +1,8 @@
 # Linux CLI tools for a sudo-free bootstrap (Ubuntu 22.04+).
+# Runtimes (node, python, go) and shared tools are pinned in mise/config.toml only.
 # Learned on host `dpl`:
 # - `aqua:tmux/tmux` is not in the aqua registry — use mise core `tmux`
 # - `git-delta` is not a mise registry name — use `aqua:dandavison/delta`
-# - `python = "3"` in the shared config can resolve to 3.14; pin 3.12 here
 # - aqua linux-gnu rust bins often need GLIBC 2.38+; 22.04 is 2.35, so prefer musl
 # - Google Workspace is gog (openclaw/gogcli), not gws; pinned to the Mac version
 
@@ -11,36 +11,29 @@ libc = "musl"
 trusted_config_paths = ["~/work/git", "/media/ubuntu/work/git"]
 
 [tools]
-python = "3.12"
-node = "22"
-go = "1.23.4"
-lua = "5.4"
-tmux = "latest"
-usage = "latest"
-"aqua:neovim/neovim" = "latest"
-"aqua:BurntSushi/ripgrep" = "latest"
-"aqua:sharkdp/fd" = "latest"
-"aqua:jqlang/jq" = "latest"
-"aqua:starship/starship" = "latest"
-"aqua:jesseduffield/lazygit" = "latest"
-"aqua:dandavison/delta" = "latest"
-"aqua:direnv/direnv" = "latest"
-"aqua:atuinsh/atuin" = "latest"
-"aqua:ajeetdsouza/zoxide" = "latest"
-"aqua:FiloSottile/age" = "latest"
-"aqua:cli/cli" = "latest"
-"aqua:sxyazi/yazi" = "latest"
-"aqua:mikefarah/yq" = "latest"
-"aqua:koalaman/shellcheck" = "latest"
-"aqua:sharkdp/bat" = "latest"
-"aqua:Byron/dua-cli" = "latest"
-"aqua:eza-community/eza" = "latest"
-"aqua:junegunn/fzf" = "latest"
-"aqua:hashicorp/vault" = "latest"
-"aqua:LuaLS/lua-language-server" = "latest"
-"github:ogulcancelik/herdr" = "latest"
+lua = "5.4.9"
+tmux = "3.7c"
+"aqua:neovim/neovim" = "0.12.5"
+"aqua:BurntSushi/ripgrep" = "15.2.0"
+"aqua:sharkdp/fd" = "10.5.0"
+"aqua:jqlang/jq" = "1.8.2"
+"aqua:starship/starship" = "1.26.0"
+"aqua:jesseduffield/lazygit" = "0.64.1"
+"aqua:dandavison/delta" = "0.19.2"
+"aqua:direnv/direnv" = "2.37.1"
+"aqua:atuinsh/atuin" = "18.20.0"
+"aqua:ajeetdsouza/zoxide" = "0.10.0"
+"aqua:FiloSottile/age" = "1.3.1"
+"aqua:cli/cli" = "2.98.0"
+"aqua:sxyazi/yazi" = "26.8.15"
+"aqua:mikefarah/yq" = "4.53.6"
+"aqua:koalaman/shellcheck" = "0.11.0"
+"aqua:sharkdp/bat" = "0.26.1"
+"aqua:Byron/dua-cli" = "2.46.0"
+"aqua:eza-community/eza" = "0.23.5"
+"aqua:LuaLS/lua-language-server" = "3.19.1"
 "github:openclaw/gogcli" = "0.39.1"
-gopass = "latest"
-"github:composer/composer" = { version = "latest", asset_pattern = "composer.phar", bin = "composer" }
+gopass = "1.16.1"
+"github:composer/composer" = { version = "2.10.3", asset_pattern = "composer.phar", bin = "composer" }
 "http:php" = { version = "8.5.8", url = "https://dl.static-php.dev/static-php-cli/common/php-{{version}}-cli-linux-x86_64.tar.gz" }
 gitleaks = "8.30.1"

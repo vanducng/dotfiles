@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+# Install the pinned mise toolset, then repoint files that baked a node path
+# mise no longer has (OpenRig writes process.execPath into seat hooks and its
+# rig wrapper). Run on every host after pulling a pin bump. Re-runnable.
+set -euo pipefail
+
+PROJECTS_ROOT="${PROJECTS_ROOT:-${HOME}/projects}"
+OPENRIG_HOME="${OPENRIG_HOME:-${HOME}/.openrig}"
+cd "${HOME}"
+
+mise install -y
+node_bin="$(mise where node)/bin/node"
+[[ -x "${node_bin}" ]] || { echo "pinned node missing: ${node_bin}" >&2; exit 1; }
+echo "node: ${node_bin} ($("${node_bin}" -v))"
+
+candidates() {
+  local root
+  for root in "${OPENRIG_HOME}" "${PROJECTS_ROOT}"; do
+    [[ -d "${root}" ]] || continue
+    find "${root}/" \( -name node_modules -o -name .cache -o -name .worktrees -o -name .git \) -prune \
+      -o -path '*/.claude/settings*.json' -type f -print 2>/dev/null
+  done
+  [[ -f "${HOME}/.local/bin/rig" ]] && echo "${HOME}/.local/bin/rig"
+}
+
+fixed=0
+while IFS= read -r file; do
+  stale=0
+  while IFS= read -r path; do
+    [[ -x "${path}" ]] || stale=1
+  done < <(grep -oE '/[^"'\'' ]*/mise/installs/node/[^/"'\'' ]+/bin/node' "${file}" | sort -u)
+  [[ "${stale}" == 1 ]] || continue
+  NODE_BIN="${node_bin}" perl -pi -e \
+    's{/[^"'\'' ]*/mise/installs/node/[^/"'\'' ]+/bin/node}{-x $& ? $& : $ENV{NODE_BIN}}ge' "${file}"
+  echo "repointed: ${file}"
+  fixed=$((fixed + 1))
+done < <(candidates)
+echo "files repointed: ${fixed}"
+
+daemon_node="$(ps -axo command= | awk '/@openrig\/cli\/daemon\/dist\/index.js/ && !/awk/ {print $1; exit}')"
+if [[ -n "${daemon_node}" && ! -x "${daemon_node}" ]]; then
+  echo "OpenRig daemon runs a removed node (${daemon_node}); restart it: rig daemon stop && rig daemon start" >&2
+fi
