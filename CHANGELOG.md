@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.35.1](https://github.com/vanducng/dotfiles/compare/v0.35.0...v0.35.1) (2026-10-30)
+
+
+### Bug Fixes
+
+* **docs:** focus the search input even when Pagefind mounts late ([#266](https://github.com/vanducng/dotfiles/issues/266)) ([a299f86](https://github.com/vanducng/dotfiles/commit/a299f86f6fc354f6d790c66a22a8825366925d69))
+* **docs:** focus the search input when the dialog itself holds focus ([#267](https://github.com/vanducng/dotfiles/issues/267)) ([c067ea0](https://github.com/vanducng/dotfiles/commit/c067ea08258e5c703eea5a945b899358cec2f966))
+* **macos-deps:** make runnable from make setup ([5bb08c3](https://github.com/vanducng/dotfiles/commit/5bb08c32f75890c785db50913612d155c8c058e5))
+* **pi:** dropped legacy auth key from Structured MCP entry ([234ef08](https://github.com/vanducng/dotfiles/commit/234ef08dafa8214c8f776421084dc63bdf5be592))
+* **stow:** back up conflicting files and restow atomically ([f51af9e](https://github.com/vanducng/dotfiles/commit/f51af9ed4b837393dfd29fd594b1066b75d18801))
+* **tmux:** size a lone ignore-size tile's window to the tile ([c4fa612](https://github.com/vanducng/dotfiles/commit/c4fa6125516f354dda5bcb4ece554fafcbd745f5))
+* **zsh:** put Homebrew first on PATH for pi ([5fad051](https://github.com/vanducng/dotfiles/commit/5fad051be0bee2fc4b060f2b6830db1301223fc3))
+
 ## [0.35.0](https://github.com/vanducng/dotfiles/compare/v0.34.0...v0.35.0) (2026-10-28)
 
 
