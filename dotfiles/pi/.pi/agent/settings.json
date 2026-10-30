@@ -11,6 +11,7 @@
   },
   "hideThinkingBlock": false,
   "quietStartup": true,
+  "showHardwareCursor": true,
   "theme": "rose-pine-moon",
   "steeringMode": "all",
   "followUpMode": "all",
@@ -18,9 +19,7 @@
   "collapseChangelog": true,
   "packages": [
     "npm:pi-web-access",
-    "npm:@ryan_nookpi/pi-extension-codex-fast-mode@0.2.6",
     "npm:@plannotator/pi-extension",
-    "npm:@calesennett/pi-codex-fast",
     "npm:pi-mcp-adapter",
     "git:github.com/DietrichGebert/ponytail@v4.9.0",
     "npm:@indexyz/pi-skill"
@@ -70,10 +69,6 @@
       "maxRetries": 0,
       "maxRetryDelayMs": 900000
     }
-  },
-  "pi-codex-fast": {
-    "enabled": false,
-    "mode": "off"
   },
   "extensions": [
     "-builtin:mcp"
