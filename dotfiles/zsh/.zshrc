@@ -417,3 +417,6 @@ export HERD_PHP_85_INI_SCAN_DIR="${HOME}/Library/Application Support/Herd/config
 
 [[ -f $HOME/.config/shell/aliases.zsh ]] && source "$HOME/.config/shell/aliases.zsh"
 [[ -r $HOME/.config/shell/rex.zsh ]] && source "$HOME/.config/shell/rex.zsh"
+
+# Pi
+export PATH="/opt/homebrew/bin:$PATH"
