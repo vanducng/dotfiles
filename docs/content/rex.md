@@ -13,10 +13,11 @@ Rex (Rex Beta) is the native macOS multiplexer that replaces Ghostty on space 1 
 - `dotfiles/rex/.config/rex/hosts.lua` - reads `hosts.json`, works out which entry is this Mac, and declares the others as Rex hosts
 - `dotfiles/rexboard/.config/rexboard/config.toml` - [rexboard](https://github.com/vanducng/rexboard)'s config. The app client is left to the default, the only Rex app on the unix socket. The rexboard keys and the cockpit's board tab find `rexboard` in `$HOMEBREW_PREFIX/bin`, `/opt/homebrew/bin`, `/usr/local/bin`, `~/.local/bin`, then `PATH`, and say `brew install vanducng/tap/rexboard` when it is missing
 - `dotfiles/rexboard/.config/rexboard/extensions/openrig/` - the [OpenRig extension](#openrig-extension) config.toml enables: each seat's rig, project and role on rexboard's rows
-- `dotfiles/bin/.local/bin/rex-title-spinner` and `rex-hooks-sync` - Claude Code's title glyph in a Rex pane and its hook merge (see [Agent status](#agent-status))
+- `dotfiles/bin/.local/bin/rex-title-spinner` and `rex-hooks-sync` - Claude Code's title glyph in a Rex pane, and the hook merge for it and cursor-agent (see [Agent status](#agent-status))
+- `dotfiles/cursor/.cursor/hooks/rex-status.py` - cursor-agent's OSC 7501 status hook (see [Agent status](#agent-status))
 - `dotfiles/bin/.local/bin/rex-pane-titles` - automatic pane labels and visible titles across agent CLIs (see [Pane names](#pane-names))
 - `dotfiles/bin/.local/bin/rex-agent-status` - kept for a release: hooks merged before `rexboard hook`, and the old tmux replay hook, still run it. It hands each call to `rexboard hook` or `rexboard hooks replay`, and does nothing when rexboard has no `hooks` command, so a hook never fails. `make rex-hooks-apply` and a restow replace those callers
-- `dotfiles/rex/.config/rex/copy-mode.nvim.lua` - the small Neovim config copy mode starts with (`nvim -u`), so it opens in tens of milliseconds instead of loading the full Neovim setup
+- `dotfiles/rex/.config/rex/copy-mode.nvim.lua` - settings applied after the normal AstroNvim config loads: clipboard yanking, `q` / `Ctrl-C` to close, and the full-screen capture notice. Copy mode includes the usual plugins and motion keys (`s` for Flash, `f` / `t` for character jumps)
 - `scripts/rex-setup.sh` (`make setup-rex`) - app settings that live in UserDefaults: Option as Alt, vertical tabs, compact panes, Program Activity sounds (an agent finished or is waiting on you), the Tailscale node name, and the app's Remote Hosts list. The app reads them at launch, so quit and reopen Rex Beta after a run; sessions live in the server and survive
 
 Rex reads the config when it starts. After an edit, run `rex config reload` or press `C-x Shift-R`. Run `rex config check` first to catch mistakes, and `rex keymap` to see what loaded.
@@ -162,6 +163,7 @@ Every agent hook runs `rexboard hook <harness> <EVENT>` with the hook's JSON on 
 | Claude Code | Claude reports on its own. `rexboard hook` adds a `turn` record with the final message, and the spinner hook puts the title glyph back (below) | `rexboard hook` reports for it |
 | Codex (experimental) | Codex reports on its own, and the hook writes nothing | `rexboard hook` reports for it, once trusted in Codex |
 | pi | pi reports nothing, so rexboard's extension writes the status to pi's tty | The extension reports through the seat's pane |
+| cursor-agent | cursor-agent reports nothing and rexboard has no harness for it, so `~/.cursor/hooks/rex-status.py` writes the status to the agent's tty: `idle` at start, `working` with the prompt, command, MCP tool or edited file, then `done` (`idle` if aborted, `error` if failed), cleared at session end. Cursor's hooks have no permission event, so it never reports `blocked` | Not reported |
 
 An OpenRig seat needs this because its Rex tile only runs `tmux attach`, and tmux stops the sequence. `rexboard hook` wraps the status in tmux passthrough (`allow-passthrough on` in `.tmux.conf`) and keeps the last one on the pane as `@rex_status`. The tmux `client-attached` and `client-session-changed` hooks run `rexboard hooks replay`, so a tile opened later shows it at once. rexboard's [`hook` docs](https://github.com/vanducng/rexboard/blob/main/docs/cli.md#rexboard-hook) have the event mapping and message limits.
 
@@ -169,14 +171,14 @@ Inside tmux, Claude Code adds its own title glyph. Straight in a Rex pane each C
 
 ### Install and update the hooks
 
-`rexboard hooks install` merges rexboard's hooks into `~/.claude/settings.json` and `~/.codex/hooks.json`, wraps Claude's status line with `rexboard usage claude`, and writes pi's extension (`~/.pi/agent/extensions/rexboard.js`). It leaves a symlinked file alone, so a host that stows `claude` or `codex` gets the same hooks from `dotfiles/claude/.claude/settings.json` and `dotfiles/codex/.codex/hooks.json`. On a host that does not stow them, `rex-hooks-sync` merges the one hook rexboard does not ship, the title spinner, in place, and leaves every other key and hook alone.
+`rexboard hooks install` merges rexboard's hooks into `~/.claude/settings.json` and `~/.codex/hooks.json`, wraps Claude's status line with `rexboard usage claude`, and writes pi's extension (`~/.pi/agent/extensions/rexboard.js`). It leaves a symlinked file alone, so a host that stows `claude` or `codex` gets the same hooks from `dotfiles/claude/.claude/settings.json` and `dotfiles/codex/.codex/hooks.json`. On a host that does not stow them, `rex-hooks-sync` merges the one hook rexboard does not ship, the title spinner, in place, and leaves every other key and hook alone. It also merges cursor-agent's status hook from `dotfiles/cursor/.cursor/hooks/rex-status.json` into `~/.cursor/hooks.json`, which other tools (moshi, herdr, omnigent) also write, so it is never stowed.
 
 ```bash
 make rex-hooks         # what rexboard hooks install and the spinner merge would change
 make rex-hooks-apply   # write them, after a backup beside each file (<file>.bak-<UTC>)
 ```
 
-`make stow-rex` and `make stow-install` run the apply step after stowing rex. Without a `rexboard` that has `hooks` on `PATH`, they print how to install it and merge only the spinner. A second run changes nothing. A running Claude Code picks up the merged hooks without a restart. Codex asks you to review and trust new hooks once, which only you can do in Codex, and pi loads its extension at its next start.
+`make stow-rex` and `make stow-install` run the apply step after stowing rex. Without a `rexboard` that has `hooks` on `PATH`, they print how to install it and merge only the spinner. A second run changes nothing. A running Claude Code picks up the merged hooks without a restart; cursor-agent needs a new session. Codex asks you to review and trust new hooks once, which only you can do in Codex, and pi loads its extension at its next start.
 
 ### Troubleshooting
 

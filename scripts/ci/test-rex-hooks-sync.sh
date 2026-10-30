@@ -93,4 +93,30 @@ done
 for f in "$tmp"/twice/settings.json.bak-*; do
   case "$(cat "$f")" in "rexboard's backup"|'{"hooks": {}}') ;; *) fail "$f holds $(cat "$f")";; esac
 done
+# cursor's hooks.json lists hooks per event directly, beside other tools' hooks.
+cursor_live="$tmp/hooks.json"
+cat > "$cursor_live" <<'JSON'
+{
+  "version": 1,
+  "hooks": {
+    "stop": [{"command": "other-tool stop"}, {"command": "python3 old/rex-status.py"}, {"command": "usage-tool"}],
+    "afterAgentResponse": [{"command": "other-tool response"}]
+  }
+}
+JSON
+"$sync" cursor --apply --target "$cursor_live" >/dev/null
+python3 - "$cursor_live" "$project_root/dotfiles/cursor/.cursor/hooks/rex-status.json" <<'PY'
+import json, sys
+live, source = (json.load(open(p)) for p in sys.argv[1:3])
+rex = lambda h: "rex-status.py" in h["command"]
+assert live["version"] == 1, "other keys kept"
+assert live["hooks"]["afterAgentResponse"] == [{"command": "other-tool response"}], "an event dotfiles lacks is kept"
+stop = live["hooks"]["stop"]
+assert stop[0] == {"command": "other-tool stop"} and stop[-1] == {"command": "usage-tool"}, "other hooks keep their place"
+assert [h for h in stop if rex(h)] == source["hooks"]["stop"], "old status hook replaced in place"
+for event, hooks in source["hooks"].items():
+    assert [h for h in live["hooks"][event] if rex(h)] == hooks, event
+PY
+"$sync" cursor --apply --target "$cursor_live" | grep -q 'up to date' || fail "cursor merge is not idempotent"
+
 echo "rex-hooks-sync: ok"

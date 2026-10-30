@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-# Puts the dotfiles' own extra Claude Code hooks, the rex-title-spinner ones, into a live
-# settings file, which the harness rewrites at runtime and which holds private entries, so it is
-# merged, never stowed. `rexboard hooks install` merges rexboard's hooks; this only the spinner.
-#   rex-hooks-sync [--apply] [--target FILE] [claude]
-# For each hook event, hooks that run rex-title-spinner are replaced by the dotfiles ones, in
-# place; every other key and hook stays. Prints the changed lines (no context, so no other values);
+# Puts the dotfiles' own extra hooks into a harness's live hooks file, which the harness or other
+# tools rewrite at runtime and which holds private entries, so it is merged, never stowed:
+# Claude Code's rex-title-spinner hooks, and cursor-agent's rex-status hook (cursor-agent has no
+# `rexboard hook` support). `rexboard hooks install` merges rexboard's own hooks.
+#   rex-hooks-sync [--apply] [--target FILE] [claude|cursor]
+# For each hook event, the harness's marked hooks are replaced by the dotfiles ones, in place;
+# every other key and hook stays. Prints the changed lines (no context, so no other values);
 # --apply writes them, after a backup beside the file (FILE.bak-<UTC>). A second run changes nothing.
 import argparse
 import copy
@@ -15,42 +16,72 @@ import sys
 import tempfile
 import time
 
-MARK = "rex-title-spinner"
-# Harness: (source in the dotfiles repo, live file).
+# Harness: (source in the dotfiles repo, live file, mark in the command of each dotfiles hook,
+# whether each event lists hooks directly as cursor does, rather than in matcher groups).
 HARNESSES = {
-    "claude": ("dotfiles/claude/.claude/settings.json", "~/.claude/settings.json"),
+    "claude": ("dotfiles/claude/.claude/settings.json", "~/.claude/settings.json", "rex-title-spinner", False),
+    "cursor": ("dotfiles/cursor/.cursor/hooks/rex-status.json", "~/.cursor/hooks.json", "rex-status.py", True),
 }
 
 
-def is_rex(hook):
-    return isinstance(hook, dict) and MARK in str(hook.get("command", ""))
+def is_rex(hook, mark):
+    return isinstance(hook, dict) and mark in str(hook.get("command", ""))
 
 
-def rex_groups(settings):
-    """The hook groups that run rex-title-spinner, by event, with only those hooks in each."""
+def rex_groups(settings, mark):
+    """The hook groups that run the marked command, by event, with only those hooks in each."""
     out = {}
     for event, groups in (settings.get("hooks") or {}).items():
-        mine = [dict(g, hooks=[h for h in g.get("hooks", []) if is_rex(h)]) for g in groups]
+        mine = [dict(g, hooks=[h for h in g.get("hooks", []) if is_rex(h, mark)]) for g in groups]
         mine = [g for g in mine if g["hooks"]]
         if mine:
             out[event] = mine
     return out
 
 
-def merged(live, source):
+def merged(live, source, mark, flat):
     """`live` with its rex hooks replaced by `source`'s, each event's set where the old one was."""
+    if flat:
+        return merged_flat(live, source, mark)
     out = copy.deepcopy(live)
     hooks = out.setdefault("hooks", {})
-    want = rex_groups(source)
+    want = rex_groups(source, mark)
     for event in list(hooks) + [e for e in want if e not in hooks]:
         new, placed = [], False
         for group in hooks.get(event, []):
-            rest = [h for h in group.get("hooks", []) if not is_rex(h)]
+            rest = [h for h in group.get("hooks", []) if not is_rex(h, mark)]
             if len(rest) < len(group.get("hooks", [])) and not placed:
                 new.extend(copy.deepcopy(want.get(event, [])))
                 placed = True
             if rest:
                 new.append(dict(group, hooks=rest))
+        if not placed:
+            new.extend(copy.deepcopy(want.get(event, [])))
+        if new:
+            hooks[event] = new
+        else:
+            hooks.pop(event, None)
+    return out
+
+
+def merged_flat(live, source, mark):
+    """`merged` for files whose events list hooks directly, as cursor's hooks.json does."""
+    out = copy.deepcopy(live)
+    hooks = out.setdefault("hooks", {})
+    want = {}
+    for event, entries in (source.get("hooks") or {}).items():
+        mine = [h for h in entries if is_rex(h, mark)]
+        if mine:
+            want[event] = mine
+    for event in list(hooks) + [e for e in want if e not in hooks]:
+        new, placed = [], False
+        for hook in hooks.get(event, []):
+            if is_rex(hook, mark):
+                if not placed:
+                    new.extend(copy.deepcopy(want.get(event, [])))
+                    placed = True
+            else:
+                new.append(hook)
         if not placed:
             new.extend(copy.deepcopy(want.get(event, [])))
         if new:
@@ -109,8 +140,9 @@ def main(argv):
     parser.add_argument("--apply", action="store_true", help="write the change")
     args = parser.parse_args(argv)
     repo = os.path.realpath(os.path.join(os.path.dirname(os.path.realpath(__file__)), "../../../.."))
-    source_path = os.path.join(repo, HARNESSES[args.harness][0])
-    target = os.path.expanduser(args.target or HARNESSES[args.harness][1])
+    source_rel, live_path, mark, flat = HARNESSES[args.harness]
+    source_path = os.path.join(repo, source_rel)
+    target = os.path.expanduser(args.target or live_path)
     # Neither is an error, so `make stow-rex` works on every host.
     if os.path.islink(target):
         print("%s is a symlink: this host stows it, so it already has the dotfiles hooks" % target)
@@ -133,11 +165,11 @@ def main(argv):
         fail("%s is not valid JSON; left alone" % target)
     end = "\n" if before.endswith("\n") else ""
     try:
-        after = text(merged(live, source), end)
+        after = text(merged(live, source, mark, flat), end)
     except (AttributeError, TypeError):
         fail("%s has hooks in a shape this does not know; left alone" % target)
     if after == text(live, end):
-        print("rex-title-spinner hooks in %s are up to date" % target)
+        print("%s hooks in %s are up to date" % (mark, target))
         return
     sys.stdout.writelines(difflib.unified_diff(
         text(live, end).splitlines(True), after.splitlines(True), target, target + " (merged)", n=0))
