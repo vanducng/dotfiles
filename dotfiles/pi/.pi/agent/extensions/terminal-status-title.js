@@ -24,7 +24,7 @@ function getSessionName(pi) {
 }
 
 function getRawTitle(pi, ctx) {
-  return getSessionName(pi) || basename(ctx.cwd);
+  return process.env.OPENRIG_SESSION_NAME?.trim() || getSessionName(pi) || basename(ctx.cwd);
 }
 
 function isSpinningStatus(status) {
