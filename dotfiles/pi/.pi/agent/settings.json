@@ -1,5 +1,5 @@
 {
-  "defaultProvider": "cliproxyapi",
+  "defaultProvider": "cpa",
   "defaultModel": "claude-opus-5-5",
   "defaultThinkingLevel": "high",
   "lastChangelogVersion": "1.4.0",

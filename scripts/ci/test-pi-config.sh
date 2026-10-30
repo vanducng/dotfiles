@@ -16,7 +16,7 @@ done
 jq empty "$agent_dir/settings.json" "$agent_dir/models.json" "$agent_dir/mcp.json" \
 	"$agent_dir/themes/rose-pine-moon.json"
 jq -e '
-	.defaultProvider == "cliproxyapi" and
+	.defaultProvider == "cpa" and
 	.defaultModel == "claude-opus-5-5" and
 	.transport == "sse"
 ' "$agent_dir/settings.json" >/dev/null
@@ -32,7 +32,7 @@ jq -e '
 	(.mcpServers.Structured.oauth.clientId | not)
 ' "$agent_dir/mcp.json" >/dev/null
 jq -e '
-	.providers.cliproxyapi.models[]
+	.providers.cpa.models[]
 	| select(.id == "grok-4.6")
 	| .thinkingLevelMap
 	| has("off") and has("minimal") and has("max")
@@ -42,65 +42,65 @@ jq -e '
 	  and .max == null
 ' "$agent_dir/models.json" >/dev/null
 jq -e '
-	.providers.cliproxyapi.models[]
+	.providers.cpa.models[]
 	| select(.id == "gpt-6-sol")
 	| .thinkingLevelMap
 	| .off == "none" and .xhigh == "xhigh" and .max == "max"
 ' "$agent_dir/models.json" >/dev/null
 jq -e '
-	.providers.cliproxyapi.models[]
+	.providers.cpa.models[]
 	| select(.id == "gpt-5.6-sol")
 	| .thinkingLevelMap
 	| .off == "none" and .xhigh == "xhigh" and .max == "max"
 ' "$agent_dir/models.json" >/dev/null
 jq -e '
-	.providers.cliproxyapi.models[]
+	.providers.cpa.models[]
 	| select(.id == "claude-opus-4-7")
 	| .thinkingLevelMap
 	| .xhigh == "xhigh" and .max == "max"
 ' "$agent_dir/models.json" >/dev/null
 
 jq -e '
-	.providers.cliproxyapi.models[]
+	.providers.cpa.models[]
 	| select(.id == "claude-opus-5")
 	| .thinkingLevelMap
 	| .xhigh == "xhigh" and .max == "max"
 ' "$agent_dir/models.json" >/dev/null
 jq -e '
-	.providers.cliproxyapi.models[]
+	.providers.cpa.models[]
 	| select(.id == "claude-opus-5-5")
 	| .contextWindow == 1000000 and .maxTokens == 65536
 	  and .thinkingLevelMap.xhigh == "xhigh" and .thinkingLevelMap.max == "max"
 	  and .thinkingLevelMap.off == null
 ' "$agent_dir/models.json" >/dev/null
 jq -e '
-	.providers.cliproxyapi.models[]
+	.providers.cpa.models[]
 	| select(.id == "gpt-5.5")
 	| .thinkingLevelMap
 	| .xhigh == "xhigh" and .max == null
 ' "$agent_dir/models.json" >/dev/null
 jq -e '
-	.providers.cliproxyapi.models[]
+	.providers.cpa.models[]
 	| select(.id == "claude-fable-5")
 	| .contextWindow == 1000000 and .maxTokens == 65536
 	  and .thinkingLevelMap.xhigh == "xhigh" and .thinkingLevelMap.max == "max"
 ' "$agent_dir/models.json" >/dev/null
 jq -e '
-	.providers.cliproxyapi.models[]
+	.providers.cpa.models[]
 	| select(.id == "gpt-6-astra")
 	| .contextWindow == 272000 and .maxTokens == 65536
 	  and .thinkingLevelMap.off == null
 	  and .thinkingLevelMap.xhigh == "xhigh" and .thinkingLevelMap.max == "max"
 ' "$agent_dir/models.json" >/dev/null
 jq -e '
-	.providers.cliproxyapi.models[]
+	.providers.cpa.models[]
 	| select(.id == "claude-fable-5-1")
 	| .contextWindow == 1000000 and .maxTokens == 65536
 	  and .thinkingLevelMap.off == null
 	  and .thinkingLevelMap.xhigh == "xhigh" and .thinkingLevelMap.max == "max"
 ' "$agent_dir/models.json" >/dev/null
 jq -e '
-	.providers.cliproxyapi.models[]
+	.providers.cpa.models[]
 	| select(.id == "grok-4.7")
 	| .contextWindow == 500000 and .maxTokens == 32768
 	  and .thinkingLevelMap.xhigh == "xhigh"
@@ -108,34 +108,34 @@ jq -e '
 	  and .thinkingLevelMap.max == null
 ' "$agent_dir/models.json" >/dev/null
 jq -e '
-	.providers.cliproxyapi.models[]
+	.providers.cpa.models[]
 	| select(.id == "grok-4.6")
 	| .contextWindow == 500000 and .maxTokens == 32768
 ' "$agent_dir/models.json" >/dev/null
 jq -e '
-	.providers.cliproxyapi.models[]
+	.providers.cpa.models[]
 	| select(.id == "gpt-6.1-sol")
 	| .contextWindow == 272000 and .maxTokens == 65536
 	  and .thinkingLevelMap.off == "none"
 	  and .thinkingLevelMap.xhigh == "xhigh" and .thinkingLevelMap.max == "max"
 ' "$agent_dir/models.json" >/dev/null
 jq -e '
-	.providers.cliproxyapi.models[]
+	.providers.cpa.models[]
 	| select(.id == "gpt-6-sol")
 	| .contextWindow == 272000 and .maxTokens == 65536
 ' "$agent_dir/models.json" >/dev/null
 jq -e '
-	.providers.cliproxyapi.models[]
+	.providers.cpa.models[]
 	| select(.id == "gpt-6-luna")
 	| .contextWindow == 272000 and .maxTokens == 65536
 ' "$agent_dir/models.json" >/dev/null
 jq -e '
-	.providers.cliproxyapi.models[]
+	.providers.cpa.models[]
 	| select(.id == "gpt-5.6-sol")
 	| .contextWindow == 272000 and .maxTokens == 65536
 ' "$agent_dir/models.json" >/dev/null
 jq -e '
-	.providers.cliproxyapi.models[]
+	.providers.cpa.models[]
 	| select(.id == "glm-5.3")
 	| .contextWindow == 1000000 and .maxTokens == 131072
 	  and .thinkingLevelMap.low == "low"
@@ -143,7 +143,7 @@ jq -e '
 	  and .thinkingLevelMap.max == "max"
 ' "$agent_dir/models.json" >/dev/null
 jq -e '
-	.providers.cliproxyapi.models[]
+	.providers.cpa.models[]
 	| select(.id == "muse-spark-1.3-contributor")
 	| .contextWindow == 1048576 and .maxTokens == 16384
 	  and .thinkingLevelMap.minimal == "minimal"
