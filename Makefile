@@ -1,4 +1,4 @@
-COMMON_STOW_FOLDERS=tmux herdr pi ssh starship bin vrapperrc yazi zathura lazygit nvim-vscode task nvim mise miu agents atuin direnv diffnav gh-dash agent-deck wtf delta git plannotator dsh rex
+COMMON_STOW_FOLDERS=tmux herdr pi ssh starship bin vrapperrc yazi zathura lazygit nvim-vscode task nvim mise miu agents atuin direnv diffnav gh-dash agent-deck wtf delta git plannotator rex
 MACOS_STOW_FOLDERS=zsh kitty skhd yabai borders ghostty claude codex grok cursor hammerspoon karabiner rift vscode launchd gopass gnupg rexboard
 # Portable extras for Linux. Do not auto-stow `grok`: the Grok TUI installer owns ~/.grok.
 # Opt in with `make stow-grok` after backing up auth.json / sessions.
@@ -201,7 +201,6 @@ script-test:
 	@./scripts/ci/test-pi-home-layout.sh
 	@./scripts/ci/test-cursor-config.sh
 	@./scripts/ci/test-grok-config.sh
-	@./scripts/ci/test-dsh-config.sh
 	@./scripts/ci/test-cli-proxy-gui-env.sh
 	@./scripts/ci/test-ccx.sh
 	@./scripts/ci/test-cli-proxy-models-skill.sh

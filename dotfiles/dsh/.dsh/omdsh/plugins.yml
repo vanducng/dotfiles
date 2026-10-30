@@ -1,6 +1,0 @@
-# Out-of-tree omdsh plugins. Bare names resolve beside this file, so the
-# packages come from $DSH_HOME/omdsh/node_modules (managed by package.json
-# in this directory).
-#
-# Langfuse (dsh-observe) disabled.
-[]

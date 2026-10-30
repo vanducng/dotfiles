@@ -286,7 +286,6 @@ clone_recent() {
   clone_jobs git@github.com:vanducng/miu-cr.git            "$root/personal/miu-cr"
   clone_jobs git@github.com:vanducng/pass.git               "$root/personal/pass"
   clone_jobs git@github.com:vanducng/vd-cli.git             "$root/personal/vd-cli"
-  clone_jobs git@github.com:vanducng/oh-my-dsh.git          "$root/personal/oh-my-dsh"
   clone_jobs git@github.com:vanducng/vanducng-dev.git       "$root/personal/vanducng-dev"
   clone_jobs git@github.com:vanducng/infra-template.git     "$root/personal/infra-template"
   clone_jobs git@github.com:vanducng/miu-db.git             "$root/personal/miu-db"
