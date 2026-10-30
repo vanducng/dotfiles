@@ -8,6 +8,7 @@
 #   cnb-openvpn auth               refresh ~/.config/openvpn/cnb.auth from gopass
 #   cnb-openvpn set-auth           stdin: username\\npassword  -> gopass + auth file
 #   cnb-openvpn run                foreground client (systemd ExecStart)
+#   cnb-openvpn routes-up|routes-down
 set -euo pipefail
 
 MAIN="${HOME}/.config/openvpn/cnb-main"
@@ -21,6 +22,20 @@ else
 fi
 UNIT="cnb-openvpn.service"
 GOPASS_NS="${CNB_VPN_GOPASS:-cnb/vpn/pfsense-main}"
+TUN_NAME="cnb0"
+# Split routes are org data, so they live in a machine-local file, not in this public repo.
+SPLIT_FILE="${CNB_VPN_SPLIT:-${HOME}/.config/cnb-openvpn/split}"
+SPLIT_NETS=()
+SPLIT_HOSTS=()
+if [[ -f "$SPLIT_FILE" ]]; then
+  while read -r line; do
+    line="${line%%#*}"; line="${line//[[:space:]]/}"
+    [[ -z "$line" ]] && continue
+    if [[ "$line" == */* ]]; then SPLIT_NETS+=("$line"); else SPLIT_HOSTS+=("$line"); fi
+  done <"$SPLIT_FILE"
+fi
+ROUTE_STATE_V4="${MAIN}/split-routes.v4"
+ROUTE_STATE_V6="${MAIN}/split-routes.v6"
 export PATH="${HOME}/.local/bin:${HOME}/.local/share/mise/shims:/usr/bin:/bin:${PATH}"
 export PASSWORD_STORE_DIR="${PASSWORD_STORE_DIR:-${HOME}/work/git/personal/pass}"
 export LD_LIBRARY_PATH="${HOME}/.local/opt/openvpn/usr/lib/x86_64-linux-gnu${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
@@ -37,6 +52,8 @@ CNB pfSense OpenVPN — on-demand user daemon + gopass-backed profile.
   cnb-openvpn set-auth           stdin: username then password -> gopass + auth file
   cnb-openvpn set-password       stdin: password only (username already in gopass)
   cnb-openvpn prepare-tun        create persistent tun cnb0 (one sudo)
+  cnb-openvpn routes-up          send the split list (~/.config/cnb-openvpn/split) via cnb0
+  cnb-openvpn routes-down        remove those split routes
   cnb-openvpn run                foreground client (systemd ExecStart)
 
 gopass: ${GOPASS_NS}/{username,password,ovpn}
@@ -48,6 +65,114 @@ have_gopass() { command -v gopass >/dev/null 2>&1; }
 gopass_has() {
   have_gopass || return 1
   gopass --nosync ls --flat 2>/dev/null | grep -Fxq "$1"
+}
+
+netns_sh() {
+  docker run --rm --privileged --network host alpine:3.20 sh -c "$1"
+}
+
+tun_gateway() {
+  local gw="${route_vpn_gateway:-}"
+  if [[ -n "$gw" ]]; then
+    printf '%s' "$gw"
+    return 0
+  fi
+  gw="$(ip -4 route show dev "$TUN_NAME" 2>/dev/null | awk '/via/{print $3; exit}')"
+  if [[ -n "$gw" ]]; then
+    printf '%s' "$gw"
+    return 0
+  fi
+  local addr="${ifconfig_local:-}"
+  if [[ -z "$addr" ]]; then
+    addr="$(ip -4 -o addr show dev "$TUN_NAME" 2>/dev/null | awk '{print $4; exit}')"
+    addr="${addr%/*}"
+  fi
+  if [[ -n "$addr" ]]; then
+    printf '%s' "${addr%.*}.1"
+    return 0
+  fi
+  return 1
+}
+
+write_route_hook() {
+  mkdir -p "$MAIN"
+  cat >"${MAIN}/hook.sh" <<EOF
+#!/usr/bin/env bash
+home="${HOME}"
+export HOME="\$home"
+export PATH="\$home/.local/bin:/usr/bin:/bin"
+export ifconfig_local="\${ifconfig_local:-\$4}"
+export route_vpn_gateway="\${route_vpn_gateway:-}"
+"\$home/.local/bin/cnb-openvpn" "routes-\${script_type:-up}" || true
+exit 0
+EOF
+  chmod 700 "${MAIN}/hook.sh"
+}
+
+resolve_a() {
+  getent ahostsv4 "$1" 2>/dev/null | awk '{print $1}' | sort -u
+}
+
+resolve_aaaa() {
+  getent ahostsv6 "$1" 2>/dev/null | awk '$1 !~ /^::ffff:/{print $1}' | sort -u
+}
+
+cmd_routes_apply() {
+  local gw dest host ip keep
+  gw="$(tun_gateway)" || {
+    echo "cnb-openvpn: cnb0 has no gateway yet" >&2
+    return 1
+  }
+  keep="${ifconfig_local:-}"
+  mkdir -p "$MAIN"
+  : >"$ROUTE_STATE_V4"
+  : >"$ROUTE_STATE_V6"
+  local script=""
+  if [[ -n "$keep" ]]; then
+    script+="for a in \$(ip -4 -o addr show dev ${TUN_NAME} | awk '{print \$4}'); do"
+    script+=" [ \"\${a%/*}\" = \"$keep\" ] || ip addr del \"\$a\" dev ${TUN_NAME} || true;"
+    script+="done;"
+  fi
+  for dest in "${SPLIT_NETS[@]}"; do
+    script+="ip route replace $dest via $gw dev ${TUN_NAME};"
+    printf '%s\n' "$dest" >>"$ROUTE_STATE_V4"
+  done
+  for host in "${SPLIT_HOSTS[@]}"; do
+    while read -r ip; do
+      [[ -z "$ip" ]] && continue
+      script+="ip route replace ${ip}/32 via $gw dev ${TUN_NAME};"
+      printf '%s\n' "${ip}/32" >>"$ROUTE_STATE_V4"
+    done < <(resolve_a "$host")
+    while read -r ip; do
+      [[ -z "$ip" ]] && continue
+      script+="ip -6 route replace prohibit ${ip}/128;"
+      printf '%s\n' "${ip}/128" >>"$ROUTE_STATE_V6"
+    done < <(resolve_aaaa "$host")
+  done
+  netns_sh "$script"
+  echo "cnb-openvpn: split routes via ${gw} ${#SPLIT_HOSTS[@]} hosts"
+}
+
+cmd_routes_clear() {
+  local dest script=""
+  if [[ -f "$ROUTE_STATE_V4" ]]; then
+    while read -r dest; do
+      [[ -z "$dest" ]] && continue
+      script+="ip route del $dest dev ${TUN_NAME} || true;"
+    done <"$ROUTE_STATE_V4"
+    rm -f "$ROUTE_STATE_V4"
+  fi
+  if [[ -f "$ROUTE_STATE_V6" ]]; then
+    while read -r dest; do
+      [[ -z "$dest" ]] && continue
+      script+="ip -6 route del prohibit $dest || true;"
+    done <"$ROUTE_STATE_V6"
+    rm -f "$ROUTE_STATE_V6"
+  fi
+  if [[ -n "$script" ]]; then
+    netns_sh "$script"
+  fi
+  echo "cnb-openvpn: split routes cleared"
 }
 
 conf_dir() {
@@ -268,8 +393,13 @@ cmd_run() {
     cmd_auth || return 1
   fi
   # pfSense pushes redirect-gateway def1; that blackholes IPv4 on dpl (no VPN internet, no AAAA for cliproxy). Keep the LAN default route.
+  write_route_hook
   exec "$BIN" --cd "$conf" --config "$conf/client.conf" --auth-user-pass "$AUTH" --auth-nocache --verb 3 \
-    --pull-filter ignore "redirect-gateway"
+    --pull-filter ignore "redirect-gateway" \
+    --script-security 2 \
+    --up "${MAIN}/hook.sh" \
+    --up-restart \
+    --down "${MAIN}/hook.sh"
 }
 
 cmd_prepare_tun() {
@@ -338,6 +468,11 @@ cmd_status() {
   else
     echo "tun:      missing (cnb-openvpn prepare-tun)"
   fi
+  if [[ -s "$ROUTE_STATE_V4" ]]; then
+    echo "split:    $(wc -l <"$ROUTE_STATE_V4" | tr -d ' ') v4 routes"
+  else
+    echo "split:    none"
+  fi
 }
 
 cmd_enable() {
@@ -372,6 +507,8 @@ case "$cmd" in
   set-auth) cmd_set_auth "$@" ;;
   set-password) cmd_set_password "$@" ;;
   prepare-tun) cmd_prepare_tun "$@" ;;
+  routes|routes-up) cmd_routes_apply "$@" ;;
+  routes-down) cmd_routes_clear "$@" ;;
   run) cmd_run "$@" ;;
   -h|--help|help) usage ;;
   *)
