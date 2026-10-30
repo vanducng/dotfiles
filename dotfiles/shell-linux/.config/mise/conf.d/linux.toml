@@ -41,3 +41,6 @@ usage = "latest"
 "github:ogulcancelik/herdr" = "latest"
 "github:openclaw/gogcli" = "0.39.1"
 gopass = "latest"
+"github:composer/composer" = { version = "latest", asset_pattern = "composer.phar", bin = "composer" }
+"http:php" = { version = "8.5.8", url = "https://dl.static-php.dev/static-php-cli/common/php-{{version}}-cli-linux-x86_64.tar.gz" }
+gitleaks = "8.30.1"
