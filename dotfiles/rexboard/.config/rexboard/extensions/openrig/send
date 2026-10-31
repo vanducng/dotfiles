@@ -1,0 +1,31 @@
+#!/bin/sh
+# rexboard action: send one line to the OpenRig seat in a row. Usage: send HOST SESSION TEXT
+# rexboard has asked for the text and confirmed it; this only turns it into `rig send`.
+# Settings (config.toml, [extensions.settings.openrig]), both optional:
+#   wait_for_idle  seconds (at most max_wait) to wait for the seat to be idle first; busy at the
+#                  end sends nothing. extension.toml's action timeout must stay at least
+#                  max_wait plus a delivery budget, or rexboard kills the send mid-wait
+#   sender         exported as OPENRIG_SESSION_NAME, so the seat sees who sent it; without it the
+#                  variable is unset and the seat sees an unknown sender
+set -u
+[ $# -eq 3 ] || { echo "send: usage: send HOST SESSION TEXT" >&2; exit 2; }
+host=$1 session=$2 text=$3
+command -v rig >/dev/null 2>&1 || { echo "send: rig is not on PATH" >&2; exit 1; }
+setting() { printf '%s' "${REXBOARD_SETTINGS:-}" | jq -r --arg k "$1" '.[$k] // empty' 2>/dev/null; }
+wait=$(setting wait_for_idle)
+sender=$(setting sender)
+max_wait=30
+case $wait in
+  *[!0-9]*) echo "send: wait_for_idle must be a whole number of seconds" >&2; exit 2 ;;
+esac
+if [ -n "$wait" ] && ! [ "$wait" -le "$max_wait" ] 2>/dev/null; then
+  echo "send: wait_for_idle is at most $max_wait seconds" >&2
+  exit 2
+fi
+set -- send
+[ "$host" = local ] || set -- "$@" --host "$host"
+set -- "$@" --verify
+[ -z "$wait" ] || set -- "$@" --wait-for-idle "$wait"
+# A board started from a seat's shell must not pass its text off as that seat's.
+if [ -n "$sender" ]; then export OPENRIG_SESSION_NAME="$sender"; else unset OPENRIG_SESSION_NAME; fi
+exec rig "$@" -- "$session" "$text"

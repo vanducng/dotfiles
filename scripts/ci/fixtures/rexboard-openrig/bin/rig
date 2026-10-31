@@ -1,6 +1,14 @@
 #!/bin/sh
 # A fake `rig ps`: this host's nodes, or a host's by --host; host "down" and FAKE_RIG_FAIL fail,
 # and host "asleep" hangs the way ssh does on a host that is off the network.
+# `rig send`: records its argv, one per line, and who it would say sent it; FAKE_RIG_SEND_EXIT fails it.
+if [ "${1:-}" = send ]; then
+  shift
+  { printf 'sender=%s\n' "${OPENRIG_SESSION_NAME-<unset>}"; printf 'arg=%s\n' "$@"; } >"$FAKE_RIG_SENT"
+  [ "${FAKE_RIG_SEND_EXIT:-0}" = 0 ] || { echo "rig: send failed: not delivered" >&2; exit "$FAKE_RIG_SEND_EXIT"; }
+  echo "Sent to $(printf '%s\n' "$@" | tail -2 | head -1)"
+  exit 0
+fi
 [ -n "${FAKE_RIG_FAIL:-}" ] && { echo "rig: daemon unreachable" >&2; exit 1; }
 dir=$(cd "$(dirname "$0")/.." && pwd)
 host=local
