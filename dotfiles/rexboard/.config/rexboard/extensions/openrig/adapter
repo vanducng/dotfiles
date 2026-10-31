@@ -1,6 +1,6 @@
 #!/bin/sh
-# rexboard extension, contract 1: each Rex pane that is an OpenRig seat gets its rig, project and
-# role, its session name (hidden, for the send action), and a seat with no status record of its own gets OpenRig's state. Needs rig, jq and yq.
+# rexboard extension, contract 1: each Rex pane that is an OpenRig seat gets its rig and project,
+# its session name (hidden, for the send action), and a seat with no status record of its own gets OpenRig's state. Needs rig, jq and yq.
 set -u
 fields=rigName,logicalId,canonicalSessionName,agentActivity,needsAttention
 command -v rig >/dev/null 2>&1 || { echo "openrig: rig is not on PATH" >&2; exit 1; }
@@ -86,6 +86,6 @@ printf '%s' "$req" | jq -c --argjson nodes "$nodes" --argjson projects "$project
   {
     contract: 1,
     rows: ([.rows[] | . as $r | seat($r) as $n | select($n != null)
-      | {key: $r.key, value: ({fields: {rig: $n.rigName, role: $n.logicalId, project: $projects[$n.rigName], session: $n.canonicalSessionName}}
+      | {key: $r.key, value: ({fields: {rig: $n.rigName, project: $projects[$n.rigName], session: $n.canonicalSessionName}}
           + (status($n) | if . == null then {} else {status: .} end))}] | from_entries)
   }'
