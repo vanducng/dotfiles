@@ -74,8 +74,8 @@ assert run(rex, "not json") == [] and run(rex, "[1]") == []
 assert run(dict(rex, TMUX="x", TMUX_PANE="%0"), '{"hook_event_name": "Stop"}') == []
 assert run({"TERM": "xterm-256color"}, '{"hook_event_name": "Stop"}') == []
 
-# Every rex hook runs `/bin/sh -c '/opt/homebrew/bin/rexboard hook HARNESS EVENT || true'` (by full
-# path and failing open, as `rexboard hooks install` writes it) for the event it sits under, and
+# Every rex hook runs the portable rexboard (~/.local/bin, else Homebrew) as
+# `rexboard hook HARNESS EVENT || true`, failing open, for the event it sits under, and
 # Claude's spinner follows it.
 spinner = "/bin/sh -c '[ -n \"$REX_BLOCK\" ] || exit 0; exec /usr/bin/python3 \"$HOME/.local/bin/rex-title-spinner\"'"
 for path, harness, events in (
@@ -90,7 +90,7 @@ for path, harness, events in (
             hooks = [h["command"] for h in group["hooks"]]
             for i, command in enumerate(hooks):
                 if "rexboard" in command:
-                    want = "/bin/sh -c '/opt/homebrew/bin/rexboard hook %s %s || true'" % (harness, event)
+                    want = "/bin/sh -c 'B=$HOME/.local/bin/rexboard; [ -x \"$B\" ] || B=/opt/homebrew/bin/rexboard; \"$B\" hook %s %s || true'" % (harness, event)
                     assert command == want, (path, event, command)
                     seen.add(event)
                     if harness == "claude":

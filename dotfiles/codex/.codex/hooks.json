@@ -23,7 +23,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/bin/sh -c '/opt/homebrew/bin/rexboard hook codex PreToolUse || true'",
+            "command": "/bin/sh -c 'B=$HOME/.local/bin/rexboard; [ -x \"$B\" ] || B=/opt/homebrew/bin/rexboard; \"$B\" hook codex PreToolUse || true'",
             "timeout": 5
           }
         ]
@@ -43,7 +43,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/bin/sh -c '/opt/homebrew/bin/rexboard hook codex SessionStart || true'",
+            "command": "/bin/sh -c 'B=$HOME/.local/bin/rexboard; [ -x \"$B\" ] || B=/opt/homebrew/bin/rexboard; \"$B\" hook codex SessionStart || true'",
             "timeout": 5
           }
         ]
@@ -62,7 +62,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/bin/sh -c '/opt/homebrew/bin/rexboard hook codex UserPromptSubmit || true'",
+            "command": "/bin/sh -c 'B=$HOME/.local/bin/rexboard; [ -x \"$B\" ] || B=/opt/homebrew/bin/rexboard; \"$B\" hook codex UserPromptSubmit || true'",
             "timeout": 5
           }
         ]
@@ -97,7 +97,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/bin/sh -c '/opt/homebrew/bin/rexboard hook codex Stop || true'",
+            "command": "/bin/sh -c 'B=$HOME/.local/bin/rexboard; [ -x \"$B\" ] || B=/opt/homebrew/bin/rexboard; \"$B\" hook codex Stop || true'",
             "timeout": 5
           }
         ]
@@ -108,7 +108,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/bin/sh -c '/opt/homebrew/bin/rexboard hook codex PermissionRequest || true'",
+            "command": "/bin/sh -c 'B=$HOME/.local/bin/rexboard; [ -x \"$B\" ] || B=/opt/homebrew/bin/rexboard; \"$B\" hook codex PermissionRequest || true'",
             "timeout": 5
           }
         ]
@@ -119,7 +119,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/bin/sh -c '/opt/homebrew/bin/rexboard hook codex SessionEnd || true'",
+            "command": "/bin/sh -c 'B=$HOME/.local/bin/rexboard; [ -x \"$B\" ] || B=/opt/homebrew/bin/rexboard; \"$B\" hook codex SessionEnd || true'",
             "timeout": 5
           }
         ]
