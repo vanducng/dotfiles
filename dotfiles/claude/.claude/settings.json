@@ -23,7 +23,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/bin/sh -c '/opt/homebrew/bin/rexboard hook claude SessionStart || true'",
+            "command": "/bin/sh -c 'B=$HOME/.local/bin/rexboard; [ -x \"$B\" ] || B=/opt/homebrew/bin/rexboard; \"$B\" hook claude SessionStart || true'",
             "timeout": 5
           },
           {
@@ -47,7 +47,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/bin/sh -c '/opt/homebrew/bin/rexboard hook claude Stop || true'",
+            "command": "/bin/sh -c 'B=$HOME/.local/bin/rexboard; [ -x \"$B\" ] || B=/opt/homebrew/bin/rexboard; \"$B\" hook claude Stop || true'",
             "timeout": 5
           },
           {
@@ -71,7 +71,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/bin/sh -c '/opt/homebrew/bin/rexboard hook claude Notification || true'",
+            "command": "/bin/sh -c 'B=$HOME/.local/bin/rexboard; [ -x \"$B\" ] || B=/opt/homebrew/bin/rexboard; \"$B\" hook claude Notification || true'",
             "timeout": 5
           },
           {
@@ -87,7 +87,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/bin/sh -c '/opt/homebrew/bin/rexboard hook claude UserPromptSubmit || true'",
+            "command": "/bin/sh -c 'B=$HOME/.local/bin/rexboard; [ -x \"$B\" ] || B=/opt/homebrew/bin/rexboard; \"$B\" hook claude UserPromptSubmit || true'",
             "timeout": 5
           },
           {
@@ -103,7 +103,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/bin/sh -c '/opt/homebrew/bin/rexboard hook claude PreToolUse || true'",
+            "command": "/bin/sh -c 'B=$HOME/.local/bin/rexboard; [ -x \"$B\" ] || B=/opt/homebrew/bin/rexboard; \"$B\" hook claude PreToolUse || true'",
             "timeout": 5
           },
           {
@@ -119,7 +119,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/bin/sh -c '/opt/homebrew/bin/rexboard hook claude PermissionRequest || true'",
+            "command": "/bin/sh -c 'B=$HOME/.local/bin/rexboard; [ -x \"$B\" ] || B=/opt/homebrew/bin/rexboard; \"$B\" hook claude PermissionRequest || true'",
             "timeout": 5
           },
           {
@@ -135,7 +135,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/bin/sh -c '/opt/homebrew/bin/rexboard hook claude SessionEnd || true'",
+            "command": "/bin/sh -c 'B=$HOME/.local/bin/rexboard; [ -x \"$B\" ] || B=/opt/homebrew/bin/rexboard; \"$B\" hook claude SessionEnd || true'",
             "timeout": 5
           },
           {
@@ -151,7 +151,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/bin/sh -c '/opt/homebrew/bin/rexboard hook claude StopFailure || true'",
+            "command": "/bin/sh -c 'B=$HOME/.local/bin/rexboard; [ -x \"$B\" ] || B=/opt/homebrew/bin/rexboard; \"$B\" hook claude StopFailure || true'",
             "timeout": 5
           },
           {
@@ -168,7 +168,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/bin/sh -c '/opt/homebrew/bin/rexboard hook claude PostToolUse || true'",
+            "command": "/bin/sh -c 'B=$HOME/.local/bin/rexboard; [ -x \"$B\" ] || B=/opt/homebrew/bin/rexboard; \"$B\" hook claude PostToolUse || true'",
             "timeout": 5
           },
           {
@@ -182,7 +182,7 @@
   },
   "statusLine": {
     "type": "command",
-    "command": "/opt/homebrew/bin/rexboard usage --help >/dev/null 2>&1 && exec /opt/homebrew/bin/rexboard usage claude -- /bin/sh -c '\"$HOME/.local/bin/agent-statusline\"' || exec /bin/sh -c '\"$HOME/.local/bin/agent-statusline\"'"
+    "command": "B=$HOME/.local/bin/rexboard; [ -x \"$B\" ] || B=/opt/homebrew/bin/rexboard; \"$B\" usage --help >/dev/null 2>&1 && exec \"$B\" usage claude -- /bin/sh -c '\"$HOME/.local/bin/agent-statusline\"' || exec /bin/sh -c '\"$HOME/.local/bin/agent-statusline\"'"
   },
   "enabledPlugins": {
     "docker-mcp-toolkit@docker": false,
