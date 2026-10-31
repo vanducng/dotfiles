@@ -1,5 +1,31 @@
 # Changelog
 
+## [0.37.0](https://github.com/vanducng/dotfiles/compare/v0.36.0...v0.37.0) (2026-10-31)
+
+
+### Features
+
+* align CLI Proxy setup across hosts and converge on sync ([#272](https://github.com/vanducng/dotfiles/issues/272)) ([60dd3c0](https://github.com/vanducng/dotfiles/commit/60dd3c080fa765e7032c0c70e9b019dd43e7f035))
+* **gopass:** sync stores every 6 hours ([81c3a67](https://github.com/vanducng/dotfiles/commit/81c3a67a407536ef681a0719f390e362959ed099))
+* **mise:** put mise shims ahead of system tools and trust the workspace checkout ([#273](https://github.com/vanducng/dotfiles/issues/273)) ([cad09b1](https://github.com/vanducng/dotfiles/commit/cad09b1d4921051088f22b0bcb54d97bc586fd14))
+* **pi:** lead the footer and title with the OpenRig seat name ([d68a9fa](https://github.com/vanducng/dotfiles/commit/d68a9fa7b8428c998c75de5b192142c598ed780c))
+* **pi:** name the cli-proxy provider cpa, add Sonnet 5.5, Haiku 5.5 and Terra ([5f406ca](https://github.com/vanducng/dotfiles/commit/5f406caed6fc83103b35f99625de1a90d7a89be7))
+* **rexboard:** drop the openrig extension's role column, which repeats the block label ([6ab6f6b](https://github.com/vanducng/dotfiles/commit/6ab6f6bb0e673c1594b0df12597f5fba284f77cb))
+* **rexboard:** send a message to the OpenRig seat in a row ([#270](https://github.com/vanducng/dotfiles/issues/270)) ([f567e6e](https://github.com/vanducng/dotfiles/commit/f567e6ed45793793da239cc4fe19ffd65162b70d))
+* **rexboard:** show the openrig extension's PROJECT before RIG ([a214973](https://github.com/vanducng/dotfiles/commit/a214973fe8275f056a97916270db3bc18af4f0f2))
+* **rexboard:** sign the board's sends as captain@global, seats keep their own name ([#271](https://github.com/vanducng/dotfiles/issues/271)) ([8e22557](https://github.com/vanducng/dotfiles/commit/8e22557f4dccf73adc118b0ca3af9502b5d5d0ce))
+
+
+### Bug Fixes
+
+* **mise:** install node and python as glibc builds on Linux ([e352e61](https://github.com/vanducng/dotfiles/commit/e352e6146f9edcbe2b46847613f681cb779685ea))
+* **mise:** match only the node daemon process in the restart check ([2cf50a7](https://github.com/vanducng/dotfiles/commit/2cf50a7146bd9c8b75d4f6881d7a0388b9428ffe))
+* **mise:** pin exact tool versions across hosts ([19ab212](https://github.com/vanducng/dotfiles/commit/19ab2123ff61cba376a0a568872fd3ae55cd2c49))
+* **mise:** repoint every OpenRig node path to the pinned node ([0d33908](https://github.com/vanducng/dotfiles/commit/0d3390808ee8ae2b39599026741950323516cdcd))
+* **rexboard:** run rexboard from ~/.local/bin or Homebrew in the Codex and Claude hooks, so they work on Linux ([bab0be2](https://github.com/vanducng/dotfiles/commit/bab0be27aa01f6a4bc6dd7e3f39a6dc5aa6b36c3))
+* **tmux:** fit OpenRig tiles to the view in use, even with several views on one seat ([ccbb189](https://github.com/vanducng/dotfiles/commit/ccbb18943087b0cf51fa432d4960da4cd206f9b3))
+* **tmux:** send extended keys as CSI-u; drop Pi exclusions for removed ClaudeKit skills ([afd396b](https://github.com/vanducng/dotfiles/commit/afd396b8a3a821e516b82064b6c85f8b11f2a8c0))
+
 ## [0.36.0](https://github.com/vanducng/dotfiles/compare/v0.35.1...v0.36.0) (2026-10-30)
 
 
