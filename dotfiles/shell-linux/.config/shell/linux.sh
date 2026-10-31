@@ -39,6 +39,10 @@ unset _vd_shell
 export PATH="${HOME}/.local/bin:${PATH}"
 
 export PASSWORD_STORE_DIR="${PASSWORD_STORE_DIR:-$HOME/work/git/personal/pass}"
+if [ -z "${CLI_PROXY_API_KEY:-}" ] && [ -r "${HOME}/.config/cli-proxy/api-key" ]; then
+  CLI_PROXY_API_KEY="$(<"${HOME}/.config/cli-proxy/api-key")"
+  export CLI_PROXY_API_KEY
+fi
 export CLI_PROXY_BASE_URL="${CLI_PROXY_BASE_URL:-https://cli-proxy.dataplanelabs.com}"
 
 # vd:browser-profile on Linux (extracted Chrome, profiles on the 970).
@@ -46,7 +50,6 @@ if [ -x "${HOME}/.local/opt/google-chrome/google-chrome" ]; then
   export BROWSER_PROFILE_CHROME="${BROWSER_PROFILE_CHROME:-$HOME/.local/opt/google-chrome/google-chrome}"
 fi
 export BROWSER_PROFILE_ROOT="${BROWSER_PROFILE_ROOT:-$HOME/work/store/chrome-profiles}"
-# API key: export CLI_PROXY_API_KEY, or `gopass show -o personal/saas/cli-proxy/code-01-api-key`
 
 # 1Password service account for agents (read-only vaults; token file is 0600, not in git).
 _op_token="${XDG_CONFIG_HOME:-$HOME/.config}/op/service-account-token"

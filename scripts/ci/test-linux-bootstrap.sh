@@ -158,7 +158,9 @@ if grep -q '^PermitUserEnvironment yes$' "$sshd_config" \
 else
   fail "user SSH PATH must be generated from HOME at install time"
 fi
-if grep -q 'gopass show -o personal/saas/cli-proxy/code-01-api-key' "$ROOT/scripts/linux-homelab.sh" \
+if grep -q 'personal/saas/cli-proxy/code-01-api-key' "$ROOT/dotfiles/bin/.local/bin/cli-proxy-key" \
+  && grep -q 'cli-proxy-key" refresh' "$ROOT/scripts/linux-homelab.sh" \
+  && grep -q 'cli-proxy/api-key' "$ROOT/dotfiles/shell-linux/.config/shell/linux.sh" \
   && grep -q "sed -i '/^CLI_PROXY_API_KEY=/d'" "$ROOT/scripts/linux-homelab.sh" \
   && grep -q 'CLI_PROXY_API_KEY=' "$ROOT/scripts/linux-homelab.sh" \
   && grep -q 'EnvironmentFile=-%h/.config/environment.d/cli-proxy.conf' "$ROOT/scripts/linux-homelab.sh" \

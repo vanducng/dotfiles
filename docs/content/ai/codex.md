@@ -132,7 +132,7 @@ codex resume -p cliproxy -m gpt-6-astra -c model_reasoning_effort='"high"' "<ses
 
 This keeps the saved conversation while changing the model for the next turn. A Grok to Sonnet switch and a Sonnet to Sol switch both kept context in CLI 0.160.0. All models in this profile share the same CLI Proxy gateway, so a gateway outage or provider-wide quota limit affects them all. Switching a CLI Proxy session to ChatGPT OAuth failed in a local test with `invalid_encrypted_content`; [Codex tracks this cross-provider history issue](https://github.com/openai/codex/issues/17541). Keep the saved session and retry when the gateway is available.
 
-If Claude returns `not supported when using Codex with a ChatGPT account`, Codex selected the default `openai` provider. Add `-p cliproxy` and check that `CLI_PROXY_API_KEY` is set. Codex reads the key from the environment; it does not store the key in the profile. [Codex configuration reference](https://learn.chatgpt.com/docs/config-file/config-reference)
+If Claude returns `not supported when using Codex with a ChatGPT account`, Codex selected the default `openai` provider. Add `-p cliproxy` and check that `CLI_PROXY_API_KEY` is set. Codex reads the key from the environment; it does not store the key in the profile. `.zshenv` (macOS) and `linux.sh` (Linux) export it from `~/.config/cli-proxy/api-key`; run `cli-proxy-key` to write that file from gopass, or `cli-proxy-key refresh` after a rotation. [Codex configuration reference](https://learn.chatgpt.com/docs/config-file/config-reference)
 
 The profile pins `model_provider = "cli_proxy"`. An invalid proxy key returned HTTP 401 in a live test, without falling back to ChatGPT OAuth.
 
