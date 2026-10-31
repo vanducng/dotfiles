@@ -79,13 +79,38 @@ sync_here() {
     rm -f "$tmp/$n.keep"
   done <"$tmp/list"
   echo "$me: $(git log --oneline -1)"
-  [ "$old" != "$(git rev-parse HEAD)" ] || return 0
-  f="$(git diff --name-only --diff-filter=A "$old" HEAD -- dotfiles/ | cut -d/ -f2 | sort -u | tr '\n' ' ')"
-  [ -z "$f" ] || echo "$me: new files in $f- run make stow-<package>"
+  [ "$old" = "$(git rev-parse HEAD)" ] || converge "$me" "$old"
+  [ ! -f Makefile ] || settle "$me"
+}
+
+# Over `ssh bash -s` PATH is the bare system one; stow, mise and gopass live in these.
+PATH="/opt/homebrew/bin:$HOME/.local/bin:$HOME/.local/share/mise/shims:$PATH"
+
+# Links what the pull added and installs a new mise pin; edits to linked files are already live.
+converge() {
+  local me="$1" old="$2" pkgs pkg
+  if [ -f Makefile ]; then
+    pkgs=" $(make -s stow-folders </dev/null | tr '\n' ' ') "
+    for pkg in $(git diff --name-only --diff-filter=A "$old" HEAD -- dotfiles/ | cut -d/ -f2 | sort -u); do
+      case "$pkgs" in *" $pkg "*) make -s "stow-$pkg" </dev/null || echo "$me: make stow-$pkg failed" >&2 ;; esac
+    done
+  fi
+  if ! git diff --quiet "$old" HEAD -- dotfiles/mise && [ -x scripts/mise-sync.sh ]; then
+    ./scripts/mise-sync.sh </dev/null || echo "$me: mise-sync failed; rerun scripts/mise-sync.sh" >&2
+  fi
   if ! git diff --quiet "$old" HEAD -- dotfiles/rex && [ -x "$REX" ]; then
     "$REX" config check || { echo "$me: rex config check failed, not reloaded" >&2; exit 1; }
     "$REX" config reload
   fi
+}
+
+# Reports what the pull cannot fix: a missing CLI Proxy key file and files that are no longer links.
+settle() {
+  local me="$1"
+  dotfiles/bin/.local/bin/cli-proxy-key </dev/null || echo "$me: no CLI Proxy key file; run cli-proxy-key once gopass unlocks" >&2
+  # shellcheck disable=SC2046
+  ./scripts/stow-package.sh --check $(make -s stow-folders </dev/null | grep -vx pi) </dev/null \
+    | sed "s/^/$me: /" || echo "$me: make stow-<package> links a drifted file (the live one goes to ~/.dotfiles-backup)" >&2
 }
 
 sync_all() {
