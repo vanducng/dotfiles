@@ -1,17 +1,17 @@
 name = "openrig"
 contract = 1
-description = "OpenRig seats: each seat's rig and project, a message to the seat, and OpenRig's state for a seat that reports nothing"
+description = "OpenRig seats: each seat's project and rig, a message to the seat, and OpenRig's state for a seat that reports nothing"
 cmd = ["./adapter"]
 every = 10
 timeout = 5
 
 [[fields]]
-name = "rig"
-title = "RIG"
-
-[[fields]]
 name = "project"
 title = "PROJECT"
+
+[[fields]]
+name = "rig"
+title = "RIG"
 
 [[fields]]
 name = "session"
