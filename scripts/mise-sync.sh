@@ -38,7 +38,7 @@ while IFS= read -r file; do
 done < <(candidates)
 echo "files repointed: ${fixed}"
 
-daemon_node="$(ps -axo command= | awk '/@openrig\/cli\/daemon\/dist\/index.js/ && !/awk/ && !seen++ {print $1}')"
+daemon_node="$(ps -axo command= | awk '$1 ~ /\/bin\/node$/ && $2 ~ /@openrig\/cli\/daemon\/dist\/index.js$/ && !seen++ {print $1}')"
 if [[ -n "${daemon_node}" && "$(realpath "${daemon_node}" 2>/dev/null)" != "$(realpath "${node_bin}")" ]]; then
   echo "OpenRig daemon runs ${daemon_node}; restart it (rig daemon stop, then start with its usual flags)" >&2
 fi
