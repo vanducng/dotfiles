@@ -5,7 +5,8 @@
    "fields": {
     "rig": "api",
     "role": "dev.impl",
-    "project": "demo.api"
+    "project": "demo.api",
+    "session": "dev-impl@api"
    },
    "status": {
     "state": "blocked",
@@ -16,7 +17,8 @@
    "fields": {
     "rig": "api",
     "role": "review.review",
-    "project": "demo.api"
+    "project": "demo.api",
+    "session": "review-review@api"
    },
    "status": {
     "state": "working"
@@ -26,7 +28,8 @@
    "fields": {
     "rig": "web",
     "role": "dev.impl",
-    "project": null
+    "project": null,
+    "session": "dev-impl@web"
    },
    "status": {
     "state": "idle"
@@ -36,7 +39,8 @@
    "fields": {
     "rig": "web",
     "role": "lead.owner",
-    "project": null
+    "project": null,
+    "session": "lead-owner@web"
    }
   }
  }
