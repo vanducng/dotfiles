@@ -18,11 +18,12 @@ node_bin="$(mise where node)/bin/node"
 echo "node: ${node_bin} ($("${node_bin}" -v))"
 
 npm_globals() {
-  local f
+  local f name
   for f in "$1"/lib/node_modules/*/package.json "$1"/lib/node_modules/@*/*/package.json; do
     [[ -f "${f}" ]] || continue
     if [[ -L "$(dirname "${f}")" ]]; then
-      echo "npm global: $(basename "$(dirname "${f}")") is npm-linked under $1; relink it on the pin by hand" >&2
+      name="${f#"$1"/lib/node_modules/}"
+      echo "npm global: ${name%/package.json} is npm-linked under $1; relink it on the pin by hand" >&2
       continue
     fi
     "${node_bin}" -p 'const p = require(process.argv[1]); p.name + " " + p.version' "${f}" 2>/dev/null || true

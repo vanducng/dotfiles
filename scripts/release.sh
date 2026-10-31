@@ -90,7 +90,7 @@ PATH="/opt/homebrew/bin:$HOME/.local/bin:$HOME/.local/share/mise/shims:$PATH"
 converge() {
   local me="$1" old="$2" pkgs pkg
   if [ -f Makefile ]; then
-    pkgs=" $(make -s stow-folders </dev/null | tr '\n' ' ') "
+    pkgs=" $(make -s stow-folders </dev/null | tr '\n' ' ') " || echo "$me: make stow-folders failed; new files were not linked" >&2
     for pkg in $(git diff --name-only --diff-filter=A "$old" HEAD -- dotfiles/ | cut -d/ -f2 | sort -u); do
       case "$pkgs" in *" $pkg "*) make -s "stow-$pkg" </dev/null || echo "$me: make stow-$pkg failed" >&2 ;; esac
     done

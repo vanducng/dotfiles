@@ -16,23 +16,24 @@ conflicts() {
     -e 's/.*existing target is neither a link nor a directory: (.*)$/\1/p'
 }
 
-# Targets a restow would have to link fresh or move aside.
-unlinked() {
-  { conflicts "$1"; stow --no-folding -n -v -R -t "${HOME}" "$1" 2>&1 \
-    | sed -nE '/reverts previous action/!s/^LINK: ([^ ]+) => .*/\1/p'; } | sort -u
+# Tracked files of a package minus stow's default ignore list, as paths under $HOME.
+tracked() {
+  git -C "${REPO_ROOT}" ls-files -- "dotfiles/$1" | sed "s|^dotfiles/$1/||" | grep -vE \
+    -e '(^|/)(RCS|CVS|\.cvsignore|\.svn|_darcs|\.hg|\.git|\.gitignore|\.gitmodules)(/|$)' \
+    -e ',v$|~$|(^|/)(\.#[^/]+|#[^/]*#)$|^(README|LICENSE)[^/]*$|^COPYING' || true
 }
 
-# --check: list tracked files whose live copy is not the repo file (a plain file, or no link yet). Changes nothing.
+# --check: list tracked files whose live path does not resolve to the repo file. Changes nothing.
 if [[ "${1:-}" == --check ]]; then
   shift
+  (($#)) || { echo "usage: $0 --check <package>..." >&2; exit 2; }
   drift=0
   for pkg in "$@"; do
     while IFS= read -r target; do
-      git -C "${REPO_ROOT}" ls-files --error-unmatch "dotfiles/${pkg}/${target}" >/dev/null 2>&1 || continue
       [[ "$(realpath "${HOME}/${target}" 2>/dev/null)" != "$(realpath "${pkg}/${target}")" ]] || continue
       echo "drift: ~/${target} is not linked from ${pkg}"
       drift=1
-    done < <(unlinked "${pkg}")
+    done < <(tracked "${pkg}")
   done
   exit "${drift}"
 fi
