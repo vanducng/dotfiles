@@ -63,19 +63,25 @@ done
 
 # The send action turns what rexboard confirmed into one `rig send`: --host only for another host,
 # --verify always, the text after `--` as one argument, whatever it holds.
+# A caller is not a seat unless SEAT is set: OPENRIG_SESSION_NAME is then SEAT, else it is removed
+# from the environment, whatever the shell running this test has.
 send() { # HOST SESSION TEXT [settings json]
   rm -f "$TMP/sent"
   local settings=${4-}
   [ -n "$settings" ] || settings='{}'
-  REXBOARD_SETTINGS="$settings" FAKE_RIG_SENT="$TMP/sent" PATH="$FIX/bin:$PATH" "$EXT/send" "${@:1:3}"
+  if [ -n "${SEAT+set}" ]; then
+    env OPENRIG_SESSION_NAME="$SEAT" REXBOARD_SETTINGS="$settings" FAKE_RIG_SENT="$TMP/sent" PATH="$FIX/bin:$PATH" "$EXT/send" "${@:1:3}"
+  else
+    env -u OPENRIG_SESSION_NAME REXBOARD_SETTINGS="$settings" FAKE_RIG_SENT="$TMP/sent" PATH="$FIX/bin:$PATH" "$EXT/send" "${@:1:3}"
+  fi
 }
 sent() { tr '\n' ' ' <"$TMP/sent" | sed 's/ $//'; }
 
-OPENRIG_SESSION_NAME=some-seat@elsewhere send local dev-impl@api "hello there" >/dev/null
+send local dev-impl@api "hello there" >/dev/null
 [ "$(sent)" = "sender=<unset> arg=--verify arg=-- arg=dev-impl@api arg=hello there" ] || fail "local send: $(sent)"
 send mini-01 lead-owner@web "hello there" >/dev/null
 [ "$(sent)" = "sender=<unset> arg=--host arg=mini-01 arg=--verify arg=-- arg=lead-owner@web arg=hello there" ] || fail "remote send: $(sent)"
-pass "send: local without --host, another host with --host HOST, --verify, session and text after --; no sender even from a seat's shell"
+pass "send: local without --host, another host with --host HOST, --verify, session and text after --"
 
 for text in "-rf --help" "it's \"quoted\"; \$(touch pwned) \`id\` *" "日本語 🙂 é" "  padded  " "--host evil"; do
   send local dev-impl@api "$text" >/dev/null
@@ -83,6 +89,35 @@ for text in "-rf --help" "it's \"quoted\"; \$(touch pwned) \`id\` *" "日本語 
 done
 [ ! -e pwned ] || fail "the text ran"
 pass "send: dashes, quotes, ; \$( ) backticks, a glob, unicode and spaces arrive as one argument"
+
+# Who the seat sees as the sender. The board's operator is not a seat and signs with the sender
+# setting; a seat that runs the script (the lead calling `rexboard ext run`) speaks as itself.
+who() { sed -n '1p' "$TMP/sent"; }
+captain='{"sender": "captain@global"}'
+send local lead-owner@rexboard "hi" "$captain" >/dev/null
+[ "$(who)" = "sender=captain@global" ] || fail "a non-seat caller with sender: $(who)"
+send local lead-owner@rexboard "hi" >/dev/null
+[ "$(who)" = "sender=<unset>" ] || fail "a non-seat caller without sender: $(who)"
+SEAT=lead-owner@rexboard send local product-pm@rexboard "hi" "$captain" >/dev/null
+[ "$(who)" = "sender=lead-owner@rexboard" ] || fail "a seat with sender signs as itself: $(who)"
+SEAT=lead-owner@rexboard send local product-pm@rexboard "hi" >/dev/null
+[ "$(who)" = "sender=lead-owner@rexboard" ] || fail "a seat without sender keeps its name: $(who)"
+SEAT="" send local product-pm@rexboard "hi" "$captain" >/dev/null
+[ "$(who)" = "sender=captain@global" ] || fail "an empty OPENRIG_SESSION_NAME is not a seat: $(who)"
+# Values nobody should have to trust: they reach rig send whole, as the sender or as the seat's
+# name, and nothing in them runs.
+for value in "ops desk@x" "a*b?[c]" "\$(touch pwned-sender)" "\`touch pwned-sender\`" "-n --help" "x'y\"z; rm -rf /" "日本語 🙂" "  padded  "; do
+  settings=$(jq -nc --arg s "$value" '{sender: $s}')
+  send local product-pm@rexboard "hi" "$settings" >/dev/null
+  [ "$(who)" = "sender=$value" ] || fail "hostile sender $value: $(who)"
+  [ "$(grep -c '^arg=' "$TMP/sent")" = 4 ] || fail "hostile sender $value changed the arguments: $(sent)"
+  SEAT="$value" send local product-pm@rexboard "hi" "$captain" >/dev/null
+  [ "$(who)" = "sender=$value" ] || fail "hostile seat name $value: $(who)"
+done
+[ ! -e pwned-sender ] || fail "a sender ran"
+configured=$(yq -p toml -o json '.extensions.settings.openrig.sender' "$ROOT/dotfiles/rexboard/.config/rexboard/config.toml")
+[ "$configured" = '"captain@global"' ] || fail "config.toml should sign the board's sends as captain@global, not $configured"
+pass "send: the config signs the board as captain@global; a board sender signs as captain; a seat keeps its own name, with or without sender; no sender is unset; an empty name is no seat; hostile values arrive whole"
 
 send local dev-impl@api "hi" '{"wait_for_idle": 30, "sender": "operator@desk"}' >/dev/null
 [ "$(sent)" = "sender=operator@desk arg=--verify arg=--wait-for-idle arg=30 arg=-- arg=dev-impl@api arg=hi" ] || fail "settings: $(sent)"
