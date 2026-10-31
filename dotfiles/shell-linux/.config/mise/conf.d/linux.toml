@@ -8,7 +8,7 @@
 
 [settings]
 libc = "musl"
-trusted_config_paths = ["~/work/git", "/media/ubuntu/work/git"]
+trusted_config_paths = ["~/work/git", "/media/ubuntu/work/git", "~/projects"]
 
 [tools]
 lua = "5.4.9"

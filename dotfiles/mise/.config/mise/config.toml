@@ -12,3 +12,6 @@ usage = "7.0.1"
 
 [settings]
 idiomatic_version_file_enable_tools = ["python"]
+# The workspace checkout carries a mise.toml that reaches every shell below it, worktrees included.
+# mise compares the real path, so the symlinked ~/projects covers its target too.
+trusted_config_paths = ["~/projects"]
