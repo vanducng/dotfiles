@@ -8,3 +8,6 @@ enabled = ["openrig"]
 [extensions.settings.openrig]
 # Where workspace.yaml maps each project to its rigs.
 workspace = "~/projects"
+# A message sent from the operator's board is signed as captain (workspace rule, operator 2026-10-31).
+# A seat that runs `rexboard ext run` keeps its own name; send ignores this for it.
+sender = "captain@global"
