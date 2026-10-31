@@ -5,8 +5,11 @@
 #   wait_for_idle  seconds (at most max_wait) to wait for the seat to be idle first; busy at the
 #                  end sends nothing. extension.toml's action timeout must stay at least
 #                  max_wait plus a delivery budget, or rexboard kills the send mid-wait
-#   sender         exported as OPENRIG_SESSION_NAME, so the seat sees who sent it; without it the
-#                  variable is unset and the seat sees an unknown sender
+#   sender         who a message from the operator's board is signed as, exported as
+#                  OPENRIG_SESSION_NAME so the seat sees it (config.toml sets captain@global).
+#                  A caller that already has OPENRIG_SESSION_NAME is a seat (the lead running
+#                  `rexboard ext run`) and speaks as itself: its own name is kept and sender is
+#                  ignored. With neither, the variable is unset and the seat sees an unknown sender.
 set -u
 [ $# -eq 3 ] || { echo "send: usage: send HOST SESSION TEXT" >&2; exit 2; }
 host=$1 session=$2 text=$3
@@ -26,6 +29,11 @@ set -- send
 [ "$host" = local ] || set -- "$@" --host "$host"
 set -- "$@" --verify
 [ -z "$wait" ] || set -- "$@" --wait-for-idle "$wait"
-# A board started from a seat's shell must not pass its text off as that seat's.
-if [ -n "$sender" ]; then export OPENRIG_SESSION_NAME="$sender"; else unset OPENRIG_SESSION_NAME; fi
+if [ -n "${OPENRIG_SESSION_NAME:-}" ]; then
+  : # a seat: it speaks as itself
+elif [ -n "$sender" ]; then
+  export OPENRIG_SESSION_NAME="$sender"
+else
+  unset OPENRIG_SESSION_NAME
+fi
 exec rig "$@" -- "$session" "$text"
