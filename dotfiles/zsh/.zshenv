@@ -7,6 +7,9 @@ if [ -d /opt/homebrew/bin ]; then
 elif [ -d /usr/local/Homebrew ]; then
   PATH="/usr/local/bin:/usr/local/sbin:${PATH}"
 fi
+# mise shims go ahead of Homebrew so a tool pinned by the workspace resolves to that pin. Outside a
+# pinned directory a shim with no version set falls through to the next match on PATH.
+[ -d "${MISE_DATA_DIR:-${HOME}/.local/share/mise}/shims" ] && PATH="${MISE_DATA_DIR:-${HOME}/.local/share/mise}/shims:${PATH}"
 PATH="${HOME}/.local/bin:${PATH}"
 export PATH
 
