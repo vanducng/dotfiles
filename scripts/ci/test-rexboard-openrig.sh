@@ -94,24 +94,24 @@ pass "send: dashes, quotes, ; \$( ) backticks, a glob, unicode and spaces arrive
 # setting; a seat that runs the script (the lead calling `rexboard ext run`) speaks as itself.
 who() { sed -n '1p' "$TMP/sent"; }
 captain='{"sender": "captain@global"}'
-send local lead-owner@rexboard "hi" "$captain" >/dev/null
+send local seat-b@web "hi" "$captain" >/dev/null
 [ "$(who)" = "sender=captain@global" ] || fail "a non-seat caller with sender: $(who)"
-send local lead-owner@rexboard "hi" >/dev/null
+send local seat-b@web "hi" >/dev/null
 [ "$(who)" = "sender=<unset>" ] || fail "a non-seat caller without sender: $(who)"
-SEAT=lead-owner@rexboard send local product-pm@rexboard "hi" "$captain" >/dev/null
-[ "$(who)" = "sender=lead-owner@rexboard" ] || fail "a seat with sender signs as itself: $(who)"
-SEAT=lead-owner@rexboard send local product-pm@rexboard "hi" >/dev/null
-[ "$(who)" = "sender=lead-owner@rexboard" ] || fail "a seat without sender keeps its name: $(who)"
-SEAT="" send local product-pm@rexboard "hi" "$captain" >/dev/null
+SEAT=seat-a@api send local seat-b@web "hi" "$captain" >/dev/null
+[ "$(who)" = "sender=seat-a@api" ] || fail "a seat with sender signs as itself: $(who)"
+SEAT=seat-a@api send local seat-b@web "hi" >/dev/null
+[ "$(who)" = "sender=seat-a@api" ] || fail "a seat without sender keeps its name: $(who)"
+SEAT="" send local seat-b@web "hi" "$captain" >/dev/null
 [ "$(who)" = "sender=captain@global" ] || fail "an empty OPENRIG_SESSION_NAME is not a seat: $(who)"
 # Values nobody should have to trust: they reach rig send whole, as the sender or as the seat's
 # name, and nothing in them runs.
 for value in "ops desk@x" "a*b?[c]" "\$(touch pwned-sender)" "\`touch pwned-sender\`" "-n --help" "x'y\"z; rm -rf /" "日本語 🙂" "  padded  "; do
   settings=$(jq -nc --arg s "$value" '{sender: $s}')
-  send local product-pm@rexboard "hi" "$settings" >/dev/null
+  send local seat-b@web "hi" "$settings" >/dev/null
   [ "$(who)" = "sender=$value" ] || fail "hostile sender $value: $(who)"
   [ "$(grep -c '^arg=' "$TMP/sent")" = 4 ] || fail "hostile sender $value changed the arguments: $(sent)"
-  SEAT="$value" send local product-pm@rexboard "hi" "$captain" >/dev/null
+  SEAT="$value" send local seat-b@web "hi" "$captain" >/dev/null
   [ "$(who)" = "sender=$value" ] || fail "hostile seat name $value: $(who)"
 done
 [ ! -e pwned-sender ] || fail "a sender ran"
