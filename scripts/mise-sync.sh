@@ -17,6 +17,47 @@ node_bin="$(mise where node)/bin/node"
 [[ -x "${node_bin}" ]] || { echo "pinned node missing: ${node_bin}" >&2; exit 1; }
 echo "node: ${node_bin} ($("${node_bin}" -v))"
 
+npm_globals() {
+  local f name
+  for f in "$1"/lib/node_modules/*/package.json "$1"/lib/node_modules/@*/*/package.json; do
+    [[ -f "${f}" ]] || continue
+    if [[ -L "$(dirname "${f}")" ]]; then
+      name="${f#"$1"/lib/node_modules/}"
+      echo "npm global: ${name%/package.json} is npm-linked under $1; relink it on the pin by hand" >&2
+      continue
+    fi
+    "${node_bin}" -p 'const p = require(process.argv[1]); p.name + " " + p.version' "${f}" 2>/dev/null || true
+  done | { grep -vE '^(npm|corepack) ' || true; }
+}
+
+version_gt() {
+  [[ "$1" != "$2" && "$(printf '%s\n%s\n' "$1" "$2" | sort -V | tail -1)" == "$1" ]]
+}
+
+newest_unpinned_globals() {
+  local prefix
+  for prefix in "$(dirname "${node_prefix}")"/*; do
+    [[ -L "${prefix}" || "${prefix}" == "${node_prefix}" || ! -d "${prefix}/lib/node_modules" ]] || npm_globals "${prefix}"
+  done | sort -k1,1 -k2,2V | awk '{v[$1] = $2} END {for (n in v) print n, v[n]}'
+}
+
+# Global npm CLIs (pi, codex, plannotator) live in one node's prefix; carry the newest of each onto the pin.
+node_prefix="$(dirname "$(dirname "${node_bin}")")"
+pinned_globals="$(npm_globals "${node_prefix}")"
+migrated=0
+while read -r name version; do
+  [[ -n "${name}" ]] || continue
+  have="$(awk -v n="${name}" '$1 == n {print $2}' <<<"${pinned_globals}")"
+  [[ -z "${have}" ]] || version_gt "${version}" "${have}" || continue
+  echo "npm global: ${name}@${version} -> $(basename "${node_prefix}")"
+  if NPM_CONFIG_PREFIX="" PATH="${node_prefix}/bin:${PATH}" npm install -g --loglevel=error --prefix "${node_prefix}" "${name}@${version}" >/dev/null; then
+    migrated=$((migrated + 1))
+  else
+    echo "npm global: ${name}@${version} failed to install" >&2
+  fi
+done < <(newest_unpinned_globals)
+echo "npm globals migrated: ${migrated}"
+
 candidates() {
   local root
   for root in "${OPENRIG_HOME}" "${PROJECTS_ROOT}"; do

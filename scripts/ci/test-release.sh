@@ -51,4 +51,25 @@ rm box/new
 /bin/bash "$script" --sync "$work/box" >/dev/null 2>&1
 [ "$(git -C box rev-parse HEAD)" = "$(git -C up rev-parse HEAD)" ] || { echo "FAIL: retry did not fast-forward"; exit 1; }
 [ -z "$(ls -A "$TMPDIR")" ] || { echo "FAIL: temp copies left behind"; ls -A "$TMPDIR"; exit 1; }
+
+# After a pull: restow this host's packages that gained files, ensure the key file, report drift.
+mkdir -p up/scripts up/dotfiles/bin/.local/bin up/dotfiles/foo up/dotfiles/bar
+# shellcheck disable=SC2016
+{
+  printf 'stow-folders:\n\t@printf "foo\\nbin\\npi\\n"\nstow-%%:\n\t@echo $* >>"$(HOME)/stowed"\n' >up/Makefile
+  printf '#!/bin/sh\n[ "$1" = --check ] && shift && echo "drift: ~/x checked $*" && exit 1\n' >up/scripts/stow-package.sh
+  printf '#!/bin/sh\ntouch "$HOME/key-checked"\n' >up/dotfiles/bin/.local/bin/cli-proxy-key
+}
+chmod +x up/scripts/stow-package.sh up/dotfiles/bin/.local/bin/cli-proxy-key
+git -C up add . && git -C up commit -qm tooling && git -C up push -q origin main
+/bin/bash "$script" --sync "$work/box" box >/dev/null 2>&1
+rm -f "$HOME/stowed" "$HOME/key-checked"
+printf 'new\n' >up/dotfiles/foo/f
+printf 'new\n' >up/dotfiles/bar/f
+git -C up add . && git -C up commit -qm packages && git -C up push -q origin main
+out="$(/bin/bash "$script" --sync "$work/box" box 2>&1)"
+[ "$(cat "$HOME/stowed")" = foo ] || { echo "FAIL: restowed $(cat "$HOME/stowed" 2>/dev/null), want only foo"; exit 1; }
+[ -f "$HOME/key-checked" ] || { echo "FAIL: CLI Proxy key file not ensured"; exit 1; }
+grep -q "^box: drift: ~/x checked foo bin$" <<<"$out" || { echo "FAIL: drift not reported for foo bin: $out"; exit 1; }
+grep -q "make stow-<package>" <<<"$out" || { echo "FAIL: no relink hint: $out"; exit 1; }
 echo "release sync: ok"
