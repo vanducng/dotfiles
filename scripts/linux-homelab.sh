@@ -141,11 +141,11 @@ install_user_sshd() {
 
 configure_cli_proxy_env() {
   local key
-  if ! have gopass || ! key="$(gopass show -o personal/saas/cli-proxy/code-01-api-key 2>/dev/null)" \
-    || [[ -z "$key" ]]; then
+  if ! have gopass || ! "${REPO_ROOT}/dotfiles/bin/.local/bin/cli-proxy-key" refresh; then
     log "WARN: CLIProxyAPI key unavailable from gopass"
     return 0
   fi
+  key="$(<"${HOME}/.config/cli-proxy/api-key")"
   mkdir -p "${HOME}/.ssh" "${HOME}/.config/environment.d" "${HOME}/.config/systemd/user/herdr-server.service.d"
   chmod 700 "${HOME}/.ssh"
   touch "${HOME}/.ssh/environment"

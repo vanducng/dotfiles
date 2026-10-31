@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# Write the CLI Proxy key from gopass to ~/.config/cli-proxy/api-key (mode 600), which .zshenv and linux.sh read.
+#   cli-proxy-key          write it if missing
+#   cli-proxy-key refresh  rewrite it after a key rotation
+set -euo pipefail
+
+file="${HOME}/.config/cli-proxy/api-key"
+secret="${CLI_PROXY_GOPASS_PATH:-personal/saas/cli-proxy/code-01-api-key}"
+
+case "${1:-}" in
+  "") [[ -s "${file}" ]] && exit 0 ;;
+  refresh) ;;
+  *) echo "usage: cli-proxy-key [refresh]" >&2; exit 2 ;;
+esac
+
+if ! key="$(gopass show -o "${secret}" 2>/dev/null </dev/null)" || [[ -z "${key}" ]]; then
+  echo "cli-proxy-key: ${secret} unavailable from gopass" >&2
+  exit 1
+fi
+mkdir -p "$(dirname "${file}")"
+chmod 700 "$(dirname "${file}")"
+(umask 077 && printf '%s\n' "${key}" >"${file}.tmp")
+mv "${file}.tmp" "${file}"

@@ -215,6 +215,7 @@ script-test:
 	@./scripts/ci/test-tmux-fingers-conf.sh
 	@./scripts/ci/test-release-manifest.sh
 	@./scripts/ci/test-release.sh
+	@./scripts/ci/test-stow-package-check.sh
 
 install-test:
 	@./scripts/ci/test-install.sh

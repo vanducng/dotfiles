@@ -395,6 +395,9 @@ env_key_instructions = "Export CLI_PROXY_API_KEY from gopass: gopass show -o per
 command = "jump-cli"
 args = ["mcp"]
 
+[mcp_servers.browseros-neo]
+url = "http://127.0.0.1:9010/mcp"
+
 # BEGIN OPENRIG MANAGED CODEX CONFIG FRAGMENT: shared:codex-default-config
 [mcp_servers.exa]
 url = "https://mcp.exa.ai/mcp"
