@@ -4,7 +4,6 @@
   "local/b-title": {
    "fields": {
     "rig": "api",
-    "role": "dev.impl",
     "project": "demo.api",
     "session": "dev-impl@api"
    },
@@ -16,7 +15,6 @@
   "local/b-label": {
    "fields": {
     "rig": "api",
-    "role": "review.review",
     "project": "demo.api",
     "session": "review-review@api"
    },
@@ -27,7 +25,6 @@
   "local/b-session": {
    "fields": {
     "rig": "web",
-    "role": "dev.impl",
     "project": null,
     "session": "dev-impl@web"
    },
@@ -38,7 +35,6 @@
   "mini/b-remote": {
    "fields": {
     "rig": "web",
-    "role": "lead.owner",
     "project": null,
     "session": "lead-owner@web"
    }
