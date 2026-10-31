@@ -52,3 +52,15 @@ export PATH=/Applications/SnowflakeCLI.app/Contents/MacOS/:$PATH
 rex_bin="$HOME/Library/Application Support/com.superlogical.rex/RexServer/Versions/Current/Rex Server.app/Contents/MacOS"
 [[ -x "$rex_bin/rex" ]] && export PATH="$PATH:$rex_bin"
 unset rex_bin
+
+# mise shims keep their place ahead of Homebrew. .zshenv puts them there, but the PATH edits above in this
+# file put Homebrew back in front, and a shell that never shows a prompt (a script, ssh, zsh -lc) gets no
+# `mise activate` hook to fix it. Keep this block last. Outside a pinned directory a shim with no version
+# set falls through to the next match on PATH, so nothing else changes.
+() {
+  local shims="${MISE_DATA_DIR:-$HOME/.local/share/mise}/shims" bin="$HOME/.local/bin"
+  [[ -d $shims ]] || return 0
+  local -a head=("$shims")
+  [[ -d $bin ]] && head=("$bin" "$shims")
+  path=("${head[@]}" ${${path:#$bin}:#$shims})
+}
