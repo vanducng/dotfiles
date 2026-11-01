@@ -420,3 +420,7 @@ export HERD_PHP_85_INI_SCAN_DIR="${HOME}/Library/Application Support/Herd/config
 
 # Pi
 export PATH="/opt/homebrew/bin:$PATH"
+
+# mise shims ahead of Homebrew again (see the file for why). Keep this the last line. ${(%):-%x} is this
+# file as sourced; :A follows the stow symlink into the repo, so the snippet is found even before a restow.
+source "${${(%):-%x}:A:h}/.config/shell/mise-path.zsh" 2>/dev/null || source "$HOME/.config/shell/mise-path.zsh" 2>/dev/null
