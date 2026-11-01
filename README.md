@@ -1,6 +1,6 @@
 # Duc's Digital Workspace
 
-AI-native macOS development environment centered on Herdr workspaces.
+AI-native macOS and Linux development environment centered on Rex sessions across hosts, with rexboard watching every coding agent.
 
 [![Docs](https://img.shields.io/badge/docs-dotfiles.vanducng.dev-7c3aed?style=flat-square)](https://dotfiles.vanducng.dev)
 ![macOS](https://img.shields.io/badge/macOS-000000?style=flat-square&logo=apple&logoColor=white)
@@ -9,9 +9,10 @@ AI-native macOS development environment centered on Herdr workspaces.
 ## Features
 
 - **Window Management** - Yabai + SKHD for tiling and hotkeys
-- **Terminal** - Ghostty + Herdr + Zsh with persistent agent workspaces
-- **Editor** - Neovim (AstroNvim) with LSP and AI integration
-- **AI Tools** - Codex, Grok, Claude, Pi, CodeCompanion, Supermaven, and Database AI
+- **Terminal** - Rex sessions shared across Macs and Linux over Tailscale, Zsh, Ghostty; Herdr and tmux for remote work and OpenRig seats
+- **Agent board** - rexboard: one view of every agent's status on every host, with an OpenRig extension
+- **Editor** - Neovim (AstroNvim) with LSP
+- **AI Tools** - Claude Code, Codex, Grok, Pi, and Cursor agent with shared hooks and status reporting
 - **Utilities** - Atuin, Yazi, Starship, Mise, Direnv, Karabiner, Hammerspoon
 
 ## Documentation
