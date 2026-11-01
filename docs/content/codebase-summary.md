@@ -2,11 +2,11 @@
 title: "Codebase Summary"
 ---
 
-Duc's Digital Workspace: AI-native macOS development environment with 35 dotfiles packages managed via GNU Stow.
+Duc's Digital Workspace: AI-native macOS and Linux development environment with 51 dotfiles packages managed via GNU Stow.
 
 ## Structure Overview
 
-### Core Packages (35 total)
+### Core Packages (51 total, main ones below)
 
 **Editors & IDEs:**
 - `nvim` - Neovim with AstroNvim v6 distribution
@@ -15,9 +15,11 @@ Duc's Digital Workspace: AI-native macOS development environment with 35 dotfile
 
 **Terminal & Shell:**
 - `zsh` - Primary shell configuration with Oh My Zsh
-- `herdr` - Primary terminal workspace manager for coding agents
-- `tmux` - Legacy terminal multiplexer with custom plugins
-- `ghostty` - Modern terminal emulator
+- `rex` - Primary multiplexer: sessions on each host's server, reached from any Mac over Tailscale
+- `rexboard` - Board of every agent's status across hosts, with the OpenRig extension
+- `herdr` - Terminal workspace manager for remote and mosh sessions
+- `tmux` - Multiplexer under OpenRig seats
+- `ghostty` - Terminal emulator
 - `kitty` - Alternative terminal emulator
 - `atuin` - Intelligent shell history with sync
 - `starship` - Cross-shell prompt configuration
@@ -84,18 +86,19 @@ Duc's Digital Workspace: AI-native macOS development environment with 35 dotfile
 - **App Rules** - Specific window behavior per application
 
 ### AI Integration
-- **Supermaven** - Real-time code completion (Tab to accept)
-- **CodeCompanion** - Gemini API chat and inline assistance
-- **Database AI** - SQL-specific AI helpers via miudb
+- **Agent CLIs** - Claude Code, Codex, Grok, Pi, and Cursor agent, configs stowed with shared hooks
+- **Agent status** - every agent reports to Rex and rexboard (`rexboard hook`)
+- **Database AI** - miudb MCP for SQL work
 - **fzf-lua** - Fuzzy finder (replaced Telescope)
 - **Oil.nvim** - File explorer (replaced Neo-tree)
 
 ### Terminal Workflows
-- **Herdr** - Persistent workspaces, panes, and agent navigation
-- **Tmux** - Legacy session management with custom plugins
+- **Rex** - Sessions per host, `1-cockpit` layout (rexboard, `rig tui`, pi) on `Alt-Shift-1..3`
+- **Herdr** - Persistent workspaces for remote and mosh sessions
+- **Tmux** - OpenRig seat sessions
 - **Atuin** - Command history with cloud sync
 - **Starship** - Modern shell prompt with themes
-- **Ghostty** - Primary terminal with modern features
+- **Ghostty** - Terminal emulator
 
 ### Development Environment
 - **AstroNvim** - Modern Neovim distribution
@@ -132,7 +135,7 @@ Duc's Digital Workspace: AI-native macOS development environment with 35 dotfile
 - Stow install/clean: `make stow-install/clean`
 - Alias management: `make export/import-aliases`
 - Service restart: `brew services restart yabai skhd`
-- Config reload: `herdr server reload-config`
+- Config reload: `rex config reload` (Rex), `herdr server reload-config` (Herdr)
 - Plugin updates: `:Lazy sync` (Neovim), `prefix + I` (legacy Tmux)
 
 ## Documentation Hierarchy

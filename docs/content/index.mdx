@@ -1,17 +1,17 @@
 ---
 title: Overview
-description: AI-native macOS development environment with Herdr workspaces, tiling window management, Neovim, and integrated AI coding.
+description: AI-native macOS and Linux development environment with Rex sessions across hosts, rexboard, tiling window management, Neovim, and coding agents.
 ---
 
 import { CardGrid, LinkCard } from '@astrojs/starlight/components';
 
-An AI-native macOS dev environment, wired together and documented with **35 Stow-managed configs**, reproducible from one command. Herdr is the primary terminal workspace manager for coding agents. Start with the [installation guide](/installation/), or jump to a section below.
+An AI-native macOS dev environment, wired together and documented with **51 Stow-managed configs**, reproducible from one command. Rex is the primary multiplexer, with sessions on every host, and rexboard shows every coding agent's status in one board. Start with the [installation guide](/installation/), or jump to a section below.
 
 ## What's inside
 
 <CardGrid>
-  <LinkCard title="Core Tools" href="/herdr/" description="Herdr, Ghostty, Neovim (AstroNvim v6), Atuin, and SKHD form the daily-driver agent workspace." />
-  <LinkCard title="AI Tools" href="/ai/" description="Codex CLI, Claude Code, CodeCompanion, and Supermaven - how they are configured and how they fit together." />
+  <LinkCard title="Core Tools" href="/rex/" description="Rex, rexboard, Neovim (AstroNvim v6), Atuin, and SKHD form the daily-driver agent workspace." />
+  <LinkCard title="AI Tools" href="/ai/" description="Claude Code, Codex, Grok, Pi, and Cursor agent - how they are configured and how they fit together." />
   <LinkCard title="Workflows" href="/workflows/" description="End-to-end patterns for coding, database work, and review & debug across the whole toolchain." />
   <LinkCard title="Troubleshooting" href="/troubleshooting/" description="Fixes for window management, terminal, Neovim, AI tools, and performance." />
 </CardGrid>
@@ -27,7 +27,7 @@ brew services restart skhd
 
 # Shell + workspace manager
 source ~/.zshrc
-herdr server reload-config
+rex config reload
 ```
 
 New here? Follow the [installation guide](/installation/) end to end, then keep the [quick reference](/quick-reference/) handy.
