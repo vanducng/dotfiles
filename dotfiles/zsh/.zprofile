@@ -52,3 +52,7 @@ export PATH=/Applications/SnowflakeCLI.app/Contents/MacOS/:$PATH
 rex_bin="$HOME/Library/Application Support/com.superlogical.rex/RexServer/Versions/Current/Rex Server.app/Contents/MacOS"
 [[ -x "$rex_bin/rex" ]] && export PATH="$PATH:$rex_bin"
 unset rex_bin
+
+# mise shims ahead of Homebrew again (see the file for why). Keep this the last line. ${(%):-%x} is this
+# file as sourced; :A follows the stow symlink into the repo, so the snippet is found even before a restow.
+source "${${(%):-%x}:A:h}/.config/shell/mise-path.zsh" 2>/dev/null || source "$HOME/.config/shell/mise-path.zsh" 2>/dev/null
