@@ -11,3 +11,14 @@ workspace = "~/projects"
 # A message sent from the operator's board is signed as captain (workspace rule, operator 2026-10-31).
 # A seat that runs `rexboard ext run` keeps its own name; send ignores this for it.
 sender = "captain@global"
+
+[models]
+# A model name as a harness reports it, exactly, and what the board shows instead:
+# claude as name-version, openai without the gpt- prefix, grok as grok-version.
+"claude-opus-5-5" = "opus-5.5"
+"Opus 5.5" = "opus-5.5"
+"claude-sonnet-5-5" = "sonnet-5.5"
+"Sonnet 5.5" = "sonnet-5.5"
+"gpt-6.1-sol" = "6.1-sol"
+"gpt-6.1-terra" = "6.1-terra"
+"gpt-6.0-luna" = "6.0-luna"
