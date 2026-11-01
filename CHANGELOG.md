@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.38.0](https://github.com/vanducng/dotfiles/compare/v0.37.0...v0.38.0) (2026-11-01)
+
+
+### Features
+
+* **rexboard:** model aliases, so one model reads one way on the board ([5083b86](https://github.com/vanducng/dotfiles/commit/5083b86b07c4958c96bfbffd936175c87870bb85))
+* **rex:** cut the layout to the cockpit with pi as tab 3 ([8e554ed](https://github.com/vanducng/dotfiles/commit/8e554ede1ce26e65e508ce8fea8a6ee72172429c))
+* **tmux:** forward OSC 8 hyperlinks for xterm-rex clients ([5c23749](https://github.com/vanducng/dotfiles/commit/5c2374945671d131cdb08a1444d93261e1f14bfe))
+
+
+### Bug Fixes
+
+* **zsh:** keep mise shims ahead of Homebrew in login and interactive shells ([#274](https://github.com/vanducng/dotfiles/issues/274)) ([08e42ec](https://github.com/vanducng/dotfiles/commit/08e42ec9aaabc45b01d38f1ccd3097aff39a68b5))
+
 ## [0.37.0](https://github.com/vanducng/dotfiles/compare/v0.36.0...v0.37.0) (2026-10-31)
 
 
