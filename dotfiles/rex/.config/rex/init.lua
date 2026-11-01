@@ -62,7 +62,7 @@ for i = 1, 9 do
   bind("ctrl+alt+" .. i, "host_goto", { index = i })
 end
 px("0", "home")
--- alt+shift+1-3: 1-cockpit's tabs (the board, rig tui, foreman), 4: 2-cnb, 5: 3-abs (layout.lua).
+-- alt+shift+1-3: 1-cockpit's tabs (the board, rig tui, pi) (layout.lua).
 for i = 1, #require("layout").keys do bind("alt+shift+" .. i, "layout_goto", { index = i }) end
 -- The session picker stays on Rex's cmd+k.
 px("a", "session_toggle")

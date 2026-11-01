@@ -32,14 +32,12 @@ M.sessions = {
     -- Resolved when the tab is made; a bare name falls back to the tab shell's PATH.
     { label = "rexboard", command = function() return { M.rexboard() or "rexboard", "board" } end },
     { label = "rig", command = { "rig", "tui" } },
-    { label = "foreman", dir = home .. "/projects", command = { "claude" } },
+    { label = "pi", dir = home .. "/projects", command = { "pi" } },
   } },
-  { name = "2-cnb", dir = home .. "/git/work/cnb", tabs = { { label = "claude", command = { "claude" } } } },
-  { name = "3-abs", dir = home .. "/git/work/ab-spectrum", tabs = { { label = "claude", command = { "claude" } } } },
 }
 
--- alt+shift+1..5: { session, tab number }.
-M.keys = { { "1-cockpit", 1 }, { "1-cockpit", 2 }, { "1-cockpit", 3 }, { "2-cnb", 1 }, { "3-abs", 1 } }
+-- alt+shift+1..3: { session, tab number }.
+M.keys = { { "1-cockpit", 1 }, { "1-cockpit", 2 }, { "1-cockpit", 3 } }
 
 -- A label without its leading "<n>-" run: "2-3-foo" and "foo" are both "foo".
 function M.base(label)

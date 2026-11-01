@@ -387,7 +387,7 @@ end
 
 rex.action{
   name = "session_layout",
-  title = "Lay Out Sessions (cockpit, cnb, abs)",
+  title = "Lay Out Sessions (cockpit)",
   description = "Makes layout.lua's sessions, puts them first and numbers every session by its Ctrl-N position.",
   category = "Session",
   args = { dry_run = "boolean?" },
@@ -422,7 +422,7 @@ end
 rex.action{
   name = "layout_goto",
   title = "Go to a Layout Session",
-  description = "alt+shift+1-3: the cockpit's tabs, 4: cnb, 5: abs. Makes a missing one first.",
+  description = "alt+shift+1-3: the cockpit's tabs. Makes a missing one first.",
   category = "Session",
   args = { index = "integer" },
   run = function(ctx, args) goto_layout(ctx, args.index) end,

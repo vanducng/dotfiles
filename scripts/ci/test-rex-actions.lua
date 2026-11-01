@@ -30,8 +30,6 @@ rex = {
     if method == "format" then return { content = "https://example.com\n" } end
   end },
   exec = function(argv)
-    -- Only the cockpit has no folder, so the other layout sessions are skipped here.
-    if argv[1] == "test" then return { ok = false } end
     local op = argv[2]
     if op == "ls" then return { ok = true, stdout = { sessions = { { session_id = "s", label = "1-cockpit" } } } } end
     if op == "session" and argv[3] == "inspect" then return { ok = true, stdout = { windows = windows } } end
@@ -62,7 +60,7 @@ assert(cmd[8] == "app", "picker switches the app that pressed the key")
 local ok, err = pcall(actions.project_pick.run, { session_id = "s", block_id = "source", server = "mini-01" })
 assert(not ok and err:match("local session"), "project picker stays on this Mac")
 
-windows = { { window_id = "board", label = "1-rexboard" }, { window_id = "foreman", label = "foreman" },
+windows = { { window_id = "board", label = "1-rexboard" }, { window_id = "pi", label = "pi" },
   { window_id = "custom", label = "notes" } }
 actions.session_layout.run(context, {})
 assert(#created == 1 and created[1] == "rig", "restore the missing named tab despite unrelated tabs")

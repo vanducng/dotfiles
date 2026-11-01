@@ -43,7 +43,7 @@ Rex uses Herdr's `C-x` prefix and letters, so moving between the two needs no re
 | `C-x 1..9` | Go to tab N in this session (`9` is the last tab) |
 | `C-x Shift-T` | Rename tab |
 | `C-x Shift-X` | Close tab |
-| `C-x a` | Back to the last session; press again to return. It remembers jumps made with `Ctrl-1..9`, `Alt-Shift-1..5`, `C-x 0` and `C-x a`, not `Cmd-k` or sidebar clicks, and a config reload forgets it |
+| `C-x a` | Back to the last session; press again to return. It remembers jumps made with `Ctrl-1..9`, `Alt-Shift-1..3`, `C-x 0` and `C-x a`, not `Cmd-k` or sidebar clicks, and a config reload forgets it |
 | `C-x Shift-Right` | Next session (the session picker is `Cmd-k`) |
 | `C-x 0` | Home: first session, first tab, first pane |
 | `C-x Shift-N` | New session |
@@ -82,8 +82,7 @@ Herdr's `C-x a` (last pane) has no equivalent, since Rex config Lua cannot track
 | `Ctrl-1..9` | Go to session N on the host you are viewing |
 | `Alt-Shift-1` | The board: `1-cockpit` tab 1 (replaces `C-x Shift-O`). Made first if missing. From any app, Caps+B (skhd's `hyper - b`) brings Rex forward and does the same |
 | `Alt-Shift-2` | `rig tui`: `1-cockpit` tab 2. Made first if missing |
-| `Alt-Shift-3` | `foreman`: `1-cockpit` tab 3, `claude` in `~/projects`. Made first if missing |
-| `Alt-Shift-4` / `Alt-Shift-5` | `2-cnb` / `3-abs`. Made first if missing, or says its folder does not exist |
+| `Alt-Shift-3` | `pi`: `1-cockpit` tab 3, `pi` in `~/projects`. Made first if missing |
 | `Ctrl-v` | On a pane on another host, sends the clipboard image there over ssh as `/tmp/rex-images/<time>.png` and pastes the path, so Claude Code there attaches it (Herdr's `remote_image_paste`). On a local pane, or with no image on the clipboard, it is a plain `Ctrl-v`. Needs `pngpaste` and key-based ssh to the host's alias |
 | `Ctrl-Alt-1..9` | Go to host N: 1 MacBook Pro (`mbp-01`), 2 `mini-01`, 3 kept for `linux-01`; lands on the session you last had there, else its first |
 | `Alt-Cmd-]` | Next session |
@@ -101,17 +100,15 @@ Each host numbers its own sessions, so `Ctrl-1..9` stays short however many mach
 
 ## Session layout
 
-`layout.lua` keeps three sessions at the top of this Mac's sidebar:
+`layout.lua` keeps one session at the top of this Mac's sidebar:
 
 | # | Session | Tabs |
 |---|---|---|
-| 1 | `1-cockpit` | `rexboard` (the board), `rig` (`rig tui`), `foreman` (`claude` in `~/projects`) |
-| 2 | `2-cnb` | `claude` in `~/git/work/cnb` |
-| 3 | `3-abs` | `claude` in `~/git/work/ab-spectrum` |
+| 1 | `1-cockpit` | `rexboard` (the board), `rig` (`rig tui`), `pi` (`pi` in `~/projects`) |
 
-The `session_layout` action makes the missing ones, reopens a layout tab you closed, and moves the three to positions 1-3. It finds sessions and tabs by name without the number, so `cockpit` or `5-cockpit` counts, and a tab you added yourself never stands in for a closed layout tab. It skips a session whose folder this Mac lacks, and never kills or restarts a session. Every session's number is its `Ctrl-1..9` position, so with all three present the rest start at 4 (`1-warp-factory-setup` becomes `4-warp-factory-setup`); with one skipped, the rest close the gap. Only the number prefix changes, never the name.
+Add a session or tab to `M.sessions` and a key to `M.keys` when you need one. The `session_layout` action makes a missing session, reopens a layout tab you closed, and moves the layout's sessions to the top. It finds sessions and tabs by name without the number, so `cockpit` or `5-cockpit` counts, and a tab you added yourself never stands in for a closed layout tab. It skips a session whose folder this Mac lacks, and never kills or restarts a session. Every session's number is its `Ctrl-1..9` position, so with the cockpit present the rest start at 2 (`1-warp-factory-setup` becomes `2-warp-factory-setup`). Only the number prefix changes, never the name.
 
-The server restores sessions itself (see [Restarts and upgrades](#restarts-and-upgrades)), so after a restart `session_layout` usually finds all three and changes nothing. It runs from `make setup-rex` and at login (the `dev.vanducng.rex-session-layout` LaunchAgent in the `launchd` package), which writes failures to `~/Library/Logs/rex-session-layout.log`. No key runs the whole layout: `Alt-Shift-1..5` make or complete only their own session before going to it, or say its folder does not exist. By hand:
+The server restores sessions itself (see [Restarts and upgrades](#restarts-and-upgrades)), so after a restart `session_layout` usually finds the cockpit and changes nothing. It runs from `make setup-rex` and at login (the `dev.vanducng.rex-session-layout` LaunchAgent in the `launchd` package), which writes failures to `~/Library/Logs/rex-session-layout.log`. No key runs the whole layout: `Alt-Shift-1..3` make or complete only the cockpit before going to their tab. By hand:
 
 ```bash
 rex do ~/.config/rex/actions.lua --action session_layout dry_run=true   # print the plan, change nothing

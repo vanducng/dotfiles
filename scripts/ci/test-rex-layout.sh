@@ -49,20 +49,9 @@ local today = {
   { id = "e", label = "cnb" },
 }
 local plan = layout.plan(today, true)
-check(labels(plan), "1-cockpit 2-cnb 3-warp-factory-setup 4-foo 5-notes",
-  "the layout's sessions go first and the rest are renumbered by position")
-check(plan[1].id .. plan[2].id .. plan[3].id, "cea", "order is layout first, then the rest as they were")
-
-local full = {
-  { id = "a", label = "1-warp-factory-setup" },
-  { id = "b", label = "cockpit" },
-  { id = "c", label = "2-cnb" },
-  { id = "d", label = "3-abs" },
-  { id = "e", label = "2-3-foo" },
-}
-plan = layout.plan(full, true)
-check(labels(plan), "1-cockpit 2-cnb 3-abs 4-warp-factory-setup 5-foo",
-  "with all three layout sessions, the rest number from 4")
+check(labels(plan), "1-cockpit 2-warp-factory-setup 3-foo 4-notes 5-cnb",
+  "the layout's session goes first and the rest are renumbered by position")
+check(plan[1].id .. plan[2].id .. plan[3].id, "cab", "order is layout first, then the rest as they were")
 check(labels(rerun(plan, true)), labels(plan), "a rerun changes nothing")
 for i, p in ipairs(rerun(plan, true)) do check(p.label, p.want, "rerun label " .. i) end
 
@@ -70,10 +59,8 @@ plan = layout.plan({ { id = "x", label = "cockpit" }, { id = "y", label = "4-coc
 check(labels(plan), "1-cockpit 2-cockpit", "a duplicate cockpit is not a second layout session")
 check(labels(rerun(plan, true)), labels(plan), "a duplicate stays put on a rerun")
 
-check(labels(layout.plan(names({ "cockpit", "abs", "foo" }), true)), "1-cockpit 2-abs 3-foo",
-  "a missing middle layout session leaves no repeated number")
 check(labels(layout.plan(names({ "cnb", "foo" }), true)), "1-cnb 2-foo",
-  "every number is the real Ctrl-N position")
+  "with no cockpit, every number is the real Ctrl-N position")
 plan = layout.plan(names({ "abs" }), false)
 check(labels(plan), "1-abs", "a remote host numbers by plain position")
 plan = layout.plan(names({ "foo", "3-abs", "cockpit" }), false)
