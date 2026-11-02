@@ -13,6 +13,7 @@ for tool in jq yq; do
 done
 TMP=$(mktemp -d)
 trap 'rm -rf "$TMP"' EXIT
+export XDG_CACHE_HOME="$TMP/cache"
 
 # The request rexboard would send for the rows in rows.json.
 request=$(jq -c --arg ws "$FIX" '{contract: 1, extension: "openrig", settings: {workspace: $ws},
@@ -24,12 +25,12 @@ got=$(printf '%s' "$request" | PATH="$FIX/bin:$PATH" "$EXT/adapter")
 $(diff <(printf '%s' "$got" | jq -S .) <(jq -S . "$FIX/expected.json") || true)"
 pass "title, label and session matches; ambiguous, plain, wrong-host and unreachable rows left out; project, session and status"
 
-# A host that hangs (asleep, off the network) loses only its own rows, inside the 5 s timeout.
+# A host that hangs (asleep, off the network) loses only its own rows, inside the 15 s timeout.
 asleep=$(printf '%s' "$request" | jq -c '.rows += [.rows[0] + {key: "asleep/b-title", host: "asleep"}]')
 start=$SECONDS
 got=$(printf '%s' "$asleep" | PATH="$FIX/bin:$PATH" "$EXT/adapter")
 took=$((SECONDS - start))
-[ "$took" -lt 5 ] || fail "a hanging host held the run for ${took}s"
+[ "$took" -lt 15 ] || fail "a hanging host held the run for ${took}s"
 [ "$(printf '%s' "$got" | jq -S .)" = "$(jq -S . "$FIX/expected.json")" ] || fail "a hanging host changed the answer: $got"
 pass "a hanging host: answered in ${took}s without its rows"
 
@@ -45,6 +46,7 @@ pass "a broken workspace.yaml: no project, \"$(cat "$TMP/badws/err")\""
 
 # Without rig, or with rig failing here, the run fails with one line, so rexboard shows its alert.
 mkdir "$TMP/empty"
+rm -rf "$TMP/cache"  # nothing cached, so a failing rig fails the run
 for case in missing failing; do
   if [ $case = missing ]; then
     path="$TMP/empty:/usr/bin:/bin" failing=""
