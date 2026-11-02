@@ -10,8 +10,12 @@ pids=
 trap 'kill $pids 2>/dev/null; rm -rf "$tmp"' EXIT
 
 # A Rex host's label is its OpenRig host id. Other hosts are asked in the background and get
-# until 2.5 s after this host answers, inside the extension's 5 s timeout, so an asleep host
-# (ssh waits 10 s to connect) only loses its own rows.
+# until 12 s after this host answers, inside the extension's 15 s timeout (a remote `rig ps` takes
+# 0.6 to 4 s and more under load). A host that fails or is too slow keeps its last answer for
+# 10 minutes, so its rows keep their rig and project instead of flapping to "-"; an asleep host
+# (ssh waits 10 s to connect) only goes stale.
+cache=${XDG_CACHE_HOME:-$HOME/.cache}/rexboard-openrig
+mkdir -p "$cache" 2>/dev/null
 printf '%s' "$req" | jq -r '[.rows[].host | select(. != "local")] | unique | .[]' >"$tmp/hosts"
 n=0
 while IFS= read -r host; do
@@ -21,13 +25,15 @@ while IFS= read -r host; do
   pids="$pids $!"
 done <"$tmp/hosts"
 
-nodes=$(rig ps --nodes -A --json --fields "$fields" 2>/dev/null) || {
-  echo "openrig: rig ps failed on this host" >&2
-  exit 1
-}
-nodes=$(printf '%s' "$nodes" | jq -c '[.entries[] + {host: "local"}]')
+nodes=$(rig ps --nodes -A --json --fields "$fields" 2>/dev/null | jq -c '[.entries[] + {host: "local"}]' 2>/dev/null)
+if [ -n "$nodes" ]; then
+  printf '%s' "$nodes" >"$cache/local.json"
+else
+  nodes=$(find "$cache/local.json" -mmin -10 -exec cat {} \; 2>/dev/null)
+  [ -n "$nodes" ] || { echo "openrig: rig ps failed on this host" >&2; exit 1; }
+fi
 
-ticks=25
+ticks=120
 while [ "$ticks" -gt 0 ]; do
   busy=
   for pid in $pids; do
@@ -40,13 +46,15 @@ done
 i=0
 for pid in $pids; do
   i=$((i + 1))
+  h=$(cat "$tmp/$i.host")
   if kill -0 "$pid" 2>/dev/null; then
     { kill "$pid"; wait "$pid"; } 2>/dev/null
-    continue
+  elif wait "$pid" && jq -e '.entries' "$tmp/$i.json" >/dev/null 2>&1; then
+    jq -c '[.entries[] + {host: "'"$h"'"}]' "$tmp/$i.json" >"$cache/$h.json.new" 2>/dev/null && mv "$cache/$h.json.new" "$cache/$h.json"
   fi
-  wait "$pid" || continue
-  merged=$(printf '%s' "$nodes" | jq -c --arg h "$(cat "$tmp/$i.host")" --slurpfile more "$tmp/$i.json" \
-    '. + [$more[0].entries[] + {host: $h}]' 2>/dev/null) && nodes=$merged
+  more=$(find "$cache/$h.json" -mmin -10 -exec cat {} \; 2>/dev/null)
+  [ -n "$more" ] || continue
+  merged=$(printf '%s' "$nodes" | jq -c --argjson more "$more" '. + $more' 2>/dev/null) && nodes=$merged
 done
 
 workspace=$(printf '%s' "$req" | jq -r '.settings.workspace // empty')
