@@ -39,7 +39,7 @@ meh - a : previous=$(yabai -m config mouse_follows_focus); \
           id=$(yabai -m query --windows | jq -r 'map(select(.app == "Rex Beta")) | first | .id // empty'); \
           if [ -n "$id" ]; then yabai -m window "$id" --focus; else open "/Applications/Rex Beta.app"; sleep 0.7; fi; \
           yabai -m config mouse_follows_focus "$previous"
-meh - b : open "/Applications/Borumi.app"
+meh - b : open "/Applications/Bruno.app"
 meh - c : "$HOME/.config/yabai/dia-one.sh" focus
 meh - d : yabai -m space --focus 13; open "/Applications/Arc.app"
 meh - e : yabai -m space --focus 17; open "/Applications/ego lite.app"
