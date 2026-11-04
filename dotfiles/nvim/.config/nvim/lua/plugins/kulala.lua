@@ -1,6 +1,9 @@
 ---@type LazySpec
 return {
   "mistweaverco/kulala.nvim",
+  enabled = false,
+  -- Last curl build. main downloads kulala-core and asks for a license token.
+  commit = "6656c9d332735ca6a27725e0fb45a1715c4372d9",
   ft = { "http", "rest" },
   dependencies = { "nvim-treesitter/nvim-treesitter" },
   keys = {
