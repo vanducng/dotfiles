@@ -90,7 +90,7 @@ All application shortcuts use the `meh` key (ctrl+alt+shift) for consistency and
 | `meh + n` | Obsidian | Notes on space 8 |
 | `meh + m` | superwhisper | Voice input |
 | `meh + q` | Apple Music | Music player |
-| `meh + b` | Borumi | Productivity app |
+| `meh + b` | Bruno | API client |
 
 ## 🪟 Window Management
 
