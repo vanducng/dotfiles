@@ -32,6 +32,12 @@ poll seeds state and does not fire.
 `/standby` prints the same state. `/reload` after stow. Herdr pane titles still
 show a check when idle and a spinner when that pane is working.
 
+## Corrupted tool names
+
+A proxied model sometimes calls a built-in tool by a mangled name (`then_write` for `write`). Pi answers `Tool <name> not found` and the model repeats the call a turn later. The stowed `tool-name-aliases` extension registers each name in an explicit list as a tool that runs the real one with the same arguments, and keeps those names out of the tool list sent to the model (`prepareLoadout` hidden declarations), so the prompt does not grow. There is no fuzzy matching: a name that is not in the list fails as before.
+
+The built-in list is `then_write` and `have_write` (write), `dignity_edit` and `ship_edit` (edit). Names that belong to one proxy setup go in `~/.pi/agent/tool-aliases.json` (or `$PI_TOOL_ALIASES_FILE`) as `{"<corrupted name>": "<bash|read|write|edit|grep|find|ls>"}`; bad entries are ignored with a message. `/reload` after changing it. `scripts/ci/test-pi-tool-aliases.sh` drives a real Pi session with a scripted model and checks that an aliased name reaches the tool, an unknown name still fails, and no alias is declared to the model.
+
 ## Home layout
 
 `~/.pi` itself must be a **real directory** under `$HOME`. Do not replace it with a
