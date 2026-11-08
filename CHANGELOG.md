@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.40.0](https://github.com/vanducng/dotfiles/compare/v0.39.0...v0.40.0) (2026-11-08)
+
+
+### Features
+
+* **pi:** alias corrupted tool names to the built-in tools ([#277](https://github.com/vanducng/dotfiles/issues/277)) ([31ec420](https://github.com/vanducng/dotfiles/commit/31ec4201de1675c89b45f5b6c6bf40036574cbc9))
+* **rex:** restore sessions and resume agents with rexurrect ([987cae4](https://github.com/vanducng/dotfiles/commit/987cae4e7614862a090ff1df87cad6e983092cde))
+
 ## [0.39.0](https://github.com/vanducng/dotfiles/compare/v0.38.0...v0.39.0) (2026-11-05)
 
 
