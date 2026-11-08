@@ -1,5 +1,6 @@
-// Pi extension for a rig's human seat: delivers notes sent from a tracking board as a user message,
-// then reports progress and the final reply back to the board (feedback/status and feedback/done).
+// Pi extension for a rig's human seat: delivers what the operator sends from a tracking board (a batch of notes, or a
+// chat message, kind "chat") as a user message, then reports progress and the final reply back to the board
+// (feedback/status and feedback/done).
 // Boards, server and protocol: the openrig-workspace skill, references/tracking-board/ (vanducng/skills).
 // Linked by `make stow-pi`; /reload in the human seat to load it. Acts only in a `*-human@*` seat, and only
 // for boards whose board.json "owner_seat" is that seat's OPENRIG_SESSION_NAME.
@@ -18,7 +19,9 @@ const render = [
 
 const now = () => new Date().toISOString();
 const readJson = file => { try { return JSON.parse(fs.readFileSync(file, "utf8")); } catch { return null; } };
-const textOf = message => (message?.content ?? []).filter(p => p?.type === "text").map(p => p.text ?? "").join("");
+const textOf = message => typeof message?.content === "string"
+  ? message.content
+  : (message?.content ?? []).filter(p => p?.type === "text").map(p => p.text ?? "").join("");
 
 // Boards this seat owns, rescanned at most once a minute.
 let owned = [];
@@ -42,6 +45,14 @@ function write(dir, sub, data) {
 
 function prompt(fb, dir) {
   const board = path.relative(root, dir);
+  if (fb.kind === "chat") {
+    // The operator speaking: only a listed tailnet login or the board token can send one.
+    return [
+      `Operator, via the board ${board} (chat ${fb.id}): ${fb.text}`,
+      ...(fb.anchor ? [`Anchor: ${fb.anchor}`] : []),
+      ...(fb.quote ? [`Quote: "${fb.quote}"`] : []),
+    ].join("\n");
+  }
   const lines = fb.notes.map((n, i) => `${i + 1}. [${n.id} · ${n.kind}] on ${n.anchor || "the board"}${n.quote ? ` (quote: "${n.quote}")` : ""}\n   ${n.text.replace(/\n/g, "\n   ")}`);
   return [
     `Board feedback from the operator, sent from the tracking board ${board} (feedback ${fb.id}).`,
@@ -68,7 +79,12 @@ export default function (pi) {
       const fb = readJson(path.join(inbox, file));
       fs.mkdirSync(path.join(dir, "feedback", "processing"), { recursive: true });
       fs.renameSync(path.join(inbox, file), path.join(dir, "feedback", "processing", file));
-      if (!fb?.id || !Array.isArray(fb.notes)) continue;
+      if (!fb?.id) continue;
+      // A batch of notes has no kind; a chat needs text. Anything else is closed so the page stops waiting.
+      if (fb.kind === "chat" ? !String(fb.text ?? "").trim() : fb.kind || !Array.isArray(fb.notes)) {
+        write(dir, "status", { id: fb.id, state: "aborted", at: now() });
+        continue;
+      }
       current = { dir, id: fb.id, started: false };
       write(dir, "status", { id: fb.id, state: "delivered", at: now() });
       const text = prompt(fb, dir);
@@ -86,15 +102,18 @@ export default function (pi) {
   });
   pi.on("session_shutdown", async () => clearInterval(timer));
 
-  pi.on("before_agent_start", async event => {
-    if (current && !current.started && typeof event?.prompt === "string" && event.prompt.includes(current.id)) {
-      current.started = true;
-      last = "";
-      write(current.dir, "status", { id: current.id, state: "working", at: now() });
-    }
-  });
+  // The item starts when its text reaches the agent: as a new prompt when the seat was idle, or as a user message
+  // inside the running turn when it went in as a followUp (that path has no before_agent_start).
+  const start = text => {
+    if (!current || current.started || typeof text !== "string" || !text.includes(current.id)) return;
+    current.started = true;
+    last = "";
+    write(current.dir, "status", { id: current.id, state: "working", at: now() });
+  };
+  pi.on("before_agent_start", async event => start(event?.prompt));
   pi.on("message_end", async event => {
-    if (current?.started && event?.message?.role === "assistant") last = textOf(event.message) || last;
+    if (event?.message?.role === "user") start(textOf(event.message));
+    else if (current?.started && event?.message?.role === "assistant") last = textOf(event.message) || last;
   });
   pi.on("agent_settled", async event => {
     if (!current?.started) return;
