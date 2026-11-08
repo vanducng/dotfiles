@@ -12,7 +12,9 @@ pkg="${PI_CODING_AGENT_PACKAGE:-}"
 if [[ -z "$pkg" ]]; then
 	for root in "${PI_MANAGED_INSTALL_ROOT:-}" "$HOME/.pi/agent/install"; do
 		[[ -n "$root" && -f "$root/current-version" ]] || continue
-		candidate="$root/releases/$(tr -d '[:space:]' <"$root/current-version")/node_modules/@earendil-works/pi-coding-agent"
+		version="$(tr -d '[:space:]' <"$root/current-version")"
+		[[ "$version" =~ ^[0-9][0-9A-Za-z._-]*$ ]] || continue
+		candidate="$root/releases/$version/node_modules/@earendil-works/pi-coding-agent"
 		[[ -f "$candidate/package.json" ]] && { pkg="$candidate"; break; }
 	done
 fi

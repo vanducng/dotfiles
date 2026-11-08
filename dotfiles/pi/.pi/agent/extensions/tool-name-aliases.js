@@ -40,12 +40,13 @@ export function loadAliases(file, warn = () => {}) {
 export default function (pi) {
   const file = process.env.PI_TOOL_ALIASES_FILE || path.join(os.homedir(), ".pi", "agent", "tool-aliases.json");
   const aliases = loadAliases(file, msg => console.error(`tool-name-aliases: ${msg}`));
-  const names = Object.keys(aliases);
+  // Only aliases that were actually registered are hidden; a skipped one (no target, or the name is taken) is not.
+  const registered = new Set();
 
   // Registered once the built-in tools exist, so each alias can take its target's parameter schema.
   pi.on("session_start", () => {
     const all = pi.getAllTools();
-    for (const alias of names) {
+    for (const alias of Object.keys(aliases)) {
       const target = all.find(t => t.name === aliases[alias]);
       if (!target || all.some(t => t.name === alias)) continue;
       pi.registerTool({
@@ -54,12 +55,17 @@ export default function (pi) {
         description: `Alias of ${target.name}: runs ${target.name} with the same arguments.`,
         parameters: target.parameters,
         // Active, so a call by this name resolves; hidden, so the model is never told the name exists.
-        prepareLoadout: () => ({ hiddenDeclarations: names }),
+        prepareLoadout: () => ({ hiddenDeclarations: [...registered] }),
         async execute(_id, params, signal, onUpdate, ctx) {
           const out = await ctx.executeTool(target.name, params, { signal, onUpdate });
-          return out.isError ? { ...out.result, isError: true } : out.result;
+          if (!out.isError) return out.result;
+          // Keep a non-object error result readable instead of spreading a string into numbered keys.
+          return out.result && typeof out.result === "object"
+            ? { ...out.result, isError: true }
+            : { content: [{ type: "text", text: String(out.result) }], isError: true };
         },
       });
+      registered.add(alias);
     }
   });
 }

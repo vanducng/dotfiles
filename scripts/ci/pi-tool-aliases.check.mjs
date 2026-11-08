@@ -7,9 +7,10 @@ import { pathToFileURL } from "node:url";
 
 const [pkgDir, extFile] = process.argv.slice(2);
 if (!pkgDir || !extFile) { console.error("usage: pi-tool-aliases.check.mjs <pi package dir> <extension file>"); process.exit(2); }
-const entry = (dir, name) => pathToFileURL(path.join(path.resolve(dir), name === "pi-coding-agent" ? "" : "..", name === "pi-coding-agent" ? "dist/index.js" : `${name}/dist/index.js`)).href;
-const sdk = await import(entry(pkgDir, "pi-coding-agent"));
-const ai = await import(entry(pkgDir, "pi-ai").replace("dist/index.js", "dist/compat.js"));
+// pi-ai is installed beside pi-coding-agent in the same node_modules/@earendil-works directory.
+const fromPkg = rel => pathToFileURL(path.join(path.resolve(pkgDir), rel)).href;
+const sdk = await import(fromPkg("dist/index.js"));
+const ai = await import(fromPkg("../pi-ai/dist/compat.js"));
 const { DEFAULT_ALIASES, loadAliases } = await import(pathToFileURL(path.resolve(extFile)).href);
 
 let pass = 0, fail = 0;
@@ -27,13 +28,20 @@ const call = (name, args, id) => ai.fauxAssistantMessage([ai.fauxToolCall(name, 
 const done = () => ai.fauxAssistantMessage("done");
 const seeTools = next => ctx => { declared.push(ctx.messages.filter(m => m.role === "system").flatMap(m => (m.toolsAdded || []).map(t => t.name))); return typeof next === "function" ? next(ctx) : next; };
 
+// `env` is set only while the session is created (the extension reads it when it loads), then restored.
 async function session(env = {}, withExtension = true) {
+  const saved = Object.fromEntries(Object.keys(env).map(k => [k, process.env[k]]));
   Object.assign(process.env, env);
-  const loader = new sdk.DefaultResourceLoader({ cwd: work, agentDir, additionalExtensionPaths: withExtension ? [path.resolve(extFile)] : [], noExtensions: true, extensionFactories: [pi => pi.registerProvider(faux.provider)] });
-  await loader.reload();
-  const modelRuntime = await sdk.ModelRuntime.create({ agentDir });
-  const { session } = await sdk.createAgentSession({ cwd: work, agentDir, modelRuntime, model: faux.getModel(), resourceLoader: loader, sessionManager: sdk.SessionManager.inMemory() });
-  await session.bindExtensions({});
+  let session;
+  try {
+    const loader = new sdk.DefaultResourceLoader({ cwd: work, agentDir, additionalExtensionPaths: withExtension ? [path.resolve(extFile)] : [], noExtensions: true, extensionFactories: [pi => pi.registerProvider(faux.provider)] });
+    await loader.reload();
+    const modelRuntime = await sdk.ModelRuntime.create({ agentDir });
+    ({ session } = await sdk.createAgentSession({ cwd: work, agentDir, modelRuntime, model: faux.getModel(), resourceLoader: loader, sessionManager: sdk.SessionManager.inMemory() }));
+    await session.bindExtensions({});
+  } finally {
+    for (const [k, v] of Object.entries(saved)) v === undefined ? delete process.env[k] : (process.env[k] = v);
+  }
   const results = [];
   session.subscribe(e => { if (e.type === "tool_execution_end") results.push({ name: e.toolName, isError: !!e.isError, text: JSON.stringify(e.result ?? "") }); });
   return { session, results };
@@ -71,6 +79,8 @@ const first = declared[0] || [];
 ok("the real tools are declared to the model", ["read", "bash", "edit", "write"].every(n => first.includes(n)), first.join(","));
 ok("no alias name is declared to the model", !first.some(n => n in withLocal), first.join(","));
 s.dispose();
+
+ok("the session's env is restored after it is created", process.env.PI_TOOL_ALIASES_FILE === undefined);
 
 console.log("control: the same call without the extension");
 const ctl = await session({}, false);
