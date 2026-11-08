@@ -47,6 +47,15 @@
             "timeout": 5
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/bin/sh -c 'R=\"$HOME/.cargo/bin/rexurrect\"; [ -x \"$R\" ] && \"$R\" report codex; true'",
+            "timeout": 5
+          }
+        ]
       }
     ],
     "UserPromptSubmit": [

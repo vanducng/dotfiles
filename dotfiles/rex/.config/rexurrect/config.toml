@@ -1,0 +1,7 @@
+auto_resume = ["claude", "codex", "pi"]
+
+[programs.pi]
+state = "path"
+resume = "pi --session {state}"
+# pi rewrites its process title, so its saved command line is unusable; never run it.
+fallback = "none"
