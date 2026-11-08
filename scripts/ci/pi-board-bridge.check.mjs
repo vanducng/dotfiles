@@ -103,10 +103,11 @@ ok("a note's anchor and quote stay on its own line", notesLines.filter(l => l.st
 console.log("an item whose id is a path");
 const badFile = "2026-11-09T01-00-06-000Z-gggggg";
 faux.setResponses([reply("must not run")]);
+const turnsBefore = seen.length;
 fs.writeFileSync(path.join(dir, "feedback", "inbox", `${badFile}.json`), JSON.stringify({ id: "../../escaped", board, kind: "chat", text: "hi" }));
 await until(() => fs.existsSync(path.join(dir, "feedback", "processing", `${badFile}.json`)));
 await sleep(1500);
-ok("nothing is written outside the board's feedback folder, and no turn runs", !fs.existsSync(path.join(dir, "escaped.json")) && !fs.existsSync(path.join(dir, "feedback", "escaped.json")) && seen.length === 7, String(seen.length));
+ok("nothing is written outside the board's feedback folder, and no turn runs", !fs.existsSync(path.join(dir, "escaped.json")) && !fs.existsSync(path.join(dir, "feedback", "escaped.json")) && seen.length === turnsBefore, String(seen.length - turnsBefore));
 
 session.dispose();
 console.log(`\n${pass} passed, ${fail} failed`);

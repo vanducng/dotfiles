@@ -49,7 +49,8 @@ const oneLine = value => String(value ?? "").replace(/[\r\n]+/g, " ");
 function prompt(fb, dir) {
   const board = path.relative(root, dir);
   if (fb.kind === "chat") {
-    // The operator speaking: only a listed tailnet login or the board token can send one.
+    // The operator speaking: only a listed tailnet login or the board token can send one. The text is what the operator
+    // typed and stays multi-line; the anchor and quote carry board content others wrote, so they are folded.
     return [
       `Operator, via the board ${board} (chat ${fb.id}): ${fb.text}`,
       ...(fb.anchor ? [`Anchor: ${oneLine(fb.anchor)}`] : []),
@@ -82,15 +83,16 @@ export default function (pi) {
       const fb = readJson(path.join(inbox, file));
       fs.mkdirSync(path.join(dir, "feedback", "processing"), { recursive: true });
       fs.renameSync(path.join(inbox, file), path.join(dir, "feedback", "processing", file));
-      if (!fb?.id) continue;
+      // The id names the status and done files, so it must be a plain file name (the server makes it from time + hex).
+      if (!/^[A-Za-z0-9][A-Za-z0-9_.-]{0,99}$/.test(String(fb?.id ?? "")) || fb.id.includes("..")) continue;
       // A batch of notes has no kind; a chat needs text. Anything else is closed so the page stops waiting.
       if (fb.kind === "chat" ? !String(fb.text ?? "").trim() : fb.kind || !Array.isArray(fb.notes)) {
         write(dir, "status", { id: fb.id, state: "aborted", at: now() });
         continue;
       }
-      current = { dir, id: fb.id, started: false };
-      write(dir, "status", { id: fb.id, state: "delivered", at: now() });
       const text = prompt(fb, dir);
+      current = { dir, id: fb.id, text, started: false };
+      write(dir, "status", { id: fb.id, state: "delivered", at: now() });
       if (ctxRef?.isIdle?.() ?? true) pi.sendUserMessage(text);
       else pi.sendUserMessage(text, { deliverAs: "followUp" });
       return;
@@ -105,10 +107,11 @@ export default function (pi) {
   });
   pi.on("session_shutdown", async () => clearInterval(timer));
 
-  // The item starts when its text reaches the agent: as a new prompt when the seat was idle, or as a user message
-  // inside the running turn when it went in as a followUp (that path has no before_agent_start).
+  // The item starts when the exact text this bridge sent reaches the agent: as a new prompt when the seat was idle, or
+  // as a user message inside the running turn when it went in as a followUp (that path has no before_agent_start).
+  // A message that only mentions the id (the operator pasting it) does not start it.
   const start = text => {
-    if (!current || current.started || typeof text !== "string" || !text.includes(current.id)) return;
+    if (!current || current.started || text !== current.text) return;
     current.started = true;
     last = "";
     write(current.dir, "status", { id: current.id, state: "working", at: now() });
