@@ -28,8 +28,7 @@
     "-skills/document-skills/docx",
     "-skills/document-skills/pdf",
     "-skills/document-skills/pptx",
-    "-skills/document-skills/xlsx",
-    "-skills/skill-creator"
+    "-skills/document-skills/xlsx"
   ],
   "enableSkillCommands": true,
   "retry": {
