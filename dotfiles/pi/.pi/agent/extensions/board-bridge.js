@@ -44,7 +44,7 @@ function write(dir, sub, data) {
 }
 
 // Anchors and quotes go on one line, so a newline in one cannot start a line of its own ("Operator, ...").
-const oneLine = value => String(value ?? "").replace(/\r?\n/g, " ");
+const oneLine = value => String(value ?? "").replace(/[\r\n]+/g, " ");
 
 function prompt(fb, dir) {
   const board = path.relative(root, dir);
