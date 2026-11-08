@@ -198,6 +198,7 @@ script-test:
 	@./scripts/ci/test-herdr-sessions.sh
 	@./scripts/ci/test-droid-moshi-notify.sh
 	@./scripts/ci/test-pi-config.sh
+	@./scripts/ci/test-pi-board-bridge.sh
 	@./scripts/ci/test-pi-tool-aliases.sh
 	@./scripts/ci/test-pi-home-layout.sh
 	@./scripts/ci/test-cursor-config.sh
