@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.39.0](https://github.com/vanducng/dotfiles/compare/v0.38.0...v0.39.0) (2026-11-05)
+
+
+### Features
+
+* **nvim:** use Bruno for HTTP requests ([04a3de1](https://github.com/vanducng/dotfiles/commit/04a3de1950aec704636146540ccadd3473c81db9))
+* **pi:** add board-bridge extension for tracking-board feedback ([4ba542f](https://github.com/vanducng/dotfiles/commit/4ba542f1596fc0613f60936880feffd04cd72047))
+* **skhd:** open Bruno on meh+b ([793ca83](https://github.com/vanducng/dotfiles/commit/793ca83e82213830eaee3237351153d5c69a1f33))
+
+
+### Bug Fixes
+
+* **rexboard:** keep the openrig extension's host answers through a slow rig ps ([983be26](https://github.com/vanducng/dotfiles/commit/983be26826152541b800c3857a760eee6a591dea))
+
 ## [0.38.0](https://github.com/vanducng/dotfiles/compare/v0.37.0...v0.38.0) (2026-11-01)
 
 
