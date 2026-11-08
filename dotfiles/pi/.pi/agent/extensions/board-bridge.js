@@ -10,6 +10,7 @@ import os from "node:os";
 
 const root = process.env.OPENRIG_BOARDS_ROOT || path.join(os.homedir(), ".share", "openrig", "boards");
 const seat = process.env.OPENRIG_SESSION_NAME || "";
+const stallMs = Number(process.env.OPENRIG_BOARD_STALL_MS) || 3 * 60 * 1000;
 // board.cjs from the openrig-workspace skill: $OPENRIG_BOARD_CLI, else the skills checkout, else the installed skill.
 const render = [
   process.env.OPENRIG_BOARD_CLI,
@@ -75,6 +76,15 @@ export default function (pi) {
   let timer;
 
   const deliver = () => {
+    // An item that never reached the agent (not started while the seat sat idle for the stall time) is closed, so it
+    // cannot hold the queue. A followUp waiting behind a long turn is not stalled: its clock restarts while busy.
+    if (current && !current.started) {
+      if (!(ctxRef?.isIdle?.() ?? true)) current.idleSince = Date.now();
+      else if (Date.now() - current.idleSince > stallMs) {
+        write(current.dir, "status", { id: current.id, state: "aborted", at: now() });
+        current = null;
+      }
+    }
     if (current) return;
     for (const dir of boards()) {
       const inbox = path.join(dir, "feedback", "inbox");
@@ -84,14 +94,20 @@ export default function (pi) {
       fs.mkdirSync(path.join(dir, "feedback", "processing"), { recursive: true });
       fs.renameSync(path.join(inbox, file), path.join(dir, "feedback", "processing", file));
       // The id names the status and done files, so it must be a plain file name (the server makes it from time + hex).
-      if (!/^[A-Za-z0-9][A-Za-z0-9_.-]{0,99}$/.test(String(fb?.id ?? "")) || fb.id.includes("..")) continue;
+      // Anything else is set aside with no status: writing one under that id is the traversal, and no page sent it.
+      const id = typeof fb?.id === "string" ? fb.id : "";
+      if (!/^[A-Za-z0-9][A-Za-z0-9_.-]{0,99}$/.test(id) || id.includes("..")) {
+        fs.mkdirSync(path.join(dir, "feedback", "processing", "rejected"), { recursive: true });
+        fs.renameSync(path.join(dir, "feedback", "processing", file), path.join(dir, "feedback", "processing", "rejected", file));
+        continue;
+      }
       // A batch of notes has no kind; a chat needs text. Anything else is closed so the page stops waiting.
       if (fb.kind === "chat" ? !String(fb.text ?? "").trim() : fb.kind || !Array.isArray(fb.notes)) {
         write(dir, "status", { id: fb.id, state: "aborted", at: now() });
         continue;
       }
       const text = prompt(fb, dir);
-      current = { dir, id: fb.id, text, started: false };
+      current = { dir, id: fb.id, text, started: false, idleSince: Date.now() };
       write(dir, "status", { id: fb.id, state: "delivered", at: now() });
       if (ctxRef?.isIdle?.() ?? true) pi.sendUserMessage(text);
       else pi.sendUserMessage(text, { deliverAs: "followUp" });

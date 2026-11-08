@@ -87,6 +87,8 @@ const working = session.prompt("a long task typed in the pane");
 await until(() => typeof release === "function");
 queue({ id: busyId, board, received_at: "2026-11-09T01:00:03Z", kind: "chat", text: "Are you there?" });
 ok("it is delivered while the turn runs (queued as a followUp)", await until(() => fb("status", busyId)?.state === "delivered", 8000), JSON.stringify(fb("status", busyId)));
+await sleep(4500); // past the 1.5s stall time: a followUp behind a busy turn must not be aborted
+ok("it is still waiting, not aborted, while the turn runs past the stall time", fb("status", busyId)?.state === "delivered", JSON.stringify(fb("status", busyId)));
 release?.(); // a timeout above reports itself; this never throws
 await working;
 ok("it is answered after the running turn", await until(() => fb("done", busyId)), JSON.stringify(fb("status", busyId)));
