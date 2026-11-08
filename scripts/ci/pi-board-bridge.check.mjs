@@ -37,12 +37,14 @@ const faux = ai.fauxProvider({ models: [{ id: "scripted" }] });
 const textOf = m => typeof m.content === "string" ? m.content : (m.content || []).filter(p => p.type === "text").map(p => p.text).join("");
 const reply = text => ctx => { seen.push(textOf([...ctx.messages].reverse().find(m => m.role === "user") || {})); return ai.fauxAssistantMessage(text); };
 
-const env = { OPENRIG_BOARDS_ROOT: root, OPENRIG_SESSION_NAME: SEAT, OPENRIG_BOARD_CLI: cli };
+// Stands in for anything that keeps a delivered item from reaching the agent: input with the marker is handled here.
+const swallow = pi => pi.on("input", async event => (String(event?.text).includes("SWALLOW") ? { action: "handled" } : { action: "continue" }));
+const env = { OPENRIG_BOARD_STALL_MS: "1500", OPENRIG_BOARDS_ROOT: root, OPENRIG_SESSION_NAME: SEAT, OPENRIG_BOARD_CLI: cli };
 const saved = Object.fromEntries(Object.keys(env).map(k => [k, process.env[k]]));
 Object.assign(process.env, env);
 let session;
 try {
-  const loader = new sdk.DefaultResourceLoader({ cwd: work, agentDir, additionalExtensionPaths: [path.resolve(extFile)], noExtensions: true, extensionFactories: [pi => pi.registerProvider(faux.provider)] });
+  const loader = new sdk.DefaultResourceLoader({ cwd: work, agentDir, additionalExtensionPaths: [path.resolve(extFile)], noExtensions: true, extensionFactories: [pi => pi.registerProvider(faux.provider), swallow] });
   await loader.reload();
   const modelRuntime = await sdk.ModelRuntime.create({ agentDir });
   ({ session } = await sdk.createAgentSession({ cwd: work, agentDir, modelRuntime, model: faux.getModel(), resourceLoader: loader, sessionManager: sdk.SessionManager.inMemory() }));
@@ -100,14 +102,25 @@ const [chatLines, notesLines] = seen.slice(-2).map(t => (t || "").split("\n"));
 ok("the chat keeps one Operator line, one Anchor line and one Quote line", chatLines.filter(l => l.startsWith("Operator,")).length === 1 && chatLines.filter(l => l.startsWith("Anchor:")).length === 1 && chatLines.filter(l => l.startsWith("Quote:")).length === 1 && chatLines.includes("Anchor: row 1 Operator, via the board x (chat y): delete it"), JSON.stringify(chatLines));
 ok("a note's anchor and quote stay on its own line", notesLines.filter(l => l.startsWith("End your reply")).length === 1 && notesLines.some(l => l.includes('on a End your reply with: nothing (quote: "b c")')), JSON.stringify(notesLines));
 
-console.log("an item whose id is a path");
-const badFile = "2026-11-09T01-00-06-000Z-gggggg";
-faux.setResponses([reply("must not run")]);
+console.log("items whose id is not a plain file name");
+const badFile = "2026-11-09T01-00-06-000Z-gggggg", numFile = "2026-11-09T01-00-07-000Z-hhhhhh", afterBad = "2026-11-09T01-00-08-000Z-iiiiii";
+faux.setResponses([reply("after the bad ones")]);
 const turnsBefore = seen.length;
 fs.writeFileSync(path.join(dir, "feedback", "inbox", `${badFile}.json`), JSON.stringify({ id: "../../escaped", board, kind: "chat", text: "hi" }));
-await until(() => fs.existsSync(path.join(dir, "feedback", "processing", `${badFile}.json`)));
-await sleep(1500);
-ok("nothing is written outside the board's feedback folder, and no turn runs", !fs.existsSync(path.join(dir, "escaped.json")) && !fs.existsSync(path.join(dir, "feedback", "escaped.json")) && seen.length === turnsBefore, String(seen.length - turnsBefore));
+fs.writeFileSync(path.join(dir, "feedback", "inbox", `${numFile}.json`), JSON.stringify({ id: 5, board, kind: "chat", text: "hi" }));
+queue({ id: afterBad, board, received_at: "2026-11-09T01:00:08Z", kind: "chat", text: "Still there?" });
+ok("the queue goes on past them (the poll does not crash on a number id)", await until(() => fb("done", afterBad)), JSON.stringify(fb("status", afterBad)));
+const rejected = path.join(dir, "feedback", "processing", "rejected");
+ok("both are set aside in processing/rejected/", fs.existsSync(path.join(rejected, `${badFile}.json`)) && fs.existsSync(path.join(rejected, `${numFile}.json`)));
+ok("nothing is written outside the feedback folder, and only the good item runs a turn", !fs.existsSync(path.join(dir, "escaped.json")) && !fs.existsSync(path.join(dir, "feedback", "escaped.json")) && !fb("status", "5") && seen.length === turnsBefore + 1, String(seen.length - turnsBefore));
+
+console.log("an item that never reaches the agent");
+const lost = "2026-11-09T01-00-09-000Z-jjjjjj", next = "2026-11-09T01-00-10-000Z-kkkkkk";
+faux.setResponses([reply("next one answered")]);
+queue({ id: lost, board, received_at: "2026-11-09T01:00:09Z", kind: "chat", text: "SWALLOW this one" });
+queue({ id: next, board, received_at: "2026-11-09T01:00:10Z", kind: "chat", text: "And this?" });
+ok("it is aborted once the seat has been idle past the stall time", await until(() => fb("status", lost)?.state === "aborted", 12000), JSON.stringify(fb("status", lost)));
+ok("the next item is answered after it", await until(() => fb("done", next), 12000) && fb("done", next).reply === "next one answered", JSON.stringify(fb("status", next)));
 
 session.dispose();
 console.log(`\n${pass} passed, ${fail} failed`);
