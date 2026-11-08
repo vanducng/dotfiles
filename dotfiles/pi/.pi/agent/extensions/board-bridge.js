@@ -43,17 +43,20 @@ function write(dir, sub, data) {
   fs.writeFileSync(path.join(dir, "feedback", sub, `${data.id}.json`), JSON.stringify(data, null, 2));
 }
 
+// Anchors and quotes go on one line, so a newline in one cannot start a line of its own ("Operator, ...").
+const oneLine = value => String(value ?? "").replace(/\r?\n/g, " ");
+
 function prompt(fb, dir) {
   const board = path.relative(root, dir);
   if (fb.kind === "chat") {
     // The operator speaking: only a listed tailnet login or the board token can send one.
     return [
       `Operator, via the board ${board} (chat ${fb.id}): ${fb.text}`,
-      ...(fb.anchor ? [`Anchor: ${fb.anchor}`] : []),
-      ...(fb.quote ? [`Quote: "${fb.quote}"`] : []),
+      ...(fb.anchor ? [`Anchor: ${oneLine(fb.anchor)}`] : []),
+      ...(fb.quote ? [`Quote: "${oneLine(fb.quote)}"`] : []),
     ].join("\n");
   }
-  const lines = fb.notes.map((n, i) => `${i + 1}. [${n.id} · ${n.kind}] on ${n.anchor || "the board"}${n.quote ? ` (quote: "${n.quote}")` : ""}\n   ${n.text.replace(/\n/g, "\n   ")}`);
+  const lines = fb.notes.map((n, i) => `${i + 1}. [${oneLine(n.id)} · ${n.kind}] on ${oneLine(n.anchor) || "the board"}${n.quote ? ` (quote: "${oneLine(n.quote)}")` : ""}\n   ${n.text.replace(/\n/g, "\n   ")}`);
   return [
     `Board feedback from the operator, sent from the tracking board ${board} (feedback ${fb.id}).`,
     `Apply each note: change ${board}/board.json and the git records where a note asks for it, send build work to the rig's owner seat, then run \`node ${render} render ${board}\`.`,
