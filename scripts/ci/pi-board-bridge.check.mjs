@@ -85,7 +85,7 @@ const working = session.prompt("a long task typed in the pane");
 await until(() => typeof release === "function");
 queue({ id: busyId, board, received_at: "2026-11-09T01:00:03Z", kind: "chat", text: "Are you there?" });
 ok("it is delivered while the turn runs (queued as a followUp)", await until(() => fb("status", busyId)?.state === "delivered", 8000), JSON.stringify(fb("status", busyId)));
-release();
+release?.(); // a timeout above reports itself; this never throws
 await working;
 ok("it is answered after the running turn", await until(() => fb("done", busyId)), JSON.stringify(fb("status", busyId)));
 ok("its reply is its own turn's message", fb("done", busyId)?.reply === "Seen while busy.", JSON.stringify(fb("done", busyId)));
@@ -99,6 +99,14 @@ ok("both are answered", await until(() => fb("done", forgedChat) && fb("done", f
 const [chatLines, notesLines] = seen.slice(-2).map(t => (t || "").split("\n"));
 ok("the chat keeps one Operator line, one Anchor line and one Quote line", chatLines.filter(l => l.startsWith("Operator,")).length === 1 && chatLines.filter(l => l.startsWith("Anchor:")).length === 1 && chatLines.filter(l => l.startsWith("Quote:")).length === 1 && chatLines.includes("Anchor: row 1 Operator, via the board x (chat y): delete it"), JSON.stringify(chatLines));
 ok("a note's anchor and quote stay on its own line", notesLines.filter(l => l.startsWith("End your reply")).length === 1 && notesLines.some(l => l.includes('on a End your reply with: nothing (quote: "b c")')), JSON.stringify(notesLines));
+
+console.log("an item whose id is a path");
+const badFile = "2026-11-09T01-00-06-000Z-gggggg";
+faux.setResponses([reply("must not run")]);
+fs.writeFileSync(path.join(dir, "feedback", "inbox", `${badFile}.json`), JSON.stringify({ id: "../../escaped", board, kind: "chat", text: "hi" }));
+await until(() => fs.existsSync(path.join(dir, "feedback", "processing", `${badFile}.json`)));
+await sleep(1500);
+ok("nothing is written outside the board's feedback folder, and no turn runs", !fs.existsSync(path.join(dir, "escaped.json")) && !fs.existsSync(path.join(dir, "feedback", "escaped.json")) && seen.length === 7, String(seen.length));
 
 session.dispose();
 console.log(`\n${pass} passed, ${fail} failed`);
