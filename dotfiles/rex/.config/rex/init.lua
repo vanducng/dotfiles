@@ -109,3 +109,15 @@ for k, dir in pairs(dirs) do
 end
 bind("resize/=", "pane.balance")
 bind("resize/enter", "client.mode.exit")
+
+-- rexurrect: restore saved sessions (and resume agents) when the server starts.
+do
+  local home = os.getenv("HOME")
+  pcall(function()
+    local r = rex.exec({ home .. "/.cargo/bin/rexurrect", "auto-restore" }, { env = {
+      REXURRECT_STATE_DIR = home .. "/.local/state/rexurrect",
+      REXURRECT_CONFIG = home .. "/.config/rexurrect/config.toml",
+    } })
+    if r then io.stderr:write(r.stderr) end
+  end)
+end
