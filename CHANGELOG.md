@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.42.0](https://github.com/vanducng/dotfiles/compare/v0.41.0...v0.42.0) (2026-11-10)
+
+
+### Features
+
+* **claude:** set Fable 5.2 effort and note it in the proxy status ([#283](https://github.com/vanducng/dotfiles/issues/283)) ([e7e6e58](https://github.com/vanducng/dotfiles/commit/e7e6e589826b22def38b3ea37aad15820c9d9652))
+* **pi:** add claude-fable-5-2 to cpa models ([3256eab](https://github.com/vanducng/dotfiles/commit/3256eabb4f08b9b3aba98424b18ed53ef31413e8))
+* **rexboard:** the openrig extension marks a rig's human seat ([#285](https://github.com/vanducng/dotfiles/issues/285)) ([c1e3be6](https://github.com/vanducng/dotfiles/commit/c1e3be6f86bbc4f04f4a738a80b43ffc93a62f2a))
+
+
+### Bug Fixes
+
+* **pi:** Pi's bash commands find ~/.local/bin ([#284](https://github.com/vanducng/dotfiles/issues/284)) ([3e986cb](https://github.com/vanducng/dotfiles/commit/3e986cb95b7d64e571e8d8b406a8af2a0cfdad45))
+
 ## [0.41.0](https://github.com/vanducng/dotfiles/compare/v0.40.0...v0.41.0) (2026-11-08)
 
 
