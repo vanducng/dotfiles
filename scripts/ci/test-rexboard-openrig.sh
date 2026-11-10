@@ -156,14 +156,46 @@ pass "send: wait_for_idle up to $max_wait s, inside the ${timeout}s action timeo
 
 pass "send: wait_for_idle and sender only from settings; a bad wait or a failed rig send fails with its message"
 
-# rexboard's own check, when it is installed: the manifest loads and the answer keeps contract 1.
-if command -v rexboard >/dev/null && rexboard ext run --help >/dev/null 2>&1; then
+# The human seat, and only it, is marked: a seat that is not human, a row with no seat and a seat
+# row that answers nothing else carry no "mark" key at all.
+got=$(printf '%s' "$request" | PATH="$FIX/bin:$PATH" "$EXT/adapter")
+marked=$(printf '%s' "$got" | jq -S '.rows | with_entries(select(.value | has("mark"))) | map_values(.mark)')
+[ "$marked" = "$(printf '{\n  "local/b-human": true\n}' | jq -S .)" ] || fail "want only local/b-human marked, got: $marked"
+for key in local/b-title local/b-label local/b-session mini/b-remote; do
+  [ "$(printf '%s' "$got" | jq --arg k "$key" '.rows[$k] | has("mark")')" = false ] || fail "$key is not a human seat but has a mark"
+done
+for key in local/b-ambiguous local/b-shell mini/b-wronghost down/b-unreached; do
+  [ "$(printf '%s' "$got" | jq --arg k "$key" '.rows | has($k)')" = false ] || fail "$key has no seat but has an answer"
+done
+pass "mark: the human seat (logicalId ending .human) is marked; other seats and rows with no seat have no mark key"
+
+# rexboard's own check, when it is installed (REXBOARD names another binary): the manifest loads and
+# the answer keeps contract 1. A rexboard from before extension marks drops the key as `unknown key
+# mark` and still works, so there the mark is the only problem; with marks, the count is reported.
+rexboard=${REXBOARD:-rexboard}
+if command -v "$rexboard" >/dev/null && "$rexboard" ext run --help >/dev/null 2>&1; then
   mkdir -p "$TMP/config/rexboard/extensions"
   cp -R "$EXT" "$TMP/config/rexboard/extensions/"
   printf '[extensions.settings.openrig]\nworkspace = "%s"\n' "$FIX" > "$TMP/config/rexboard/config.toml"
-  PATH="$FIX/bin:$PATH" XDG_CONFIG_HOME="$TMP/config" XDG_STATE_HOME="$TMP/state" TMPDIR="$TMP" \
-    rexboard ext test openrig --rows "$FIX/rows.json" >/dev/null || fail "rexboard ext test openrig"
-  pass "rexboard ext test openrig --rows rows.json"
+  extest() { # [--json]
+    PATH="$FIX/bin:$PATH" XDG_CONFIG_HOME="$TMP/config" XDG_STATE_HOME="$TMP/state" XDG_RUNTIME_DIR="$TMP/run" TMPDIR="$TMP" \
+      "$rexboard" "$@" ext test openrig --rows "$FIX/rows.json"
+  }
+  mkdir -p "$TMP/run"
+  set +e
+  text=$(extest 2>&1)
+  code=$?
+  set -e
+  if printf '%s' "$text" | grep -q ', marks '; then
+    [ $code = 0 ] || fail "rexboard ext test openrig: exit $code: $text"
+    printf '%s' "$text" | grep -q 'fields for 5 of 9 rows, marks 1$' || fail "ext test should report 5 of 9 rows and marks 1: $text"
+    printf '%s' "$text" | grep -q 'local/b-human .*mark$' || fail "ext test should show the mark on local/b-human: $text"
+    [ "$(extest --json | jq -c '[.ok, .marks]')" = '[true,1]' ] || fail "ext test --json should give ok and marks 1"
+    pass "rexboard ext test openrig --rows rows.json: fields for 5 of 9 rows, marks 1 (and --json marks: 1)"
+  else
+    printf '%s' "$text" | grep -q 'unknown key mark' || fail "an older rexboard should name only the mark key: $text"
+    pass "an older rexboard (no extension marks) drops the mark as \`unknown key mark\`: $(printf '%s' "$text" | grep 'unknown key mark' | head -1)"
+  fi
 else
   echo "SKIP: rexboard with actions (ext run) not installed"
 fi
