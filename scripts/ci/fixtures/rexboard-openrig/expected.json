@@ -38,6 +38,17 @@
     "project": null,
     "session": "lead-owner@web"
    }
+  },
+  "local/b-human": {
+   "fields": {
+    "rig": "api",
+    "project": "demo.api",
+    "session": "lead-human@api"
+   },
+   "status": {
+    "state": "idle"
+   },
+   "mark": true
   }
  }
 }

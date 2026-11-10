@@ -44,8 +44,17 @@
     "state": "idle"
    },
    "needsAttention": false
+  },
+  {
+   "rigName": "api",
+   "logicalId": "lead.human",
+   "canonicalSessionName": "lead-human@api",
+   "agentActivity": {
+    "state": "idle"
+   },
+   "needsAttention": false
   }
  ],
- "totalNodes": 5,
+ "totalNodes": 6,
  "truncated": false
 }
