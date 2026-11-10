@@ -29,6 +29,25 @@ pi_ver_gt() {
     [ "$(printf '%s\n%s\n' "$1" "$2" | sort -V | tail -1)" = "$1" ]
 }
 
+# Pi's managed install (`pi update` keeps releases under ~/.pi/agent/install, entrypoint ~/.pi/agent/bin/pi) wins:
+# an npm-global copy left in a mise Node prefix stops updating once a host has moved to it. Its release runs on
+# `node` from PATH, so the newest mise Node >= 22.19.0 goes first, for the same reason as below.
+managed="$HOME/.pi/agent/bin/pi"
+if [ -x "$managed" ] && [ -s "$HOME/.pi/agent/install/current-version" ]; then
+    newest=""
+    for d in "$MISE_NODE_ROOT"/*/; do
+        d=${d%/}; d=${d##*/}
+        case $d in
+            [0-9]*.[0-9]*.[0-9]*) [ -x "$MISE_NODE_ROOT/$d/bin/node" ] && pi_ver_gt "$d" "$newest" && newest=$d ;;
+        esac
+    done
+    if [ -n "$newest" ] && [ "$(printf '22.19.0\n%s\n' "$newest" | sort -V | head -1)" = 22.19.0 ]; then
+        PATH="$MISE_NODE_ROOT/$newest/bin:$PATH"
+        export PATH
+    fi
+    exec "$managed" "$@"
+fi
+
 for cli in "$MISE_NODE_ROOT"/*/lib/node_modules/"$PKG"/dist/cli.js; do
     [ -f "$cli" ] || continue
     prefix="${cli%/lib/node_modules/*}"
