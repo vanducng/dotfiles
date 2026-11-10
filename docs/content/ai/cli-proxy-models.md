@@ -14,6 +14,8 @@ Chat ids are probed with `ccx <id> -p` and tools turned off. Image ids use `POST
 
 `claude-fable-5`, `claude-fable-5-1`, `claude-haiku-4-5-20251001`, `claude-opus-4-5-20251101`, `claude-opus-4-6`, `claude-opus-4-7`, `claude-opus-4-8`, `claude-opus-5`, `claude-opus-5-5`, `claude-sonnet-4-5-20250929`, `claude-sonnet-4-6`, `claude-sonnet-5`, `claude-sonnet-5-5`
 
+Added 2026-11-10: `claude-fable-5-2` is listed by `/v1/models` and answers on `/v1/messages` and `/v1/responses` once the gateway presents Claude Code 2.1.290 or newer. Before that it returned `claude_code_version_too_old`. It is not in the counts above, which come from the 2026-10-05 probe run.
+
 ### GPT
 
 `gpt-5.5`, `gpt-5.6-luna`, `gpt-5.6-sol`, `gpt-5.6-terra`, `gpt-6-astra`, `gpt-6-luna`, `gpt-6-sol`, `gpt-6.1-sol`
