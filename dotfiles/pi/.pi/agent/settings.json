@@ -11,6 +11,7 @@
   },
   "hideThinkingBlock": false,
   "quietStartup": true,
+  "shellCommandPrefix": "case \":$PATH:\" in *\":$HOME/.local/bin:\"*) ;; *) PATH=\"$PATH:$HOME/.local/bin\" ;; esac",
   "showHardwareCursor": true,
   "theme": "rose-pine-moon",
   "steeringMode": "all",
