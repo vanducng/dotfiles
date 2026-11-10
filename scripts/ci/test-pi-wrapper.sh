@@ -26,4 +26,25 @@ mkdir -p "$home/.pi/agent/install"; echo 1.5.1 > "$home/.pi/agent/install/curren
 got="$(run --version)"
 [[ "$got" == "managed --version node=$nodes/22.23.4/bin/node" ]] || fail "the managed install wins, on Node 22.23.4: $got"
 
+# A run that loops (the wrapper reaching itself again) is stopped after 10 seconds; bash only, no timeout(1) needed.
+bounded() {
+	local out="$home/bounded.out" pid i
+	"$@" > "$out" 2>&1 & pid=$!
+	for i in $(seq 1 100); do kill -0 "$pid" 2>/dev/null || { wait "$pid" || true; cat "$out"; return; }; sleep 0.1; done
+	kill "$pid" 2>/dev/null || true; echo "LOOPED"
+}
+npm_line="npm-pi $nodes/22.23.4/$pkg/dist/cli.js --version"
+
+# The managed entrypoint links back to this wrapper: it must not exec itself.
+rm "$home/.pi/agent/bin/pi"; ln -s "$wrapper" "$home/.pi/agent/bin/pi"
+got="$(bounded run --version)"
+[[ "$got" == "$npm_line" ]] || fail "a managed entrypoint that is this wrapper is skipped: $got"
+
+# The managed entrypoint runs `pi` from PATH, which is this wrapper again: the second run must not go back to it.
+rm "$home/.pi/agent/bin/pi"  # the link to the wrapper: writing through it would overwrite the wrapper
+stub "$home/.pi/agent/bin/pi" 'exec pi "$@"'
+mkdir -p "$home/onpath"; ln -sf "$wrapper" "$home/onpath/pi"
+got="$(bounded env -i HOME="$home" PATH="$home/onpath:$nodes/20.11.0/bin:/usr/bin:/bin" /bin/bash "$wrapper" --version)"
+[[ "$got" == "$npm_line" ]] || fail "a managed entrypoint that calls pi again does not loop: $got"
+
 echo "pi wrapper test: ok"
