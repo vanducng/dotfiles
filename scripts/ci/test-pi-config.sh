@@ -20,6 +20,20 @@ jq -e '
 	.defaultModel == "claude-opus-5-5" and
 	.transport == "sse"
 ' "$agent_dir/settings.json" >/dev/null
+# Pi runs each bash command in a non-interactive shell that inherits the PATH of whatever started pi (a tmux pane,
+# the OpenRig daemon), which can lack ~/.local/bin. shellCommandPrefix appends it, so tools installed there resolve,
+# without shadowing a command found earlier on the PATH (an OpenRig seat's own rig wrapper).
+prefix="$(jq -r '.shellCommandPrefix // ""' "$agent_dir/settings.json")"
+path_seen="$(env -i HOME="$test_dir" PATH=/usr/bin:/bin /bin/bash -c "$prefix"$'\n''printf %s "$PATH"')"
+if [[ "$path_seen" != "/usr/bin:/bin:$test_dir/.local/bin" ]]; then
+	printf 'error: shellCommandPrefix must append ~/.local/bin to PATH; got %s\n' "$path_seen" >&2
+	exit 1
+fi
+path_again="$(env -i HOME="$test_dir" PATH="/usr/bin:$test_dir/.local/bin" /bin/bash -c "$prefix"$'\n''printf %s "$PATH"')"
+if [[ "$path_again" != "/usr/bin:$test_dir/.local/bin" ]]; then
+	printf 'error: shellCommandPrefix must not add ~/.local/bin twice; got %s\n' "$path_again" >&2
+	exit 1
+fi
 jq -e '
 	.packages
 	| index("npm:pi-web-access")
