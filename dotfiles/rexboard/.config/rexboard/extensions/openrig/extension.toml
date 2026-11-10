@@ -1,6 +1,6 @@
 name = "openrig"
 contract = 1
-description = "OpenRig seats: each seat's project and rig, a message to the seat, and OpenRig's state for a seat that reports nothing"
+description = "OpenRig seats: each seat's project and rig, a message to the seat, OpenRig's state for a seat that reports nothing, and a mark on a rig's human seat"
 cmd = ["./adapter"]
 every = 20
 timeout = 15
