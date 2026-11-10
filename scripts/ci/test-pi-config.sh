@@ -93,11 +93,12 @@ jq -e '
 	  and .thinkingLevelMap.xhigh == "xhigh" and .thinkingLevelMap.max == "max"
 ' "$agent_dir/models.json" >/dev/null
 jq -e '
-	.providers.cpa.models[]
-	| select(.id == "claude-fable-5-1")
-	| .contextWindow == 1000000 and .maxTokens == 65536
-	  and .thinkingLevelMap.off == null
-	  and .thinkingLevelMap.xhigh == "xhigh" and .thinkingLevelMap.max == "max"
+	[.providers.cpa.models[] | select(.id == "claude-fable-5-1" or .id == "claude-fable-5-2")]
+	| length == 2 and all(
+		.contextWindow == 1000000 and .maxTokens == 65536
+		and .thinkingLevelMap.off == null
+		and .thinkingLevelMap.xhigh == "xhigh" and .thinkingLevelMap.max == "max"
+	)
 ' "$agent_dir/models.json" >/dev/null
 jq -e '
 	.providers.cpa.models[]
