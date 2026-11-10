@@ -32,8 +32,11 @@ pi_ver_gt() {
 # Pi's managed install (`pi update` keeps releases under ~/.pi/agent/install, entrypoint ~/.pi/agent/bin/pi) wins:
 # an npm-global copy left in a mise Node prefix stops updating once a host has moved to it. Its release runs on
 # `node` from PATH, so the newest mise Node >= 22.19.0 goes first, for the same reason as below.
+# PI_WRAPPER_ACTIVE (also set by the fallback at the bottom) and the -ef test keep it from reaching this wrapper again:
+# an entrypoint that links here, or one that runs `pi` from PATH.
 managed="$HOME/.pi/agent/bin/pi"
-if [ -x "$managed" ] && [ -s "$HOME/.pi/agent/install/current-version" ]; then
+if [ -z "${PI_WRAPPER_ACTIVE:-}" ] && [ -x "$managed" ] && ! [ "$managed" -ef "$0" ] \
+    && [ -s "$HOME/.pi/agent/install/current-version" ]; then
     newest=""
     for d in "$MISE_NODE_ROOT"/*/; do
         d=${d%/}; d=${d##*/}
@@ -45,6 +48,7 @@ if [ -x "$managed" ] && [ -s "$HOME/.pi/agent/install/current-version" ]; then
         PATH="$MISE_NODE_ROOT/$newest/bin:$PATH"
         export PATH
     fi
+    export PI_WRAPPER_ACTIVE=1
     exec "$managed" "$@"
 fi
 
