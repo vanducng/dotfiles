@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.42.1](https://github.com/vanducng/dotfiles/compare/v0.42.0...v0.42.1) (2026-11-10)
+
+
+### Bug Fixes
+
+* **pi:** the pi wrapper prefers Pi's managed install ([#286](https://github.com/vanducng/dotfiles/issues/286)) ([4b3b264](https://github.com/vanducng/dotfiles/commit/4b3b26474745a17fceb8d8cc127339f5f3b7a4b4))
+
 ## [0.42.0](https://github.com/vanducng/dotfiles/compare/v0.41.0...v0.42.0) (2026-11-10)
 
 
