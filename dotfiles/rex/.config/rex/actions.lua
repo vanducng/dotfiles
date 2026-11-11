@@ -642,20 +642,20 @@ end
 
 -- rexboard's whole board over the window (board --once: every key, the card too). A jump moves
 -- focus and ends it, so the pane is refocused only on q, esc or a failure, and a failure's reason
--- stays up until enter. On another
--- host's pane it runs that host's rexboard, and REX_CLIENT sends its jump back to this Mac's app.
+-- stays up until enter. On another host's pane the overlay runs there, so it runs this Mac's own
+-- board over ssh: the same serve, config, favorites and saved state, jumping through this app.
 rex.action{
   name = "agent_pick",
   title = "Pick an Agent (rexboard)",
   category = "Session",
   run = function(ctx)
-    local cli = ctx.server and "rexboard" or rexboard_cli()
+    if ctx.server and not hosts.self then error("this Mac is not in hosts.json, so a remote pane cannot reach its board", 0) end
     overlay(ctx, { 0.08, 0.08, 0.84, 0.84 }, [=[
-PATH="$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"
-[ -z "$5" ] || export REX_CLIENT="$5"
-e=$(mktemp) && "$4" board --once 2>"$e" && { rm -f "$e"; exit 0; }
+e=$(mktemp)
+if [ -n "$5" ]; then ssh -qt -o BatchMode=yes -o ConnectTimeout=5 "$5" "$4" board --once 2>"$e"
+else "$4" board --once 2>"$e"; fi && { rm -f "$e"; exit 0; }
 [ -s "$e" ] && { cat "$e"; printf 'enter closes '; read -r _; }
-rm -f "$e"]=], "", cli, ctx.server and select(2, host_app(ctx.server)) or "")
+rm -f "$e"]=], "", rexboard_cli(), ctx.server and hosts.self or "")
   end,
 }
 
