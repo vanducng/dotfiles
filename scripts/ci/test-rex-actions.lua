@@ -26,7 +26,8 @@ rex = {
   end,
   session = {
     view = function(d)
-      return { windows = { { window_id = "w", focused_block_id = d.session_id == "t" and "api" or "source", layers = {
+      return { windows = { { window_id = "w", focused_block_id = d.session_id == "t" and "api" or "source",
+        zoomed_block_id = d.session_id == "z" and "source" or nil, layers = {
         { kind = "tiled", layout = { block_id = "source", rect = { 0.5, 0, 0.5, 1 } } },
       } } } }
     end,
@@ -78,6 +79,12 @@ assert(cmd[8] == "/mac/rexboard" and cmd[9] == "mac-a", "ssh to this Mac and run
 actions.agent_pick.run(context)
 cmd = layer.layout.block.options.command
 assert(cmd[8] == "/mac/rexboard" and cmd[9] == "", "a local pane runs the board here, no ssh")
+actions.agent_pick.run({ session_id = "z", block_id = "source", client_id = "app" })
+assert(layer.bounds[1] == 0.08 and layer.bounds[3] == 0.84, "over a zoomed pane the popup keeps its size")
+assert(layer.layout.block.options.command[6] == "1", "and re-zooms the pane on quit")
+actions.copy_mode.run({ session_id = "z", block_id = "source", client_id = "app" })
+assert(layer.bounds[3] == 1 and layer.bounds[4] == 1, "an overlay without bounds still fills a zoomed window")
+os.remove(layer.layout.block.options.command[7])
 
 windows = { { window_id = "board", label = "1-rexboard" }, { window_id = "pi", label = "pi" },
   { window_id = "custom", label = "notes" } }
