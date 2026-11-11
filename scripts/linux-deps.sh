@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # User-space Linux bootstrap. No sudo. Idempotent.
-# Learned on Ubuntu 22.04 (host lab): apt is blocked without a password,
+# Learned on Ubuntu 22.04: apt is blocked without a password,
 # aqua:tmux/tmux 404s, git-delta is not a mise tool name.
 set -euo pipefail
 

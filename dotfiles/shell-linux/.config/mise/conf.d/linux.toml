@@ -1,6 +1,6 @@
 # Linux CLI tools for a sudo-free bootstrap (Ubuntu 22.04+).
 # Runtimes (node, python, go) and shared tools are pinned in mise/config.toml only.
-# Learned on host `lab`:
+# Learned on the Linux host:
 # - `aqua:tmux/tmux` is not in the aqua registry — use mise core `tmux`
 # - `git-delta` is not a mise registry name — use `aqua:dandavison/delta`
 # - aqua linux-gnu rust bins often need GLIBC 2.38+; 22.04 is 2.35, so prefer musl

@@ -1,7 +1,11 @@
 #!/bin/sh
 # Loads dashboard credentials at launch so shell startup skips the gopass/GPG round trip.
-export JIRA_DOMAIN="https://acme.atlassian.net"
-export JIRA_EMAIL="me@vanducng.dev"
-export JIRA_API_KEY="${JIRA_API_KEY:-$(gopass show -o work/acme/atlassian-api-key 2>/dev/null)}"
+# The Jira site, login and gopass entry are per machine: ~/.config/wtf/env (private overlay)
+# sets JIRA_DOMAIN, JIRA_EMAIL and WTF_JIRA_GOPASS.
+[ -r "${XDG_CONFIG_HOME:-$HOME/.config}/wtf/env" ] && . "${XDG_CONFIG_HOME:-$HOME/.config}/wtf/env"
+if [ -z "${JIRA_API_KEY:-}" ] && [ -n "${WTF_JIRA_GOPASS:-}" ]; then
+  JIRA_API_KEY="$(gopass show -o "$WTF_JIRA_GOPASS" 2>/dev/null)"
+fi
+export JIRA_DOMAIN JIRA_EMAIL JIRA_API_KEY
 export GITHUB_TOKEN="${GITHUB_TOKEN:-$(gh auth token 2>/dev/null)}"
 exec /opt/homebrew/bin/wtfutil "$@"

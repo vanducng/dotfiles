@@ -146,32 +146,18 @@ local urls = {
 			R = "https://chatgpt.com/",
 		},
 	},
-	-- ACME (Space 1)
-	acme = {
-		space = 1,
-		shortcuts = {
-			A = "https://github.com/acme-corp/acme-ds-dbt-order-form/pulls",
-			S = "https://github.com/acme-corp/acme-ds-astro/pulls",
-			D = "https://github.com/acme-corp/acme-ds-infra/pulls",
-		},
-	},
-	-- Umbrella (Space 3)
-	umbrella = {
-		space = 3,
-		shortcuts = {
-			Z = "https://github.com/UMBRELLA/harmony/pulls",
-			X = "https://github.com/UMBRELLA/umbrella-infra/pulls",
-		},
-	},
-
-	-- Hooli (Space 6)
-	hooli = {
-		space = 6,
-		shortcuts = {
-			Q = "https://github.com/owner/health-data/pulls",
-		},
-	},
 }
+
+-- This machine's own spaces and shortcuts (client repos), from the private overlay when present:
+-- ~/.hammerspoon/overlay.lua returns a table shaped like urls.
+local ok, overlay = pcall(require, "overlay")
+if ok and type(overlay) == "table" then
+	for name, config in pairs(overlay) do
+		if type(config) == "table" and type(config.shortcuts) == "table" and config.space then
+			urls[name] = config
+		end
+	end
+end
 
 -- Helper function to open URL in Arc browser
 local function openInArc(space, url)

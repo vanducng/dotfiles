@@ -1,8 +1,8 @@
-COMMON_STOW_FOLDERS=tmux herdr pi ssh starship bin vrapperrc yazi zathura lazygit nvim-vscode task nvim mise miu agents atuin direnv diffnav gh-dash agent-deck wtf delta git plannotator rex
+COMMON_STOW_FOLDERS=tmux herdr pi starship bin vrapperrc yazi zathura lazygit nvim-vscode task nvim mise miu agents atuin direnv diffnav gh-dash agent-deck wtf delta git plannotator rex
 MACOS_STOW_FOLDERS=zsh kitty skhd yabai borders ghostty claude codex grok cursor hammerspoon karabiner rift vscode launchd gopass gnupg rexboard
 # Portable extras for Linux. Do not auto-stow `grok`: the Grok TUI installer owns ~/.grok.
 # Opt in with `make stow-grok` after backing up auth.json / sessions.
-LINUX_STOW_EXTRAS=kitty claude codex cursor gopass shell-linux ghostty sway waybar wofi mako kanata homelab
+LINUX_STOW_EXTRAS=kitty claude codex cursor gopass shell-linux ghostty sway waybar wofi mako kanata
 ALL_STOW_FOLDERS=$(sort $(COMMON_STOW_FOLDERS) $(MACOS_STOW_FOLDERS) $(LINUX_STOW_EXTRAS))
 PLATFORM ?= $(shell uname -s)
 ifneq ($(filter Darwin macos,$(PLATFORM)),)
@@ -11,6 +11,10 @@ else
 STOW_FOLDERS=$(COMMON_STOW_FOLDERS) $(LINUX_STOW_EXTRAS)
 endif
 SHELL := /bin/bash
+# This machine's private overlay (host names, client dirs, work identities), stowed after the
+# public packages when present. See scripts/stow-overlay.sh.
+DOTFILES_OVERLAY ?= $(HOME)/.dotfiles-overlay
+export DOTFILES_OVERLAY
 
 .PHONY: setup rex-hooks rex-hooks-apply help stow-folders stow-install stow-uninstall stow-status setup-herdr setup-tinycast setup-rex setup-rex-linux release test validate deps platform-test script-test linux-deps linux-desktop linux-homelab bootstrap-linux ensure-home-repos
 
@@ -52,6 +56,7 @@ stow-folders:
 stow-install:
 	@$(if $(filter pi,$(STOW_FOLDERS)),echo "Stowing pi (home layout)"; ./scripts/pi-home-layout.sh)
 	@./scripts/stow-package.sh $(filter-out pi,$(STOW_FOLDERS))
+	@./scripts/stow-overlay.sh
 	@$(if $(filter rex,$(STOW_FOLDERS)),$(REX_HOOKS_APPLY))
 	@$(MAKE) ensure-home-repos
 
@@ -96,6 +101,7 @@ stow-status:
 define make-stow-target
 stow-$(1):
 	@./scripts/stow-package.sh $(1)
+	@./scripts/stow-overlay.sh $(1)
 
 unstow-$(1):
 	@echo "Unstowing $(1)..."
@@ -107,6 +113,7 @@ $(foreach tool,$(filter-out pi rex,$(ALL_STOW_FOLDERS)),$(eval $(call make-stow-
 # Rex config, then the agent hooks (rex-hooks-apply).
 stow-rex:
 	@./scripts/stow-package.sh rex
+	@./scripts/stow-overlay.sh rex rex-linux
 	@$(REX_HOOKS_APPLY)
 
 unstow-rex:
@@ -141,8 +148,10 @@ linux-deps:
 linux-desktop:
 	@./scripts/linux-desktop.sh
 
+# The homelab box's bootstrap is host-specific, so it lives in the overlay.
 linux-homelab:
-	@./scripts/linux-homelab.sh
+	@test -x "$(DOTFILES_OVERLAY)/scripts/linux-homelab.sh" || { echo "no linux-homelab in the overlay at $(DOTFILES_OVERLAY)"; exit 1; }
+	@"$(DOTFILES_OVERLAY)/scripts/linux-homelab.sh"
 
 bootstrap-linux: linux-deps stow-install
 	@echo "Linux bootstrap complete. source ~/.config/shell/linux.sh"
@@ -219,6 +228,7 @@ script-test:
 	@./scripts/ci/test-release-manifest.sh
 	@./scripts/ci/test-release.sh
 	@./scripts/ci/test-stow-package-check.sh
+	@./scripts/ci/test-stow-overlay.sh
 
 install-test:
 	@./scripts/ci/test-install.sh

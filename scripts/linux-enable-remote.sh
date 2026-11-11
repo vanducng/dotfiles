@@ -46,5 +46,5 @@ fi
 echo
 echo "sshd is $(systemctl is-active ssh). linger=$(loginctl show-user "$TARGET_USER" -p Linger --value)"
 echo "LAN: ssh ${TARGET_USER}@$(hostname -I | awk '{print $1}')"
-echo "Then as ${TARGET_USER}: moshi-hook host setup --name lab --host <tailscale-ipv4> --port 2222 --user ${TARGET_USER}"
+echo "Then as ${TARGET_USER}: moshi-hook host setup --name "$(hostname -s)" --host <tailscale-ipv4> --port 2222 --user ${TARGET_USER}"
 echo "Pair Moshi: scan the QR, then moshi-hook pair --token <token> && moshi-hook install"

@@ -40,16 +40,13 @@ Copy the git identity template (not committed as `~/.gitconfig`):
 
 ```bash
 cp ~/.config/git/gitconfig.linux.example ~/.gitconfig
-# default: personal git identity
-# ~/work/git/acme         → ACME work identity
-# ~/work/git/initech   → personal git identity
-# ~/work/git/globex → GLOBEX work identity
-# ~/work/git/umbrella       → ACME work identity
+# default: personal git identity; per-client identities for ~/work/git/<client>
+# come from the private overlay's git package, when this machine has one
 ```
 
 Optional (needs sudo): `mosh`, `zathura`, `taskwarrior`, and `chsh -s` to zsh. Grok config: `make stow-grok` is opt-in after backing up `~/.grok/auth.json`.
 
-Desktop (Sway = i3 on Wayland, Ghostty, same skhd/Karabiner keys): `make linux-desktop`. Details in [Linux desktop](/linux-desktop). Homelab (disks, never-sleep, ssh, clones): `make linux-homelab` then `sudo -E ./scripts/linux-homelab-root.sh` — [Linux homelab](/linux-homelab).
+Desktop (Sway = i3 on Wayland, Ghostty, same skhd/Karabiner keys): `make linux-desktop`. Details in [Linux desktop](/linux-desktop). A homelab box's own bootstrap (disks, never-sleep, ssh, clones) is host-specific, so `make linux-homelab` runs it from the private overlay when the machine has one.
 
 Then continue from [Step 5](#-step-5-install-dotfiles) if you only needed the Linux extras above — `make bootstrap-linux` already ran `stow-install`.
 

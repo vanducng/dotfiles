@@ -3,11 +3,14 @@
 # A plain file (or foreign symlink) in the way is moved to $DOTFILES_BACKUP_DIR
 # first, then the package is restowed in one atomic step, so a conflict never
 # leaves the old links deleted.
+# DOTFILES_PKG_DIR names another folder of packages (scripts/stow-overlay.sh uses it).
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 BACKUP_DIR="${DOTFILES_BACKUP_DIR:-${HOME}/.dotfiles-backup/$(date +%Y%m%d-%H%M%S)}"
-cd "${REPO_ROOT}/dotfiles"
+cd "${DOTFILES_PKG_DIR:-${REPO_ROOT}/dotfiles}"
+# The tracked-file list comes from git; outside a work tree it would be empty and hide drift.
+git rev-parse --is-inside-work-tree >/dev/null 2>&1 || { echo "stow-package: ${PWD} is not a git work tree" >&2; exit 1; }
 
 conflicts() {
   stow --no-folding -n -R -t "${HOME}" "$1" 2>&1 | sed -nE \
@@ -18,7 +21,7 @@ conflicts() {
 
 # Tracked files of a package minus stow's default ignore list, as paths under $HOME.
 tracked() {
-  git -C "${REPO_ROOT}" ls-files -- "dotfiles/$1" | sed "s|^dotfiles/$1/||" | grep -vE \
+  git ls-files -- "$1" | sed "s|^$1/||" | grep -vE \
     -e '(^|/)(RCS|CVS|\.cvsignore|\.svn|_darcs|\.hg|\.git|\.gitignore|\.gitmodules)(/|$)' \
     -e ',v$|~$|(^|/)(\.#[^/]+|#[^/]*#)$|^(README|LICENSE)[^/]*$|^COPYING' || true
 }

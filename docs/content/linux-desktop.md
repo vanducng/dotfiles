@@ -34,7 +34,7 @@ Then log out of GNOME and pick **Sway** at GDM. From a TTY: `start-sway`. Nested
 WLR_BACKENDS=wayland start-sway
 ```
 
-This host (lab) uses **nouveau** on an RTX 2070. Sway 1.7 is fine on nouveau. If you later install the proprietary NVIDIA driver, add to `~/.config/sway/config` or the environment:
+The Linux host uses **nouveau** on an RTX 2070. Sway 1.7 is fine on nouveau. If you later install the proprietary NVIDIA driver, add to `~/.config/sway/config` or the environment:
 
 ```bash
 export WLR_NO_HARDWARE_CURSORS=1

@@ -20,7 +20,12 @@ command -v fzf >/dev/null 2>&1 || { printf 'rex-project-picker: fzf is required\
 command -v jq >/dev/null 2>&1 || { printf 'rex-project-picker: jq is required\n' >&2; exit 1; }
 rex_bin="${REX_BIN_DIR:+$REX_BIN_DIR/}rex"
 
-roots="${REX_PROJECT_ROOTS:-$HOME/personal:$HOME/projects:$HOME/git/personal:$HOME/git/work:$HOME/git/dataplanelabs}"
+# Default roots: ~/personal, ~/projects and every group folder under ~/git.
+default_roots="$HOME/personal:$HOME/projects"
+for group in "$HOME"/git/*/; do
+  [[ -d "$group" ]] && default_roots="$default_roots:${group%/}"
+done
+roots="${REX_PROJECT_ROOTS:-$default_roots}"
 IFS=: read -r -a root_list <<<"$roots"
 existing_roots=()
 for root in "${root_list[@]}"; do

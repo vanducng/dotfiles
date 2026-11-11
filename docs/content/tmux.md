@@ -26,11 +26,7 @@ Tmux is retained as a legacy fallback for remote and compatibility workflows. [H
 |----------|--------|-------------|
 | `C-x + t` | Project Sessionizer | Open FZF project picker |
 | `C-x + E` | Wiki Session | Quick access to wiki |
-| `C-x + X` | ACME Project | Switch to ACME project |
-| `C-x + S` | NADR Project | Switch to NADR project |
-| `C-x + D` | Mountain Project | Switch to Mountain project |
-| `C-x + R` | CREPES Project | Switch to CREPES project |
-| `C-x + G` | Infra Project | Switch to infra project |
+| `C-x + <key>` | Work folders | Per-machine sessionizer keys, from `~/.config/tmux/overlay.conf` when present |
 
 ### Window & Pane Management
 | Shortcut | Action | Description |
@@ -129,9 +125,7 @@ The project sessionizer is a powerful FZF-based tool for quick project switching
 ```bash
 ~/personal
 ~/projects
-~/git/personal
-~/git/work
-~/git/lab
+~/git/*        # every group folder: ~/git/personal, ~/git/work, ...
 ```
 
 ### Usage Examples

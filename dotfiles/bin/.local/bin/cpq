@@ -11,8 +11,9 @@ Usage: cpq [--json] [filter]
 
 Env: CLI_PROXY_BASE_URL (default https://cli-proxy.dataplanelabs.com)
      CLI_PROXY_MANAGEMENT_KEY, else gopass show -o $CLI_PROXY_MANAGEMENT_GOPASS_PATH
-     (default personal/saas/cli-proxy/management-key), else op-sa --sa example-vault read
-     $CLI_PROXY_MANAGEMENT_OP_REF (default op://example-vault/cli-proxy/management-key)
+     (default personal/saas/cli-proxy/management-key), else op-sa --sa $CLI_PROXY_MANAGEMENT_OP_SA
+     read $CLI_PROXY_MANAGEMENT_OP_REF when both are set. ~/.config/cli-proxy/env (the private
+     overlay) may set any of these.
 Columns: used/left now, hours to reset, PACE = projected % used at reset at the current rate,
          BUDGET = % per hour you can still spend to reach reset without running out.
 EOF
@@ -28,13 +29,19 @@ for arg in "$@"; do
   esac
 done
 
+env_file="${XDG_CONFIG_HOME:-$HOME/.config}/cli-proxy/env"
+# shellcheck disable=SC1090
+[[ -r "$env_file" ]] && . "$env_file"
+
 base="${CLI_PROXY_BASE_URL:-https://cli-proxy.dataplanelabs.com}"
 base="${base%/}"; base="${base%/v1}"
 api="$base/v0/management"
 key="${CLI_PROXY_MANAGEMENT_KEY:-}"
 [[ -n "$key" ]] || key="$(gopass show -o "${CLI_PROXY_MANAGEMENT_GOPASS_PATH:-personal/saas/cli-proxy/management-key}" 2>/dev/null || true)"
-[[ -n "$key" ]] || key="$(op-sa --sa example-vault read "${CLI_PROXY_MANAGEMENT_OP_REF:-op://example-vault/cli-proxy/management-key}" 2>/dev/null || true)"
-[[ -n "$key" ]] || { echo "cpq: no management key" >&2; exit 1; }
+if [[ -z "$key" && -n "${CLI_PROXY_MANAGEMENT_OP_SA:-}" && -n "${CLI_PROXY_MANAGEMENT_OP_REF:-}" ]]; then
+  key="$(op-sa --sa "$CLI_PROXY_MANAGEMENT_OP_SA" read "$CLI_PROXY_MANAGEMENT_OP_REF" 2>/dev/null || true)"
+fi
+[[ -n "$key" ]] || { echo "cpq: no management key (set CLI_PROXY_MANAGEMENT_KEY, or the gopass or 1Password names in $env_file)" >&2; exit 1; }
 
 mgmt() { curl -fsS --max-time 20 -H "Authorization: Bearer $key" "$@"; }
 

@@ -30,37 +30,24 @@ fi
 # pollute our progress lines. Has no effect on a patched tmux.
 export AGENTDECK_SUPPRESS_TMUX_WARNING=1
 
-# title|group|path
-SESSIONS=(
-  # acme
-  "infra|acme|$HOME/git/work/acme/acme-ds-infra"
-  "airflow|acme|$HOME/git/work/acme/acme-ds-astro"
-  "dbt|acme|$HOME/git/work/acme/acme-ds-dbt-order-form"
-  "data-contract|acme|$HOME/git/work/acme/acme-data-contract"
-  "ws|acme|$HOME/git/work/acme/acme-web-services"
-
-  # globex
-  "infra|globex|$HOME/git/work/globex/infra"
-  "data-platform|globex|$HOME/git/work/globex/data-platform"
-
-  # umbrella
-  "infra|umbrella|$HOME/git/work/umbrella/umbrella-infra"
-  "harmony|umbrella|$HOME/git/work/umbrella/harmony"
-
-  # initech
-  "infra|initech|$HOME/git/work/initech/infra"
-  "app|initech|$HOME/git/work/initech/services/initech-core"
-
-  # nlb
-  "goclaw|nlb|$HOME/git/personal/nextlevelbuilder/goclaw"
-  "gcplane|nlb|$HOME/git/gcplane"
-  "goclaw-config|nlb|$HOME/git/goclaw-config"
-  "goclaw-charts|nlb|$HOME/git/goclaw-charts"
-
-  # lab
-  "infra|lab|$HOME/git/infra"
-  "runner|lab|$HOME/git/runnerclubs"
-)
+# One "title|group|path" per line; # starts a comment. The list names this machine's
+# client repos, so it lives in the private overlay (~/.config/agent-deck/sessions.list).
+SESSIONS_FILE="${AGENT_DECK_SESSIONS:-${XDG_CONFIG_HOME:-$HOME/.config}/agent-deck/sessions.list}"
+if [[ ! -r "$SESSIONS_FILE" ]]; then
+  echo "agent-deck-bootstrap: no session list at $SESSIONS_FILE" >&2
+  exit 1
+fi
+SESSIONS=()
+while IFS= read -r line; do
+  [[ "$line" =~ ^[[:space:]]*(#|$) ]] && continue
+  [[ "$line" =~ ^[^|]+\|[^|]+\|[^|]+$ ]] || { echo "  skip   malformed line: $line" >&2; continue; }
+  line="${line//\$HOME/$HOME}"
+  SESSIONS+=("${line/|~\//|$HOME/}")
+done <"$SESSIONS_FILE"
+if ((${#SESSIONS[@]} == 0)); then
+  echo "agent-deck-bootstrap: no valid sessions in $SESSIONS_FILE" >&2
+  exit 1
+fi
 
 added=0
 skipped_exists=0

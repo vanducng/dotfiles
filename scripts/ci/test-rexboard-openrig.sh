@@ -81,8 +81,8 @@ sent() { tr '\n' ' ' <"$TMP/sent" | sed 's/ $//'; }
 
 send local dev-impl@api "hello there" >/dev/null
 [ "$(sent)" = "sender=<unset> arg=--verify arg=-- arg=dev-impl@api arg=hello there" ] || fail "local send: $(sent)"
-send host-a lead-owner@web "hello there" >/dev/null
-[ "$(sent)" = "sender=<unset> arg=--host arg=host-a arg=--verify arg=-- arg=lead-owner@web arg=hello there" ] || fail "remote send: $(sent)"
+send host-b lead-owner@web "hello there" >/dev/null
+[ "$(sent)" = "sender=<unset> arg=--host arg=host-b arg=--verify arg=-- arg=lead-owner@web arg=hello there" ] || fail "remote send: $(sent)"
 pass "send: local without --host, another host with --host HOST, --verify, session and text after --"
 
 for text in "-rf --help" "it's \"quoted\"; \$(touch pwned) \`id\` *" "日本語 🙂 é" "  padded  " "--host evil"; do
