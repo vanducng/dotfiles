@@ -36,8 +36,11 @@ run "$overlay" >/dev/null || fail "stow failed"
 [ ! -e "$HOME/.cfg/two" ] || fail "a package for the other platform was stowed"
 run "$overlay" --check >/dev/null || fail "--check after stowing reported drift"
 run "$overlay" "$here-only" >/dev/null || fail "a filter naming no listed package failed"
+printf -- '-bad all\n' >>"$overlay/packages"
 out="$(run "$overlay" '*')" || fail "a glob argument failed: $out"
 [[ "$out" != *Stowing* ]] || fail "a glob argument matched a package: $out"
+out="$(run "$overlay" 2>&1)" || fail "a bad package name failed the run: $out"
+[[ "$out" == *"bad package name: -bad"* ]] || fail "bad package name message: $out"
 
 # An overlay that is not a git work tree must fail loudly, not report "no drift".
 plain="$work/plain"

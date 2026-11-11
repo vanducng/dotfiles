@@ -26,6 +26,7 @@ pkgs=""
 while read -r pkg where _; do
   [[ -z "${pkg}" || "${pkg}" == \#* ]] && continue
   [[ "${where}" == all || "${where}" == "${platform}" ]] || continue
+  [[ "${pkg}" =~ ^[[:alnum:]._][[:alnum:]._-]*$ ]] || { echo "overlay: bad package name: ${pkg}" >&2; continue; }
   if [[ $# -gt 0 ]]; then
     wanted=""
     for arg in "$@"; do [[ "${arg}" == "${pkg}" ]] && wanted=1; done

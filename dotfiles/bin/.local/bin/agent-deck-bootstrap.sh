@@ -44,6 +44,10 @@ while IFS= read -r line; do
   line="${line//\$HOME/$HOME}"
   SESSIONS+=("${line/|~\//|$HOME/}")
 done <"$SESSIONS_FILE"
+if ((${#SESSIONS[@]} == 0)); then
+  echo "agent-deck-bootstrap: no valid sessions in $SESSIONS_FILE" >&2
+  exit 1
+fi
 
 added=0
 skipped_exists=0
