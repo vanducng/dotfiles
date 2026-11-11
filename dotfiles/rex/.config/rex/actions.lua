@@ -649,7 +649,7 @@ rex.action{
   category = "Session",
   run = function(ctx)
     local cli = ctx.server and "rexboard" or rexboard_cli()
-    overlay(ctx, { 0, 0, 1, 1 }, [=[
+    overlay(ctx, { 0.08, 0.08, 0.84, 0.84 }, [=[
 PATH="$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"
 [ -z "$5" ] || export REX_CLIENT="$5"
 e=$(mktemp) && "$4" pick 2>"$e" && { rm -f "$e"; exit 0; }
