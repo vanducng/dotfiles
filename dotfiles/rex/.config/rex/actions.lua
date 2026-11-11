@@ -640,8 +640,9 @@ local function overlay(ctx, bounds, script, file, ...)
   if err then fail(err) end
 end
 
--- rexboard's picker over the window. Enter jumps and moves focus itself, so the pane is
--- refocused only on esc or a failure, and a failure's reason stays up until enter. On another
+-- rexboard's whole board over the window (board --once: every key, the card too). A jump moves
+-- focus and ends it, so the pane is refocused only on q, esc or a failure, and a failure's reason
+-- stays up until enter. On another
 -- host's pane it runs that host's rexboard, and REX_CLIENT sends its jump back to this Mac's app.
 rex.action{
   name = "agent_pick",
@@ -652,7 +653,7 @@ rex.action{
     overlay(ctx, { 0.08, 0.08, 0.84, 0.84 }, [=[
 PATH="$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"
 [ -z "$5" ] || export REX_CLIENT="$5"
-e=$(mktemp) && "$4" pick 2>"$e" && { rm -f "$e"; exit 0; }
+e=$(mktemp) && "$4" board --once 2>"$e" && { rm -f "$e"; exit 0; }
 [ -s "$e" ] && { cat "$e"; printf 'enter closes '; read -r _; }
 rm -f "$e"]=], "", cli, ctx.server and select(2, host_app(ctx.server)) or "")
   end,
