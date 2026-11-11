@@ -269,7 +269,7 @@ local function cli_sessions(host)
   return list
 end
 
--- Gives every session on host (nil is this Mac) its Ctrl-N number ("2-cnb"), after putting
+-- Gives every session on host (nil is this Mac) its Ctrl-N number ("2-api"), after putting
 -- layout.lua's sessions first on this Mac. Only order and the number prefix change.
 -- New sessions are { id, label } entries not made yet, so a dry run numbers them too.
 local function arrange(host, dry, lines, new)

@@ -46,10 +46,10 @@ nix flake check
 nix develop
 
 # First activation on macOS.
-nix run home-manager/release-26.05 -- switch --flake .#macbook
+nix run home-manager/release-26.05 -- switch --flake .#mac
 
 # Later activations.
-home-manager switch --flake .#macbook
+home-manager switch --flake .#mac
 home-manager switch --flake .#coding-agent
 
 # Update pinned Nix inputs deliberately.

@@ -1,6 +1,0 @@
-# CNB work identity.
-# Mailbox lives in ~/.config/git/work.local.gitconfig (not tracked).
-# Git 2.34 on Ubuntu 22.04 does not reliably honor hasconfig:remote.*.url.
-
-[include]
-	path = ~/.config/git/work.local.gitconfig

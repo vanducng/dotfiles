@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Guard the Linux bootstrap against the failures seen on host dpl.
+# Guard the Linux bootstrap against the failures seen on the Linux host.
+# Checks on the homelab box's own scripts live in the private overlay's test.sh.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -13,97 +14,19 @@ pass() { echo "OK: $*"; }
 # mise loads every conf.d file, so a Linux toolset in the common mise package would apply on macOS too.
 [[ ! -e "$ROOT/dotfiles/mise/.config/mise/conf.d/linux.toml" ]] && pass "linux.toml is not in the common mise package" || fail "linux.toml is back in the common mise package"
 [[ -f "$ROOT/dotfiles/shell-linux/.config/shell/linux.sh" ]] && pass "linux.sh exists" || fail "missing linux.sh"
-[[ -f "$ROOT/dotfiles/git/.config/git/work.gitconfig" ]] && pass "work.gitconfig exists" || fail "missing work.gitconfig"
-[[ -f "$ROOT/dotfiles/git/.config/git/work-crashchat.gitconfig" ]] && pass "work-crashchat.gitconfig exists" || fail "missing work-crashchat.gitconfig"
-[[ -f "$ROOT/dotfiles/git/.config/git/work-ab-spectrum.gitconfig" ]] && pass "work-ab-spectrum.gitconfig exists" || fail "missing work-ab-spectrum.gitconfig"
-[[ -f "$ROOT/dotfiles/git/.config/git/work-bhcoe.gitconfig" ]] && pass "work-bhcoe.gitconfig exists" || fail "missing work-bhcoe.gitconfig"
 
 bash -n "$ROOT/scripts/linux-deps.sh" && pass "linux-deps.sh parses" || fail "linux-deps.sh syntax"
 bash -n "$ROOT/scripts/linux-desktop.sh" && pass "linux-desktop.sh parses" || fail "linux-desktop.sh syntax"
-bash -n "$ROOT/scripts/linux-homelab.sh" && pass "linux-homelab.sh parses" || fail "linux-homelab.sh syntax"
 bash -n "$ROOT/scripts/pi-home-layout.sh" && pass "pi-home-layout.sh parses" || fail "pi-home-layout.sh syntax"
-bash -n "$ROOT/dotfiles/homelab/.config/homelab/relocate-stores" && pass "relocate-stores parses" || fail "relocate-stores syntax"
-relocate_stores="$ROOT/dotfiles/homelab/.config/homelab/relocate-stores"
-if grep -qE 'relocate "\$\{HOME\}/\.pi"' "$relocate_stores"; then
-  fail "relocate-stores still relocates whole ~/.pi"
-elif grep -q '.pi/agent/npm' "$relocate_stores" \
-  && grep -q '.pi/agent/sessions' "$relocate_stores" \
-  && grep -q '.pi/agent/git' "$relocate_stores"; then
-  pass "relocate-stores nests pi npm/sessions/git"
-else
-  fail "relocate-stores missing nested pi runtime dirs"
-fi
-bash -n "$ROOT/scripts/linux-homelab-root.sh" && pass "linux-homelab-root.sh parses" || fail "linux-homelab-root.sh syntax"
-ovpn="$ROOT/dotfiles/bin/.local/bin/cnb-openvpn"
-bash -n "$ovpn" && pass "cnb-openvpn parses" || fail "cnb-openvpn syntax"
-if grep -cF 'pull-filter ignore "redirect-gateway"' "$ovpn" | grep -qx 3 \
-  && grep -q 'cmd_run' "$ovpn"; then
-  pass "cnb-openvpn ignores redirect-gateway on store, restore, and run"
-else
-  fail "cnb-openvpn must ignore redirect-gateway in store/restore/run"
-fi
-if grep -q 'insert -m -f' "$ovpn" && grep -q 'show -n' "$ovpn" && ! grep -q 'gopass --nosync cat' "$ovpn"; then
-  pass "cnb-openvpn stores ovpn as multiline text, not binary cat"
-else
-  fail "cnb-openvpn must gopass insert -m / show -n the ovpn (not cat)"
-fi
-mac_ovpn="$ROOT/dotfiles/bin/.local/bin/cnb-openvpn-mac"
-bash -n "$mac_ovpn" && pass "cnb-openvpn-mac parses" || fail "cnb-openvpn-mac syntax"
-if grep -qE '^(split|cmd_split)\(\)|case .*split' "$mac_ovpn" \
-  && grep -q '0/1' "$mac_ovpn" \
-  && grep -q 'redirect-gateway' "$mac_ovpn" \
-  && grep -q -- '-interface' "$mac_ovpn"; then
-  pass "cnb-openvpn-mac can strip redirect-gateway full-tunnel routes"
-else
-  fail "cnb-openvpn-mac must implement split against 0/1 full-tunnel and pin host routes to the tun interface"
-fi
-mock_openvpn="$(mktemp)"
-cat >"$mock_openvpn" <<'EOF'
-#!/bin/sh
-printf '%s\n' "$@"
-EOF
-chmod +x "$mock_openvpn"
-if [[ "$(OPENVPN_CONNECT_BIN="$mock_openvpn" "$mac_ovpn" start profile-id)" == "--connect-shortcut=profile-id" ]] \
-  && [[ "$(OPENVPN_CONNECT_BIN="$mock_openvpn" "$mac_ovpn" stop)" == "--disconnect-shortcut" ]]; then
-  pass "cnb-openvpn-mac starts and stops through OpenVPN Connect"
-else
-  fail "cnb-openvpn-mac start/stop commands are incorrect"
-fi
-rm -f "$mock_openvpn"
-routes_file="$ROOT/dotfiles/bin/.config/cnb-openvpn/routes"
-if grep -q 'read_route_targets' "$mac_ovpn" \
-  && grep -q 'wildcard_names' "$mac_ovpn" \
-  && grep -qx '18.210.49.223' "$routes_file" \
-  && grep -qx 'cdljobnow.com' "$routes_file" \
-  && grep -qx '*.cdljobnow.com' "$routes_file" \
-  && grep -qx 'staging' "$ROOT/dotfiles/bin/.config/cnb-openvpn/labels/cdljobnow.com" \
-  && ! grep -q 'snowflake' "$routes_file"; then
-  pass "cnb-openvpn-mac routes bastion and cdljobnow.com"
-else
-  fail "cnb-openvpn-mac routes file must list the bastion and cdljobnow.com"
-fi
-bash -n "$ROOT/dotfiles/bin/.local/bin/dpl-remote" && pass "dpl-remote parses" || fail "dpl-remote syntax"
-bash -n "$ROOT/dotfiles/homelab/.config/homelab/cdp-chrome" && pass "cdp-chrome parses" || fail "cdp-chrome syntax"
-bash -n "$ROOT/dotfiles/homelab/.config/homelab/install-chrome" && pass "install-chrome parses" || fail "install-chrome syntax"
-bash -n "$ROOT/dotfiles/homelab/.config/homelab/install-tailscale" && pass "install-tailscale parses" || fail "install-tailscale syntax"
-[[ -f "$ROOT/dotfiles/homelab/.config/systemd/user/homelab-cdp.service" ]] && pass "homelab-cdp.service exists" || fail "missing homelab-cdp.service"
-[[ -f "$ROOT/dotfiles/homelab/.config/systemd/user/homelab-tailscale.service" ]] && pass "homelab-tailscale.service exists" || fail "missing homelab-tailscale.service"
-[[ -f "$ROOT/dotfiles/homelab/.config/homelab/REMOTE.md" ]] && pass "REMOTE.md exists" || fail "missing REMOTE.md"
 bash -n "$ROOT/dotfiles/bin/.local/bin/git-sync-repos" && pass "git-sync-repos parses" || fail "git-sync-repos syntax"
 bash -n "$ROOT/dotfiles/bin/.local/bin/git-fetch-repos" && pass "git-fetch-repos parses" || fail "git-fetch-repos syntax"
 bash -n "$ROOT/dotfiles/bin/.local/bin/git-fetch-cwd" && pass "git-fetch-cwd parses" || fail "git-fetch-cwd syntax"
 bash -n "$ROOT/dotfiles/bin/.local/bin/ensure-home-managed-repos" && pass "ensure-home-managed-repos parses" || fail "ensure-home-managed-repos syntax"
-[[ -f "$ROOT/dotfiles/homelab/.config/systemd/user/git-fetch-repos.timer" ]] && pass "git-fetch-repos.timer exists" || fail "missing git-fetch-repos.timer"
-[[ -f "$ROOT/dotfiles/homelab/.config/systemd/user/git-fetch-repos.service" ]] && pass "git-fetch-repos.service exists" || fail "missing git-fetch-repos.service"
 [[ -f "$ROOT/dotfiles/launchd/Library/LaunchAgents/dev.vanducng.git-fetch-repos.plist" ]] && pass "git-fetch-repos launchd plist exists" || fail "missing git-fetch-repos plist"
 if grep -q 'sync_main firstmate "${HOME}/firstmate"' "$ROOT/dotfiles/bin/.local/bin/git-sync-repos" \
   && grep -q 'ensure-home-managed-repos' "$ROOT/dotfiles/bin/.local/bin/git-sync-repos" \
   && grep -q 'HOME}/firstmate' "$ROOT/dotfiles/bin/.local/bin/ensure-home-managed-repos" \
-  && grep -q 'ensure-home-managed-repos' "$ROOT/scripts/linux-homelab.sh" \
-  && grep -q 'git-sync-repos.timer' "$ROOT/scripts/linux-homelab.sh" \
-  && grep -q 'git-fetch-repos.timer' "$ROOT/scripts/linux-homelab.sh" \
-  && grep -q 'ensure-home-repos' "$ROOT/Makefile" \
-  && ! grep -q 'personal/firstmate' "$ROOT/scripts/linux-homelab.sh"; then
+  && grep -q 'ensure-home-repos' "$ROOT/Makefile"; then
   pass "firstmate managed under HOME on Mac and Linux"
 else
   fail "firstmate must be ensured/synced at \$HOME/firstmate on Mac and Linux"
@@ -124,67 +47,17 @@ if awk '
   && printf '%s\n' "$_fetch_repos_code" | grep -q 'ConnectTimeout=10' \
   && ! printf '%s\n' "$_fetch_repos_code" | grep -qE "$_forbidden" \
   && ! printf '%s\n' "$_fetch_cwd_code" | grep -qE "$_forbidden" \
-  && ! printf '%s\n' "$_fetch_repos_code" | grep -qE 'dpl/|cnb/|goclaw'; then
+  && ! printf '%s\n' "$_fetch_repos_code" | grep -qE 'github\.com[:/]'; then
   pass "git-fetch-repos is fetch-only with shell debounce hooks"
 else
   fail "git-fetch must stay fetch-only and hook both Mac zsh and Linux shells"
 fi
 unset _fetch_repos_code _fetch_cwd_code _forbidden
-remote_cli="$ROOT/dotfiles/bin/.local/bin/dpl-remote"
-mac_config="$(WAN6_IP=2001:db8::10 LAN_IP=192.0.2.10 TS_IP=100.64.0.1 bash "$remote_cli" mac-config)"
-shell_block="$(printf '%s\n' "$mac_config" | awk '/^Host dpl dpl-v6 dpl-ts$/{capture=1; next} /^Host dpl$/{capture=0} capture')"
-if grep -q 'remote-debugging-address=' "$ROOT/dotfiles/homelab/.config/homelab/cdp-chrome" \
-  && grep -q 'CDP_ADDR:-127.0.0.1' "$ROOT/dotfiles/homelab/.config/homelab/cdp-chrome" \
-  && grep -q '^Host dpl-ts-tunnel$' <<<"$mac_config" \
-  && grep -q 'HostName 100.64.0.1' <<<"$mac_config" \
-  && ! grep -q '100.122.213.4' "$remote_cli" \
-  && grep -q 'LocalForward 127.0.0.1:9222 127.0.0.1:9222' <<<"$mac_config" \
-  && ! grep -q 'LocalForward' <<<"$shell_block"; then
-  pass "CDP is loopback-only with dedicated SSH tunnel aliases"
-else
-  fail "CDP must bind loopback and use dedicated SSH tunnel aliases"
-fi
-if grep -q 'XDG_RUNTIME_DIR=' "$remote_cli" \
-  && grep -q 'DBUS_SESSION_BUS_ADDRESS=' "$remote_cli"; then
-  pass "dpl-remote initializes the user systemd bus over SSH"
-else
-  fail "dpl-remote must initialize the user systemd bus over SSH"
-fi
-sshd_config="$ROOT/dotfiles/homelab/.config/sshd/sshd_config"
-if grep -q '^PermitUserEnvironment yes$' "$sshd_config" \
-  && ! grep -qE '^SetEnv PATH=.*(/Users/|/home/)' "$sshd_config" \
-  && grep -q '\.ssh/environment' "$ROOT/scripts/linux-homelab.sh"; then
-  pass "user SSH PATH is generated from HOME at install time"
-else
-  fail "user SSH PATH must be generated from HOME at install time"
-fi
 if grep -q 'personal/saas/cli-proxy/code-01-api-key' "$ROOT/dotfiles/bin/.local/bin/cli-proxy-key" \
-  && grep -q 'cli-proxy-key" refresh' "$ROOT/scripts/linux-homelab.sh" \
-  && grep -q 'cli-proxy/api-key' "$ROOT/dotfiles/shell-linux/.config/shell/linux.sh" \
-  && grep -q "sed -i '/^CLI_PROXY_API_KEY=/d'" "$ROOT/scripts/linux-homelab.sh" \
-  && grep -q 'CLI_PROXY_API_KEY=' "$ROOT/scripts/linux-homelab.sh" \
-  && grep -q 'EnvironmentFile=-%h/.config/environment.d/cli-proxy.conf' "$ROOT/scripts/linux-homelab.sh" \
-  && grep -q 'systemctl --user daemon-reload' "$ROOT/scripts/linux-homelab.sh" \
-  && grep -q 'chmod 700 "${HOME}/.ssh"' "$ROOT/scripts/linux-homelab.sh"; then
-  pass "homelab Pi receives CLIProxyAPI credentials"
+  && grep -q 'cli-proxy/api-key' "$ROOT/dotfiles/shell-linux/.config/shell/linux.sh"; then
+  pass "Linux shells read the CLIProxyAPI key"
 else
-  fail "homelab Pi must receive CLIProxyAPI credentials"
-fi
-if grep -qE 'serve --bg --tcp' "$ROOT/dotfiles/bin/.local/bin/dpl-remote" \
-  && grep -qi 'not using Funnel' "$ROOT/dotfiles/bin/.local/bin/dpl-remote"; then
-  pass "internet path is Tailscale serve, not Funnel"
-else
-  fail "dpl-remote must serve on the tailnet without Funnel"
-fi
-if grep -q 'kernel_ts' "$ROOT/dotfiles/bin/.local/bin/dpl-remote" \
-  && grep -q 'kernel Tailscale is active' "$ROOT/scripts/linux-homelab.sh" \
-  && grep -q 'default.target.wants/homelab-tailscale.service' "$ROOT/scripts/linux-homelab-root.sh" \
-  && ! grep -q 'systemctl --user disable --now homelab-tailscale' "$ROOT/scripts/linux-homelab-root.sh" \
-  && grep -q 'mosh-server' "$ROOT/scripts/linux-homelab-root.sh" \
-  && grep -q 'mosh-server' "$ROOT/scripts/linux-enable-remote.sh"; then
-  pass "kernel Tailscale stays the Moshi/Mosh path"
-else
-  fail "kernel Tailscale must own the Moshi node; do not unlink stowed userspace units"
+  fail "cli-proxy-key and linux.sh must read the CLIProxyAPI key"
 fi
 bash -n "$ROOT/scripts/linux-gnome-keys.sh" && pass "linux-gnome-keys.sh parses" || fail "linux-gnome-keys.sh syntax"
 bash -n "$ROOT/dotfiles/shell-linux/.config/shell/linux.sh" && pass "linux.sh parses" || fail "linux.sh syntax"
@@ -219,37 +92,6 @@ else
   fail "linux.sh must wrap ssh and pop kitty CSI-u flags"
 fi
 
-if grep -E '^[[:space:]]*email[[:space:]]*=' \
-  "$ROOT/dotfiles/git/.config/git/work.gitconfig" \
-  "$ROOT/dotfiles/git/.config/git/work-bhcoe.gitconfig" \
-  "$ROOT/dotfiles/git/.config/git/work-ab-spectrum.gitconfig"; then
-  fail "tracked work gitconfigs must not set user.email (use *.local.gitconfig)"
-else
-  pass "tracked work gitconfigs do not set user.email"
-fi
-if grep -q 'work.local.gitconfig' "$ROOT/dotfiles/git/.config/git/work.gitconfig" \
-  && grep -q 'work-bhcoe.local.gitconfig' "$ROOT/dotfiles/git/.config/git/work-bhcoe.gitconfig" \
-  && grep -q 'work-ab-spectrum.local.gitconfig' "$ROOT/dotfiles/git/.config/git/work-ab-spectrum.gitconfig"; then
-  pass "work gitconfigs include machine-local overlays"
-else
-  fail "work gitconfigs missing machine-local overlay includes"
-fi
-if grep -q 'me@vanducng.dev' "$ROOT/dotfiles/git/.config/git/work-crashchat.gitconfig"; then
-  pass "work-crashchat.gitconfig has personal email"
-else
-  fail "work-crashchat.gitconfig missing personal email"
-fi
-example="$ROOT/dotfiles/git/.config/git/gitconfig.linux.example"
-if grep -q 'gitdir:~/work/git/crashchat/' "$example" && grep -q 'gitdir:~/work/git/ab-spectrum/' "$example" && grep -q 'gitdir:~/work/git/bhcoe/' "$example"; then
-  pass "gitconfig.linux.example has per-company includeIf"
-else
-  fail "gitconfig.linux.example missing per-company includeIf"
-fi
-if grep -qE 'includeIf "gitdir:~/work/"' "$example"; then
-  fail "gitconfig.linux.example still has catch-all ~/work/ includeIf"
-else
-  pass "gitconfig.linux.example has no catch-all ~/work/ includeIf"
-fi
 
 folders="$(make --no-print-directory -s -C "$ROOT" PLATFORM=Linux stow-folders)"
 echo "$folders" | grep -qx nvim && pass "Linux stow includes nvim" || fail "Linux stow missing nvim"
@@ -261,7 +103,6 @@ echo "$folders" | grep -qx shell-linux && pass "Linux stow includes shell-linux"
 echo "$folders" | grep -qx sway && pass "Linux stow includes sway" || fail "Linux stow missing sway"
 echo "$folders" | grep -qx ghostty && pass "Linux stow includes ghostty" || fail "Linux stow missing ghostty"
 echo "$folders" | grep -qx waybar && pass "Linux stow includes waybar" || fail "Linux stow missing waybar"
-echo "$folders" | grep -qx homelab && pass "Linux stow includes homelab" || fail "Linux stow missing homelab"
 if echo "$folders" | grep -qx yabai; then fail "Linux stow includes yabai"; else pass "Linux stow excludes yabai"; fi
 if echo "$folders" | grep -qx skhd; then fail "Linux stow includes skhd"; else pass "Linux stow excludes skhd"; fi
 if echo "$folders" | grep -qx karabiner; then fail "Linux stow includes karabiner"; else pass "Linux stow excludes karabiner"; fi

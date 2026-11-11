@@ -1,10 +1,14 @@
 #!/bin/sh
-# A Jump Desktop host (a jump-desktop/names display name, default mini-01) on space 9: focus its open session, or connect over Fluid.
+# A Jump Desktop host on space 9: a jump-desktop/names display name, or N for the Nth one listed (default 1): focus its open session, or connect over Fluid.
 set -eu
 
 servers="$HOME/Library/Containers/com.p5sys.jump.mac.viewer/Data/Documents/JumpDesktop/Viewer/Servers"
-target="${1:-mini-01}"
 names="${XDG_CONFIG_HOME:-$HOME/.config}/jump-desktop/names"
+target="${1:-1}"
+case "$target" in
+  *[!0-9]*) ;;
+  *) target="$(awk -v n="$target" '$1 !~ /^#/ && NF >= 2 && ++i == n {print $2; exit}' "$names" 2>/dev/null)" ;;
+esac
 host="$(awk -v target="$target" '$1 !~ /^#/ && $2 == target {print $1; exit}' "$names")"
 [ -n "$host" ] || { printf 'Jump Desktop: unknown host %s\n' "$target" >&2; exit 1; }
 

@@ -6,9 +6,7 @@ else
     search_paths=(
         ~/personal
         ~/projects
-        ~/git/personal
-        ~/git/work
-        ~/git/dataplanelabs
+        ~/git/*
     )
     selected=$(find "${search_paths[@]}" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | fzf)
 fi

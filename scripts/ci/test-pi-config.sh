@@ -175,12 +175,12 @@ const { crewTransitions, formatLabel, parseAgentList, siblingCrews, wakeMessage 
 );
 const agents = parseAgentList(JSON.stringify({ result: { agents: [
   { name: "firstmate", pane_id: "wB:p1", agent_status: "idle" },
-  { name: "dbt-elt-3534", pane_id: "wG:p1", agent_status: "working" },
-  { name: "astro-elt-3534", pane_id: "wD:p1", agent_status: "idle" },
+  { name: "dbt-prj-3534", pane_id: "wG:p1", agent_status: "working" },
+  { name: "astro-prj-3534", pane_id: "wD:p1", agent_status: "idle" },
 ]}}));
 const names = siblingCrews(agents, "wB:p1");
-if (names.join(",") !== "dbt-elt-3534") throw new Error(names.join(","));
-if (formatLabel(names) !== "standby · dbt-elt-3534") throw new Error(formatLabel(names));
+if (names.join(",") !== "dbt-prj-3534") throw new Error(names.join(","));
+if (formatLabel(names) !== "standby · dbt-prj-3534") throw new Error(formatLabel(names));
 const t1 = crewTransitions(
   { a: "working", b: "blocked", c: "idle" },
   { a: "idle", b: "done", c: "blocked" },
@@ -189,8 +189,8 @@ if (t1.settled.join(",") !== "a,b") throw new Error(t1.settled.join(","));
 if (t1.blocked.join(",") !== "c") throw new Error(t1.blocked.join(","));
 const t0 = crewTransitions({}, { a: "working" });
 if (t0.settled.length || t0.blocked.length) throw new Error("seed must not fire");
-if (wakeMessage(["dbt-elt-3534"], []) !== "Crew settled: dbt-elt-3534. Inspect that pane checkpoint/result and continue. Idle UI is not success.") {
-  throw new Error(wakeMessage(["dbt-elt-3534"], []));
+if (wakeMessage(["dbt-prj-3534"], []) !== "Crew settled: dbt-prj-3534. Inspect that pane checkpoint/result and continue. Idle UI is not success.") {
+  throw new Error(wakeMessage(["dbt-prj-3534"], []));
 }
 if (wakeMessage([], ["x"]) !== "Crew needs attention: x. Inspect that pane checkpoint/result and continue. Idle UI is not success.") {
   throw new Error(wakeMessage([], ["x"]));

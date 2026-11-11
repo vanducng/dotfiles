@@ -57,7 +57,7 @@ f:close()
 os.remove(cmd[7])
 assert(list == "s\t1-cockpit\t/work/home\t1\nt\t2-api x\t/work/api v2\t\n", "session list: " .. list)
 assert(cmd[8] == "app", "picker switches the app that pressed the key")
-local ok, err = pcall(actions.project_pick.run, { session_id = "s", block_id = "source", server = "mini-01" })
+local ok, err = pcall(actions.project_pick.run, { session_id = "s", block_id = "source", server = "host-b" })
 assert(not ok and err:match("local session"), "project picker stays on this Mac")
 
 windows = { { window_id = "board", label = "1-rexboard" }, { window_id = "pi", label = "pi" },

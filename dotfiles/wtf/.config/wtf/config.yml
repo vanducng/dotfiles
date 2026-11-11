@@ -99,12 +99,11 @@ wtf:
     jira:
       enabled: true
       type: jira
-      title: "Jira (CNB)"
+      title: "Jira"
       domain: "@envvar JIRA_DOMAIN"
       email: "@envvar JIRA_EMAIL"
       username: "@envvar JIRA_EMAIL"
       apiKey: "@envvar JIRA_API_KEY"
-      project: ["ELT"]
       jql: "assignee = currentUser() AND statusCategory != Done ORDER BY updated DESC"
       verifyServerCertificate: true
       position: { top: 3, left: 0, height: 1, width: 2 }

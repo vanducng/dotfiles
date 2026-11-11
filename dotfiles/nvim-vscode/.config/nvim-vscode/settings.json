@@ -24,7 +24,7 @@
         "cpp": "cd $dir && g++ $fileName -o $fileNameWithoutExt && $dir$fileNameWithoutExt",
         "objective-c": "cd $dir && gcc -framework Cocoa $fileName -o $fileNameWithoutExt && $dir$fileNameWithoutExt",
         "php": "php",
-        "python": "/home/duc/.pyenv/shims/python",
+        "python": "python",
         "perl": "perl",
         "perl6": "perl6",
         "ruby": "ruby",
@@ -654,14 +654,10 @@
     "editor.tabCompletion": "on",
     "snowflake.snowsqlConfigPath": "~/.snowsql/config",
     "xml.server.vmargs": "-Xmx256M",
-    "go.gopath": "/Users/vanducng/go",
     "go.alternateTools": {},
     "go.inferGopath": false,
     "git.openRepositoryInParentFolders": "always",
     "ansibleVault.keyfile": "~/.vault_pass.txt",
-    "vs-kubernetes": {
-        "vscode-kubernetes.minikube-path-mac": "/Users/vanducng/.vs-kubernetes/tools/minikube/darwin-arm64/minikube"
-    },
     "window.zoomLevel": 2,
     "accessibility.signals.lineHasError": {
         "sound": "off"

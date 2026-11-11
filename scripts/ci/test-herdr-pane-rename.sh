@@ -97,7 +97,7 @@ cat >"$test_dir/claude-long-project" <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
 prompt="$(cat)"
-[[ "$prompt" == *'Repository: cnb-web-services-suite'* ]] || {
+[[ "$prompt" == *'Repository: acme-web-services-suite'* ]] || {
   printf 'FAIL: expected exact repository in prompt\n' >&2
   exit 1
 }
@@ -115,7 +115,7 @@ chmod +x "$test_dir/claude-legacy"
 cat >"$test_dir/claude-ticket" <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
-printf 'ELT-3451:Fix Lead Performance\n'
+printf 'PRJ-3451:Fix Lead Performance\n'
 EOF
 chmod +x "$test_dir/claude-ticket"
 
@@ -205,11 +205,11 @@ long_dir="$test_dir/long-project"
 mkdir -p "$long_dir"
 git -C "$long_dir" init -q
 git -C "$long_dir" switch -q -c main
-git -C "$long_dir" remote add origin git@github.com:acme/cnb-web-services-suite.git
+git -C "$long_dir" remote add origin git@github.com:acme/acme-web-services-suite.git
 
 run env HERDR_RENAME_CWD="$long_dir" \
   HERDR_RENAME_CLAUDE_BIN="$test_dir/claude-long-project" HERDR_RENAME_CODEX_BIN="$missing"
-assert_label "task stays paired with exact repository" $'w1:p1\tcnb-web-services-suite:investigate-flaky-integration-test-timeouts'
+assert_label "task stays paired with exact repository" $'w1:p1\tacme-web-services-suite:investigate-flaky-integration-test-timeouts'
 
 run env HERDR_RENAME_CWD="$git_dir/subdir" \
   HERDR_RENAME_CLAUDE_BIN="$test_dir/claude-legacy" HERDR_RENAME_CODEX_BIN="$missing"
@@ -217,7 +217,7 @@ assert_label "legacy project prefix cannot override repository" $'w1:p1\twidget:
 
 run env HERDR_RENAME_CWD="$git_dir/subdir" \
   HERDR_RENAME_CLAUDE_BIN="$test_dir/claude-ticket" HERDR_RENAME_CODEX_BIN="$missing"
-assert_label "ticket prefix stays in task" $'w1:p1\twidget:elt-3451-fix-lead-performance'
+assert_label "ticket prefix stays in task" $'w1:p1\twidget:prj-3451-fix-lead-performance'
 
 run env HERDR_RENAME_CWD="$git_dir/subdir" \
   HERDR_RENAME_CLAUDE_BIN="$test_dir/claude-colon-task" HERDR_RENAME_CODEX_BIN="$missing"

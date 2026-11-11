@@ -1,5 +1,5 @@
 #!/bin/bash
-# Atuin Aliases - synced from the MacBook Atuin store on 2026-10-18
+# Atuin Aliases - synced from the Atuin store on 2026-10-18
 # Use 'atuin dotfiles alias set <name> <command>' to restore
 # You can also execute this file directly: ./aliases.sh
 
@@ -13,15 +13,12 @@ atuin dotfiles alias set 'av' 'ansible-vault'
 atuin dotfiles alias set 'c' 'echo -ne 033c'
 atuin dotfiles alias set 'cc' 'claude'
 atuin dotfiles alias set 'ccd' 'claude --dangerously-skip-permissions'
-atuin dotfiles alias set 'cdeg' 'cd /Volumes/exs/git'
 atuin dotfiles alias set 'd' 'docker'
 atuin dotfiles alias set 'dc' 'docker-compose'
 atuin dotfiles alias set 'esh' '$HOME/.virtualenvs/global/bin/ec2-ssh'
 atuin dotfiles alias set 'esm' '$HOME/.virtualenvs/global/bin/ec2-session'
 atuin dotfiles alias set 'etn' '$HOME/.virtualenvs/global/bin/ec2-tunnel'
 atuin dotfiles alias set 'g' 'git'
-atuin dotfiles alias set 'g0' 'arc-cli s 1 && arc-cli new-tab https://github.com/careernowbrands/cnb-ds-dbt-order-form'
-atuin dotfiles alias set 'g3' 'arc-cli s 1 && arc-cli new-tab https://github.com/careernowbrands/cnb-ds-astro'
 atuin dotfiles alias set 'gP' 'git push'
 atuin dotfiles alias set 'gc' 'git checkout'
 atuin dotfiles alias set 'gcb' 'git checkout -b'

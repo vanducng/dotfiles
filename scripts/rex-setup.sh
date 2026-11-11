@@ -8,8 +8,10 @@ REX="$HOME/Library/Application Support/com.superlogical.rex/RexServer/Versions/C
 command -v defaults >/dev/null || { echo "macOS only"; exit 1; }
 [ -x "$REX" ] || { echo "Rex server missing; open Rex Beta.app once"; exit 1; }
 
-# Every machine is defined once, in hosts.json (see hosts.lua for its fields).
-HOSTS="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/dotfiles/rex/.config/rex/hosts.json"
+# Every machine is defined once, in hosts.json (see hosts.lua for its fields). The list names
+# real machines, so it comes from the private overlay, stowed to ~/.config/rex/hosts.json.
+HOSTS="${REX_HOSTS:-$HOME/.config/rex/hosts.json}"
+[ -r "$HOSTS" ] || { echo "no host list at $HOSTS; stow the overlay first (make stow-rex)"; exit 1; }
 label="$(/usr/bin/python3 - "$HOSTS" "$(scutil --get LocalHostName)" <<'PY'
 import json, sys
 path, me = sys.argv[1], sys.argv[2]

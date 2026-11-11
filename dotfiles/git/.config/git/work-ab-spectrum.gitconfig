@@ -1,5 +1,0 @@
-# ABS work identity.
-# Mailbox lives in ~/.config/git/work-ab-spectrum.local.gitconfig (not tracked).
-
-[include]
-	path = ~/.config/git/work-ab-spectrum.local.gitconfig

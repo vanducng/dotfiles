@@ -8,17 +8,9 @@ title: "AI Tools Troubleshooting"
 
 Usually not Herdr itself. Two common causes on this Mac:
 
-**1. CNB OpenVPN full-tunnel**
+**1. A work VPN in full-tunnel mode**
 
-OpenVPN Connect often pulls `redirect-gateway def1` (`0/1` + `128.0/1` via `10.255.248.x`). Public IPv4 (including `api2.cursor.sh`) then rides the VPN. When the tunnel flaps, `agent` exits with that error.
-
-```bash
-cnb-openvpn-mac doctor
-cnb-openvpn-mac patch-profiles   # once per profile import
-cnb-openvpn-mac split            # drop full-tunnel routes; keep CNB LAN
-```
-
-Profile copy and import steps are in [OpenVPN](/openvpn/).
+OpenVPN Connect often pulls `redirect-gateway def1` (`0/1` + `128.0/1` via the tunnel). Public IPv4 (including `api2.cursor.sh`) then rides the VPN. When the tunnel flaps, `agent` exits with that error. Add `pull-filter ignore "redirect-gateway"` to the profile, or delete the `0/1` and `128.0/1` routes, so only the work routes use the tunnel.
 
 **2. Herdr panes lost macOS DNS (`scutil --dns` → "No DNS configuration available")**
 
@@ -76,7 +68,7 @@ make stow-codex
 codex features enable goals
 ```
 
-The dotfiles config also pins `features.goals = true` directly in `~/.codex/config.toml`.
+The shared config (`config.example.toml`) also pins `features.goals = true` in `~/.codex/config.toml`.
 
 ### Config Health
 
@@ -86,7 +78,7 @@ codex mcp list
 codex plugin list
 ```
 
-Only `~/.codex/config.toml` is managed by this repo. Auth files, history, SQLite state, logs, and caches should remain local.
+Only `~/.codex/config.toml` (from `config.example.toml`, per machine) is managed through this repo. Auth files, history, SQLite state, logs, and caches should remain local.
 
 ### miudb MCP
 
