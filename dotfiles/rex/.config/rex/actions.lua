@@ -652,8 +652,9 @@ rex.action{
     if ctx.server and not hosts.self then error("this Mac is not in hosts.json, so a remote pane cannot reach its board", 0) end
     overlay(ctx, { 0.08, 0.08, 0.84, 0.84 }, [=[
 e=$(mktemp)
-if [ -n "$5" ]; then ssh -qt -o BatchMode=yes -o ConnectTimeout=5 "$5" "$4" board --once 2>"$e"
-else "$4" board --once 2>"$e"; fi && { rm -f "$e"; exit 0; }
+p='PATH="$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"'
+if [ -n "$5" ]; then ssh -qt -o BatchMode=yes -o ConnectTimeout=5 "$5" "$p exec $4 board --once" 2>"$e"
+else eval "export $p"; "$4" board --once 2>"$e"; fi && { rm -f "$e"; exit 0; }
 [ -s "$e" ] && { cat "$e"; printf 'enter closes '; read -r _; }
 rm -f "$e"]=], "", rexboard_cli(), ctx.server and hosts.self or "")
   end,
