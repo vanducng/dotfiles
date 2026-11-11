@@ -74,9 +74,8 @@ end
 -- session on another host is selected by asking the app, through that host, to
 -- do it. Host calls travel over the app's own connection, so whoami there names
 -- the app's node.
-local function select_session(session_id, host, window_id)
-  local args = { session_id = session_id, window_id = window_id }
-  if not host then return rex.client.queue("session.select", args) end
+-- This Mac's app as HOST knows it: client ids are per server.
+local function host_app(host)
   local srv = rex.server(host)
   local me, err = srv.call("server.whoami")
   local node = me and me.principal and me.principal.node
@@ -84,15 +83,17 @@ local function select_session(session_id, host, window_id)
   local r, lerr = srv.call("client.list")
   if not r then error(lerr, 0) end
   for _, c in ipairs(r.clients or {}) do
-    if c.info and c.info.kind == "app" and c.principal and c.principal.node == node then
-      local _, perr = srv.call("client.perform", {
-        client_id = c.client_id, action = "session.select", args = args, origin = "key",
-      })
-      if perr then error(perr, 0) end
-      return
-    end
+    if c.info and c.info.kind == "app" and c.principal and c.principal.node == node then return srv, c.client_id end
   end
   error("this Mac's Rex app is not connected to " .. host, 0)
+end
+
+local function select_session(session_id, host, window_id)
+  local args = { session_id = session_id, window_id = window_id }
+  if not host then return rex.client.queue("session.select", args) end
+  local srv, id = host_app(host)
+  local _, perr = srv.call("client.perform", { client_id = id, action = "session.select", args = args, origin = "key" })
+  if perr then error(perr, 0) end
 end
 
 -- The session each app left on its last jump by key, for session_toggle. Memory only: a config
@@ -640,18 +641,20 @@ local function overlay(ctx, bounds, script, file, ...)
 end
 
 -- rexboard's picker over the window. Enter jumps and moves focus itself, so the pane is
--- refocused only on esc or a failure, and a failure's reason stays up until enter. A pane on
--- another host would run that host's rexboard, so there the cockpit's board shows instead.
+-- refocused only on esc or a failure, and a failure's reason stays up until enter. On another
+-- host's pane it runs that host's rexboard, and REX_CLIENT sends its jump back to this Mac's app.
 rex.action{
   name = "agent_pick",
   title = "Pick an Agent (rexboard)",
   category = "Session",
   run = function(ctx)
-    if ctx.server then return goto_layout(ctx, 1) end
+    local cli = ctx.server and "rexboard" or rexboard_cli()
     overlay(ctx, { 0, 0, 1, 1 }, [=[
+PATH="$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"
+[ -z "$5" ] || export REX_CLIENT="$5"
 e=$(mktemp) && "$4" pick 2>"$e" && { rm -f "$e"; exit 0; }
 [ -s "$e" ] && { cat "$e"; printf 'enter closes '; read -r _; }
-rm -f "$e"]=], "", rexboard_cli())
+rm -f "$e"]=], "", cli, ctx.server and select(2, host_app(ctx.server)) or "")
   end,
 }
 
