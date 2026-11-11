@@ -22,3 +22,9 @@ sender = "captain@global"
 "gpt-6.1-sol" = "6.1-sol"
 "gpt-6.1-terra" = "6.1-terra"
 "gpt-6.0-luna" = "6.0-luna"
+
+# Decision signals: https://github.com/vanducng/rexboard/blob/main/docs/configuration.md#hooksask
+[hooks.ask]
+pattern = "**DECISION"
+reply = "**Reply:**"
+label = "decision"
