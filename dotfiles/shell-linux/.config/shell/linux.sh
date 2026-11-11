@@ -7,7 +7,7 @@ export EDITOR="${EDITOR:-nvim}"
 export VISUAL="${VISUAL:-$EDITOR}"
 export GPG_TTY="${GPG_TTY:-$(tty 2>/dev/null || true)}"
 export NPM_CONFIG_PREFIX="${NPM_CONFIG_PREFIX:-$HOME/.npm-global}"
-# Bulky stores live on the 970 (`~/work` → /media/ubuntu/work).
+# Bulky stores may live on a second disk, with `~/work` linked to it.
 export TMPDIR="${TMPDIR:-$HOME/work/tmp}"
 export GOPATH="${GOPATH:-$HOME/go}"
 export GOMODCACHE="${GOMODCACHE:-$HOME/go/pkg/mod}"
