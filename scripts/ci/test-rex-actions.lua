@@ -72,6 +72,7 @@ actions.agent_pick.run({ session_id = "s", block_id = "source", client_id = "app
 cmd = assert(layer, "agent picker floats on another host's pane").layout.block.options.command
 assert(layer.window_id == "w" and layer.focus, "agent picker opens over the pane's own window")
 assert(layer.bounds[1] == 0.08 and layer.bounds[3] == 0.84, "agent picker floats centered, not full window")
+assert(cmd[3]:match("board %-%-once"), "the popup runs the whole board, which exits on a jump")
 assert(cmd[8] == "rexboard" and cmd[9] == "mac-there", "remote picker runs that host's rexboard and jumps through this Mac's app as that host knows it")
 
 windows = { { window_id = "board", label = "1-rexboard" }, { window_id = "pi", label = "pi" },
