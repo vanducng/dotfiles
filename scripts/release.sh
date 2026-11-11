@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 # Merges the pending release-please PR, waits for its tag, then fast-forwards ~/dotfiles on
-# this Mac and every other machine in hosts.json (labels are ssh aliases). Running it is the
+# this Mac and every other machine in hosts.json (labels are ssh aliases; the private overlay
+# stows the list to ~/.config/rex/hosts.json, and without it only this Mac). Running it is the
 # go-ahead to merge. With nothing pending it only syncs.
 #   scripts/release.sh            release, then sync every machine
 #   scripts/release.sh --sync DIR [LABEL]  fast-forward one checkout (what each machine runs)
 set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]:-.}")/.." && pwd)"
-HOSTS="$root/dotfiles/rex/.config/rex/hosts.json"
+HOSTS="${REX_HOSTS:-$HOME/.config/rex/hosts.json}"
 REX="$HOME/Library/Application Support/com.superlogical.rex/RexServer/Versions/Current/Rex Server.app/Contents/MacOS/rex"
 
 release() {
@@ -111,11 +112,18 @@ settle() {
   # shellcheck disable=SC2046
   ./scripts/stow-package.sh --check $(make -s stow-folders </dev/null | grep -vx pi) </dev/null \
     | sed "s/^/$me: /" || echo "$me: make stow-<package> links a drifted file (the live one goes to ~/.dotfiles-backup)" >&2
+  [ ! -x scripts/stow-overlay.sh ] || ./scripts/stow-overlay.sh --check </dev/null | sed "s/^/$me: /" \
+    || echo "$me: scripts/stow-overlay.sh relinks a drifted overlay file (the live one goes to ~/.dotfiles-backup)" >&2
 }
 
 sync_all() {
   local label host me failed=0
   me="$(scutil --get LocalHostName)"
+  if [ ! -r "$HOSTS" ]; then
+    echo "no host list at $HOSTS; syncing this Mac only" >&2
+    bash "${BASH_SOURCE[0]}" --sync "$root" "" </dev/null
+    return
+  fi
   while read -r label host; do
     if [ "$host" = "$me" ]; then
       bash "${BASH_SOURCE[0]}" --sync "$root" "$label" </dev/null || failed=1

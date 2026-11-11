@@ -34,9 +34,9 @@
       });
 
       homeConfigurations = {
-        macbook = mkHome {
+        mac = mkHome {
           system = "aarch64-darwin";
-          modules = [ ./home/hosts/macbook.nix ];
+          modules = [ ./home/hosts/mac.nix ];
         };
         coding-agent = mkHome {
           system = "x86_64-linux";

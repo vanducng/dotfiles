@@ -46,10 +46,10 @@ local today = {
   { id = "b", label = "2-3-foo" },
   { id = "c", label = "5-cockpit" },
   { id = "d", label = "notes" },
-  { id = "e", label = "cnb" },
+  { id = "e", label = "acme" },
 }
 local plan = layout.plan(today, true)
-check(labels(plan), "1-cockpit 2-warp-factory-setup 3-foo 4-notes 5-cnb",
+check(labels(plan), "1-cockpit 2-warp-factory-setup 3-foo 4-notes 5-acme",
   "the layout's session goes first and the rest are renumbered by position")
 check(plan[1].id .. plan[2].id .. plan[3].id, "cab", "order is layout first, then the rest as they were")
 check(labels(rerun(plan, true)), labels(plan), "a rerun changes nothing")
@@ -59,12 +59,12 @@ plan = layout.plan({ { id = "x", label = "cockpit" }, { id = "y", label = "4-coc
 check(labels(plan), "1-cockpit 2-cockpit", "a duplicate cockpit is not a second layout session")
 check(labels(rerun(plan, true)), labels(plan), "a duplicate stays put on a rerun")
 
-check(labels(layout.plan(names({ "cnb", "foo" }), true)), "1-cnb 2-foo",
+check(labels(layout.plan(names({ "acme", "foo" }), true)), "1-acme 2-foo",
   "with no cockpit, every number is the real Ctrl-N position")
-plan = layout.plan(names({ "abs" }), false)
-check(labels(plan), "1-abs", "a remote host numbers by plain position")
-plan = layout.plan(names({ "foo", "3-abs", "cockpit" }), false)
-check(labels(plan), "1-foo 2-abs 3-cockpit", "a remote host keeps its order")
+plan = layout.plan(names({ "globex" }), false)
+check(labels(plan), "1-globex", "a remote host numbers by plain position")
+plan = layout.plan(names({ "foo", "3-globex", "cockpit" }), false)
+check(labels(plan), "1-foo 2-globex 3-cockpit", "a remote host keeps its order")
 check(labels(rerun(plan, false)), labels(plan), "a remote rerun changes nothing")
 plan = layout.plan(names({ "foo", "" }), false)
 check(labels(plan), "1-foo 2-", "an empty name keeps its number")

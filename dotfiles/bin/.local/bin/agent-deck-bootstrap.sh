@@ -30,37 +30,24 @@ fi
 # pollute our progress lines. Has no effect on a patched tmux.
 export AGENTDECK_SUPPRESS_TMUX_WARNING=1
 
-# title|group|path
-SESSIONS=(
-  # cnb
-  "infra|cnb|$HOME/git/work/cnb/cnb-ds-infra"
-  "airflow|cnb|$HOME/git/work/cnb/cnb-ds-astro"
-  "dbt|cnb|$HOME/git/work/cnb/cnb-ds-dbt-order-form"
-  "data-contract|cnb|$HOME/git/work/cnb/cnb-data-contract"
-  "ws|cnb|$HOME/git/work/cnb/cnb-web-services"
-
-  # abs
-  "infra|abs|$HOME/git/work/ab-spectrum/infra"
-  "data-platform|abs|$HOME/git/work/ab-spectrum/data-platform"
-
-  # jade
-  "infra|jade|$HOME/git/work/bhcoe/jade-infra"
-  "harmony|jade|$HOME/git/work/bhcoe/harmony"
-
-  # crashchat
-  "infra|crashchat|$HOME/git/work/crashchat/infra"
-  "app|crashchat|$HOME/git/work/crashchat/services/crashchat-core"
-
-  # nlb
-  "goclaw|nlb|$HOME/git/personal/nextlevelbuilder/goclaw"
-  "gcplane|nlb|$HOME/git/dataplanelabs/gcplane"
-  "goclaw-config|nlb|$HOME/git/dataplanelabs/goclaw-config"
-  "goclaw-charts|nlb|$HOME/git/dataplanelabs/goclaw-charts"
-
-  # dpl
-  "infra|dpl|$HOME/git/dataplanelabs/infra"
-  "runner|dpl|$HOME/git/dataplanelabs/runnerclubs"
-)
+# One "title|group|path" per line; # starts a comment. The list names this machine's
+# client repos, so it lives in the private overlay (~/.config/agent-deck/sessions.list).
+SESSIONS_FILE="${AGENT_DECK_SESSIONS:-${XDG_CONFIG_HOME:-$HOME/.config}/agent-deck/sessions.list}"
+if [[ ! -r "$SESSIONS_FILE" ]]; then
+  echo "agent-deck-bootstrap: no session list at $SESSIONS_FILE" >&2
+  exit 1
+fi
+SESSIONS=()
+while IFS= read -r line; do
+  [[ "$line" =~ ^[[:space:]]*(#|$) ]] && continue
+  [[ "$line" =~ ^[^|]+\|[^|]+\|[^|]+$ ]] || { echo "  skip   malformed line: $line" >&2; continue; }
+  line="${line//\$HOME/$HOME}"
+  SESSIONS+=("${line/|~\//|$HOME/}")
+done <"$SESSIONS_FILE"
+if ((${#SESSIONS[@]} == 0)); then
+  echo "agent-deck-bootstrap: no valid sessions in $SESSIONS_FILE" >&2
+  exit 1
+fi
 
 added=0
 skipped_exists=0

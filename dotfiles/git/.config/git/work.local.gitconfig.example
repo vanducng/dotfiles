@@ -1,3 +1,0 @@
-# Copy to ~/.config/git/work.local.gitconfig (gitignored). Do not commit.
-[user]
-	email = YOUR_CNB_WORK_EMAIL

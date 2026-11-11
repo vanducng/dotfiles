@@ -10,7 +10,7 @@ Codex CLI configuration is managed from this repository with GNU Stow.
 make stow-codex
 ```
 
-This links `dotfiles/codex/.codex/config.toml`, `cliproxy.config.toml`, and `cliproxy-muse.config.toml` into `~/.codex/`. Attention sounds and Telegram notify are not wired.
+This links `cliproxy-muse.config.toml`, `hooks.json` and the hooks into `~/.codex/`. Codex writes its project and hook trust into `config.toml` and `cliproxy.config.toml`, so those two are per machine and come from the private overlay when the machine has one; `config.example.toml` holds the shared settings to start one from. Attention sounds and Telegram notify are not wired.
 
 ## Managed Settings
 
@@ -200,7 +200,7 @@ Then fully quit and reopen ChatGPT/Codex Desktop.
 
 ## Local State
 
-The base config, `cliproxy.config.toml`, `hooks.json`, `hooks/attention-sound.sh`, and `bin/node-repl-mcp.sh` are repo-managed.
+`config.example.toml`, `cliproxy-muse.config.toml`, `hooks.json`, `hooks/attention-sound.sh`, and `bin/node-repl-mcp.sh` are repo-managed. `config.toml` and `cliproxy.config.toml` are per machine.
 
 :::danger
 Do not commit `~/.codex/auth.json`, account files, SQLite databases, history, logs, generated images, model caches, or temporary plugin snapshots.

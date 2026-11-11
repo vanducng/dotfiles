@@ -49,7 +49,7 @@ EXAMPLES:
     git-worktree-manager add feature/auth auth -t feature
 
     # Create from existing branch
-    git-worktree-manager add dev-matt matt -n
+    git-worktree-manager add dev-review review -n
 
     # Create with custom base
     git-worktree-manager add feature/new-ui ui -b develop

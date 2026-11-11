@@ -32,7 +32,7 @@ make release           # Merge the pending release PR, then pull on every Mac
 
 ## Releases
 
-release-please keeps a release PR open on `main`. To release, run `make release` (`scripts/release.sh`): it merges that PR, waits for the tag, and pulls `~/dotfiles` on every machine in `dotfiles/rex/.config/rex/hosts.json`, keeping each machine's local edits. It merges, so run it only when the user asks for a release or a merge. Use it instead of merging the PR by hand or pulling each machine over ssh; with nothing pending it only pulls.
+release-please keeps a release PR open on `main`. To release, run `make release` (`scripts/release.sh`): it merges that PR, waits for the tag, and pulls `~/dotfiles` on every machine in `~/.config/rex/hosts.json` (stowed from the private overlay; without one, only this machine), keeping each machine's local edits. It merges, so run it only when the user asks for a release or a merge. Use it instead of merging the PR by hand or pulling each machine over ssh; with nothing pending it only pulls.
 
 ## How Stow Works
 

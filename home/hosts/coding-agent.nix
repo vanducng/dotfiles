@@ -1,4 +1,4 @@
-{ ... }:
+{ config, ... }:
 {
   imports = [
     ../agent-tools.nix
@@ -6,7 +6,7 @@
   ];
 
   home.username = "friday";
-  home.homeDirectory = "/home/friday";
+  home.homeDirectory = "/home/${config.home.username}";
   home.stateVersion = "26.05";
   home.sessionVariables = {
     NPM_CONFIG_PREFIX = "/workspace/.npm-global";

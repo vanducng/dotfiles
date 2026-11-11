@@ -1,5 +1,5 @@
 -- Machines that run Rex come from hosts.json, which scripts/rex-setup.sh reads too. Each entry:
---   label     <kind>-<nn> (mbp, mini, linux), the same as its ssh alias. Its Rex server joins
+--   label     the machine's ssh alias. Its Rex server joins
 --             Tailscale as rex-<label>, and its place in the list is its ctrl+alt+N.
 --   hostname  macOS LocalHostName (scutil --get LocalHostName); tells each Mac which entry it is.
 --   device, icon  what it is, and the SF Symbol the Rex app shows for it.

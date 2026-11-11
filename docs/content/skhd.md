@@ -79,8 +79,8 @@ All application shortcuts use the `meh` key (ctrl+alt+shift) for consistency and
 | Shortcut | Application | Description |
 |----------|-------------|-------------|
 | `meh + 1` | 1Password | Password manager |
-| `meh + 2` | Jump Desktop | Mac Mini (`mini-01`, Fluid) on the main display, space 9 |
-| `meh + 3` | Jump Desktop | Linux (`linux-01`, Fluid) on the main display, space 9 |
+| `meh + 2` | Jump Desktop | The first host in `~/.config/jump-desktop/names` (Fluid) on the main display, space 9 |
+| `meh + 3` | Jump Desktop | The second host there (Fluid) on the main display, space 9 |
 | `meh + v` | Grok Bot | Grok desktop app on space 16 |
 | `meh + l` | Perplexity | AI search engine |
 | `meh + i` | Structured | Task and time management |

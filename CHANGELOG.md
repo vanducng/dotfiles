@@ -96,7 +96,7 @@
 ### Features
 
 * **bin:** track vd-skills-sync and prune links to removed skills ([dbfea78](https://github.com/vanducng/dotfiles/commit/dbfea783078e30c32e2eb8791f6660dc33f51219))
-* **cnb-openvpn:** route a machine-local split list over the tunnel ([e1bce39](https://github.com/vanducng/dotfiles/commit/e1bce3966c44b95f7e6b314ce90440e8e1dfda88))
+* **work-vpn:** route a machine-local split list over the tunnel ([e1bce39](https://github.com/vanducng/dotfiles/commit/e1bce3966c44b95f7e6b314ce90440e8e1dfda88))
 * **homelab:** run BrowserOS neo instead of BrowserOS ([247a298](https://github.com/vanducng/dotfiles/commit/247a298a0c24aa274cfbdd41e9b1bf308f13484d))
 * **pi:** use the hardware cursor and drop the codex-fast extensions ([7b818f9](https://github.com/vanducng/dotfiles/commit/7b818f903587edaa22cda721db2e0738c0e67014))
 
@@ -104,7 +104,7 @@
 ### Bug Fixes
 
 * **gopass:** restore the config.local include so each host keeps its own store mount ([2eae563](https://github.com/vanducng/dotfiles/commit/2eae563bdb9b9cceca96b036abf51347d848a7d1))
-* **homelab:** reach the CNB bastion over the OpenVPN tunnel ([8e54316](https://github.com/vanducng/dotfiles/commit/8e543160655544968ffc33a6017a836384594252))
+* **homelab:** reach the ACME bastion over the OpenVPN tunnel ([8e54316](https://github.com/vanducng/dotfiles/commit/8e543160655544968ffc33a6017a836384594252))
 
 ## [0.35.1](https://github.com/vanducng/dotfiles/compare/v0.35.0...v0.35.1) (2026-10-30)
 
@@ -125,7 +125,7 @@
 ### Features
 
 * **cpq:** fall back to 1Password for the management key ([b597add](https://github.com/vanducng/dotfiles/commit/b597adde5d5e3e9c2d518e0c6a6763baa99908a4))
-* **rex:** add linux-01 host, Linux personal server setup, ctrl-alt-3 host jump ([efc5a3e](https://github.com/vanducng/dotfiles/commit/efc5a3eb60a6177b5bbd46f0a4f0f88d7e797baa))
+* **rex:** add host-c host, Linux personal server setup, ctrl-alt-3 host jump ([efc5a3e](https://github.com/vanducng/dotfiles/commit/efc5a3eb60a6177b5bbd46f0a4f0f88d7e797baa))
 * **rexboard:** an OpenRig extension and a Caps+B board key ([#259](https://github.com/vanducng/dotfiles/issues/259)) ([ac11b52](https://github.com/vanducng/dotfiles/commit/ac11b52550c472190487d27e51a809c3f4e60d95))
 * **rex:** floating project picker and centered popups ([ad7f7bc](https://github.com/vanducng/dotfiles/commit/ad7f7bc63a877da98e6485e06045547d114434a6))
 * **rex:** hooks through rexboard hook and hooks install, with a fail-open shim ([5539fc4](https://github.com/vanducng/dotfiles/commit/5539fc48e39afa6210efe39c0d719b8268fc0b1a))
@@ -133,7 +133,7 @@
 * **rex:** send the agent's own words to Rex, and report Codex and pi ([#256](https://github.com/vanducng/dotfiles/issues/256)) ([5b96cb5](https://github.com/vanducng/dotfiles/commit/5b96cb520c971fb6526fdc084ca66315a0147353))
 * **shell-linux:** load atuin aliases without a key, prefer musl mise binaries ([34a32a4](https://github.com/vanducng/dotfiles/commit/34a32a48b755e8433cb0e9cda6d45522b89de9bb))
 * **shell-linux:** replace gws with gog 0.39.1 in mise ([b7848a1](https://github.com/vanducng/dotfiles/commit/b7848a193bf9e4e986bf7e062c0ffb62f18aed9a))
-* **skhd:** meh+3 opens linux-01 over Jump Desktop ([734d6da](https://github.com/vanducng/dotfiles/commit/734d6dacf3473c95693856554a4c03e55419408d))
+* **skhd:** meh+3 opens host-c over Jump Desktop ([734d6da](https://github.com/vanducng/dotfiles/commit/734d6dacf3473c95693856554a4c03e55419408d))
 * **zsh:** put Homebrew and ~/.local/bin on PATH in .zshenv for Moshi SSH probes ([c3cac43](https://github.com/vanducng/dotfiles/commit/c3cac430ef0e2e46920935279392827b3ec888fa))
 
 
@@ -243,29 +243,29 @@
 
 ### Features
 
-* **homelab:** added GNOME Pop Shell tiling with Mac-style keys on linux-01 ([#213](https://github.com/vanducng/dotfiles/issues/213)) ([41eebb3](https://github.com/vanducng/dotfiles/commit/41eebb3842a3d62002492b5df1aa78956947439e))
-* **homelab:** always showed workspace numbers 1-9 and dropped the Firefox key on linux-01 ([#221](https://github.com/vanducng/dotfiles/issues/221)) ([2140f5a](https://github.com/vanducng/dotfiles/commit/2140f5a1dea7eb4455a68e3b0428aa868964f926))
-* **homelab:** made cmd+c/v copy and paste in Ghostty on linux-01 ([#222](https://github.com/vanducng/dotfiles/issues/222)) ([203aa6e](https://github.com/vanducng/dotfiles/commit/203aa6e91ae55c2a99169f47e31a848722d6efca))
+* **homelab:** added GNOME Pop Shell tiling with Mac-style keys on host-c ([#213](https://github.com/vanducng/dotfiles/issues/213)) ([41eebb3](https://github.com/vanducng/dotfiles/commit/41eebb3842a3d62002492b5df1aa78956947439e))
+* **homelab:** always showed workspace numbers 1-9 and dropped the Firefox key on host-c ([#221](https://github.com/vanducng/dotfiles/issues/221)) ([2140f5a](https://github.com/vanducng/dotfiles/commit/2140f5a1dea7eb4455a68e3b0428aa868964f926))
+* **homelab:** made cmd+c/v copy and paste in Ghostty on host-c ([#222](https://github.com/vanducng/dotfiles/issues/222)) ([203aa6e](https://github.com/vanducng/dotfiles/commit/203aa6e91ae55c2a99169f47e31a848722d6efca))
 * **homelab:** pinned apps to workspaces and reloaded a blank wall dashboard ([#218](https://github.com/vanducng/dotfiles/issues/218)) ([c31fd6e](https://github.com/vanducng/dotfiles/commit/c31fd6e5640ebdea092fe40a3c8f54f40fb524ad))
 * **homelab:** put BrowserOS neo on meh+s, Chrome on meh+d, and slimmed the GNOME panel ([#214](https://github.com/vanducng/dotfiles/issues/214)) ([e4f6116](https://github.com/vanducng/dotfiles/commit/e4f6116e0f6792b6e16360125124bddc8cf8ec68))
-* **homelab:** put Grok Bot on meh+v on linux-01 ([#217](https://github.com/vanducng/dotfiles/issues/217)) ([74839a7](https://github.com/vanducng/dotfiles/commit/74839a783a50ed94f144a90123c967df94be4c42))
+* **homelab:** put Grok Bot on meh+v on host-c ([#217](https://github.com/vanducng/dotfiles/issues/217)) ([74839a7](https://github.com/vanducng/dotfiles/commit/74839a783a50ed94f144a90123c967df94be4c42))
 * **homelab:** put the sysmon hub on meh+f and added an app taskbar to the GNOME panel ([#215](https://github.com/vanducng/dotfiles/issues/215)) ([00c3c0c](https://github.com/vanducng/dotfiles/commit/00c3c0c111ee9b75c7a4103334a60884c5fcffe8))
 * Jump host names, OpenVPN split repair, shell and agent config updates ([90401a2](https://github.com/vanducng/dotfiles/commit/90401a2c499de47cafb7c2053c09e05c4d2a9dfc))
-* **jump-desktop:** name hosts mini-01, linux-01, macpro and pin the Apple account ([3122f05](https://github.com/vanducng/dotfiles/commit/3122f05cdd796ea66188e2dbce9f6892c4bec112))
+* **jump-desktop:** name hosts host-a, host-c, host-b and pin the Apple account ([3122f05](https://github.com/vanducng/dotfiles/commit/3122f05cdd796ea66188e2dbce9f6892c4bec112))
 * **jump-desktop:** version Jump Desktop viewer entries and helper shim ([6fa5e9b](https://github.com/vanducng/dotfiles/commit/6fa5e9b7ceb55a5e1c798743b361df47ea4963d1))
 * **jump-desktop:** version Jump Desktop viewer entries and helper shim ([8383674](https://github.com/vanducng/dotfiles/commit/8383674d2b7b12a4e31773033c19df02b1415fb4))
-* **linux:** exported the 1Password service account token for agents on linux-01 ([#219](https://github.com/vanducng/dotfiles/issues/219)) ([5d1eb4a](https://github.com/vanducng/dotfiles/commit/5d1eb4acba589fc2a37b834964ba0823e15ae3fb))
-* **openvpn:** pin CNB host routes to the tun and repair them after reconnects ([c384e3c](https://github.com/vanducng/dotfiles/commit/c384e3c1992779cddbeabe1dfda67cc38c987b1e))
+* **linux:** exported the 1Password service account token for agents on host-c ([#219](https://github.com/vanducng/dotfiles/issues/219)) ([5d1eb4a](https://github.com/vanducng/dotfiles/commit/5d1eb4acba589fc2a37b834964ba0823e15ae3fb))
+* **openvpn:** pin ACME host routes to the tun and repair them after reconnects ([c384e3c](https://github.com/vanducng/dotfiles/commit/c384e3c1992779cddbeabe1dfda67cc38c987b1e))
 * **rex:** added Rex config with herdr-style keys and multi-Mac hosts ([#224](https://github.com/vanducng/dotfiles/issues/224)) ([f3def9a](https://github.com/vanducng/dotfiles/commit/f3def9ab9a48445de555f3fdd517d7c573674a25))
 * **rex:** fixed cross-Mac session jumps and added tab, numbering, and picker keys ([#225](https://github.com/vanducng/dotfiles/issues/225)) ([e585251](https://github.com/vanducng/dotfiles/commit/e5852514618b3a7c1f4e9a88895b296b8edce678))
 * **skhd:** opened the Mac mini over Jump Desktop on meh+2 ([#212](https://github.com/vanducng/dotfiles/issues/212)) ([6d42da1](https://github.com/vanducng/dotfiles/commit/6d42da11309dc703f424898ffe556505a3b0fb6c))
-* **ssh:** shared home host aliases mini-01, linux-01, macpro ([2f314d1](https://github.com/vanducng/dotfiles/commit/2f314d11ac62a372ddfb5f0e9f085a1c77c9979f))
-* **ssh:** shared home host aliases mini-01, linux-01, macpro ([415954a](https://github.com/vanducng/dotfiles/commit/415954a6566cf174b02973d32176972606efb3c1))
+* **ssh:** shared home host aliases host-a, host-c, host-b ([2f314d1](https://github.com/vanducng/dotfiles/commit/2f314d11ac62a372ddfb5f0e9f085a1c77c9979f))
+* **ssh:** shared home host aliases host-a, host-c, host-b ([415954a](https://github.com/vanducng/dotfiles/commit/415954a6566cf174b02973d32176972606efb3c1))
 
 
 ### Bug Fixes
 
-* **homelab:** addressed review feedback on the linux-01 desktop scripts ([#216](https://github.com/vanducng/dotfiles/issues/216)) ([014e1dc](https://github.com/vanducng/dotfiles/commit/014e1dcc0d26cad9183ee5448cdbc1e7f8f75da4))
+* **homelab:** addressed review feedback on the host-c desktop scripts ([#216](https://github.com/vanducng/dotfiles/issues/216)) ([014e1dc](https://github.com/vanducng/dotfiles/commit/014e1dcc0d26cad9183ee5448cdbc1e7f8f75da4))
 * **homelab:** waited for the network before opening the wall and put app search on cmd+space ([#220](https://github.com/vanducng/dotfiles/issues/220)) ([08a2b21](https://github.com/vanducng/dotfiles/commit/08a2b218057aa09550894fe6bf56467b11aa6db8))
 * **shell:** portable aliases and paths, quieter startup on unreadable cwd ([f1e30c3](https://github.com/vanducng/dotfiles/commit/f1e30c39b918d70c326280eff36ec05dff9ce347))
 * **zsh:** prefer the installer atuin over Homebrew ([#223](https://github.com/vanducng/dotfiles/issues/223)) ([5d6512e](https://github.com/vanducng/dotfiles/commit/5d6512e63922085b28e14596826607d9d84d9c07))
@@ -284,7 +284,7 @@
 ### Bug Fixes
 
 * **herdr-fingers:** match paths that contain spaces ([3659f84](https://github.com/vanducng/dotfiles/commit/3659f843921bbedc683a4864f15676e0f3d4d8ea))
-* **homelab:** name the Ubuntu dev box linux01 ([7a9c493](https://github.com/vanducng/dotfiles/commit/7a9c4935e51a5b7abc3447c586da16602b112931))
+* **homelab:** name the Ubuntu dev box host-c ([7a9c493](https://github.com/vanducng/dotfiles/commit/7a9c4935e51a5b7abc3447c586da16602b112931))
 * **mise:** stow the Linux toolset only on Linux ([6be331e](https://github.com/vanducng/dotfiles/commit/6be331e30fa8e9cf0b2f6362b85bc1146c29a0a9))
 * **mise:** stow the Linux toolset only on Linux ([ac77085](https://github.com/vanducng/dotfiles/commit/ac7708572786898aee795c90fe14482a59808b85))
 * **skhd:** pass hotkeys through remote viewers ([4d3b2b4](https://github.com/vanducng/dotfiles/commit/4d3b2b4fb5c749c3a163f90670bad6f70997d698))
@@ -382,7 +382,7 @@
 * **homelab:** add fetch-only repo refresh and on-enter debounce ([a1eb7c4](https://github.com/vanducng/dotfiles/commit/a1eb7c430b1105f0dd0d5593c79855f94dbcbee1))
 * **homelab:** added fetch-only repo refresh and on-enter debounce ([87fd69d](https://github.com/vanducng/dotfiles/commit/87fd69d8c3302caebdf6c56a15268fb164159d83))
 * **homelab:** sync firstmate into personal/ like skills ([#155](https://github.com/vanducng/dotfiles/issues/155)) ([f99930a](https://github.com/vanducng/dotfiles/commit/f99930a47e17abe6b65afdedc7a48995e5f5c7f8))
-* **mac:** add cnb-openvpn-mac split-tunnel helper ([#157](https://github.com/vanducng/dotfiles/issues/157)) ([479e37a](https://github.com/vanducng/dotfiles/commit/479e37adebdf2178feee221f3ee80e331ca94b79))
+* **mac:** add work-vpn-mac split-tunnel helper ([#157](https://github.com/vanducng/dotfiles/issues/157)) ([479e37a](https://github.com/vanducng/dotfiles/commit/479e37adebdf2178feee221f3ee80e331ca94b79))
 * **op:** version 1Password CLI setup for biometric unlock ([e6ec332](https://github.com/vanducng/dotfiles/commit/e6ec33250e2f7ab3b8d09ae9c77a8b1e61f8a1c7))
 * **op:** version 1Password CLI setup for biometric unlock ([305127a](https://github.com/vanducng/dotfiles/commit/305127ab74578f9bd49fd9220f81d662700059f9))
 * **pi:** add CLIProxy model configs and environment setup ([#152](https://github.com/vanducng/dotfiles/issues/152)) ([bb70b6e](https://github.com/vanducng/dotfiles/commit/bb70b6e608bdeefadc38c236b78cb36adfc551b3))
@@ -401,7 +401,7 @@
 * **homelab:** tighten git-fetch review findings ([7daa9f0](https://github.com/vanducng/dotfiles/commit/7daa9f08cedc5a9d96b14e4839a4e378676e0838))
 * **op:** drop OP_ACCOUNT shorthand, document manual-account shadowing ([df16182](https://github.com/vanducng/dotfiles/commit/df161827486ce5089de7953d8f13edc078a22452))
 * **op:** drop OP_ACCOUNT shorthand, document manual-account shadowing ([8f6f678](https://github.com/vanducng/dotfiles/commit/8f6f67832121d252eb5e0d1cac1dd5165258e9c7))
-* **zsh:** use $HOME instead of hardcoded /Users/vanducng ([4e6241b](https://github.com/vanducng/dotfiles/commit/4e6241b8fa90a9a1af474448eff173173758fb2c))
+* **zsh:** use $HOME instead of hardcoded /Users/me ([4e6241b](https://github.com/vanducng/dotfiles/commit/4e6241b8fa90a9a1af474448eff173173758fb2c))
 
 ## [0.20.0](https://github.com/vanducng/dotfiles/compare/v0.19.0...v0.20.0) (2026-09-17)
 
@@ -436,21 +436,21 @@
 
 ### Features
 
-* **git:** add includeIf identities for crashchat, ab-spectrum, bhcoe ([7ed79b0](https://github.com/vanducng/dotfiles/commit/7ed79b0f2949d7a6ad310d7a57b6f09103289036))
+* **git:** add includeIf identities for initech, globex, umbrella ([7ed79b0](https://github.com/vanducng/dotfiles/commit/7ed79b0f2949d7a6ad310d7a57b6f09103289036))
 * **homelab:** auto-connect Tailscale on boot ([dd59884](https://github.com/vanducng/dotfiles/commit/dd5988480ddb402a64f836ef48b29860556802a9))
-* **linux:** add CNB OpenVPN user daemon from Mac Tunnelblick profile ([d4973d7](https://github.com/vanducng/dotfiles/commit/d4973d7744bfcf104b5d5585f0ed7815f9c8f768))
+* **linux:** add ACME OpenVPN user daemon from Mac Tunnelblick profile ([d4973d7](https://github.com/vanducng/dotfiles/commit/d4973d7744bfcf104b5d5585f0ed7815f9c8f768))
 * **linux:** add homelab layout, never-sleep, and user sshd ([23cd2c3](https://github.com/vanducng/dotfiles/commit/23cd2c350efe91c2cf191aab65ba3899a8d8d766))
 * **linux:** add remote CDP, RDP tunnels, and userspace Tailscale ([b5be98a](https://github.com/vanducng/dotfiles/commit/b5be98af8ffdaebff33acac23af5670c3da5d778))
 * **linux:** add sudo helper to enable ssh/mosh remote access ([1eb1ea7](https://github.com/vanducng/dotfiles/commit/1eb1ea7897192bcaf8101f416ba9f6c704a90203))
 * **linux:** add Sway/Ghostty desktop with skhd-equivalent keys ([6bc3ca1](https://github.com/vanducng/dotfiles/commit/6bc3ca1d69cb48ade9cfea3858b4207a2ef16835))
 * **linux:** add user-space bootstrap and portable stow set ([18df72d](https://github.com/vanducng/dotfiles/commit/18df72d2cd77b292e6bf658ee3af48451497c32d))
-* **linux:** added dpl homelab remote, CNB OpenVPN, and Tailscale ([651ad18](https://github.com/vanducng/dotfiles/commit/651ad1892c6bdc05a8fd71dabd17ef3046fc1ed7))
-* **linux:** CNB OpenVPN MAIN profile plus Mac bastion jump ([673de26](https://github.com/vanducng/dotfiles/commit/673de26e99b0d06cad6a60a089774b1894956dc2))
-* **linux:** format 970 as dpl-work for git worktrees and docker data ([838ef6b](https://github.com/vanducng/dotfiles/commit/838ef6b7e5909f4800bb01a1b69705bce89fa5ee))
+* **linux:** added lab homelab remote, ACME OpenVPN, and Tailscale ([651ad18](https://github.com/vanducng/dotfiles/commit/651ad1892c6bdc05a8fd71dabd17ef3046fc1ed7))
+* **linux:** ACME OpenVPN MAIN profile plus Mac bastion jump ([673de26](https://github.com/vanducng/dotfiles/commit/673de26e99b0d06cad6a60a089774b1894956dc2))
+* **linux:** format 970 as lab-work for git worktrees and docker data ([838ef6b](https://github.com/vanducng/dotfiles/commit/838ef6b7e5909f4800bb01a1b69705bce89fa5ee))
 * **linux:** keep bulky tool stores on the 970 work disk ([15510d1](https://github.com/vanducng/dotfiles/commit/15510d1f8589ef3f19f6e0a050f7ad898242580d))
-* **linux:** persist tun cnb0 for user-space CNB OpenVPN ([7368c1d](https://github.com/vanducng/dotfiles/commit/7368c1d8de0433f127a2aa519893c7871a9a878c))
+* **linux:** persist tun wrk0 for user-space ACME OpenVPN ([7368c1d](https://github.com/vanducng/dotfiles/commit/7368c1d8de0433f127a2aa519893c7871a9a878c))
 * **linux:** point gopass at ~/work/git/personal/pass ([71c6f4c](https://github.com/vanducng/dotfiles/commit/71c6f4cedcda272b31f2f55b61a73dd94e432a48))
-* **linux:** store CNB VPN in gopass and start/stop on demand ([46b6bd5](https://github.com/vanducng/dotfiles/commit/46b6bd58ba4717994a4c00e7ef68439baae2cc62))
+* **linux:** store ACME VPN in gopass and start/stop on demand ([46b6bd5](https://github.com/vanducng/dotfiles/commit/46b6bd58ba4717994a4c00e7ef68439baae2cc62))
 * **pi:** add ponytail package pinned at v4.9.0 ([7f21890](https://github.com/vanducng/dotfiles/commit/7f2189036d89fabe0d209d3658280dabeead3a79))
 * **pi:** add Structured MCP via pi-mcp-adapter ([#131](https://github.com/vanducng/dotfiles/issues/131)) ([cd48994](https://github.com/vanducng/dotfiles/commit/cd48994567ad1eee71185cf4936f493a11e03aff))
 

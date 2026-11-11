@@ -64,11 +64,11 @@ f:close()
 os.remove(cmd[7])
 assert(list == "s\t1-cockpit\t/work/home\t1\nt\t2-api x\t/work/api v2\t\n", "session list: " .. list)
 assert(cmd[8] == "app", "picker switches the app that pressed the key")
-local ok, err = pcall(actions.project_pick.run, { session_id = "s", block_id = "source", server = "mini-01" })
+local ok, err = pcall(actions.project_pick.run, { session_id = "s", block_id = "source", server = "host-b" })
 assert(not ok and err:match("local session"), "project picker stays on this Mac")
 
 layer = nil
-actions.agent_pick.run({ session_id = "s", block_id = "source", client_id = "app", server = "mini-01" })
+actions.agent_pick.run({ session_id = "s", block_id = "source", client_id = "app", server = "host-b" })
 cmd = assert(layer, "agent picker floats on another host's pane").layout.block.options.command
 assert(layer.window_id == "w" and layer.focus, "agent picker opens over the pane's own window")
 assert(layer.bounds[1] == 0.08 and layer.bounds[3] == 0.84, "agent picker floats centered, not full window")
