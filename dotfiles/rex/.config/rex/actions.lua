@@ -590,8 +590,9 @@ rex.action{
 }
 
 -- Overlays run on whichever host owns the pane. Rex zooms only the focused
--- block, so a focused popup unzooms the window: over a zoomed pane it fills the
--- window to hide that, and re-zooms the pane on quit.
+-- block, so a focused popup unzooms the window: one with bounds keeps its size
+-- over the unzoomed tabs, one without fills the window, and both re-zoom the
+-- pane on quit.
 local overlay_tail = [=[
 if [ -n "$2" ]; then "$REX_BIN_DIR/rex" zoom --on "$1"; else "$REX_BIN_DIR/rex" focus "$1"; fi >/dev/null 2>&1]=]
 
@@ -626,7 +627,7 @@ local function overlay(ctx, bounds, script, file, ...)
       end
     end
   end
-  local area = zoomed == "1" and { 0, 0, 1, 1 } or bounds or rect or { 0, 0, 1, 1 }
+  local area = bounds or (zoomed == "1" and { 0, 0, 1, 1 }) or rect or { 0, 0, 1, 1 }
   -- Without window_id the layer goes to the session's active tab, not always the pane's.
   local _, err = rex.session.new_layer{
     window_id = win,
