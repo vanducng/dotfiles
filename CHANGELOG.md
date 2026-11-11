@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.43.0](https://github.com/vanducng/dotfiles/compare/v0.42.1...v0.43.0) (2026-11-11)
+
+
+### Features
+
+* **rex:** the agent picker floats in a centered window, not the whole tab ([#291](https://github.com/vanducng/dotfiles/issues/291)) ([a242f83](https://github.com/vanducng/dotfiles/commit/a242f8391c2ac33934d21975093de159129b7155))
+* **rex:** the agent picker floats over a remote pane instead of jumping to the cockpit ([#288](https://github.com/vanducng/dotfiles/issues/288)) ([b69975a](https://github.com/vanducng/dotfiles/commit/b69975aa44dcdbb1d2bfce6a51e6b3c85fc489b9))
+* **rex:** the agent popup runs the whole board, card and all ([#294](https://github.com/vanducng/dotfiles/issues/294)) ([d52e025](https://github.com/vanducng/dotfiles/commit/d52e02536cbde8b3b22a98bccda0d69e8ecae9e1))
+
+
+### Bug Fixes
+
+* move host and client config to a private overlay ([#290](https://github.com/vanducng/dotfiles/issues/290)) ([daadffd](https://github.com/vanducng/dotfiles/commit/daadffdb034fc8c0811313c9a58c3db9852c6e92))
+* **shell-linux:** trust ~/work/git only, not its disk path ([#292](https://github.com/vanducng/dotfiles/issues/292)) ([6844e21](https://github.com/vanducng/dotfiles/commit/6844e21284047e0378225e976af26cfa928cdba1))
+
 ## [0.42.1](https://github.com/vanducng/dotfiles/compare/v0.42.0...v0.42.1) (2026-11-10)
 
 
