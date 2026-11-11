@@ -153,7 +153,9 @@ local urls = {
 local ok, overlay = pcall(require, "overlay")
 if ok and type(overlay) == "table" then
 	for name, config in pairs(overlay) do
-		urls[name] = config
+		if type(config) == "table" and type(config.shortcuts) == "table" and config.space then
+			urls[name] = config
+		end
 	end
 end
 

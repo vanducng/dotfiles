@@ -41,7 +41,7 @@ key="${CLI_PROXY_MANAGEMENT_KEY:-}"
 if [[ -z "$key" && -n "${CLI_PROXY_MANAGEMENT_OP_SA:-}" && -n "${CLI_PROXY_MANAGEMENT_OP_REF:-}" ]]; then
   key="$(op-sa --sa "$CLI_PROXY_MANAGEMENT_OP_SA" read "$CLI_PROXY_MANAGEMENT_OP_REF" 2>/dev/null || true)"
 fi
-[[ -n "$key" ]] || { echo "cpq: no management key" >&2; exit 1; }
+[[ -n "$key" ]] || { echo "cpq: no management key (set CLI_PROXY_MANAGEMENT_KEY, or the gopass or 1Password names in $env_file)" >&2; exit 1; }
 
 mgmt() { curl -fsS --max-time 20 -H "Authorization: Bearer $key" "$@"; }
 

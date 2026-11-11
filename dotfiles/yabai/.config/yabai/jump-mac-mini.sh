@@ -8,7 +8,7 @@ target="${1:-1}"
 case "$target" in
   *[!0-9]*) ;;
   *) resolved="$(awk -v n="$target" '$1 !~ /^#/ && NF >= 2 && ++i == n {print $2; exit}' "$names" 2>/dev/null)"
-     [ -n "$resolved" ] && target="$resolved" ;;
+     if [ -n "$resolved" ]; then target="$resolved"; fi ;;
 esac
 host="$(awk -v target="$target" '$1 !~ /^#/ && $2 == target {print $1; exit}' "$names")"
 [ -n "$host" ] || { printf 'Jump Desktop: unknown host %s\n' "$target" >&2; exit 1; }
