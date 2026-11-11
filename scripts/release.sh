@@ -112,7 +112,8 @@ settle() {
   # shellcheck disable=SC2046
   ./scripts/stow-package.sh --check $(make -s stow-folders </dev/null | grep -vx pi) </dev/null \
     | sed "s/^/$me: /" || echo "$me: make stow-<package> links a drifted file (the live one goes to ~/.dotfiles-backup)" >&2
-  [ ! -x scripts/stow-overlay.sh ] || ./scripts/stow-overlay.sh --check </dev/null | sed "s/^/$me: /" || true
+  [ ! -x scripts/stow-overlay.sh ] || ./scripts/stow-overlay.sh --check </dev/null | sed "s/^/$me: /" \
+    || echo "$me: make stow-<package> links a drifted overlay file (the live one goes to ~/.dotfiles-backup)" >&2
 }
 
 sync_all() {

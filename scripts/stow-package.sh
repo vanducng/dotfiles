@@ -9,6 +9,8 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 BACKUP_DIR="${DOTFILES_BACKUP_DIR:-${HOME}/.dotfiles-backup/$(date +%Y%m%d-%H%M%S)}"
 cd "${DOTFILES_PKG_DIR:-${REPO_ROOT}/dotfiles}"
+# The tracked-file list comes from git; outside a work tree it would be empty and hide drift.
+git rev-parse --is-inside-work-tree >/dev/null 2>&1 || { echo "stow-package: ${PWD} is not a git work tree" >&2; exit 1; }
 
 conflicts() {
   stow --no-folding -n -R -t "${HOME}" "$1" 2>&1 | sed -nE \

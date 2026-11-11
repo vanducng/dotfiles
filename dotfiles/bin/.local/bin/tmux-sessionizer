@@ -3,11 +3,10 @@
 if [[ $# -eq 1 ]]; then
     selected=$1
 else
-    search_paths=(
-        ~/personal
-        ~/projects
-        ~/git/*
-    )
+    search_paths=(~/personal ~/projects)
+    for group in ~/git/*/; do
+        [[ -d "$group" ]] && search_paths+=("${group%/}")
+    done
     selected=$(find "${search_paths[@]}" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | fzf)
 fi
 

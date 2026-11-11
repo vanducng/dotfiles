@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # Stow this machine's private overlay, if it has one: $DOTFILES_OVERLAY (default
-# ~/.dotfiles-overlay), a folder of stow packages laid out like dotfiles/. Its `packages`
-# file lists one "<package> <macos|linux|all>" per line. Host names, client work dirs and
-# work identities live there, never in this repo. No overlay, or a link to a volume that
-# is not mounted, is a no-op. Re-runnable.
+# ~/.dotfiles-overlay), a git work tree of stow packages laid out like dotfiles/. Its
+# `packages` file lists one "<package> <macos|linux|all>" per line (a line without a
+# platform is skipped). Host names, client work dirs and work identities live there, never
+# in this repo. No overlay, or a link to a volume that is not mounted, is a no-op. Re-runnable.
 #   stow-overlay.sh [--check] [package...]   only the listed packages named here
 set -euo pipefail
 
@@ -26,7 +26,11 @@ pkgs=""
 while read -r pkg where _; do
   [[ -z "${pkg}" || "${pkg}" == \#* ]] && continue
   [[ "${where}" == all || "${where}" == "${platform}" ]] || continue
-  [[ $# -eq 0 || " $* " == *" ${pkg} "* ]] || continue
+  if [[ $# -gt 0 ]]; then
+    wanted=""
+    for arg in "$@"; do [[ "${arg}" == "${pkg}" ]] && wanted=1; done
+    [[ -n "${wanted}" ]] || continue
+  fi
   pkgs="${pkgs} ${pkg}"
 done <"${overlay}/packages"
 [[ -n "${pkgs}" ]] || exit 0

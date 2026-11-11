@@ -20,10 +20,6 @@ EOF
   exit 2
 }
 
-env_file="${XDG_CONFIG_HOME:-$HOME/.config}/cli-proxy/env"
-# shellcheck disable=SC1090
-[[ -r "$env_file" ]] && . "$env_file"
-
 json=false filter=""
 for arg in "$@"; do
   case "$arg" in
@@ -32,6 +28,10 @@ for arg in "$@"; do
     *) filter="$arg" ;;
   esac
 done
+
+env_file="${XDG_CONFIG_HOME:-$HOME/.config}/cli-proxy/env"
+# shellcheck disable=SC1090
+[[ -r "$env_file" ]] && . "$env_file"
 
 base="${CLI_PROXY_BASE_URL:-https://cli-proxy.dataplanelabs.com}"
 base="${base%/}"; base="${base%/v1}"

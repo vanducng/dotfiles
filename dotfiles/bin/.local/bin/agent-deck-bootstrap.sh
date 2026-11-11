@@ -40,7 +40,9 @@ fi
 SESSIONS=()
 while IFS= read -r line; do
   [[ "$line" =~ ^[[:space:]]*(#|$) ]] && continue
-  SESSIONS+=("${line//\$HOME/$HOME}")
+  [[ "$line" =~ ^[^|]+\|[^|]+\|[^|]+$ ]] || { echo "  skip   malformed line: $line" >&2; continue; }
+  line="${line//\$HOME/$HOME}"
+  SESSIONS+=("${line/|~\//|$HOME/}")
 done <"$SESSIONS_FILE"
 
 added=0
