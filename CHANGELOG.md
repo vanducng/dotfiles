@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.44.0](https://github.com/vanducng/dotfiles/compare/v0.43.0...v0.44.0) (2026-11-12)
+
+
+### Features
+
+* **pi:** board-bridge serves the only seat of a rig with no human seat ([#300](https://github.com/vanducng/dotfiles/issues/300)) ([ab4c19a](https://github.com/vanducng/dotfiles/commit/ab4c19ac4d4e1b68e5df338391ffa6cdee3b2f1e))
+* **rex:** a popup with a size keeps it over a zoomed pane ([#297](https://github.com/vanducng/dotfiles/issues/297)) ([8cb70d0](https://github.com/vanducng/dotfiles/commit/8cb70d00140cf94992168f5fafe0decfbf8245a7))
+* **rex:** a remote pane's popup runs this Mac's own board over ssh ([#295](https://github.com/vanducng/dotfiles/issues/295)) ([91a211b](https://github.com/vanducng/dotfiles/commit/91a211b9b3e5db43e1466b6fa075264ba9f02433))
+* **rexboard:** configure decision signals ([#298](https://github.com/vanducng/dotfiles/issues/298)) ([2cef18b](https://github.com/vanducng/dotfiles/commit/2cef18b9168714dbaa2117e5e4c48b78fe75da62))
+* **rexboard:** stow the board package on Linux ([#299](https://github.com/vanducng/dotfiles/issues/299)) ([0cb2083](https://github.com/vanducng/dotfiles/commit/0cb2083f0ec96efdc73ee1e39b4f0770161431c0))
+
 ## [0.43.0](https://github.com/vanducng/dotfiles/compare/v0.42.1...v0.43.0) (2026-11-11)
 
 
