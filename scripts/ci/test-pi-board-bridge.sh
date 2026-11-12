@@ -21,3 +21,5 @@ fi
 [[ -n "$pkg" && -f "$pkg/package.json" ]] || { printf 'error: Pi is not installed (set PI_CODING_AGENT_PACKAGE to its package directory)\n' >&2; exit 1; }
 
 node "$project_root/scripts/ci/pi-board-bridge.check.mjs" "$pkg" "$ext"
+# The only seat of a rig with no human seat (fleet-fixes 34): its own process, since the extension reads the seat at load.
+node "$project_root/scripts/ci/pi-board-bridge-sole-seat.check.mjs" "$pkg" "$ext"

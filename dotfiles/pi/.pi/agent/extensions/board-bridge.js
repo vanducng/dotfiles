@@ -2,8 +2,10 @@
 // chat message, kind "chat") as a user message, then reports progress and the final reply back to the board
 // (feedback/status and feedback/done).
 // Boards, server and protocol: the openrig-workspace skill, references/tracking-board/ (vanducng/skills).
-// Linked by `make stow-pi`; /reload in the human seat to load it. Acts only in a `*-human@*` seat, and only
-// for boards whose board.json "owner_seat" is that seat's OPENRIG_SESSION_NAME.
+// Linked by `make stow-pi`; /reload in the seat to load it. Acts only for boards whose board.json "owner_seat" is
+// this seat's OPENRIG_SESSION_NAME, in a `*-human@*` seat or, when the seat's rig has no human seat (`rig ps`), in
+// the seat the board names. One owner seat per board, so it never serves two seats.
+import { execFile } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import os from "node:os";
@@ -11,6 +13,8 @@ import os from "node:os";
 const root = process.env.OPENRIG_BOARDS_ROOT || path.join(os.homedir(), ".share", "openrig", "boards");
 const seat = process.env.OPENRIG_SESSION_NAME || "";
 const stallMs = Number(process.env.OPENRIG_BOARD_STALL_MS) || 3 * 60 * 1000;
+const human = /-human@/.test(seat);
+const rigCheckMs = Number(process.env.OPENRIG_BOARD_RIG_CHECK_MS) || 5 * 60 * 1000;
 // board.cjs from the openrig-workspace skill: $OPENRIG_BOARD_CLI, else the skills checkout, else the installed skill.
 const render = [
   process.env.OPENRIG_BOARD_CLI,
@@ -36,6 +40,28 @@ function boards() {
     if (readJson(path.join(dir, "board.json"))?.owner_seat === seat) owned.push(dir);
   }
   return owned;
+}
+// A seat that is not a human seat serves its boards only while its rig has no human seat. `rig ps` is read in the
+// background, at most once per rigCheckMs, and only by a seat that owns a board; a failed or odd read serves nothing.
+let sole = { ok: false, at: -Infinity, pending: false };
+function soleSeat() {
+  if (!sole.pending && Date.now() - sole.at >= rigCheckMs) {
+    sole.pending = true;
+    execFile("rig", ["ps", "--nodes", "--json", "--rig", seat.split("@")[1]], { timeout: 15000 }, (err, out) => {
+      let ok = false;
+      try {
+        const raw = err ? null : JSON.parse(out);
+        const names = (Array.isArray(raw) ? raw : raw?.entries ?? []).map(n => String(n?.canonicalSessionName ?? ""));
+        ok = names.includes(seat) && !names.some(n => /-human@/.test(n));
+      } catch { /* unreadable: serve nothing */ }
+      sole = { ok, at: Date.now(), pending: false };
+    });
+  }
+  return sole.ok;
+}
+function served() {
+  const mine = boards();
+  return human || (mine.length && soleSeat()) ? mine : [];
 }
 function safeDir(dir) { try { return fs.readdirSync(dir).filter(n => !n.startsWith(".")); } catch { return []; } }
 
@@ -69,7 +95,7 @@ function prompt(fb, dir) {
 }
 
 export default function (pi) {
-  if (!/-human@/.test(seat)) return;
+  if (!/^[^@\s]+@[^@\s]+$/.test(seat)) return;
   let ctxRef;
   let current = null;
   let last = "";
@@ -86,7 +112,7 @@ export default function (pi) {
       }
     }
     if (current) return;
-    for (const dir of boards()) {
+    for (const dir of served()) {
       const inbox = path.join(dir, "feedback", "inbox");
       const file = safeDir(inbox).filter(f => f.endsWith(".json")).sort()[0];
       if (!file) continue;
