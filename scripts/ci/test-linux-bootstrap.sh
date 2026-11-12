@@ -9,6 +9,15 @@ FAIL=0
 fail() { echo "FAIL: $*" >&2; FAIL=1; }
 pass() { echo "OK: $*"; }
 
+for platform in Linux Darwin; do
+  folders=$(make --no-print-directory -s -C "$ROOT" PLATFORM="$platform" stow-folders)
+  if [[ $(printf '%s\n' "$folders" | grep -cx rexboard) -eq 1 ]]; then
+    pass "rexboard is stowed once on $platform"
+  else
+    fail "rexboard must be stowed once on $platform"
+  fi
+done
+
 [[ -f "$ROOT/scripts/linux-deps.sh" ]] && pass "linux-deps.sh exists" || fail "missing scripts/linux-deps.sh"
 [[ -f "$ROOT/dotfiles/shell-linux/.config/mise/conf.d/linux.toml" ]] && pass "linux.toml exists" || fail "missing linux.toml"
 # mise loads every conf.d file, so a Linux toolset in the common mise package would apply on macOS too.
