@@ -42,7 +42,8 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 async function until(cond, ms = 10000) { const end = Date.now() + ms; while (Date.now() < end) { if (cond()) return true; await sleep(100); } return false; }
 // A change to the rig counts from the first `rig ps` read that starts after it (a poll may still use the last read).
 const reads = () => rigCalls().split("\n").filter(Boolean).length;
-async function reread() { const n = reads(); await until(() => reads() > n); await sleep(300); }
+// A "nothing delivered" window counts only after the bridge has read the rig at least once since the last change.
+async function reread() { const n = reads(); const read = await until(() => reads() > n); await sleep(300); return read; }
 
 const seen = [];
 const faux = ai.fauxProvider({ models: [{ id: "scripted" }] });
@@ -61,18 +62,23 @@ const first = "2026-11-12T01-00-00-000Z-aaaaaa", others = "2026-11-12T01-00-01-0
 queue(mine, first, "bridge check: please reply ok");
 queue(other, others, "for the other seat");
 faux.setResponses([reply("ok")]);
-await session.bindExtensions({});
+// Pane notices: notify is recorded, the other UI calls are no-ops (Pi copies the object's own keys).
+const notices = [];
+const noop = () => undefined;
+const ui = { notify: text => notices.push(String(text)), setStatus: noop, setWidget: noop, setTitle: noop, setEditorText: noop };
+await session.bindExtensions({ uiContext: ui });
 
 console.log("the only seat of a rig with no human seat, on a board it owns");
 ok("its board's item is delivered and answered", await until(() => fb(mine, "done", first)?.reply === "ok"), JSON.stringify(fb(mine, "status", first)));
 ok("it ends as done and stays in processing/", fb(mine, "status", first)?.state === "done" && fb(mine, "processing", first)?.kind === "chat");
 ok("the rig was read with rig ps for this seat's rig", rigCalls().split("\n")[0] === "ps --nodes --json --rig demo", rigCalls());
-await sleep(1000);
+ok("the rig is read again before the other board's window", await reread());
+await sleep(700);
 ok("a board owned by another seat is never served", inInbox(other, others) && !fb(other, "status", others) && seen.length === 1, String(seen.length));
 
 console.log("the rig gains a human seat");
 rigOf(SEAT, "research-reviewer@demo", "ops-human@demo");
-await reread();
+ok("the rig is read again after it gains a human seat", await reread());
 const second = "2026-11-12T01-00-02-000Z-cccccc";
 queue(mine, second, "now the human seat owns the bridge");
 await sleep(2500);
@@ -81,15 +87,19 @@ ok("nothing is delivered while the rig has a human seat", inInbox(mine, second) 
 console.log("rig cannot be read");
 fs.writeFileSync(flag, "");
 rigOf(SEAT);
-await reread();
-await sleep(2500);
+ok("the rig is read again after the failure starts", await reread());
+await reread(); // a second failing read: the notice must not repeat
+await sleep(2000);
 ok("nothing is delivered when rig ps fails (fail closed)", inInbox(mine, second) && seen.length === 1, String(seen.length));
+const failNotes = notices.filter(n => n.includes("cannot read rig demo"));
+ok("the pane gets one notice for the failure streak, with the reason and no output", failNotes.length === 1 && failNotes[0].includes("rig ps exited 1") && !failNotes[0].includes("canonicalSessionName"), JSON.stringify(notices));
 
 console.log("the rig is back to no human seat");
 fs.rmSync(flag);
 faux.setResponses([reply("ok again")]);
 ok("the waiting item is delivered and answered", await until(() => fb(mine, "done", second)?.reply === "ok again"), JSON.stringify(fb(mine, "status", second)));
 ok("the other seat's board is still untouched", inInbox(other, others));
+ok("no further notice once the rig reads again", notices.filter(n => n.includes("cannot read rig")).length === 1, JSON.stringify(notices));
 
 session.dispose();
 console.log(`\n${pass} passed, ${fail} failed`);

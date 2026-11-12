@@ -42,19 +42,23 @@ function boards() {
   return owned;
 }
 // A seat that is not a human seat serves its boards only while its rig has no human seat. `rig ps` is read in the
-// background, at most once per rigCheckMs, and only by a seat that owns a board; a failed or odd read serves nothing.
-let sole = { ok: false, at: -Infinity, pending: false };
+// background, at most once per rigCheckMs, and only by a seat that owns a board; a failed or odd read serves nothing,
+// and the pane gets one line per failure streak with the reason (never rig's output).
+let sole = { ok: false, at: -Infinity, pending: false, failing: false };
+let warn = () => {};
+const why = err => err.code === "ENOENT" ? "rig is not on PATH" : err.killed ? "rig ps timed out" : `rig ps exited ${err.code ?? "with an error"}`;
 function soleSeat() {
   if (!sole.pending && Date.now() - sole.at >= rigCheckMs) {
     sole.pending = true;
     execFile("rig", ["ps", "--nodes", "--json", "--rig", seat.split("@")[1]], { timeout: 15000 }, (err, out) => {
-      let ok = false;
+      let ok = false, failed = err ? why(err) : "";
       try {
         const raw = err ? null : JSON.parse(out);
         const names = (Array.isArray(raw) ? raw : raw?.entries ?? []).map(n => String(n?.canonicalSessionName ?? ""));
         ok = names.includes(seat) && !names.some(n => /-human@/.test(n));
-      } catch { /* unreadable: serve nothing */ }
-      sole = { ok, at: Date.now(), pending: false };
+      } catch { failed ||= "rig ps output is not JSON"; }
+      if (failed && !sole.failing) warn(`board-bridge: cannot read rig ${seat.split("@")[1]} (${failed}); boards owned by ${seat} wait in feedback/inbox`);
+      sole = { ok, at: Date.now(), pending: false, failing: Boolean(failed) };
     });
   }
   return sole.ok;
@@ -143,6 +147,7 @@ export default function (pi) {
 
   pi.on("session_start", async (_event, ctx) => {
     ctxRef = ctx;
+    warn = text => ctx?.ui?.notify?.(text, "warning");
     clearInterval(timer);
     timer = setInterval(deliver, 3000);
     deliver();
