@@ -6,6 +6,8 @@
 - Keep status updates, PR descriptions, review summaries, tickets, and operational messages concise, factual, and action-oriented. Lead with the outcome, blocker, or next action.
 - Outbound email and chat as Duc, to a coworker: write like him, not a runbook. Short, warm, one or two beats. Match their register. No numbered playbook in a reply unless they asked how to do it. Do not restate an attachment they already have. Ban: "No mistake.", "say the word", "which is expected", "the correct X path", "If you want me to X". If it could be a chatbot closing, cut it.
 - Pronouns in Vietnamese chat: pick them by age and closeness (anh/em by age, tui among friends). The per-person forms are in ~/.config/agents/people.md when this machine has it; read it before writing to someone in Vietnamese.
+- Operator briefs and decision cards follow this file when the machine has it:
+  @~/.config/agents/operator-brief.md
 
 ## Work schedule
 
