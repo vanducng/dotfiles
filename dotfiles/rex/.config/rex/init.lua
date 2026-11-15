@@ -50,6 +50,8 @@ px("shift+x", "client.tab.close")
 -- Rex's own ctrl+shift+up/down never reach it; these replace its shift+cmd+arrow splits (C-x m/v split).
 for _, k in ipairs({ "up", "left" }) do bind("shift+cmd+" .. k, "client.tab.move.backward") end
 for _, k in ipairs({ "down", "right" }) do bind("shift+cmd+" .. k, "client.tab.move.forward") end
+rex.unbind("shift+cmd+[", "client.tab.previous")
+rex.unbind("shift+cmd+]", "client.tab.next")
 -- ctrl+alt+< and > walk every tab in sidebar order, across sessions and hosts.
 bind("ctrl+alt+[Comma]", "tab_cycle", { back = true })
 bind("ctrl+alt+[Period]", "tab_cycle")
@@ -96,8 +98,6 @@ px("ctrl+x", "pane.send_key", { key = "ctrl+x" })
 bind("ctrl+v", "image_paste")
 bind("cmd+up", "client.prompt.previous")
 bind("cmd+down", "client.prompt.next")
--- One key dismisses a notice: alt+cmd+. replaces Rex's own shift+cmd+.
-rex.unbind("shift+cmd+.", "client.notice.dismiss")
 bind("alt+cmd+[Period]", "client.notice.dismiss")
 
 rex.mode("resize", { exclusive = true })
@@ -113,11 +113,14 @@ bind("resize/enter", "client.mode.exit")
 -- rexurrect: restore saved sessions (and resume agents) when the server starts.
 do
   local home = os.getenv("HOME")
-  pcall(function()
-    local r = rex.exec({ home .. "/.cargo/bin/rexurrect", "auto-restore" }, { env = {
+  local bin = home .. "/.cargo/bin/rexurrect"
+  local f = io.open(bin)
+  if f then f:close() end
+  if f then pcall(function()
+    local r = rex.exec({ bin, "auto-restore" }, { env = {
       REXURRECT_STATE_DIR = home .. "/.local/state/rexurrect",
       REXURRECT_CONFIG = home .. "/.config/rexurrect/config.toml",
     } })
     if r then io.stderr:write(r.stderr) end
-  end)
+  end) end
 end
