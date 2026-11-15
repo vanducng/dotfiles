@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.45.0](https://github.com/vanducng/dotfiles/compare/v0.44.0...v0.45.0) (2026-11-15)
+
+
+### Features
+
+* **skhd:** shift+cmd+y/u open CleanShot history and the last capture ([39077c0](https://github.com/vanducng/dotfiles/commit/39077c0a11c4c7f3aaf6c191270d5c2a23a8efc0))
+
+
+### Bug Fixes
+
+* **rex:** skip rexurrect where it isn't installed, free shift+cmd+[ and ] ([ad6aca7](https://github.com/vanducng/dotfiles/commit/ad6aca7e7ce60e341a32f0f34ac7a26b9fcb13b1))
+
 ## [0.44.0](https://github.com/vanducng/dotfiles/compare/v0.43.0...v0.44.0) (2026-11-12)
 
 
