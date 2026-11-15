@@ -50,7 +50,9 @@
    "logicalId": "lead.human",
    "canonicalSessionName": "lead-human@api",
    "agentActivity": {
-    "state": "idle"
+    "state": "unknown",
+    "reason": "no_runtime_hook",
+    "fallback": true
    },
    "needsAttention": false
   }
