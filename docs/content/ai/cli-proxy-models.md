@@ -8,6 +8,10 @@ Chat ids are probed with `ccx <id> -p` and tools turned off. Image ids use `POST
 
 40 chat models returned text through `ccx`. 5 are still listed and fail upstream. 1 returned text from the gateway and printed blank in `ccx`. 8 image models returned an image. 3 video models accepted a job.
 
+## Account groups
+
+The gateway can put a group of accounts behind a model prefix and force it. A grouped account's ids then look like `<prefix>/<model>`, for example `<prefix>/gpt-6.1-sol`, and a plain id such as `gpt-6.1-sol` reaches only accounts without a prefix. When every account of a family sits in a group, that family's plain ids stop working. The models in `dotfiles/pi/.pi/agent/models.json` stay plain; a setup that uses a group adds the prefixed copies on top.
+
 ## Chat
 
 ### Claude
