@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.45.1](https://github.com/vanducng/dotfiles/compare/v0.45.0...v0.45.1) (2026-11-15)
+
+
+### Bug Fixes
+
+* **rexboard:** show OpenRig human seats on the board as idle when OpenRig has no state for them ([38255bc](https://github.com/vanducng/dotfiles/commit/38255bc986293b7054dc8aff7ba4f3f561051497))
+
 ## [0.45.0](https://github.com/vanducng/dotfiles/compare/v0.44.0...v0.45.0) (2026-11-15)
 
 
