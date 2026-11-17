@@ -23,6 +23,11 @@ is("cpa", "claude-haiku-4-5-20251001", "cpa/haiku-4.5"); // a date suffix is not
 is("cpa", "claude-3-7-sonnet-20250219", "cpa/sonnet-3.7"); // version first in the id, family first in the label
 is("cpa", "gpt-6-luna", "cpa/luna-6");
 is("cpa", "gpt-6.1-terra", "cpa/terra-6.1");
+// Grok ids have no family word, so the vendor word stays.
+is("cpa", "grok-4.7", "cpa/grok-4.7");
+is("xai", "grok-4.7", "xai/grok-4.7");
+is("cpa", "grok-4.7-build-fast", "cpa/grok-4.7-build-fast");
+is("cpa", "acme/grok-4.7", "cpa/acme/grok-4.7");
 // Not parsed: shown as is.
 is("cpa", "gpt-5.4", "cpa/gpt-5.4"); // no family word
 is("cpa", "claude", "cpa/claude"); // no version
