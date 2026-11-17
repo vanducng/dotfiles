@@ -5,6 +5,7 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
 import { truncateToWidth } from "@earendil-works/pi-tui";
+import { modelLabel } from "./lib/model-label.js";
 
 const SCRIPT = join(homedir(), ".local/bin/agent-statusline");
 // An OpenRig seat leads its footer with its seat name.
@@ -35,7 +36,7 @@ export default function (pi: ExtensionAPI) {
 				running = true;
 				const usage = ctx.getContextUsage();
 				const payload = {
-					model: { display_name: ctx.model?.name ?? ctx.model?.id },
+					model: { display_name: ctx.model ? modelLabel(ctx.model.provider, ctx.model.id) : undefined },
 					effort: { level: pi.getThinkingLevel() },
 					context_window: { used_percentage: usage?.percent ?? null },
 					workspace: { current_dir: ctx.cwd, branch: footerData.getGitBranch() },

@@ -210,6 +210,7 @@ script-test:
 	@./scripts/ci/test-pi-wrapper.sh
 	@./scripts/ci/test-pi-board-bridge.sh
 	@./scripts/ci/test-pi-tool-aliases.sh
+	@./scripts/ci/test-pi-model-label.sh
 	@./scripts/ci/test-pi-home-layout.sh
 	@./scripts/ci/test-cursor-config.sh
 	@./scripts/ci/test-grok-config.sh
