@@ -22,6 +22,9 @@ than its display name, so the account behind it is visible: `cpa/opus-5.5`,
 vendor word goes, the version takes dots and the family comes first; an id that
 doesn't fit that shape shows as it is (`cpa/glm-5.1`). Grok ids have no family word, so they
 keep the vendor word: `cpa/grok-4.7`.
+The rule lives in `extensions/lib/model-label.js`. `statusline.ts` loads it from its own real path, not
+with a relative import, because an OpenRig seat links `statusline.ts` into its own agent dir, which has no
+`lib/`, and Pi before 1.5.1 resolves a relative import from the link's folder.
 
 ## Footer standby
 
