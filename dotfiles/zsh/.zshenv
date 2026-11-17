@@ -22,5 +22,9 @@ if [ -z "${CLI_PROXY_API_KEY:-}" ] && [ -r "${HOME}/.config/cli-proxy/api-key" ]
 fi
 export CLI_PROXY_BASE_URL="${CLI_PROXY_BASE_URL:-https://cli-proxy.dataplanelabs.com}"
 
+# A Rex pane sets no SSH variables, so Pi copies only to this host's clipboard unless told to
+# also send OSC 52, which reaches whichever machine runs the Rex app.
+[ "${TERM_PROGRAM:-}" = rex ] && export PI_CLIPBOARD_OSC52=1
+
 # Machine-only settings, not in git.
 [ -r "${HOME}/.zshenv.local" ] && . "${HOME}/.zshenv.local"
