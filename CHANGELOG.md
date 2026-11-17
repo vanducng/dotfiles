@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.45.2](https://github.com/vanducng/dotfiles/compare/v0.45.1...v0.45.2) (2026-11-17)
+
+
+### Bug Fixes
+
+* **ai:** drop plain GPT ids from the gateway setup ([#305](https://github.com/vanducng/dotfiles/issues/305)) ([f852cb7](https://github.com/vanducng/dotfiles/commit/f852cb7de884df4f405f4111630fd9ef48469f23))
+* **pi:** footer labels the model as provider/prefix/short model ([#306](https://github.com/vanducng/dotfiles/issues/306)) ([c50cf64](https://github.com/vanducng/dotfiles/commit/c50cf64e32d59b66165726ff602c2dd3f0cebc82))
+
 ## [0.45.1](https://github.com/vanducng/dotfiles/compare/v0.45.0...v0.45.1) (2026-11-15)
 
 
