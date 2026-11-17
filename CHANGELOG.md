@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.45.4](https://github.com/vanducng/dotfiles/compare/v0.45.3...v0.45.4) (2026-11-17)
+
+
+### Bug Fixes
+
+* **pi:** statusline loads the label rule from its real path ([#310](https://github.com/vanducng/dotfiles/issues/310)) ([0ddb3f6](https://github.com/vanducng/dotfiles/commit/0ddb3f6b5e1beed5db0e0219bbb847959fbf1c95))
+
 ## [0.45.3](https://github.com/vanducng/dotfiles/compare/v0.45.2...v0.45.3) (2026-11-17)
 
 
