@@ -16,6 +16,12 @@ pi's model, thinking level, context use, folder and branch to
 badge, ponytail, MCP) shows on a second row. It does nothing in RPC mode, which is
 how OpenRig runs pi seats.
 
+The model shows as `<provider>/<id prefix>/<model>`, built from the model id rather
+than its display name, so the account behind it is visible: `cpa/opus-5.5`,
+`cpa/<prefix>/opus-5.5` for a prefixed gateway id, `openai-codex/sol-6.1`. The
+vendor word goes, the version takes dots and the family comes first; an id that
+doesn't fit that shape shows as it is (`cpa/glm-5.1`).
+
 ## Footer standby
 
 There is no built-in footer setting for "the captain is waiting on a crew." When this pane is
