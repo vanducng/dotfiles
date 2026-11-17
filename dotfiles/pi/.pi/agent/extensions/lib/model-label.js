@@ -3,11 +3,14 @@
 // The vendor word goes, the version takes dots, and the family comes first. An id the rule can't parse shows as is.
 // Grok ids have no family word, so they keep the vendor word: grok-4.7, grok-4.7-build-fast.
 // This folder has no index file, so Pi does not load it as an extension.
-const VENDORS = new Set(["claude", "gpt"]);
+// Known vendors: "drop" loses the vendor word, "keep" keeps the id whole. A vendor not listed shows as is.
+export const VENDORS = Object.freeze({ claude: "drop", gpt: "drop", grok: "keep" });
 
 export function shortModel(name) {
 	const [vendor, ...rest] = name.split("-");
-	if (!VENDORS.has(vendor)) return name; // grok, glm and any other vendor the rule does not know
+	const rule = Object.hasOwn(VENDORS, vendor) ? VENDORS[vendor] : undefined;
+	if (rule === "keep") return name; // grok: no family word, so the vendor word stays
+	if (rule !== "drop") return name; // a vendor the rule does not know
 	const parts = rest.filter((p) => !/^\d{8}$/.test(p)); // a release date is not part of the version
 	const version = parts.filter((p) => /^\d+(\.\d+)?$/.test(p));
 	const family = parts.filter((p) => !version.includes(p));

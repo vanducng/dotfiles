@@ -5,7 +5,7 @@ import { pathToFileURL } from "node:url";
 
 const file = process.argv[2];
 if (!file) { console.error("usage: pi-model-label.check.mjs <model-label.js>"); process.exit(2); }
-const { modelLabel } = await import(pathToFileURL(path.resolve(file)).href);
+const { modelLabel, VENDORS } = await import(pathToFileURL(path.resolve(file)).href);
 
 let fail = 0;
 const is = (provider, id, want) => {
@@ -23,7 +23,13 @@ is("cpa", "claude-haiku-4-5-20251001", "cpa/haiku-4.5"); // a date suffix is not
 is("cpa", "claude-3-7-sonnet-20250219", "cpa/sonnet-3.7"); // version first in the id, family first in the label
 is("cpa", "gpt-6-luna", "cpa/luna-6");
 is("cpa", "gpt-6.1-terra", "cpa/terra-6.1");
-// Grok ids have no family word, so the vendor word stays.
+// Grok ids have no family word, so the vendor word stays: a named "keep" entry, not the unknown-vendor fall-through.
+{
+	const want = { claude: "drop", gpt: "drop", grok: "keep" };
+	const ok = JSON.stringify(VENDORS) === JSON.stringify(want);
+	if (!ok) fail++;
+	console.log(`  ${ok ? "✓" : "✗"} known vendors ${JSON.stringify(want)}${ok ? "" : `  (got ${JSON.stringify(VENDORS)})`}`);
+}
 is("cpa", "grok-4.7", "cpa/grok-4.7");
 is("xai", "grok-4.7", "xai/grok-4.7");
 is("cpa", "grok-4.7-build-fast", "cpa/grok-4.7-build-fast");
