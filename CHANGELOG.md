@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.45.3](https://github.com/vanducng/dotfiles/compare/v0.45.2...v0.45.3) (2026-11-17)
+
+
+### Bug Fixes
+
+* **zsh:** send Pi copies over OSC 52 inside Rex panes ([dd7975e](https://github.com/vanducng/dotfiles/commit/dd7975e99b751c42cd8c50ea0806e242fbef69a8))
+
 ## [0.45.2](https://github.com/vanducng/dotfiles/compare/v0.45.1...v0.45.2) (2026-11-17)
 
 
