@@ -48,21 +48,19 @@ Windows below are the vendor input limits already used for compaction on this ga
 
 | Family | Model | ID | Window | Effort |
 | --- | --- | --- | --- | --- |
-| GPT | Sol 6.1 | `gpt-6.1-sol` | 272k | `high` |
 | Opus | Opus 5.5 | `claude-opus-5-5` | 1M | `high` |
 | Grok | Grok 4.7 Fast | `grok-4.7-build-fast` | 500k | `high` |
 | GLM | GLM 5.3 | `glm-5.3` | 1M | `high` |
 | Muse | Muse Spark 1.3 Contributor | `muse-spark-1.3-contributor` | 1M | `high` |
 
 ```bash
-ccx gpt-6.1-sol --autocompact 272k --effort high
 ccx claude-opus-5-5 --autocompact 1M --effort high
 ccx grok-4.7-build-fast --autocompact 500k --effort high
 ccx glm-5.3 --autocompact 1M --effort high
 ccx muse-spark-1.3-contributor --autocompact 1M --effort high
 ```
 
-`grok-4.7` is the same 500k model at normal speed. Grok 4.7 also accepts `xhigh`. GLM 5.3 accepts `low`, `high`, and `max`, and reasoning stays on. Opus 5.5 and Sol 6.1 also accept `xhigh` and `max`.
+`grok-4.7` is the same 500k model at normal speed. Grok 4.7 also accepts `xhigh`. GLM 5.3 accepts `low`, `high`, and `max`, and reasoning stays on. Opus 5.5 also accepts `xhigh` and `max`. Plain GPT ids no longer answer through the gateway (since 2026-11-17, see [CLI Proxy model status](/ai/cli-proxy-models/)); use GPT through Codex's ChatGPT login instead.
 
 The proxy keeps one account per model id. `ccx` does not choose between providers. `grok-4.7` and `grok-4.7-build-fast` are the xAI account. `claude-opus-5-5` is the Anthropic account. A Cursor-only id, such as `composer-2.5`, bills the Cursor account.
 

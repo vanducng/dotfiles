@@ -6,11 +6,11 @@ Last checked: 2026-10-05. Refresh this page by invoking `/cli-proxy-models` from
 
 Chat ids are probed with `ccx <id> -p` and tools turned off. Image ids use `POST /v1/images/generations`. Video ids use `POST /v1/videos/generations`. A returned request id counts as accepted, and the file is not downloaded. The API key stays in the environment.
 
-40 chat models returned text through `ccx`. 5 are still listed and fail upstream. 1 returned text from the gateway and printed blank in `ccx`. 8 image models returned an image. 3 video models accepted a job.
+40 chat models returned text through `ccx`; since 2026-11-17 the 8 plain GPT ids among them no longer answer (see Account groups). 5 are still listed and fail upstream. 1 returned text from the gateway and printed blank in `ccx`. 8 image models returned an image. 3 video models accepted a job.
 
 ## Account groups
 
-The gateway can put a group of accounts behind a model prefix and force it. A grouped account's ids then look like `<prefix>/<model>`, for example `<prefix>/gpt-6.1-sol`, and a plain id such as `gpt-6.1-sol` reaches only accounts without a prefix. When every account of a family sits in a group, that family's plain ids stop working. The models in `dotfiles/pi/.pi/agent/models.json` stay plain; a setup that uses a group adds the prefixed copies on top.
+The gateway can put a group of accounts behind a model prefix and force it. A grouped account's ids then look like `<prefix>/<model>`, for example `<prefix>/gpt-6.1-sol`, and a plain id such as `gpt-6.1-sol` reaches only accounts without a prefix. When every account of a family sits in a group, that family's plain ids stop working. Since 2026-11-17 that is the case for GPT: a plain `gpt-*` id returns `unknown provider`, so `dotfiles/pi/.pi/agent/models.json` lists no GPT model under `cpa`. Use GPT through the tool's own ChatGPT login instead (Pi's `openai-codex`, Codex's default provider). The other models stay plain; a setup that uses a group adds the prefixed copies on top.
 
 ## Chat
 
@@ -19,10 +19,6 @@ The gateway can put a group of accounts behind a model prefix and force it. A gr
 `claude-fable-5`, `claude-fable-5-1`, `claude-haiku-4-5-20251001`, `claude-opus-4-5-20251101`, `claude-opus-4-6`, `claude-opus-4-7`, `claude-opus-4-8`, `claude-opus-5`, `claude-opus-5-5`, `claude-sonnet-4-5-20250929`, `claude-sonnet-4-6`, `claude-sonnet-5`, `claude-sonnet-5-5`
 
 Added 2026-11-10: `claude-fable-5-2` is listed by `/v1/models` and answers on `/v1/messages` and `/v1/responses` once the gateway presents Claude Code 2.1.290 or newer. Before that it returned `claude_code_version_too_old`. It is not in the counts above, which come from the 2026-10-05 probe run.
-
-### GPT
-
-`gpt-5.5`, `gpt-5.6-luna`, `gpt-5.6-sol`, `gpt-5.6-terra`, `gpt-6-astra`, `gpt-6-luna`, `gpt-6-sol`, `gpt-6.1-sol`
 
 ### GLM
 
@@ -52,6 +48,7 @@ Owner check 2026-10-12: `grok-4.7` and `grok-4.7-build-fast` are the xAI account
 | `claude-opus-4-20250514` | missing | Upstream model not found. |
 | `claude-sonnet-4-20250514` | missing | Retired 2026-06-15. Upstream model not found. |
 | `grok-4.20-multi-agent-0309` | blank | Gateway returned text. ccx printed a blank line. |
+| `gpt-5.5`, `gpt-5.6-luna`, `gpt-5.6-sol`, `gpt-5.6-terra`, `gpt-6-astra`, `gpt-6-luna`, `gpt-6-sol`, `gpt-6.1-sol` | grouped | Answered on 2026-10-05. Since 2026-11-17 a plain id returns `unknown provider`: every GPT account sits in a group. |
 
 ## Images
 
@@ -69,7 +66,6 @@ Owner check 2026-10-12: `grok-4.7` and `grok-4.7-build-fast` are the xAI account
 
 | Command | Status | Reply |
 | --- | --- | --- |
-| `ccx gpt-6.1-sol --autocompact 272k --effort high` | ok | hi |
 | `ccx claude-opus-5-5 --autocompact 1M --effort high` | ok | hi |
 | `ccx grok-4.7-build-fast --autocompact 500k --effort high` | ok | hi |
 | `ccx glm-5.3 --autocompact 1M --effort high` | ok | hi |
