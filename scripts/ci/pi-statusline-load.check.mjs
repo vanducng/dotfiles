@@ -17,21 +17,22 @@ fs.mkdirSync(bin, { recursive: true });
 fs.writeFileSync(path.join(bin, "agent-statusline"), "#!/bin/sh\nsed -E 's/.*\"display_name\":\"([^\"]*)\".*/\\1/'\n", { mode: 0o755 });
 process.env.HOME = path.join(tmp, "home");
 delete process.env.OPENRIG_SESSION_NAME;
-const agentDir = path.join(tmp, "agent");
-fs.mkdirSync(path.join(agentDir, "extensions"), { recursive: true });
-fs.symlinkSync(path.resolve(extFile), path.join(agentDir, "extensions", "statusline.ts"));
-
 const version = JSON.parse(fs.readFileSync(path.join(pkgDir, "package.json"), "utf8")).version;
 const sdk = await import(pathToFileURL(path.join(path.resolve(pkgDir), "dist/index.js")).href);
-const loaded = await sdk.discoverAndLoadExtensions([], tmp, agentDir);
 let fail = 0;
 const ok = (name, cond, info = "") => { if (!cond) fail++; console.log(`  ${cond ? "✓" : "✗"} ${name}${cond || !info ? "" : `  (${info})`}`); };
-ok(`Pi ${version} loads the symlinked statusline.ts`, loaded.errors.length === 0 && loaded.extensions.length === 1, JSON.stringify(loaded.errors));
 
-// Pi binds the runtime actions when a session starts; the footer reads only the thinking level.
-loaded.runtime.getThinkingLevel = () => "high";
-const start = loaded.extensions[0]?.handlers.get("session_start")?.[0];
-if (start) {
+// Links `target` as statusline.ts in a fresh agent dir, loads it with Pi's loader, renders the footer.
+async function check(name, target, want) {
+	const agentDir = fs.mkdtempSync(path.join(tmp, "agent-"));
+	fs.mkdirSync(path.join(agentDir, "extensions"));
+	fs.symlinkSync(target, path.join(agentDir, "extensions", "statusline.ts"));
+	const loaded = await sdk.discoverAndLoadExtensions([], tmp, agentDir);
+	ok(`Pi ${version} loads ${name}`, loaded.errors.length === 0 && loaded.extensions.length === 1, JSON.stringify(loaded.errors));
+	const start = loaded.extensions[0]?.handlers.get("session_start")?.[0];
+	if (!start) return ok(`Pi ${version} ${name} registers session_start`, false);
+	// Pi binds the runtime actions when a session starts; the footer reads only the thinking level.
+	loaded.runtime.getThinkingLevel = () => "high";
 	let footer;
 	await start({}, {
 		mode: "tui",
@@ -52,7 +53,14 @@ if (start) {
 	const why = await Promise.race([done, timeout]);
 	const line = comp.render(80)[0];
 	comp.dispose();
-	ok(`Pi ${version} footer shows cpa/acme/opus-5.5`, why !== "timeout" && line === "cpa/acme/opus-5.5", line);
-} else ok(`Pi ${version} statusline registers session_start`, false);
+	ok(`Pi ${version} ${name}: footer shows ${want}`, why !== "timeout" && line === want, line);
+}
+
+await check("the symlinked statusline.ts", path.resolve(extFile), "cpa/acme/opus-5.5");
+// The label rule can't load (its real dir has no lib/): the footer still mounts, with provider/id as is.
+const lone = path.join(tmp, "lone");
+fs.mkdirSync(lone);
+fs.copyFileSync(extFile, path.join(lone, "statusline.ts"));
+await check("statusline.ts without lib/", path.join(lone, "statusline.ts"), "cpa/acme/claude-opus-5-5");
 console.log(fail ? `pi statusline load (Pi ${version}): ${fail} failed` : `pi statusline load (Pi ${version}): ok`);
 process.exit(fail ? 1 : 0);

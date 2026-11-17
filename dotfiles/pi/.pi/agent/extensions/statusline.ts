@@ -14,9 +14,15 @@ const SEAT = process.env.OPENRIG_SESSION_NAME?.trim() ?? "";
 
 export default async function (pi: ExtensionAPI) {
 	// A seat links this file into its own agent dir, which has no lib/. Pi before 1.5.1 resolves a relative import from
-	// the link's folder, so the label rule is loaded from this file's real path instead.
-	const real = dirname(realpathSync(fileURLToPath(import.meta.url)));
-	const { modelLabel } = await import(pathToFileURL(join(real, "lib", "model-label.js")).href);
+	// the link's folder, so the label rule is loaded from this file's real path instead. If that fails, the footer
+	// still mounts and shows provider/id as is.
+	let modelLabel = (provider: string, id: string) => [provider, id].filter(Boolean).join("/");
+	try {
+		const real = dirname(realpathSync(fileURLToPath(import.meta.url)));
+		({ modelLabel } = await import(pathToFileURL(join(real, "lib", "model-label.js")).href));
+	} catch (err) {
+		console.error(`statusline: model label rule not loaded, showing provider/id: ${String((err as Error)?.message ?? err).split("\n")[0]}`);
+	}
 	let ctx: ExtensionContext | undefined;
 	let refresh = () => {};
 
