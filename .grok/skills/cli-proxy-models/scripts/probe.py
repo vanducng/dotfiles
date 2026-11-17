@@ -79,7 +79,7 @@ def _self_test(key):
         assert f"`{row['id']}`" in page
     commands = documented()
     assert "ccx <model-id> [claude args...]" not in commands
-    assert any(command.startswith("ccx gpt-6.1-sol ") for command in commands)
+    assert any(command.startswith("ccx claude-opus-5-5 ") for command in commands)
     broken = _result(
         "gpt-image-1.5",
         "image",

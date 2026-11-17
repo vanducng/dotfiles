@@ -102,8 +102,8 @@ Use these exact gateway model IDs for the requested choices:
 | Sonnet 5.5 | `claude-sonnet-5-5` | `medium` |
 | GLM 5.3 | `glm-5.3` | `high` |
 | Muse Spark 1.3 Contributor | `muse-spark-1.3-contributor` | `high` |
-| Sol 6.1 | `gpt-6.1-sol` | `high` |
-| Astra 6 | `gpt-6-astra` | `high` |
+
+GPT models don't go through the proxy: since 2026-11-17 a plain `gpt-*` id returns `unknown provider` there ([CLI Proxy model status](/ai/cli-proxy-models/)). Run them on the default ChatGPT login, without `-p cliproxy`: `codex -m gpt-6.1-sol -c model_reasoning_effort='"high"'`.
 
 For Muse Contributor, add `--disable apps` because the gateway rejects Codex's Apps tool schema for that model:
 
@@ -115,7 +115,7 @@ The `cliproxy-muse` profile does the same without the flag, for launchers that c
 
 For a single non-interactive prompt, use `codex exec -p cliproxy -m claude-opus-5-5 -c model_reasoning_effort='"high"' 'Summarize this repository'`.
 
-Pi's `cliproxyapi` and Codex's `cli_proxy` use the same gateway model IDs, but their local model lists are independent. Pi currently lists six of the seven IDs above; it does not list `claude-sonnet-5-5`.
+Pi's `cliproxyapi` and Codex's `cli_proxy` use the same gateway model IDs, but their local model lists are independent. Pi currently lists four of the five IDs above; it does not list `claude-sonnet-5-5`.
 
 In Codex CLI 0.160.0, `/model` shows the bundled GPT catalog, not the proxy's full model list. It can also save a selected GPT model into the symlinked profile. Use `-m` to choose a proxy model explicitly.
 
@@ -125,12 +125,12 @@ Run these from the same project directory as the saved session:
 
 ```bash
 codex resume -p cliproxy -m claude-sonnet-5-5 -c model_reasoning_effort='"medium"' --last
-codex resume -p cliproxy -m gpt-6-astra -c model_reasoning_effort='"high"' "<session-id>"
+codex resume -p cliproxy -m grok-4.7 -c model_reasoning_effort='"high"' "<session-id>"
 ```
 
 `--last` resumes the most recent session in the current directory. Use a session ID to select a specific conversation, or run `codex resume -p cliproxy -m claude-opus-5-5` to pick one. Add `--all` to the picker if the session was started in another directory. Codex prints the session ID when you exit. After an interrupted turn, tell the new model what work to continue. [Codex resume reference](https://learn.chatgpt.com/docs/developer-commands)
 
-This keeps the saved conversation while changing the model for the next turn. A Grok to Sonnet switch and a Sonnet to Sol switch both kept context in CLI 0.160.0. All models in this profile share the same CLI Proxy gateway, so a gateway outage or provider-wide quota limit affects them all. Switching a CLI Proxy session to ChatGPT OAuth failed in a local test with `invalid_encrypted_content`; [Codex tracks this cross-provider history issue](https://github.com/openai/codex/issues/17541). Keep the saved session and retry when the gateway is available.
+This keeps the saved conversation while changing the model for the next turn. A Grok to Sonnet switch kept context in CLI 0.160.0. All models in this profile share the same CLI Proxy gateway, so a gateway outage or provider-wide quota limit affects them all. Switching a CLI Proxy session to ChatGPT OAuth failed in a local test with `invalid_encrypted_content`; [Codex tracks this cross-provider history issue](https://github.com/openai/codex/issues/17541). Keep the saved session and retry when the gateway is available.
 
 If Claude returns `not supported when using Codex with a ChatGPT account`, Codex selected the default `openai` provider. Add `-p cliproxy` and check that `CLI_PROXY_API_KEY` is set. Codex reads the key from the environment; it does not store the key in the profile. `.zshenv` (macOS) and `linux.sh` (Linux) export it from `~/.config/cli-proxy/api-key`; run `cli-proxy-key` to write that file from gopass, or `cli-proxy-key refresh` after a rotation. [Codex configuration reference](https://learn.chatgpt.com/docs/config-file/config-reference)
 
@@ -144,7 +144,7 @@ The CLI Proxy `/v1/models` endpoint returned these 57 IDs on 2026-10-04:
 | --- | --- |
 | Claude | `claude-3-5-haiku-20241022`, `claude-3-7-sonnet-20250219`, `claude-fable-5`, `claude-fable-5-1`, `claude-haiku-4-5-20251001`, `claude-opus-4-1-20250805`, `claude-opus-4-20250514`, `claude-opus-4-5-20251101`, `claude-opus-4-6`, `claude-opus-4-7`, `claude-opus-4-8`, `claude-opus-5`, `claude-opus-5-5`, `claude-sonnet-4-20250514`, `claude-sonnet-4-5-20250929`, `claude-sonnet-4-6`, `claude-sonnet-5`, `claude-sonnet-5-5` |
 | GLM | `glm-5.2`, `glm-5.3` |
-| GPT | `gpt-5.5`, `gpt-5.6-luna`, `gpt-5.6-sol`, `gpt-5.6-terra`, `gpt-6-astra`, `gpt-6-luna`, `gpt-6-sol`, `gpt-6.1-sol` |
+| GPT | `gpt-5.5`, `gpt-5.6-luna`, `gpt-5.6-sol`, `gpt-5.6-terra`, `gpt-6-astra`, `gpt-6-luna`, `gpt-6-sol`, `gpt-6.1-sol` (listed then; since 2026-11-17 a plain GPT id no longer answers) |
 | Grok | `grok-3-mini`, `grok-3-mini-fast`, `grok-4.20-0309-non-reasoning`, `grok-4.20-0309-reasoning`, `grok-4.20-multi-agent-0309`, `grok-4.3`, `grok-4.5`, `grok-4.6`, `grok-4.7`, `grok-4.7-build-fast`, `grok-build-0.1`, `grok-composer-2.5-fast` |
 | Muse | `muse-spark-1.1`, `muse-spark-1.2`, `muse-spark-1.2-contributor`, `muse-spark-1.3`, `muse-spark-1.3-contributor` |
 | Specialized | `codex-auto-review`, `gpt-image-1.5`, `gpt-image-2`, `gpt-image-2.5`, `gpt-image-2.5-flare`, `gpt-image-2.5-sunburst`, `grok-imagine-image`, `grok-imagine-image-2.0`, `grok-imagine-image-quality`, `grok-imagine-video`, `grok-imagine-video-1.5`, `grok-imagine-video-1.5-preview` |

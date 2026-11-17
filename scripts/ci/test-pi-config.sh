@@ -45,6 +45,9 @@ jq -e '
 	.mcpServers.Structured.oauth.scope == "email" and
 	(.mcpServers.Structured.oauth.clientId | not)
 ' "$agent_dir/mcp.json" >/dev/null
+# No plain GPT id under cpa: every GPT account on the gateway sits in an account group, so a plain gpt-* id
+# returns "unknown provider" there (2026-11-17). GPT goes through Pi's own openai-codex login.
+jq -e '[.providers.cpa.models[].id | select(startswith("gpt-"))] | length == 0' "$agent_dir/models.json" >/dev/null
 jq -e '
 	.providers.cpa.models[]
 	| select(.id == "grok-4.6")
@@ -54,18 +57,6 @@ jq -e '
 	  and .off == null
 	  and .minimal == null
 	  and .max == null
-' "$agent_dir/models.json" >/dev/null
-jq -e '
-	.providers.cpa.models[]
-	| select(.id == "gpt-6-sol")
-	| .thinkingLevelMap
-	| .off == "none" and .xhigh == "xhigh" and .max == "max"
-' "$agent_dir/models.json" >/dev/null
-jq -e '
-	.providers.cpa.models[]
-	| select(.id == "gpt-5.6-sol")
-	| .thinkingLevelMap
-	| .off == "none" and .xhigh == "xhigh" and .max == "max"
 ' "$agent_dir/models.json" >/dev/null
 jq -e '
 	.providers.cpa.models[]
@@ -89,21 +80,8 @@ jq -e '
 ' "$agent_dir/models.json" >/dev/null
 jq -e '
 	.providers.cpa.models[]
-	| select(.id == "gpt-5.5")
-	| .thinkingLevelMap
-	| .xhigh == "xhigh" and .max == null
-' "$agent_dir/models.json" >/dev/null
-jq -e '
-	.providers.cpa.models[]
 	| select(.id == "claude-fable-5")
 	| .contextWindow == 1000000 and .maxTokens == 65536
-	  and .thinkingLevelMap.xhigh == "xhigh" and .thinkingLevelMap.max == "max"
-' "$agent_dir/models.json" >/dev/null
-jq -e '
-	.providers.cpa.models[]
-	| select(.id == "gpt-6-astra")
-	| .contextWindow == 272000 and .maxTokens == 65536
-	  and .thinkingLevelMap.off == null
 	  and .thinkingLevelMap.xhigh == "xhigh" and .thinkingLevelMap.max == "max"
 ' "$agent_dir/models.json" >/dev/null
 jq -e '
@@ -126,28 +104,6 @@ jq -e '
 	.providers.cpa.models[]
 	| select(.id == "grok-4.6")
 	| .contextWindow == 500000 and .maxTokens == 32768
-' "$agent_dir/models.json" >/dev/null
-jq -e '
-	.providers.cpa.models[]
-	| select(.id == "gpt-6.1-sol")
-	| .contextWindow == 272000 and .maxTokens == 65536
-	  and .thinkingLevelMap.off == "none"
-	  and .thinkingLevelMap.xhigh == "xhigh" and .thinkingLevelMap.max == "max"
-' "$agent_dir/models.json" >/dev/null
-jq -e '
-	.providers.cpa.models[]
-	| select(.id == "gpt-6-sol")
-	| .contextWindow == 272000 and .maxTokens == 65536
-' "$agent_dir/models.json" >/dev/null
-jq -e '
-	.providers.cpa.models[]
-	| select(.id == "gpt-6-luna")
-	| .contextWindow == 272000 and .maxTokens == 65536
-' "$agent_dir/models.json" >/dev/null
-jq -e '
-	.providers.cpa.models[]
-	| select(.id == "gpt-5.6-sol")
-	| .contextWindow == 272000 and .maxTokens == 65536
 ' "$agent_dir/models.json" >/dev/null
 jq -e '
 	.providers.cpa.models[]
