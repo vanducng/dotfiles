@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.46.0](https://github.com/vanducng/dotfiles/compare/v0.45.4...v0.46.0) (2026-11-18)
+
+
+### Features
+
+* **pi:** enable codemode by default ([#312](https://github.com/vanducng/dotfiles/issues/312)) ([adef53c](https://github.com/vanducng/dotfiles/commit/adef53c008d3782f38ef4730df2aa20e0ff4aa09))
+
 ## [0.45.4](https://github.com/vanducng/dotfiles/compare/v0.45.3...v0.45.4) (2026-11-17)
 
 
