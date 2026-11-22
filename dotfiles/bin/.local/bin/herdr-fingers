@@ -492,8 +492,21 @@ if [[ "$selection" == "$result" ]]; then
 fi
 [[ -n "$selection" ]] || exit 0
 
+# Rex sets REX_OPEN_HOST on another host's pane: URLs and copies go to the Mac running the app.
+open_host="${REX_OPEN_HOST:-}"
+home_do() {
+  "${REX_BIN_DIR:-/nonexistent}/rex" -S "$open_host" do open_url "url=$1" "${@:2}"
+}
+is_url=""
+[[ "$selection" =~ ^[A-Za-z][A-Za-z0-9+.-]*:// && "$selection" != file://* ]] && is_url=1
+
 case "$action" in
-  ctrl-y) copy_value "$selection" ;;
+  ctrl-y)
+    if [[ -n "$open_host" ]]; then home_do "$selection" copy=true; else copy_value "$selection"; fi
+    ;;
   ctrl-e) BASE_DIR="$base_dir" "$open_path" --editor "$selection" ;;
-  *) BASE_DIR="$base_dir" "$open_path" --browser "$selection" ;;
+  *)
+    if [[ -n "$open_host" && -n "$is_url" ]]; then home_do "$selection"
+    else BASE_DIR="$base_dir" "$open_path" --browser "$selection"; fi
+    ;;
 esac

@@ -762,20 +762,36 @@ PATH="$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"
 export FZF_DEFAULT_OPTS="${FZF_DEFAULT_OPTS:-} --color=bg:#1e2023,bg+:#2b2f34"
 if [ -n "$3" ] || text=$("$REX_BIN_DIR/rex" capture -b "$1" --unwrap 2>&1); then
   [ -n "$3" ] || printf '%s\n' "$text" | tail -n 500 >"$f"
-  HERDR_FINGERS_TEXT_FILE="$f" HERDR_ACTIVE_PANE_CWD="$4" herdr-fingers || { printf '\nPress Enter to close.'; read -r _; }
+  HERDR_FINGERS_TEXT_FILE="$f" HERDR_ACTIVE_PANE_CWD="$4" REX_OPEN_HOST="$5" herdr-fingers || { printf '\nPress Enter to close.'; read -r _; }
 else
   printf '%s\n\nPress Enter to close.' "$text"; read -r _
 fi]=]
 
+-- Runs on this Mac even for a remote pane: the remote picker reaches it through client.perform.
+rex.action{
+  name = "open_url",
+  title = "Open or Copy a URL on This Mac",
+  category = "Pane",
+  args = { url = "string", copy = "boolean?" },
+  run = function(_, args)
+    local argv = args.copy and { "pbcopy" } or { "open", args.url }
+    local r, err = rex.exec(argv, { env = env, stdin = args.copy and args.url or nil, timeout = 10 })
+    if not r then error(err, 0) end
+    if not r.ok then error(r.stderr, 0) end
+  end,
+}
+
 -- Herdr's prefix+space picker on the pane's latest 500 lines, newest first:
 -- Enter opens, Ctrl-Y copies, Ctrl-E edits.
+-- On another host's pane, URLs open and copies land on this Mac (open_url, via rex -S).
 rex.action{
   name = "fingers",
   title = "Pick a URL or Path",
   category = "Pane",
   run = function(ctx)
     local ok, dir = pcall(pane_dir, ctx.block_id)
-    overlay(ctx, { 0.1, 0.1, 0.8, 0.8 }, fingers_script, capture_file(ctx, 500), ok and dir or "")
+    overlay(ctx, { 0.1, 0.1, 0.8, 0.8 }, fingers_script, capture_file(ctx, 500), ok and dir or "",
+      ctx.server and hosts.self or "")
   end,
 }
 
