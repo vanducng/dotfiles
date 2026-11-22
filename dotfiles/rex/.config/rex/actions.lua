@@ -494,7 +494,7 @@ rex.action{
   end,
 }
 
--- C-x i N: the Nth pane of this tab, counting left to right, then top to bottom.
+-- C-x e N: the Nth pane of this tab, counting left to right, then top to bottom.
 rex.action{
   name = "pane_goto",
   title = "Go to Pane N in This Tab",

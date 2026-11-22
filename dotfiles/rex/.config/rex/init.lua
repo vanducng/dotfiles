@@ -32,9 +32,9 @@ for k, dir in pairs(dirs) do
 end
 px("tab", "pane.focus_next")
 px("shift+tab", "pane.focus_previous")
--- C-x i N: pane N of this tab, left to right, then top to bottom.
+-- C-x e N: pane N of this tab, left to right, then top to bottom.
 for i = 1, 9 do
-  for _, k in ipairs({ "[KeyI]", "ctrl+[KeyI]" }) do
+  for _, k in ipairs({ "[KeyE]", "ctrl+[KeyE]" }) do
     rex.bind("ctrl+[KeyX]>" .. k .. ">[Digit" .. i .. "]", "pane_goto", { index = i })
   end
 end
@@ -44,7 +44,7 @@ bind("ctrl+alt+z", "pane.zoom")
 px("m", "pane.split.right")
 px("v", "pane.split.down")
 px("x", "pane.close")
-px("e", "pane.balance")
+px("[Equal]", "pane.balance")
 px("r", "client.mode.enter", { name = "resize" })
 px(",", "pane_label")
 px("shift+p", "pane_label")
@@ -81,6 +81,7 @@ px("shift+n", "session.new")
 px("shift+s", "session.rename")
 px("shift+w", "session.open_on_web")
 px("shift+i", "session_renumber")
+px("i", "tab_renumber")
 px("shift+d", "session.close")
 
 px("shift+m", "client.host.switch")
