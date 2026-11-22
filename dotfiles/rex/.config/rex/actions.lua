@@ -494,6 +494,44 @@ rex.action{
   end,
 }
 
+-- C-x i N: the Nth pane of this tab, counting left to right, then top to bottom.
+rex.action{
+  name = "pane_goto",
+  title = "Go to Pane N in This Tab",
+  category = "Pane",
+  args = { index = "integer" },
+  run = function(ctx, args)
+    local v, err = rex.session.view{ session_id = ctx.session_id }
+    if not v then error(err, 0) end
+    for _, w in ipairs(v.windows or {}) do
+      for _, l in ipairs(w.layers or {}) do
+        local panes, mine = {}, false
+        local function walk(n)
+          if n.block_id then
+            panes[#panes + 1] = { id = n.block_id, x = n.rect[1], y = n.rect[2] }
+            mine = mine or n.block_id == ctx.block_id
+          elseif n.split then
+            walk(n.split.before); walk(n.split.after)
+          end
+        end
+        if l.kind == "tiled" and l.layout then walk(l.layout) end
+        if mine then
+          -- Rects are fractions, so near-equal tops count as one row.
+          table.sort(panes, function(a, b)
+            if math.abs(a.y - b.y) > 1e-6 then return a.y < b.y end
+            return a.x < b.x
+          end)
+          local p = panes[args.index]
+          if not p then error("no pane " .. args.index, 0) end
+          rex.session.focus_block{ session_id = ctx.session_id, block_id = p.id }
+          return
+        end
+      end
+    end
+    error("this pane is not in a tab's layout", 0)
+  end,
+}
+
 rex.action{
   name = "home",
   title = "Home: First Session, Tab, and Pane",
