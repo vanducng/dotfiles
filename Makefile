@@ -66,6 +66,7 @@ ifneq ($(filter Darwin macos,$(PLATFORM)),)
 setup:
 	@./scripts/macos-deps.sh
 	@$(MAKE) stow-install
+	@./scripts/macos-desktop-keys.sh
 	@./scripts/rex-setup.sh || echo "warning: setup-rex skipped; rerun make setup-rex"
 	@./scripts/tinycast-setup.sh || echo "warning: setup-tinycast skipped; rerun make setup-tinycast"
 	@echo "Setup complete. Open a new shell (exec zsh)."

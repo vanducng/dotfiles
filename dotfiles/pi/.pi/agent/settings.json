@@ -2,7 +2,7 @@
   "defaultProvider": "cpa",
   "defaultModel": "claude-opus-5-5",
   "defaultThinkingLevel": "high",
-  "lastChangelogVersion": "1.4.0",
+  "lastChangelogVersion": "1.6.0",
   "images": {
     "blockImages": false
   },
@@ -46,5 +46,10 @@
   ],
   "defaultTools": [
     "+codemode"
-  ]
+  ],
+  "extensionChangelogVersions": {
+    "{\"source\":\"npm:pi-web-access\",\"scope\":\"user\"}": "0.48.0",
+    "{\"source\":\"npm:pi-mcp-adapter\",\"scope\":\"user\"}": "7.0.1",
+    "{\"source\":\"npm:@indexyz/pi-skill\",\"scope\":\"user\"}": "0.1.44"
+  }
 }
