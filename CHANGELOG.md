@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.47.0](https://github.com/vanducng/dotfiles/compare/v0.46.0...v0.47.0) (2026-11-22)
+
+
+### Features
+
+* **rex:** jump to pane N with C-x i N ([2108dbd](https://github.com/vanducng/dotfiles/commit/2108dbdd8a3ec7d321ca57e38c98f4ee41ec879b))
+
+
+### Bug Fixes
+
+* **rex:** move pane jump to C-x e N, restore C-x i tab renumber ([68b3b23](https://github.com/vanducng/dotfiles/commit/68b3b23b1982bda0a82473de35d2a8aecf5a5f0e))
+
 ## [0.46.0](https://github.com/vanducng/dotfiles/compare/v0.45.4...v0.46.0) (2026-11-18)
 
 
