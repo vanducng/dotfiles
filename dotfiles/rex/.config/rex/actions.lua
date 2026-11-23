@@ -96,16 +96,6 @@ local function select_session(session_id, host, window_id)
   if perr then error(perr, 0) end
 end
 
--- The session each app left on its last jump by key, for session_toggle. Memory only: a config
--- reload forgets it, and jumps through cmd+k or the sidebar are not seen.
-local came_from = {}
-
-local function remember(ctx, target_id)
-  if ctx.client_id and target_id ~= ctx.session_id then
-    came_from[ctx.client_id] = { id = ctx.session_id, host = ctx.server }
-  end
-end
-
 rex.action{
   name = "session_goto",
   title = "Go to Session N",
@@ -115,21 +105,7 @@ rex.action{
   run = function(ctx, args)
     local s = host_sessions(ctx, ctx.server)[args.index]
     if not s then error("no session " .. args.index .. (ctx.server and " on " .. ctx.server or ""), 0) end
-    remember(ctx, s.session_id)
     select_session(s.session_id, ctx.server)
-  end,
-}
-
-rex.action{
-  name = "session_toggle",
-  title = "Toggle Last Session",
-  description = "Goes back to the session you left with Ctrl-1..9, C-x 0 or this key; press again to return.",
-  category = "Session",
-  run = function(ctx)
-    local back = ctx.client_id and came_from[ctx.client_id]
-    if not back or back.id == ctx.session_id then error("no session to go back to yet", 0) end
-    remember(ctx, back.id)
-    select_session(back.id, back.host)
   end,
 }
 
@@ -162,7 +138,6 @@ rex.action{
       if s.session_id == mem[label] then target = s end
     end
     if not target then error("no sessions on " .. label, 0) end
-    remember(ctx, target.session_id)
     select_session(target.session_id, host)
   end,
 }
@@ -206,7 +181,6 @@ rex.action{
       return cache[h]
     end
     local function go(h, session_id, window_id)
-      remember(ctx, session_id)
       select_session(session_id, h or nil, window_id)
     end
 
@@ -411,7 +385,6 @@ local function goto_layout(ctx, index)
     if layout.base(window.label) == want.tabs[k[2]].label then w = window; break end
   end
   if not w then error(want.name .. " has no tab " .. want.tabs[k[2]].label, 0) end
-  remember(ctx, id)
   select_session(id, nil, w.window_id)
   -- A new session goes to its place after the jump; failing to order it only costs tidiness.
   if not had then
@@ -539,7 +512,6 @@ rex.action{
   run = function(ctx)
     local s = local_sessions(ctx)[1]
     if not s then error("no sessions", 0) end
-    remember(ctx, s.session_id)
     -- The tab and pane calls below would go to the other host.
     if ctx.server then return select_session(s.session_id) end
     attach_all()
