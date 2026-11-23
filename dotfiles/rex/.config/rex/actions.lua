@@ -3,6 +3,7 @@ local layout = require("layout")
 local term = "com.superlogical.terminal"
 local env ={ PATH = "/opt/homebrew/bin:/usr/local/bin:" .. (os.getenv("PATH") or "/usr/bin:/bin") }
 local attention = { blocked = 1, error = 2, done = 3, idle = 4 }
+local unpack = table.unpack or unpack
 
 local function sessions()
   local r, err = rex.call("session.list")
@@ -575,10 +576,13 @@ local function rexboard_cli()
   return layout.rexboard() or error("rexboard not installed: brew install vanducng/tap/rexboard", 0)
 end
 
+-- A jump waits up to 30 s for a slow Rex app (rexboard S103), so its callers wait longer.
+local board_wait = 35
+
 local function rexboard_run(argv, extra)
   local run_env = { PATH = env.PATH }
   for k, v in pairs(extra or {}) do run_env[k] = v end
-  local r, err = rex.exec(argv, { env = run_env, timeout = 20 })
+  local r, err = rex.exec(argv, { env = run_env, timeout = board_wait })
   if not (r and r.ok) then
     local why = r and r.stderr and r.stderr:gsub("%s+$", "") or ""
     error(why ~= "" and why or tostring(err or "rexboard failed"), 0)
@@ -597,6 +601,157 @@ rex.action{
     if args.back then argv[#argv + 1] = "--back" end
     rexboard_run(argv, { REX_BLOCK = ctx.block_id })
   end,
+}
+
+-- Jump and mark modes (C-x ' and C-x "): rexboard keeps the row numbers the resident board shows
+-- in the serve of the host that board runs on, and the pane letters in one host's state, so these
+-- commands run on that host, BOARD_HOST: the server's BOARD_HOST environment variable, else the
+-- hosts.json entry with "board": true, else this host. Elsewhere they go over ssh, argv only: each
+-- argument is a plain word (digits, a letter, a pane key), checked and single-quoted for the remote
+-- shell, so no row text ever reaches a shell.
+local label_shape, word_shape = "^[%w][%w%.%-]*$", "^[%w@:/%._%-]+$"
+
+local function board_host()
+  local h = os.getenv("BOARD_HOST")
+  if h == nil or h == "" then h = hosts.board end
+  if h and not h:match(label_shape) then error("BOARD_HOST " .. h .. " is not a host label", 0) end
+  return h
+end
+
+-- Runs `rexboard <words...>` on BOARD_HOST for the pane in ctx and returns rex.exec's result;
+-- with a pane, `mark set` names it: REX_BLOCK here, or its key (HOST/BLOCK_ID, `local` for
+-- BOARD_HOST's own panes) when the pane or the command is on another host.
+local function board(ctx, words, pane)
+  local host = board_host()
+  local remote = host and host ~= hosts.self
+  local pane_host = ctx.server or hosts.self
+  local extra = {}
+  words = { unpack(words) }
+  if pane then
+    if remote or ctx.server then
+      if not pane_host then error("this host is not in hosts.json, so its panes have no key on the board", 0) end
+      words[#words + 1] = "--key"
+      words[#words + 1] = (pane_host == host and "local" or pane_host) .. "/" .. ctx.block_id
+    else
+      extra.REX_BLOCK = ctx.block_id
+    end
+  end
+  for _, w in ipairs(words) do
+    if not tostring(w):match(word_shape) then error("not a plain rexboard argument: " .. tostring(w), 0) end
+  end
+  local argv
+  if remote then
+    local quoted = {}
+    for i, w in ipairs(words) do quoted[i] = "'" .. w .. "'" end
+    argv = { "ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=5", host, "--",
+      'PATH="$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin:$PATH" exec rexboard ' .. table.concat(quoted, " ") }
+  else
+    argv = { rexboard_cli(), unpack(words) }
+  end
+  local run_env = { PATH = env.PATH }
+  for k, v in pairs(extra) do run_env[k] = v end
+  local r, err = rex.exec(argv, { env = run_env, timeout = board_wait })
+  if not r then error(tostring(err or "rexboard did not run"), 0) end
+  return r
+end
+
+local function board_error(r)
+  local why = (r.stderr or ""):gsub("%s+$", "")
+  error(why ~= "" and why or ("rexboard exited " .. tostring(r.code or "?")), 0)
+end
+
+-- The row number typed so far in the jump mode. One per server, cleared on entering and leaving.
+local digits = ""
+
+local function leave()
+  digits = ""
+  rex.client.queue("client.mode.exit")
+end
+
+-- Run one command, then leave the mode; a failure leaves too and shows its reason.
+local function board_once(ctx, words, pane)
+  local ok, r = pcall(board, ctx, words, pane)
+  leave()
+  if not ok then error(r, 0) end
+  if not r.ok then board_error(r) end
+end
+
+rex.action{
+  name = "rb_jump_mode",
+  title = "Jump to a Board Row or Mark (rexboard)",
+  description = "Digits type the row number the board shows, a letter jumps to that mark, enter runs the number, escape leaves.",
+  category = "Session",
+  run = function()
+    digits = ""
+    rex.client.queue("client.mode.enter", { name = "jump" })
+  end,
+}
+
+rex.action{
+  name = "rb_mark_mode",
+  title = "Mark This Pane With a Letter (rexboard)",
+  description = "A letter marks the pane, escape leaves.",
+  category = "Session",
+  run = function()
+    digits = ""
+    rex.client.queue("client.mode.enter", { name = "mark" })
+  end,
+}
+
+-- One digit: jump when no longer number could follow (exit 0), wait for the next digit (exit 3).
+rex.action{
+  name = "rb_row",
+  title = "Type a Board Row Digit (rexboard)",
+  category = "Session",
+  args = { digit = "string" },
+  run = function(ctx, args)
+    if not tostring(args.digit):match("^%d$") then return leave() end
+    digits = digits .. args.digit
+    local ok, r = pcall(board, ctx, { "jump", "--shown", digits, "--partial" })
+    if ok and r.code == 3 then return end
+    leave()
+    if not ok then error(r, 0) end
+    if not r.ok then board_error(r) end
+  end,
+}
+
+rex.action{
+  name = "rb_row_enter",
+  title = "Jump to the Typed Board Row (rexboard)",
+  category = "Session",
+  run = function(ctx)
+    if digits == "" then return leave() end
+    board_once(ctx, { "jump", "--shown", digits })
+  end,
+}
+
+rex.action{
+  name = "rb_mark_jump",
+  title = "Jump to a Marked Pane (rexboard)",
+  category = "Session",
+  args = { letter = "string" },
+  run = function(ctx, args)
+    if not tostring(args.letter):match("^%l$") then return leave() end
+    board_once(ctx, { "jump", "@" .. args.letter })
+  end,
+}
+
+rex.action{
+  name = "rb_mark_set",
+  title = "Mark This Pane (rexboard)",
+  category = "Session",
+  args = { letter = "string" },
+  run = function(ctx, args)
+    if not tostring(args.letter):match("^%l$") then return leave() end
+    board_once(ctx, { "mark", "set", args.letter }, true)
+  end,
+}
+
+rex.action{
+  name = "rb_leave",
+  title = "Leave the Jump or Mark Mode",
+  category = "Session",
+  run = leave,
 }
 
 -- Overlays run on whichever host owns the pane. Rex zooms only the focused

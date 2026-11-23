@@ -93,6 +93,9 @@ px("o", "agent_next")
 px("shift+up", "agent_next", { back = true })
 bind("ctrl+alt+a", "agent_next")
 px("f", "agent_pick")
+-- C-x ' then a row number the board shows (or a mark letter); C-x " then a letter marks this pane.
+px("[Quote]", "rb_jump_mode")
+px("shift+[Quote]", "rb_mark_mode")
 
 px("b", "client.sidebar.toggle")
 bind("cmd+b", "client.sidebar.toggle")
@@ -116,6 +119,17 @@ for k, dir in pairs(dirs) do
 end
 bind("resize/=", "pane.balance")
 bind("resize/enter", "client.mode.exit")
+
+rex.mode("jump", { exclusive = true })
+for i = 0, 9 do bind("jump/" .. i, "rb_row", { digit = tostring(i) }) end
+bind("jump/enter", "rb_row_enter")
+bind("jump/escape", "rb_leave")
+rex.mode("mark", { exclusive = true })
+for c in ("abcdefghijklmnopqrstuvwxyz"):gmatch(".") do
+  bind("jump/" .. c, "rb_mark_jump", { letter = c })
+  bind("mark/" .. c, "rb_mark_set", { letter = c })
+end
+bind("mark/escape", "rb_leave")
 
 -- rexurrect: restore saved sessions (and resume agents) when the server starts.
 do

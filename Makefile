@@ -197,6 +197,7 @@ script-test:
 	@./scripts/ci/test-rex-hooks-sync.sh
 	@./scripts/ci/test-rex-layout.sh
 	@$$(command -v luajit || command -v lua) ./scripts/ci/test-rex-actions.lua "$(CURDIR)"
+	@$$(command -v luajit || command -v lua) ./scripts/ci/test-rex-jump-mark.lua "$(CURDIR)"
 	@./scripts/ci/test-rex-project-picker.sh
 	@./scripts/ci/test-rexboard-openrig.sh
 	@./scripts/ci/test-herdr-fingers.sh

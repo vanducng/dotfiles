@@ -6,10 +6,10 @@ Rex (Rex Beta) is the native macOS multiplexer that replaces Ghostty on space 1 
 
 ## Source of truth
 
-- `dotfiles/rex/.config/rex/init.lua` - key bindings and the resize mode
-- `dotfiles/rex/.config/rex/actions.lua` - Lua actions: `session_goto`, `host_goto`, `tab_cycle`, `session_renumber`, `session_layout`, `layout_goto`, `tab_renumber`, `tab_goto`, `home`, `fingers`, `project_pick`, `agent_next`, `agent_pick`, `agent_attention` (the old in-Lua scan, kept until `rexboard next` is proven live), `copy_mode`, `pane_label`, `open_pr`
+- `dotfiles/rex/.config/rex/init.lua` - key bindings and the resize, jump and mark modes
+- `dotfiles/rex/.config/rex/actions.lua` - Lua actions: `session_goto`, `host_goto`, `tab_cycle`, `session_renumber`, `session_layout`, `layout_goto`, `tab_renumber`, `tab_goto`, `home`, `fingers`, `project_pick`, `agent_next`, `agent_pick`, the jump and mark actions (`rb_jump_mode`, `rb_mark_mode`, `rb_row`, `rb_row_enter`, `rb_mark_jump`, `rb_mark_set`, `rb_leave`), `agent_attention` (the old in-Lua scan, kept until `rexboard next` is proven live), `copy_mode`, `pane_label`, `open_pr`
 - `dotfiles/rex/.config/rex/layout.lua` - the sessions kept at the top of this Mac's sidebar (see [Session layout](#session-layout))
-- `~/.config/rex/hosts.json` (from the private overlay) - every machine that runs Rex, defined once: `label`, `device`, macOS `hostname`, and the app `icon`. Its order is the `Ctrl-Alt-1..9` number
+- `~/.config/rex/hosts.json` (from the private overlay) - every machine that runs Rex, defined once: `label`, `device`, macOS `hostname`, and the app `icon`, plus `"board": true` on the host whose always-on board the [jump and mark modes](#jump-and-mark) use. Its order is the `Ctrl-Alt-1..9` number
 - `dotfiles/rex/.config/rex/hosts.lua` - reads `hosts.json`, works out which entry is this Mac, and declares the others as Rex hosts
 - `dotfiles/rexboard/.config/rexboard/config.toml` - [rexboard](https://github.com/vanducng/rexboard)'s config. The `rexboard` package is stowed on macOS and Linux, including its OpenRig extension; `make stow-rexboard` installs it on either. The app client is left to the default, the only Rex app on the unix socket. The rexboard keys and the cockpit's board tab find `rexboard` in `$HOMEBREW_PREFIX/bin`, `/opt/homebrew/bin`, `/usr/local/bin`, `~/.local/bin`, then `PATH`, and say `brew install vanducng/tap/rexboard` when it is missing
 - `dotfiles/rexboard/.config/rexboard/extensions/openrig/` - the [OpenRig extension](#openrig-extension) config.toml enables: each seat's rig and project on rexboard's rows, and a message to the seat (`x s` on the board)
@@ -56,12 +56,23 @@ Rex uses Herdr's `C-x` prefix and letters, so moving between the two needs no re
 | `C-x Shift-Down` / `C-x o` | Next agent that needs you, across every host (`rexboard next`) |
 | `C-x Shift-Up` | Previous agent that needs you (`rexboard next --back`) |
 | `C-x f` | Pick an agent from a list over the window (`rexboard pick`): `Enter` jumps, `Esc` returns to the pane, and a failed jump's reason stays up until `Enter`. Over a zoomed pane it fills the window, since Rex unzooms when focus leaves the pane, so the other panes never show. From a zoomed pane, a jump inside the window zooms the pane it lands on, and any other jump leaves the pane zoomed for when you come back. Over a pane on another host it goes to the board in `1-cockpit` instead |
+| `C-x '` | Jump mode: type the row number the always-on board shows (`3`, or `1` `2` for row 12), or a mark letter; `Enter` runs a number that could still grow, `Esc` leaves (see [Jump and mark](#jump-and-mark)) |
+| `C-x "` | Mark mode: a letter `a`-`z` marks this pane for `C-x '` then that letter; `Esc` leaves |
 | `C-x b` | Toggle sidebar (vertical tabs only; `shift+cmd+s` switches tab style) |
 | `C-x Shift-R` | Reload config |
 | `C-x Shift-G` | Open the repo's pull requests on GitHub (`/pulls`) |
 | `C-x ?` | Command palette |
 
 Herdr's `C-x a` (last pane) has no equivalent, since Rex config Lua cannot track focus history, so `C-x a` goes to the last session here.
+
+## Jump and mark
+
+`C-x '` and `C-x "` reach a pane without opening the board, through [rexboard](https://github.com/vanducng/rexboard) 0.36 or later.
+
+- **Jump** (`C-x '`): digits type the number in the `#` column of the always-on `rexboard board`, one at a time (`rexboard jump --shown N --partial`). A number that can only mean one row jumps at once; `1` on a board of 10 or more rows waits for the next digit or `Enter`. A letter jumps to the pane holding that mark (`rexboard jump @a`). Each jump may wait up to 30 s for a slow Rex app, so these calls and `C-x o` wait 35 s.
+- **Mark** (`C-x "`): a letter gives this pane that mark (`rexboard mark set a`) and leaves. A letter held by another pane moves here, and a pane holds one letter. Only a pane with a label of its own can hold one: a pane named `shell` or after its program is refused ("label it in Rex").
+- A failed jump or mark leaves the mode and shows rexboard's reason, such as no board running or no such row.
+- **Board host.** Only the resident board publishes its numbers, and the letters live in one host's state, so every jump and mark command runs on the host whose always-on board you read: `BOARD_HOST` in the Rex server's environment, else the `hosts.json` entry with `"board": true`, else this host. On another host they go over `ssh <board host>`, as argv: each argument is a digit run, a letter or a pane key, checked and quoted, never row text. A pane is named by its key (`HOST/BLOCK_ID`, `local` for the board host's own panes) wherever `REX_BLOCK` would mean nothing.
 
 ## Direct keys
 
