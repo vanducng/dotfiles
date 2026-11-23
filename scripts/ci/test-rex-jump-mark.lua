@@ -68,6 +68,16 @@ ok, err = press("rb_row", here, { digit = "5" })
 assert(not ok and err == "timed out" and queued[1] == "client.mode.exit", "a run that fails leaves")
 answer = code(0)
 
+-- Each client types its own number: a digit from a second app on the same server starts afresh.
+reset(); answer = code(3)
+press("rb_row", { session_id = "s", block_id = "block:b1", client_id = "app-1" }, { digit = "1" })
+press("rb_row", { session_id = "s", block_id = "block:b1", client_id = "app-2" }, { digit = "2" })
+assert(argv() == "/bin/rexboard jump --shown 2 --partial", "a second client has its own buffer: " .. argv())
+press("rb_row", { session_id = "s", block_id = "block:b1", client_id = "app-1" }, { digit = "1" })
+assert(argv() == "/bin/rexboard jump --shown 11 --partial", "the first client kept its digits: " .. argv())
+actions.rb_leave.run({ client_id = "app-1" }); actions.rb_leave.run({ client_id = "app-2" })
+answer = code(0)
+
 -- enter runs the whole number without --partial; with nothing typed it only leaves.
 reset(); answer = code(3)
 press("rb_row", here, { digit = "1" })

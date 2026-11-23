@@ -660,19 +660,21 @@ local function board_error(r)
   error(why ~= "" and why or ("rexboard exited " .. tostring(r.code or "?")), 0)
 end
 
--- The row number typed so far in the jump mode. Each Rex server runs its own copy of this config,
--- so it is one per server, shared by the clients attached to it; entering and leaving clear it.
-local digits = ""
+-- The row number typed so far in the jump mode, per client (ctx.client_id), so two apps attached
+-- to one server never type into each other's number; entering and leaving clear it.
+local typed = {}
 
-local function leave()
-  digits = ""
+local function client_of(ctx) return (ctx and ctx.client_id) or "" end
+
+local function leave(ctx)
+  typed[client_of(ctx)] = nil
   rex.client.queue("client.mode.exit")
 end
 
 -- Run one command, then leave the mode; a failure leaves too and shows its reason.
 local function board_once(ctx, words, pane)
   local ok, r = pcall(board, ctx, words, pane)
-  leave()
+  leave(ctx)
   if not ok then error(r, 0) end
   if not r.ok then board_error(r) end
 end
@@ -682,8 +684,8 @@ rex.action{
   title = "Jump to a Board Row or Mark (rexboard)",
   description = "Digits type the row number the board shows, a letter jumps to that mark, enter runs the number, escape leaves.",
   category = "Session",
-  run = function()
-    digits = ""
+  run = function(ctx)
+    typed[client_of(ctx)] = nil
     rex.client.queue("client.mode.enter", { name = "jump" })
   end,
 }
@@ -693,8 +695,8 @@ rex.action{
   title = "Mark This Pane With a Letter (rexboard)",
   description = "A letter marks the pane, escape leaves.",
   category = "Session",
-  run = function()
-    digits = ""
+  run = function(ctx)
+    typed[client_of(ctx)] = nil
     rex.client.queue("client.mode.enter", { name = "mark" })
   end,
 }
@@ -706,11 +708,12 @@ rex.action{
   category = "Session",
   args = { digit = "string" },
   run = function(ctx, args)
-    if not tostring(args.digit):match("^%d$") then return leave() end
-    digits = digits .. args.digit
+    if not tostring(args.digit):match("^%d$") then return leave(ctx) end
+    local digits = (typed[client_of(ctx)] or "") .. args.digit
+    typed[client_of(ctx)] = digits
     local ok, r = pcall(board, ctx, { "jump", "--shown", digits, "--partial" })
     if ok and r.code == 3 then return end
-    leave()
+    leave(ctx)
     if not ok then error(r, 0) end
     if not r.ok then board_error(r) end
   end,
@@ -721,7 +724,8 @@ rex.action{
   title = "Jump to the Typed Board Row (rexboard)",
   category = "Session",
   run = function(ctx)
-    if digits == "" then return leave() end
+    local digits = typed[client_of(ctx)]
+    if not digits then return leave(ctx) end
     board_once(ctx, { "jump", "--shown", digits })
   end,
 }
@@ -732,7 +736,7 @@ rex.action{
   category = "Session",
   args = { letter = "string" },
   run = function(ctx, args)
-    if not tostring(args.letter):match("^%l$") then return leave() end
+    if not tostring(args.letter):match("^%l$") then return leave(ctx) end
     board_once(ctx, { "jump", "@" .. args.letter })
   end,
 }
@@ -743,7 +747,7 @@ rex.action{
   category = "Session",
   args = { letter = "string" },
   run = function(ctx, args)
-    if not tostring(args.letter):match("^%l$") then return leave() end
+    if not tostring(args.letter):match("^%l$") then return leave(ctx) end
     board_once(ctx, { "mark", "set", args.letter }, true)
   end,
 }
