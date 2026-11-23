@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.48.0](https://github.com/vanducng/dotfiles/compare/v0.47.0...v0.48.0) (2026-11-23)
+
+
+### Features
+
+* **rex:** jump and mark modes on C-x ' and C-x " ([#317](https://github.com/vanducng/dotfiles/issues/317)) ([61e516b](https://github.com/vanducng/dotfiles/commit/61e516b01a96b20bbff505dcf7145d8717bfedf5))
+
+
+### Bug Fixes
+
+* **rex:** C-x a goes to the recent session with session.recent ([#316](https://github.com/vanducng/dotfiles/issues/316)) ([d0b4b10](https://github.com/vanducng/dotfiles/commit/d0b4b109bbdac7b1216695824086c09ac291d42b))
+* **rex:** C-x f fills the window over a zoomed pane ([cea8467](https://github.com/vanducng/dotfiles/commit/cea84672bf928cbe612242aa0f07a347984a6804))
+* **rex:** C-x f keeps a zoomed pane zoomed after a jump ([a0976d9](https://github.com/vanducng/dotfiles/commit/a0976d9776ae76bb98d65df8ad5687eba5a26bbd))
+
 ## [0.47.0](https://github.com/vanducng/dotfiles/compare/v0.46.0...v0.47.0) (2026-11-22)
 
 
