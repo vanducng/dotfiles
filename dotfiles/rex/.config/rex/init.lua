@@ -74,7 +74,7 @@ px("0", "home")
 -- alt+shift+1-3: 1-cockpit's tabs (the board, rig tui, pi) (layout.lua).
 for i = 1, #require("layout").keys do bind("alt+shift+" .. i, "layout_goto", { index = i }) end
 -- The session picker stays on Rex's cmd+k.
-px("a", "session_toggle")
+px("a", "session.recent") -- Go to Recent Session: sees every switch, cmd+k and the sidebar too
 px("shift+right", "session.next")
 bind("alt+cmd+[BracketRight]", "session.next")
 px("shift+n", "session.new")
