@@ -3,6 +3,8 @@
 --             Tailscale as rex-<label>, and its place in the list is its ctrl+alt+N.
 --   hostname  macOS LocalHostName (scutil --get LocalHostName); tells each Mac which entry it is.
 --   device, icon  what it is, and the SF Symbol the Rex app shows for it.
+--   board     true on the one host whose always-on rexboard board the jump and mark modes use
+--             (actions.lua); the server's BOARD_HOST environment variable overrides it.
 local function run(argv, env)
   local r = rex.exec(argv, { timeout = 5, env = env })
   if r and r.ok then return (r.stdout:gsub("%s+$", "")) end
@@ -30,6 +32,13 @@ local me = (exists("/usr/sbin/scutil") and run({ "scutil", "--get", "LocalHostNa
 for i, h in ipairs(entries) do
   hosts.order[i] = h.label
   if h.hostname == me then hosts.self = h.label end
+  if h.board == true then
+    if hosts.board then
+      rex.log("warn", "hosts.lua: " .. h.label .. " is also marked board; using " .. hosts.board)
+    else
+      hosts.board = h.label
+    end
+  end
 end
 
 -- The tailnet domain is read at load so it stays out of the repo. Without
