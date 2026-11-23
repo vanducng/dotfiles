@@ -82,6 +82,26 @@ assert(cmd[8] == "/mac/rexboard" and cmd[9] == "", "a local pane runs the board 
 actions.agent_pick.run({ session_id = "z", block_id = "source", client_id = "app" })
 assert(layer.bounds[1] == 0.08 and layer.bounds[3] == 0.84, "over a zoomed pane the popup keeps its size")
 assert(layer.layout.block.options.command[6] == "1", "and re-zooms the pane on quit")
+assert(layer.layout.block.options.command[10] == "z", "and names its session for a jump's re-zoom")
+
+local view, calls = rex.session.view, {}
+local function rezoom(active, focused)
+  calls = {}
+  rex.session.view = function() return { active_window_id = active, windows = {
+    { window_id = "w", focused_block_id = active == "w" and focused or "popup", layers = {
+      { kind = "tiled", layout = { split = { before = { block_id = "source", rect = {} }, after = { block_id = "b", rect = {} } } } },
+      { kind = "floating", blocks = { { block_id = "popup" } } } } },
+    { window_id = "w2", focused_block_id = "c", layers = { { kind = "tiled", layout = { block_id = "c", rect = {} } } } },
+  } } end
+  rex.session.zoom_block = function(d) calls[#calls + 1] = "zoom " .. d.block_id end
+  rex.session.focus_block = function(d) calls[#calls + 1] = "focus " .. d.block_id end
+  actions.agent_pick_rezoom.run({}, { session = "z", block = "source" })
+  return table.concat(calls, ",")
+end
+assert(rezoom("w", "b") == "zoom b", "a jump inside the window zooms the pane it lands on")
+assert(rezoom("w2", "c") == "zoom source,focus c", "a jump to another tab re-zooms the pane left, keeping focus")
+assert(rezoom("w", "popup") == "zoom source", "a jump to another session re-zooms the pane left")
+rex.session.view = view
 actions.copy_mode.run({ session_id = "z", block_id = "source", client_id = "app" })
 assert(layer.bounds[3] == 1 and layer.bounds[4] == 1, "an overlay without bounds still fills a zoomed window")
 os.remove(layer.layout.block.options.command[7])

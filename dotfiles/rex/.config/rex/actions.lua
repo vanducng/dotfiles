@@ -665,9 +665,46 @@ rex.action{
 e=$(mktemp)
 p='PATH="$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"'
 if [ -n "$5" ]; then ssh -qt -o BatchMode=yes -o ConnectTimeout=5 "$5" "$p exec $4 board --once" 2>"$e"
-else eval "export $p"; "$4" board --once 2>"$e"; fi && { rm -f "$e"; exit 0; }
+else eval "export $p"; "$4" board --once 2>"$e"; fi && {
+  rm -f "$e"
+  [ -z "$2" ] || "$REX_BIN_DIR/rex" do agent_pick_rezoom session="$6" block="$1" >/dev/null 2>&1
+  exit 0
+}
 [ -s "$e" ] && { cat "$e"; printf 'enter closes '; read -r _; }
-rm -f "$e"]=], "", rexboard_cli(), ctx.server and hosts.self or "")
+rm -f "$e"]=], "", rexboard_cli(), ctx.server and hosts.self or "", ctx.session_id)
+  end,
+}
+
+-- After agent_pick jumps from a zoomed pane (its popup unzoomed the window): a jump inside the
+-- window zooms the pane it landed on, any other jump re-zooms the pane it left, keeping focus.
+rex.action{
+  name = "agent_pick_rezoom",
+  title = "Re-zoom After Agent Pick",
+  category = "Session",
+  args = { session = "string", block = "string" },
+  run = function(_, args)
+    local s = args.session
+    local v, err = rex.session.view{ session_id = s }
+    if not v then error(err, 0) end
+    local active, origin
+    for _, w in ipairs(v.windows or {}) do
+      if w.window_id == v.active_window_id then active = w end
+      for _, l in ipairs(w.layers or {}) do
+        if l.kind == "tiled" and pane_rect(l.layout, args.block) then origin = w end
+      end
+    end
+    if not origin then return end
+    local landed = active and active.focused_block_id
+    local tiled = false
+    for _, l in ipairs(active and active.layers or {}) do
+      if l.kind == "tiled" and landed and pane_rect(l.layout, landed) then tiled = true end
+    end
+    if active == origin and tiled then
+      rex.session.zoom_block{ session_id = s, block_id = landed, zoom = true }
+      return
+    end
+    rex.session.zoom_block{ session_id = s, block_id = args.block, zoom = true }
+    if tiled then rex.session.focus_block{ session_id = s, block_id = landed } end
   end,
 }
 
