@@ -80,7 +80,8 @@ actions.agent_pick.run(context)
 cmd = layer.layout.block.options.command
 assert(cmd[8] == "/mac/rexboard" and cmd[9] == "", "a local pane runs the board here, no ssh")
 actions.agent_pick.run({ session_id = "z", block_id = "source", client_id = "app" })
-assert(layer.bounds[1] == 0.08 and layer.bounds[3] == 0.84, "over a zoomed pane the popup keeps its size")
+assert(layer.bounds[1] == 0 and layer.bounds[3] == 1 and layer.bounds.fill_zoomed == nil,
+  "over a zoomed pane the board fills the window, so the unzoomed tabs never show")
 assert(layer.layout.block.options.command[6] == "1", "and re-zooms the pane on quit")
 assert(layer.layout.block.options.command[10] == "z", "and names its session for a jump's re-zoom")
 
@@ -102,6 +103,9 @@ assert(rezoom("w", "b") == "zoom b", "a jump inside the window zooms the pane it
 assert(rezoom("w2", "c") == "zoom source,focus c", "a jump to another tab re-zooms the pane left, keeping focus")
 assert(rezoom("w", "popup") == "zoom source", "a jump to another session re-zooms the pane left")
 rex.session.view = view
+actions.fingers.run({ session_id = "z", block_id = "source", client_id = "app" })
+os.remove(layer.layout.block.options.command[7])
+assert(layer.bounds[1] == 0.1 and layer.bounds[3] == 0.8, "other sized popups keep their size over a zoomed pane")
 actions.copy_mode.run({ session_id = "z", block_id = "source", client_id = "app" })
 assert(layer.bounds[3] == 1 and layer.bounds[4] == 1, "an overlay without bounds still fills a zoomed window")
 os.remove(layer.layout.block.options.command[7])

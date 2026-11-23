@@ -601,8 +601,8 @@ rex.action{
 
 -- Overlays run on whichever host owns the pane. Rex zooms only the focused
 -- block, so a focused popup unzooms the window: one with bounds keeps its size
--- over the unzoomed tabs, one without fills the window, and both re-zoom the
--- pane on quit.
+-- over the unzoomed tabs unless they set fill_zoomed, one without fills the
+-- window, and all re-zoom the pane on quit.
 local overlay_tail = [=[
 if [ -n "$2" ]; then "$REX_BIN_DIR/rex" zoom --on "$1"; else "$REX_BIN_DIR/rex" focus "$1"; fi >/dev/null 2>&1]=]
 
@@ -637,7 +637,9 @@ local function overlay(ctx, bounds, script, file, ...)
       end
     end
   end
-  local area = bounds or (zoomed == "1" and { 0, 0, 1, 1 }) or rect or { 0, 0, 1, 1 }
+  local fill = zoomed == "1" and (not bounds or bounds.fill_zoomed)
+  local area = (fill and { 0, 0, 1, 1 }) or (bounds and { bounds[1], bounds[2], bounds[3], bounds[4] })
+    or rect or { 0, 0, 1, 1 }
   -- Without window_id the layer goes to the session's active tab, not always the pane's.
   local _, err = rex.session.new_layer{
     window_id = win,
@@ -661,7 +663,7 @@ rex.action{
   category = "Session",
   run = function(ctx)
     if ctx.server and not hosts.self then error("this Mac is not in hosts.json, so a remote pane cannot reach its board", 0) end
-    overlay(ctx, { 0.08, 0.08, 0.84, 0.84 }, [=[
+    overlay(ctx, { 0.08, 0.08, 0.84, 0.84, fill_zoomed = true }, [=[
 e=$(mktemp)
 p='PATH="$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"'
 if [ -n "$5" ]; then ssh -qt -o BatchMode=yes -o ConnectTimeout=5 "$5" "$p exec $4 board --once" 2>"$e"

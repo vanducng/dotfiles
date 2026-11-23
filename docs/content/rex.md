@@ -55,7 +55,7 @@ Rex uses Herdr's `C-x` prefix and letters, so moving between the two needs no re
 | `C-x Shift-M` | Switch machine (host) |
 | `C-x Shift-Down` / `C-x o` | Next agent that needs you, across every host (`rexboard next`) |
 | `C-x Shift-Up` | Previous agent that needs you (`rexboard next --back`) |
-| `C-x f` | Pick an agent from a list over the window (`rexboard pick`): `Enter` jumps, `Esc` returns to the pane, and a failed jump's reason stays up until `Enter`. From a zoomed pane, a jump inside the window zooms the pane it lands on, and any other jump leaves the pane zoomed for when you come back. Over a pane on another host it goes to the board in `1-cockpit` instead |
+| `C-x f` | Pick an agent from a list over the window (`rexboard pick`): `Enter` jumps, `Esc` returns to the pane, and a failed jump's reason stays up until `Enter`. Over a zoomed pane it fills the window, since Rex unzooms when focus leaves the pane, so the other panes never show. From a zoomed pane, a jump inside the window zooms the pane it lands on, and any other jump leaves the pane zoomed for when you come back. Over a pane on another host it goes to the board in `1-cockpit` instead |
 | `C-x b` | Toggle sidebar (vertical tabs only; `shift+cmd+s` switches tab style) |
 | `C-x Shift-R` | Reload config |
 | `C-x Shift-G` | Open the repo's pull requests on GitHub (`/pulls`) |
