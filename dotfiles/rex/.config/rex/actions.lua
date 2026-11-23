@@ -660,7 +660,8 @@ local function board_error(r)
   error(why ~= "" and why or ("rexboard exited " .. tostring(r.code or "?")), 0)
 end
 
--- The row number typed so far in the jump mode. One per server, cleared on entering and leaving.
+-- The row number typed so far in the jump mode. Each Rex server runs its own copy of this config,
+-- so it is one per server, shared by the clients attached to it; entering and leaving clear it.
 local digits = ""
 
 local function leave()

@@ -166,5 +166,31 @@ reset()
 actions.agent_next.run(here, {})
 assert(last().opts.timeout == 35, "agent_next waits 35 s")
 
+-- hosts.lua: the first "board": true entry wins, and a second one is logged, not taken.
+local tmp = os.tmpname()
+os.remove(tmp)
+os.execute("mkdir -p " .. tmp)
+local f = assert(io.open(tmp .. "/hosts.json", "w"))
+f:write("two boards")
+f:close()
+local logs = {}
+local saved = rex
+rex = {
+  exec = function() return { ok = false, code = 1, stdout = "", stderr = "" } end,
+  log = function(level, msg) logs[#logs + 1] = level .. " " .. msg end,
+  json = { decode = function() return {
+    { label = "mac-a", hostname = "a" }, { label = "mac-b", hostname = "b", board = true },
+    { label = "box-c", hostname = "c", board = true } } end },
+  host = function() end,
+}
+os.getenv = function(k) if k == "REX_CONFIG" then return tmp .. "/init.lua" end return getenv(k) end
+package.loaded.hosts = nil
+local h = dofile(root .. "/dotfiles/rex/.config/rex/hosts.lua")
+assert(h.board == "mac-b", "the first board entry wins: " .. tostring(h.board))
+assert(table.concat(logs, "\n"):match("box%-c is also marked board; using mac%-b"), "a second board is logged")
+os.remove(tmp .. "/hosts.json")
+os.remove(tmp)
+rex = saved
+
 os.getenv = getenv
 print("rex jump and mark: digit buffer, marks and BOARD_HOST argv passed")

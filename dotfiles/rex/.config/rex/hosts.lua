@@ -32,7 +32,13 @@ local me = (exists("/usr/sbin/scutil") and run({ "scutil", "--get", "LocalHostNa
 for i, h in ipairs(entries) do
   hosts.order[i] = h.label
   if h.hostname == me then hosts.self = h.label end
-  if h.board == true then hosts.board = h.label end
+  if h.board == true then
+    if hosts.board then
+      rex.log("warn", "hosts.lua: " .. h.label .. " is also marked board; using " .. hosts.board)
+    else
+      hosts.board = h.label
+    end
+  end
 end
 
 -- The tailnet domain is read at load so it stays out of the repo. Without
