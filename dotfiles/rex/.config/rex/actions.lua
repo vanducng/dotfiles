@@ -615,6 +615,11 @@ local function board_host()
   local h = os.getenv("BOARD_HOST")
   if h == nil or h == "" then h = hosts.board end
   if h and not h:match(label_shape) then error("BOARD_HOST " .. h .. " is not a host label", 0) end
+  if h then
+    local known = false
+    for _, label in ipairs(hosts.order) do known = known or label == h end
+    if not known then error("BOARD_HOST " .. h .. " is not in hosts.json", 0) end
+  end
   return h
 end
 
