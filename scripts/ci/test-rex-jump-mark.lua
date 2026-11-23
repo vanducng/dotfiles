@@ -155,6 +155,10 @@ ssh_check("box-c", "'jump' '@e'")
 env_host = "mac-a"
 press("rb_mark_jump", here, { letter = "e" })
 assert(argv() == "/bin/rexboard jump @e", "BOARD_HOST naming this host runs here: " .. argv())
+env_host = "mac-d"
+reset()
+ok, err = press("rb_mark_jump", here, { letter = "e" })
+assert(not ok and err == "BOARD_HOST mac-d is not in hosts.json" and #ran == 0, "an unknown BOARD_HOST runs nothing: " .. tostring(err))
 env_host = "box-c; touch /tmp/x"
 ok, err = press("rb_mark_jump", here, { letter = "e" })
 assert(not ok and err:match("not a host label"), "a BOARD_HOST that is not a label is refused")
