@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.48.1](https://github.com/vanducng/dotfiles/compare/v0.48.0...v0.48.1) (2026-11-25)
+
+
+### Bug Fixes
+
+* **rex:** meh+a finds the app named Rex, not Rex Beta ([15f30ee](https://github.com/vanducng/dotfiles/commit/15f30ee058603e78bc801220defcc59a7c8439fb))
+* **skhd:** meh+a falls back to opening Rex when yabai cannot focus it ([81369cc](https://github.com/vanducng/dotfiles/commit/81369cce785b39a87aaecbe67f0e66c4044c490d))
+
 ## [0.48.0](https://github.com/vanducng/dotfiles/compare/v0.47.0...v0.48.0) (2026-11-23)
 
 
