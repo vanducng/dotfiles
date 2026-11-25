@@ -36,8 +36,8 @@ ctrl + alt + cmd - r : yabai --restart-service; skhd --restart-service
 # -----------------------------------------------------------------------------
 meh - a : previous=$(yabai -m config mouse_follows_focus); \
           yabai -m config mouse_follows_focus on; \
-          id=$(yabai -m query --windows | jq -r 'map(select(.app == "Rex")) | first | .id // empty'); \
-          if [ -n "$id" ]; then yabai -m window "$id" --focus; else open "/Applications/Rex.app"; sleep 0.7; fi; \
+          id=$(yabai -m query --windows | jq -r 'map(select(.app == "Rex" and .["has-ax-reference"])) | first | .id // empty'); \
+          if [ -z "$id" ] || ! yabai -m window "$id" --focus; then open -a "Rex"; sleep 0.7; fi; \
           yabai -m config mouse_follows_focus "$previous"
 meh - b : open "/Applications/Bruno.app"
 meh - c : "$HOME/.config/yabai/dia-one.sh" focus
