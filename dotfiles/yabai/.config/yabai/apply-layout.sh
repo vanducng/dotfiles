@@ -25,7 +25,7 @@ trap 'rmdir "$lockdir" 2>/dev/null || true' EXIT INT TERM
 # Names contain spaces, so the list is one pin per line.
 read_pins() {
     cat <<'EOF'
-Rex Beta:1
+Rex:1
 Ghostty:2
 LibreOffice:10
 soffice:10

@@ -29,7 +29,7 @@ All application shortcuts use the `meh` key (ctrl+alt+shift) for consistency and
 
 | Space | Display | App |
 |-------|---------|-----|
-| 1 | 1 | Rex Beta |
+| 1 | 1 | Rex |
 | 2 | 1 | Ghostty (Herdr) |
 | 3 | 1 | Aside |
 | 4 | 1 | Chrome, Dia |
@@ -50,7 +50,7 @@ All application shortcuts use the `meh` key (ctrl+alt+shift) for consistency and
 ### Development Tools
 | Shortcut | Application | Description |
 |----------|-------------|-------------|
-| `meh + a` | Rex Beta | Focus the primary terminal and move the pointer to it |
+| `meh + a` | Rex | Focus the primary terminal and move the pointer to it |
 | `meh + x` | Ghostty | Terminal for Herdr on space 2 |
 | `meh + f` | Sysmon overlay | Last tmux window, centered (first start: btop / disk / vault) |
 | `cmd + shift + opt + v` | Sysmon left of Dia | Hub on the left quarter of Dia's space. Press again to focus it |

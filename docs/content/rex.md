@@ -2,7 +2,7 @@
 title: "Rex"
 ---
 
-Rex (Rex Beta) is the native macOS multiplexer that replaces Ghostty on space 1 (`meh + a`). Rex runs its sessions on a server, so the Mac app can attach to sessions on other machines over Tailscale.
+Rex is the native macOS multiplexer that replaces Ghostty on space 1 (`meh + a`). Rex runs its sessions on a server, so the Mac app can attach to sessions on other machines over Tailscale.
 
 ## Source of truth
 
@@ -18,7 +18,7 @@ Rex (Rex Beta) is the native macOS multiplexer that replaces Ghostty on space 1 
 - `dotfiles/bin/.local/bin/rex-pane-titles` - automatic pane labels and visible titles across agent CLIs (see [Pane names](#pane-names))
 - `dotfiles/bin/.local/bin/rex-agent-status` - kept for a release: hooks merged before `rexboard hook`, and the old tmux replay hook, still run it. It hands each call to `rexboard hook` or `rexboard hooks replay`, and does nothing when rexboard has no `hooks` command, so a hook never fails. `make rex-hooks-apply` and a restow replace those callers
 - `dotfiles/rex/.config/rex/copy-mode.nvim.lua` - settings applied after the normal AstroNvim config loads: clipboard yanking, `q` / `Ctrl-C` to close, and the full-screen capture notice. Copy mode includes the usual plugins and motion keys (`s` for Flash, `f` / `t` for character jumps)
-- `scripts/rex-setup.sh` (`make setup-rex`) - app settings that live in UserDefaults: Option as Alt, vertical tabs, compact panes, Program Activity sounds (an agent finished or is waiting on you), the Tailscale node name, and the app's Remote Hosts list. The app reads them at launch, so quit and reopen Rex Beta after a run; sessions live in the server and survive
+- `scripts/rex-setup.sh` (`make setup-rex`) - app settings that live in UserDefaults: Option as Alt, vertical tabs, compact panes, Program Activity sounds (an agent finished or is waiting on you), the Tailscale node name, and the app's Remote Hosts list. The app reads them at launch, so quit and reopen Rex after a run; sessions live in the server and survive
 
 Rex reads the config when it starts. After an edit, run `rex config reload` or press `C-x Shift-R`. Run `rex config check` first to catch mistakes, and `rex keymap` to see what loaded.
 
@@ -134,7 +134,7 @@ The save happens on a clean stop: an app update, `rex server stop`, or `systemct
 
 To upgrade:
 
-- **Mac:** update Rex Beta (Check for Updates). The first launch after an update can still start the old embedded server; `rex server status` shows its version. If it is old, quit the app, run `rex server stop`, and open the app again.
+- **Mac:** update Rex (Check for Updates). The first launch after an update can still start the old embedded server; `rex server status` shows its version. If it is old, quit the app, run `rex server stop`, and open the app again.
 - **Linux:** `sudo apt-get install --only-upgrade rex`, then `systemctl --user restart rex-personal.service`. The package does not restart a personal server by itself. When an agent needs the sudo password, read it from the secret store at run time and pipe it to `sudo -S`; never pass it as an argument.
 
 Drive a restart from somewhere that survives it: a tmux session, or an ssh tab from another machine. A restart ends every Rex pane on that server, including the one running the command.
@@ -143,7 +143,7 @@ Drive a restart from somewhere that survives it: a tmux session, or an ssh tab f
 
 Each Mac's Rex server joins the tailnet as its own device, `rex-<ssh alias>`, through Rex's built-in Tailscale. The system Tailscale node cannot be reused: the Tailscale GUI app has no `tailscaled` socket, and the Rex app starts its server with fixed flags. Tailscale still takes the direct LAN path at home.
 
-On a new Mac, open Rex Beta once, then:
+On a new Mac, open Rex once, then:
 
 ```bash
 make stow-rex
@@ -163,7 +163,7 @@ A host label is the machine's ssh alias (here `host-a`, `host-b`, `host-c`). Eac
 
 `make release` (`scripts/release.sh`) ships a release to every machine in `hosts.json`. It merges the open release-please PR once GitHub reports it clean, waits for the `release` run to tag it, then pulls `~/dotfiles` here and over ssh on each other machine. Local edits to tracked files survive: an edit to a file upstream also changed is lifted off as a patch and put back after the pull, and if it no longer applies the local file stays as it was and the script names it. When the rex config changed, it runs `rex config check` and then `rex config reload`. It also brings each machine level with the repo: a package that gained files is restowed with `make stow-<package>`, a change under `dotfiles/mise` runs `scripts/mise-sync.sh`, `cli-proxy-key` writes `~/.config/cli-proxy/api-key` from gopass if it is missing, and `scripts/stow-package.sh --check` lists every managed file that is no longer a link into the repo. Drift is only reported; `make stow-<package>` relinks it and moves the live file to `~/.dotfiles-backup/`. With no release pending it only pulls and checks.
 
-The Mac app ignores `hosts.lua` and keeps its own Remote Hosts list in the `RexSync.servers` preference. `rex-setup.sh` adds each missing Mac there with the same address and leaves existing records alone, since the app fills in their IDs on first connect. Quit and reopen Rex Beta after it reports "Remote Hosts updated".
+The Mac app ignores `hosts.lua` and keeps its own Remote Hosts list in the `RexSync.servers` preference. `rex-setup.sh` adds each missing Mac there with the same address and leaves existing records alone, since the app fills in their IDs on first connect. Quit and reopen Rex after it reports "Remote Hosts updated".
 
 ## Pane names
 

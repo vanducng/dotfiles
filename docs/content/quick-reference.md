@@ -26,7 +26,7 @@ tail -n 100 ~/.config/herdr/herdr-server.log
 ### Global (SKHD)
 | Key | Action | Key | Action |
 |-----|--------|-----|--------|
-| `meh + a` | Rex Beta | `meh + s` | Aside |
+| `meh + a` | Rex | `meh + s` | Aside |
 | `meh + f` | Sysmon center | `cmd+opt+G` | Sysmon dock right |
 | `cmd+opt+V` | Sysmon dock left | | |
 | `meh + t` | Discord | `meh + x` | Ghostty |

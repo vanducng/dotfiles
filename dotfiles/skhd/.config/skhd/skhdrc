@@ -36,8 +36,8 @@ ctrl + alt + cmd - r : yabai --restart-service; skhd --restart-service
 # -----------------------------------------------------------------------------
 meh - a : previous=$(yabai -m config mouse_follows_focus); \
           yabai -m config mouse_follows_focus on; \
-          id=$(yabai -m query --windows | jq -r 'map(select(.app == "Rex Beta")) | first | .id // empty'); \
-          if [ -n "$id" ]; then yabai -m window "$id" --focus; else open "/Applications/Rex Beta.app"; sleep 0.7; fi; \
+          id=$(yabai -m query --windows | jq -r 'map(select(.app == "Rex")) | first | .id // empty'); \
+          if [ -n "$id" ]; then yabai -m window "$id" --focus; else open "/Applications/Rex.app"; sleep 0.7; fi; \
           yabai -m config mouse_follows_focus "$previous"
 meh - b : open "/Applications/Bruno.app"
 meh - c : "$HOME/.config/yabai/dia-one.sh" focus
@@ -189,5 +189,5 @@ hyper - o : yabai -m space --toggle padding; \
 # -----------------------------------------------------------------------------
 # Rex to the front, its focused window on the board (1-cockpit's first tab, as
 # Alt-Shift-1 in Rex). Hammerspoon's cmd+alt+ctrl+b (no shift) is another chord.
-hyper - b : open -a "Rex Beta" && \
+hyper - b : open -a "Rex" && \
             "$HOME/Library/Application Support/com.superlogical.rex/RexServer/Versions/Current/Rex Server.app/Contents/MacOS/rex" do layout_goto index=1

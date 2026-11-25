@@ -6,7 +6,7 @@ DOMAIN="com.superlogical.rex"
 REX="$HOME/Library/Application Support/com.superlogical.rex/RexServer/Versions/Current/Rex Server.app/Contents/MacOS/rex"
 
 command -v defaults >/dev/null || { echo "macOS only"; exit 1; }
-[ -x "$REX" ] || { echo "Rex server missing; open Rex Beta.app once"; exit 1; }
+[ -x "$REX" ] || { echo "Rex server missing; open Rex.app once"; exit 1; }
 
 # Every machine is defined once, in hosts.json (see hosts.lua for its fields). The list names
 # real machines, so it comes from the private overlay, stowed to ~/.config/rex/hosts.json.
@@ -74,5 +74,5 @@ current="$("$REX" server status --json | /usr/bin/python3 -c 'import json,sys; p
 # layout.lua's sessions at the top of the sidebar; a rerun leaves the running ones alone.
 "$REX" do "$HOME/.config/rex/actions.lua" --action session_layout >/dev/null \
   || echo "Rex session layout failed; rerun: rex do ~/.config/rex/actions.lua --action session_layout"
-echo "Rex: $node, Option acts as Alt, vertical tabs, compact panes, config reloaded (quit and reopen Rex Beta to apply app settings)"
-[ -z "$hosts_hex" ] || echo "Remote Hosts updated; quit and reopen Rex Beta to see them"
+echo "Rex: $node, Option acts as Alt, vertical tabs, compact panes, config reloaded (quit and reopen Rex to apply app settings)"
+[ -z "$hosts_hex" ] || echo "Remote Hosts updated; quit and reopen Rex to see them"
